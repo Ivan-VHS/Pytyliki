@@ -1,63 +1,63 @@
-# Processor taxonomy — translated engineering vocabulary
+# Processor engineering taxonomy
 
-This document translates the five source groups into neutral software/processor engineering domains. The original clinical wording is not retained in the application UI, identifiers, logs, or generated reports.
+This taxonomy defines the vocabulary used throughout Pytyliki. General, clinical or non-processor source concepts are translated into concrete processor engineering domains; the original terminology is not used in application labels, logs or reports.
 
-## I. Root cause, system topology and fault epicenter
+## I. Fault origin and processor topology
 
-| Original conceptual family | Engineering vocabulary | Desktop representation |
+| General source concept | Processor-domain interpretation | Engineering surface |
 |---|---|---|
-| Etiology, pathogenesis, prodrome | Root cause, failure path, early warning | Diagnostic event source and symptom-to-subsystem notes |
-| Epidemiology, population, cluster, epicenter | Fleet topology, host group, affected-node scope | Host/CPU inventory and future fleet aggregation point |
-| Mutation, strain, phenotype | CPU stepping, family/model, ISA profile, build variant | CPUID snapshot, architecture label and feature matrix |
-| Contamination, infection, invasion | Input corruption, dependency compromise, unexpected execution path | Static review flags and strict file-format validation |
-| Resistance, immunosuppression, hypervirulence | Fault tolerance, weakened isolation, high-impact defect | Input bounds, validation paths and integrity checks |
-| Hypertrophy, proliferation, apoptosis, necrosis | Resource growth, process fan-out, lifecycle termination, memory corruption | Workload scaling and memory-allocation boundaries |
-| Ischemia, hypoxia, thrombosis, embolism | Starvation, stalled pipeline, lock contention, queued-work blockage | Performance bottleneck vocabulary for future telemetry adapters |
-| Screening, diagnostics, verification, classification | Inventory, static analysis, validation, taxonomy | CPU scan, source review and test matrix |
+| Root cause, pathogenesis, early warning | Fault origin, failure path, pre-fault telemetry | Diagnostic event and subsystem mapping |
+| Population, cluster, epicenter | CPU fleet, socket/core topology, affected-node scope | Processor inventory |
+| Mutation, strain, phenotype | Silicon stepping, family/model, microarchitecture and ISA profile | CPUID and build-target matrix |
+| Contamination, invasion | Corrupted inputs, compromised toolchain, invalid execution path | Input validation and source review |
+| Resistance, immunity | Fault containment, ECC, bounds safety and recovery | Integrity gates and safe failure paths |
+| Hypertrophy, proliferation | Queue growth, thread fan-out, cache pressure and bandwidth saturation | Scaling workloads |
 
-## II. Processor profiles and execution-path vectors
+## II. Execution and microarchitecture
 
-- **Execution phenotype:** architecture, vendor, family/model, logical processor topology and selected ISA feature flags.
-- **Instruction compatibility:** baseline ISA requirements and feature-gated implementation choices. Hardware flags are informational; AVX-family state readiness is not established by this version.
-- **Scheduler and execution resources:** logical processor count, bounded CPU workloads and repeatable measurement windows.
-- **Memory subsystem:** total/available memory inventory and a bounded cache-line-stride memory traversal benchmark.
-- **Control-flow integrity:** static source review prompts, input validation and deterministic unit tests.
-- **System presentation:** native Win32 desktop controls, local session log, file dialogs and CLI equivalents.
+- **Front end:** instruction fetch/decode supply, branch prediction and instruction-cache pressure.
+- **Execution:** dependency chains, issue width, execution-port utilization and retirement throughput.
+- **Control flow:** branch misprediction, speculation boundaries and synchronization overhead.
+- **Memory hierarchy:** register pressure, L1/L2/LLC locality, TLB behavior, memory-level parallelism and NUMA placement.
+- **Interconnect:** cache-coherence traffic, socket links, fabric contention and backpressure.
+- **Power/thermal:** package power, operating points, thermal headroom and throttling telemetry.
 
-## III. Resource kinetics and signal-processing chain
+## III. Processor data-path and DSP kernels
 
-| Original conceptual family | Engineering vocabulary | Implemented operation |
+| General source concept | Processor interpretation | Implemented/targeted operation |
 |---|---|---|
-| Kinetics, metabolism, clearance | Data flow, resource lifetime, allocation and release | Bounded allocation/deallocation in benchmark and DSP paths |
-| Tolerance, saturation, inhibition | Threshold response, dynamic range and signal shaping | DSP compressor, soft saturation and bounded gain |
-| Receptor / agonist / antagonist / synergy | Filter coefficients, gain stages, operator interaction | One-pole low-pass and sequential DSP chain |
-| Acoustic analyzer and modulation | Sample buffer, sample rate, amplitude and frequency domain | PCM16 WAV import/export, sine test-tone generator and signal metering |
-| Analysis, synthesis, prediction | Measurement, transformation, comparative interpretation | Peak/RMS/DC/crest/clipping metrics and benchmark timing |
+| Kinetics, metabolism, clearance | Operand flow, data movement, allocation lifetime | Bounded memory and vector workloads |
+| Tolerance, saturation, inhibition | Numeric range, clipping, nonlinear transfer response | Saturation and compression kernels |
+| Receptor / agonist / antagonist / synergy | Filter coefficients and stage interaction | Sequential datapath operators |
+| Acoustic modulation | DSP vector execution and sample-domain transforms | PCM16 test-vector import/export, filter and metering |
+| Analysis, synthesis, prediction | Measurement, transform and comparative modeling | Timing, checksums and signal statistics |
 
-## IV. Contention cascades, subsystem mutation and isolation
+PCM/WAV is a test-data transport format only. It does not define the product domain.
 
-- **Competition:** CPU and memory workload contention; future extension point for scheduler/NUMA telemetry.
-- **Mutation:** a change in build flags, implementation variant, firmware-reported CPU identity or runtime profile; only software-observable inventory is read here.
-- **Cascade:** a local delay or resource bottleneck that propagates through a pipeline; the current suite measures independent workload classes rather than claiming to diagnose a complete cascade.
-- **Isolation:** each benchmark has fixed limits; the source scanner reads text without executing it; the DSP chain operates on a bounded in-memory buffer.
-- **Recovery:** a failed import or benchmark returns an error without attempting hardware changes or automatically rewriting user files.
+## IV. Contention, faults and isolation
 
-## V. Stability, regression history and lifecycle
+- **Contention:** core, cache, memory, execution-port and interconnect competition.
+- **Fault propagation:** a local stall or corrupted operand affecting downstream execution stages.
+- **Isolation:** workload bounds, validated input sizes and non-executing source inspection.
+- **Recovery:** deterministic error returns and integrity checks; no automatic hardware mutation.
+- **Evidence:** profiler counters, simulator traces, compiler output, formal checks and physical-design reports.
 
-- **Stable state:** a successful run with valid inputs and a passing integrity check.
-- **Regression / recurrence:** a future comparison of the same workload profile over saved reports or CI runs.
-- **Prognosis:** trend analysis over repeatable measurements, not a prediction of device lifetime.
-- **Audit and certification vocabulary:** versioned CMake build, CTest, CI matrix and JSON report metadata.
-- **Persistence:** the current version exports a report when requested; it does not run background monitoring or silently collect telemetry.
+## V. Stability and verification
 
-## Implemented desktop surfaces
+- **Stable state:** valid inputs, completed workload and passing integrity checksum.
+- **Regression:** a measured change against the same CPU, build, workload and operating conditions.
+- **Reliability:** repeatability, thermal behavior, aging and platform-specific error telemetry.
+- **Verification:** CMake, CTest, CI, compiler diagnostics and, for RTL work, lint/formal/timing/power/area evidence.
+- **Persistence:** reports are generated only on explicit user request; no silent telemetry collection.
 
-1. **Processor inventory:** CPU brand string where available, vendor, family/model, architecture, logical processors, OS-reported physical/available memory and selected ISA flags.
-2. **Processor workload lab:** integer dependency-chain benchmark, memory traversal and compact matrix workload, each with timing and checksum.
-3. **Source review:** heuristic checks for selected process-execution APIs, unbounded string APIs, manual memory mapping and inline assembly.
-4. **DSP workbench:** PCM16 mono/stereo import, sine generation, low-pass, compression, saturation, gain, metering and PCM16 export.
-5. **CLI and automation path:** command-line equivalents for CPU inventory, benchmark suite, source review, WAV generation, inspection and processing.
+## Product modules
+
+1. Processor inventory and ISA capability matrix.
+2. Integer, memory and matrix execution workload suite.
+3. Read-only processor implementation source reviewer.
+4. Bounded DSP datapath test-vector laboratory.
+5. CLI, native desktop GUI and structured engineering reports.
 
 ## Non-goals
 
-The taxonomy is an engineering metaphor. It does not model medical conditions or recommend treatment. Pytyliki does not overclock, set voltage/frequency, write BIOS/UEFI or firmware, flash microcode, load drivers, run arbitrary inspected source, or capture audio from hardware devices.
+Pytyliki does not diagnose human conditions, process general media projects, record from hardware devices, overclock, change voltage/frequency, write firmware, flash microcode, load drivers, execute inspected source or claim silicon-level optimization without the required design artifacts and verification evidence.
