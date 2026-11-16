@@ -12,22 +12,18 @@
 
 > Native C11 workstation for processor discovery, bounded benchmarking, read-only source review and local audio/DSP experiments.
 
-🔵 **BLUE** — precision and architecture · 🔴 **RED** — performance and execution · ⚪ **WHITE** — clarity and safety.
-
 ## 💎 Current capabilities
 
-- CPU identity, architecture, logical processors, memory and selected x86 ISA flags.
-- Bounded integer, memory-touch and matrix benchmarks with integrity checksums.
-- Read-only heuristic source scanner.
-- PCM16 WAV import/export, tone generation, filtering, compression, saturation, gain and metering.
-- Native Win32 desktop GUI; CLI on Windows and Linux.
-- User-triggered JSON CPU and benchmark reports.
+- CPU/ISA discovery, memory information and bounded processor benchmarks.
+- Read-only source scanner and JSON reports.
+- PCM16 WAV tools, tone generation and local DSP processing.
+- Native Win32 GUI; CLI on Windows and Linux.
 
-The scanner never compiles, executes or rewrites scanned files. ISA flags alone do not establish safe instruction eligibility.
+The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
 ## 🚀 20 × 3 Evolution Protocol
 
-These 20 triplets define the **target automation policy**, not a claim that every capability is already implemented.
+These triplets define the **target policy**, not implemented-feature claims.
 
 | # | Core operation | Workflow operation | Quality operation |
 |---:|---|---|---|
@@ -54,16 +50,16 @@ These 20 triplets define the **target automation policy**, not a claim that ever
 
 ### 🔐 Guarded automation contract
 
-1. Work on isolated feature branches; protect `main`.
-2. Commit relevant changes with traceable messages.
-3. Push to a feature branch and open a pull request.
-4. Run formatting, lint, static checks, builds and tests.
-5. Merge only after required checks and review approval.
+1. Use isolated branches; protect `main`.
+2. Commit traceable, relevant changes.
+3. Push feature branches and open PRs.
+4. Run lint, static checks, builds and tests.
+5. Merge only after checks and review approval.
 6. Never force-push, bypass protections or self-approve.
-7. Deploy only explicitly configured, validated artifacts.
-8. Keep recovery paths and logs for generated changes.
-9. Require human approval for destructive actions and releases.
-10. Record inputs, outputs, tool versions and benchmark baselines.
+7. Deploy only configured, validated artifacts.
+8. Keep recovery paths and operation logs.
+9. Require human approval for destructive actions/releases.
+10. Record inputs, outputs, versions and benchmark baselines.
 
 **Auto-commit, auto-push and auto-merge are separate permissioned stages.** A failed check stops promotion. Automation must be observable, bounded, reversible and test-gated.
 
@@ -119,7 +115,7 @@ Windows builds also provide `pytyliki-gui.exe`.
 
 ## 🛡️ Safety
 
-CPU discovery is read-only. Pytyliki does **not** modify BIOS/UEFI, firmware, microcode, voltage, clocks, power limits, kernels or drivers. Benchmarks are bounded and advisory. Software optimization does not alter physical processor fabrication; hardware synthesis requires dedicated tools and validation.
+CPU discovery is read-only. Pytyliki does **not** modify firmware, microcode, voltage, clocks, power limits, kernels or drivers. Benchmarks are advisory. Physical hardware synthesis requires dedicated tools and validation.
 
 **License:** MIT.
 
