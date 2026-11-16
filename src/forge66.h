@@ -87,5 +87,6 @@ int pl_penwhite_ci_witness(const pl_forge66_input *input, pl_forge66_result *res
 int pl_penwhite_review_bridge(const pl_forge66_input *input, pl_forge66_result *result);
 int pl_penwhite_merge_guard(const pl_forge66_input *input, pl_forge66_result *result);
 int pl_penwhite_learning_digest(const pl_forge66_input *input, pl_forge66_result *result);
+int pl_penwhite_retention_oracle(const pl_forge66_input *input, pl_forge66_result *result);
 
 #endif
