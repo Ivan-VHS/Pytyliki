@@ -38,31 +38,31 @@ static void print_hw_report(void) {
     pl_hw_metrics metrics = {0};
     pl_hw_report report;
     size_t i;
-    if (pl_hw_evaluate(&metrics, &report) != 0) { fputs("Hardware rule evaluation failed.\\n", stderr); return; }
-    printf("Hardware rules evaluated: %zu (implemented rules only)\\n", report.rules_evaluated);
+    if (pl_hw_evaluate(&metrics, &report) != 0) { fputs("Hardware rule evaluation failed.\n", stderr); return; }
+    printf("Hardware rules evaluated: %zu (implemented rules only)\n", report.rules_evaluated);
     puts("No live hardware-counter input was supplied; these are evidence/process gates, not measured CPU defects.");
     for (i = 0; i < report.findings_count; ++i) {
         const pl_hw_finding *f = &report.findings[i];
-        printf("  [%03u] %s / %s: %s\\n      %s\\n", f->id, pl_hw_domain_name(f->domain), pl_hw_severity_name(f->severity), f->title, f->recommendation);
+        printf("  [%03u] %s / %s: %s\n      %s\n", f->id, pl_hw_domain_name(f->domain), pl_hw_severity_name(f->severity), f->title, f->recommendation);
     }
 }
 static void print_foundations(int pipeline, int clinical, int policy, pl_pipeline_target target, pl_role role, pl_action action) {
     if (pipeline) {
         pl_pipeline_plan plan; size_t i;
-        if (pl_pipeline_build(target, &plan) != 0) { fputs("Pipeline plan failed.\\n", stderr); return; }
-        printf("Reference pipeline for %s:\\n", pl_pipeline_target_name(target));
-        for (i = 0; i < plan.stage_count; ++i) printf("%u. %s\\n", (unsigned)(i + 1u), pl_pipeline_stage_name(plan.stages[i]));
+        if (pl_pipeline_build(target, &plan) != 0) { fputs("Pipeline plan failed.\n", stderr); return; }
+        printf("Reference pipeline for %s:\n", pl_pipeline_target_name(target));
+        for (i = 0; i < plan.stage_count; ++i) printf("%u. %s\n", (unsigned)(i + 1u), pl_pipeline_stage_name(plan.stages[i]));
         puts("Semantic equivalence and human review are mandatory; this is a plan, not an active transpiler.");
     }
     if (clinical) {
         size_t i; pl_clinical_rule rule;
         puts("Engineering workflow templates (not clinical instructions):");
         for (i = 0; i < pl_clinical_catalog_count(); ++i) if (pl_clinical_catalog_get(i, &rule) == 0)
-            printf("- %s | %s | %s | source=%s | expert-signoff=required\\n", rule.id, pl_clinical_domain_name(rule.domain), rule.title, rule.approved_source);
+            printf("- %s | %s | %s | source=%s | expert-signoff=required\n", rule.id, pl_clinical_domain_name(rule.domain), rule.title, rule.approved_source);
     }
     if (policy) {
         int allowed = pl_policy_authorize(role, action);
-        printf("Authorization: %s (role=%s, action=%s)\\n", allowed ? "ALLOW" : "DENY", pl_policy_role_name(role), pl_policy_action_name(action));
+        printf("Authorization: %s (role=%s, action=%s)\n", allowed ? "ALLOW" : "DENY", pl_policy_role_name(role), pl_policy_action_name(action));
     }
 }
 static void print_profile(void) {
