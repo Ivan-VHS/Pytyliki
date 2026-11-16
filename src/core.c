@@ -133,7 +133,6 @@ int pl_analyze_file(const char *path, pl_analysis *totals, char *details, size_t
         {"_mm_", "x86 SIMD intrinsic; verify ISA dispatch and OS vector-state support"},
         {"__m256", "wide-vector type; verify alignment, feature gating and fallback path"},
         {"__m512", "512-bit vector type; verify hardware and operating-system state support"},
-        {"_mm_prefetch", "cache prefetch hint; benchmark locality and avoid assuming guaranteed benefit"},
         {"__builtin_prefetch", "compiler prefetch hint; measure workload-specific effect"},
         {"memory_order_relaxed", "relaxed atomic ordering; review synchronization correctness"},
         {"atomic_thread_fence", "memory fence; verify ordering requirements and cost"},
