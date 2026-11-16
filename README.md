@@ -18,7 +18,7 @@
 - Read-only source scanner and JSON reports.
 - PCM16 WAV tools, tone generation and local DSP processing.
 - Native Win32 GUI; CLI on Windows and Linux.
-- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, deny-by-default policy and C11/C23 pipeline plan.
+- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, deny-by-default policy and C11/C23 pipeline plan.\n- 20 named Berry Core commands for validated logical-processor request planning (dry-run only).
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
@@ -90,7 +90,7 @@ These triplets define the **target policy**, not implemented-feature claims.
 ### Source map
 
 - `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
-- `src/processor.c/.h` — architecture/ISA inventory and processor suite.
+- `src/processor.c/.h` — architecture/ISA inventory and processor suite.\n- `src/berry_core.c/.h` — 20-command processor-core catalogue, target validation and dry-run dispatch planner.
 - `src/dsp.c/.h` — bounded WAV I/O and DSP.
 - `src/win_gui.c` — native Windows UI.
 - `src/cli.c` — cross-platform CLI.
@@ -107,7 +107,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 Windows builds also provide `pytyliki-gui.exe`.
 
-## 🗺️ Roadmap
+## 🍓 Berry Core Command Suite\n\nThe 20 named commands (Malina through Viktoria) map the requested virtues to processor-core operations: invocation, addressing, query, command validation, initialization, activation, synchronization, dispatch, interruption planning and control handoff. Use `pytyliki --core-commands` to list them or `pytyliki --core-command Malina --core 0` to validate a request for logical core 0.\n\n**Safety boundary:** commands are validated plans only. They do not send inter-processor interrupts, change thread affinity, execute arbitrary instructions, access privileged registers, or modify firmware, clocks, voltage or power settings.\n\n## 🗺️ Roadmap
 
 - [x] Native C11 core, CLI and Windows desktop UI
 - [x] CPU discovery, bounded benchmarks and source review
