@@ -17,15 +17,20 @@ static void copy_text(char *dst, size_t cap, const char *src) {
     if (cap) (void)snprintf(dst, cap, "%s", src ? src : "unknown");
 }
 static void decode_cpu(const unsigned int r[4], pl_cpu_info *out) {
-    unsigned int bf=(r[0]>>8)&15u, bm=(r[0]>>4)&15u, ef=(r[0]>>20)&255u, em=(r[0]>>16)&15u;
-    out->family = bf==15u ? bf+ef : bf;
-    out->model_id = (bf==6u || bf==15u) ? (em<<4)|bm : bm;
+    unsigned int base_family=(r[0]>>8)&15u, base_model=(r[0]>>4)&15u;
+    unsigned int ext_family=(r[0]>>20)&255u, ext_model=(r[0]>>16)&15u;
+    out->family = base_family==15u ? base_family+ext_family : base_family;
+    out->model_id = (base_family==6u || base_family==15u) ? (ext_model<<4)|base_model : base_model;
 }
 int pl_cpu_profile(pl_cpu_info *out) {
     if (!out) return -1;
     memset(out,0,sizeof(*out));
 #if defined(_WIN32)
-    SYSTEM_INFO si; GetSystemInfo(&si); out->logical_cpus=si.dwNumberOfProcessors;
+    {
+        DWORD count=GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+        if (count) out->logical_cpus=(unsigned)count;
+        else { SYSTEM_INFO si; GetSystemInfo(&si); out->logical_cpus=si.dwNumberOfProcessors; }
+    }
 #elif defined(_SC_NPROCESSORS_ONLN)
     { long n=sysconf(_SC_NPROCESSORS_ONLN); out->logical_cpus=n>0?(unsigned)n:1u; }
 #else
@@ -35,21 +40,21 @@ int pl_cpu_profile(pl_cpu_info *out) {
 #if defined(_MSC_VER) && (defined(_M_X64)||defined(_M_IX86))
     {
         int r[4]; __cpuid(r,0);
-        char v[13]; memcpy(v,&r[1],4); memcpy(v+4,&r[3],4); memcpy(v+8,&r[2],4); v[12]='\0';
+        char v[13]; memcpy(v,&r[1],4); memcpy(v+4,&r[3],4); memcpy(v+8,&r[2],4); v[12]='\\0';
         copy_text(out->vendor,sizeof(out->vendor),v);
         __cpuid(r,1); decode_cpu((const unsigned int*)r,out);
         __cpuid(r,(int)0x80000000u);
         if ((unsigned)r[0]>=0x80000004u) {
             char brand[49]; unsigned i;
             for(i=0;i<3u;i++){__cpuid(r,(int)(0x80000002u+i));memcpy(brand+i*16u,r,16u);}
-            brand[48]='\0'; copy_text(out->model,sizeof(out->model),brand);
+            brand[48]='\\0'; copy_text(out->model,sizeof(out->model),brand);
         }
     }
 #elif (defined(__x86_64__)||defined(__i386__)) && defined(__GNUC__)
     {
         unsigned a,b,c,d;
         if(__get_cpuid(0,&a,&b,&c,&d)){
-            char v[13]; memcpy(v,&b,4);memcpy(v+4,&d,4);memcpy(v+8,&c,4);v[12]='\0';
+            char v[13]; memcpy(v,&b,4);memcpy(v+4,&d,4);memcpy(v+8,&c,4);v[12]='\\0';
             copy_text(out->vendor,sizeof(out->vendor),v);
         }
         if(__get_cpuid(1,&a,&b,&c,&d)){const unsigned r[4]={a,b,c,d};decode_cpu(r,out);}
@@ -60,7 +65,7 @@ int pl_cpu_profile(pl_cpu_info *out) {
                 memcpy(brand+i*16u,&a,4);memcpy(brand+i*16u+4,&b,4);
                 memcpy(brand+i*16u+8,&c,4);memcpy(brand+i*16u+12,&d,4);
             }
-            if(i==3u){brand[48]='\0';copy_text(out->model,sizeof(out->model),brand);}
+            if(i==3u){brand[48]='\\0';copy_text(out->model,sizeof(out->model),brand);}
         }
     }
 #else
@@ -95,7 +100,7 @@ int pl_run_benchmark(uint64_t iterations, pl_benchmark *out) {
 }
 static void add_finding(char *details,size_t cap,unsigned line,const char *description) {
     char item[256]; size_t used,need;
-    (void)snprintf(item,sizeof(item),"line %u: %s\n",line,description);
+    (void)snprintf(item,sizeof(item),"line %u: %s\\n",line,description);
     used=strlen(details);need=strlen(item);
     if(used+need+1u<cap)memcpy(details+used,item,need+1u);
 }
@@ -103,7 +108,7 @@ int pl_analyze_file(const char *path,pl_analysis *totals,char *details,size_t ca
     if(!path||!totals||!details||cap==0u)return -1;
     FILE *f=fopen(path,"rb");
     if(!f){totals->read_errors++;return -1;}
-    char line[2048];unsigned number=0;details[0]='\0';totals->files_scanned++;
+    char line[2048];unsigned number=0;details[0]='\\0';totals->files_scanned++;
     while(fgets(line,sizeof(line),f)){
         number++;
         if(strstr(line,"system(")||strstr(line,"popen(")){add_finding(details,cap,number,"process execution API");totals->findings++;}
@@ -117,17 +122,17 @@ int pl_analyze_file(const char *path,pl_analysis *totals,char *details,size_t ca
 static void json_string(FILE *f,const char *s) {
     const unsigned char *p=(const unsigned char*)s;
     (void)fputc('"',f);
-    while(*p){if(*p=='"'||*p=='\\'){(void)fputc('\\',f);(void)fputc(*p,f);}
-    else if(*p<32u)(void)fprintf(f,"\\u%04x",(unsigned)*p);else (void)fputc(*p,f);p++;}
+    while(*p){if(*p=='"'||*p=='\\\\'){(void)fputc('\\\\',f);(void)fputc(*p,f);}
+    else if(*p<32u)(void)fprintf(f,"\\\\u%04x",(unsigned)*p);else (void)fputc(*p,f);p++;}
     (void)fputc('"',f);
 }
 int pl_write_json(const char *path,const pl_cpu_info *cpu,const pl_benchmark *b,const pl_analysis *a) {
     if(!path||!cpu||!b||!a)return -1;
     FILE *f=fopen(path,"wb");if(!f)return -1;
-    (void)fputs("{\n  \"version\": \"0.4.0\",\n  \"cpu\": {\"vendor\":",f);json_string(f,cpu->vendor);
-    (void)fputs(",\"model\":",f);json_string(f,cpu->model);
-    (void)fprintf(f,",\"logical_cpus\":%u,\"family\":%u,\"model_id\":%u},\n",cpu->logical_cpus,cpu->family,cpu->model_id);
-    (void)fprintf(f,"  \"benchmark\": {\"iterations\":%llu,\"elapsed_ms\":%.3f,\"iterations_per_ms\":%.3f},\n",(unsigned long long)b->iterations,b->elapsed_ms,b->score);
-    (void)fprintf(f,"  \"analysis\": {\"files_scanned\":%u,\"findings\":%u,\"read_errors\":%u}\n}\n",a->files_scanned,a->findings,a->read_errors);
+    (void)fputs("{\\n  \\"version\\": \\"0.4.0\\",\\n  \\"cpu\\": {\\"vendor\\":",f);json_string(f,cpu->vendor);
+    (void)fputs(",\\"model\\":",f);json_string(f,cpu->model);
+    (void)fprintf(f,",\\"logical_cpus\\":%u,\\"family\\":%u,\\"model_id\\":%u},\\n",cpu->logical_cpus,cpu->family,cpu->model_id);
+    (void)fprintf(f,"  \\"benchmark\\": {\\"iterations\\":%llu,\\"elapsed_ms\\":%.3f,\\"iterations_per_ms\\":%.3f},\\n",(unsigned long long)b->iterations,b->elapsed_ms,b->score);
+    (void)fprintf(f,"  \\"analysis\\": {\\"files_scanned\\":%u,\\"findings\\":%u,\\"read_errors\\":%u}\\n}\\n",a->files_scanned,a->findings,a->read_errors);
     int bad=ferror(f);if(fclose(f)!=0)bad=1;return bad?-1:0;
 }
