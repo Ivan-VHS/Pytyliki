@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
-project(PytylikiCPULab VERSION 0.4.0 LANGUAGES C)
+project(PytylikiCPULab VERSION 0.5.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-add_library(pytyliki_core src/core.c)
+add_library(pytyliki_core src/core.c src/hw_rules.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(MSVC)
   target_compile_options(pytyliki_core PRIVATE /W4)
@@ -27,4 +27,8 @@ if(BUILD_TESTING)
   add_executable(pytyliki-tests tests/test_core.c)
   target_link_libraries(pytyliki-tests PRIVATE pytyliki_core)
   add_test(NAME core-tests COMMAND pytyliki-tests)
+
+  add_executable(pytyliki-hw-rule-tests tests/test_hw_rules.c)
+  target_link_libraries(pytyliki-hw-rule-tests PRIVATE pytyliki_core)
+  add_test(NAME hardware-rule-tests COMMAND pytyliki-hw-rule-tests)
 endif()
