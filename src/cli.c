@@ -104,7 +104,8 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
-        else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;\n        else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
+        else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
+        else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
         else if(!strcmp(argv[i],"--processor-catalog")) catalog=1;
@@ -126,7 +127,8 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
-    if(improvement_plan) print_improvement_plan();\n    if(syntax_pie) print_syntax_pie();
+    if(improvement_plan) print_improvement_plan();
+    if(syntax_pie) print_syntax_pie();
     if(hw_rules) print_hw_report();
     if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
     if(policy && !pl_policy_authorize(policy_role,policy_action)) return 3;
