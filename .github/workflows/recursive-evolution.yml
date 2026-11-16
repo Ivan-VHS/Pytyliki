@@ -1,0 +1,41 @@
+name: Recursive Evolution Gate
+
+on:
+  push:
+    branches: [main, "feat/**", "integration/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pree-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify improvement proposal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Validate evolution policy
+        shell: bash
+        run: |
+          test -s docs/RECURSIVE_EVOLUTION.md
+          grep -q "human maintainer authorizes merge" docs/RECURSIVE_EVOLUTION.md
+          grep -q "must not" docs/RECURSIVE_EVOLUTION.md
+          echo "PREE policy present; merge remains a human-controlled action."

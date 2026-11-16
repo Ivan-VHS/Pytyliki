@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
-project(PytylikiProcessorWorkstation VERSION 0.5.0 LANGUAGES C)
+project(PytylikiProcessorWorkstation VERSION 0.7.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-add_library(pytyliki_core src/core.c src/processor.c src/dsp.c)
+add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(MSVC)
   target_compile_options(pytyliki_core PRIVATE /W4)
@@ -30,7 +30,15 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-tests PRIVATE pytyliki_core)
   add_test(NAME core-tests COMMAND pytyliki-tests)
 
-  add_executable(pytyliki-clinical-tests tests/test_clinical_safety.c)
-  target_link_libraries(pytyliki-clinical-tests PRIVATE pytyliki_core)
-  add_test(NAME clinical-safety-tests COMMAND pytyliki-clinical-tests)
+  add_executable(pytyliki-improvement-tests tests/test_improvement.c)
+  target_link_libraries(pytyliki-improvement-tests PRIVATE pytyliki_core)
+  add_test(NAME improvement-engine-tests COMMAND pytyliki-improvement-tests)
+
+  add_executable(pytyliki-hw-rule-tests tests/test_hw_rules.c)
+  target_link_libraries(pytyliki-hw-rule-tests PRIVATE pytyliki_core)
+  add_test(NAME hardware-rule-tests COMMAND pytyliki-hw-rule-tests)
+
+  add_executable(pytyliki-foundation-tests tests/test_engineering_foundations.c)
+  target_link_libraries(pytyliki-foundation-tests PRIVATE pytyliki_core)
+  add_test(NAME engineering-foundation-tests COMMAND pytyliki-foundation-tests)
 endif()
