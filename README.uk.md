@@ -78,7 +78,10 @@ ctest --test-dir build -C Release --output-on-failure
 ```bash
 pytyliki --improvement-plan
 pytyliki --evolve --evolution-rounds 8
+pytyliki-apsia cpu 1000 300 100 100000 rust,wasm
 ```
+
+`pytyliki-apsia` оцінює задане навантаження та список доступних цілей; він не компілює й не запускає вибраний модуль.
 
 Щоб переглянути повний перелік команд, скористайтеся довідкою виконуваного файла. Параметри можуть змінюватися між версіями.
 

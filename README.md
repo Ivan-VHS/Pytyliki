@@ -105,7 +105,10 @@ Windows builds also provide `pytyliki-gui.exe`.
 ```bash
 pytyliki --improvement-plan
 pytyliki --evolve --evolution-rounds 8
+pytyliki-apsia cpu 1000 300 100 100000 rust,wasm
 ```
+
+`pytyliki-apsia` evaluates a supplied workload and target allow-list; it does not compile or execute the selected language module.
 
 Use the executable's help output to inspect the commands available in the checked-out version. Options can evolve between revisions.
 

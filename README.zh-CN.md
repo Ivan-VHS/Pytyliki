@@ -78,7 +78,10 @@ Windows 构建还会生成 `pytyliki-gui.exe`。
 ```bash
 pytyliki --improvement-plan
 pytyliki --evolve --evolution-rounds 8
+pytyliki-apsia cpu 1000 300 100 100000 rust,wasm
 ```
+
+`pytyliki-apsia` 根据给定负载和目标白名单进行路由评估；它不会编译或执行所选语言模块。
 
 请使用可执行文件的帮助信息查看当前版本支持的完整命令。不同版本的选项可能有所变化。
 

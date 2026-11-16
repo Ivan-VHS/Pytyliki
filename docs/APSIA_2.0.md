@@ -132,4 +132,4 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-The APSIA router test validates workload mapping, sandbox precedence, missing targets, FFI speedup rejection, overhead budgets and invalid numeric inputs.
+The APSIA router tests validate workload mapping, sandbox precedence, missing targets, FFI speedup rejection, overhead budgets and invalid numeric inputs. The `pytyliki-apsia` CLI exposes the planner with explicit workload measurements and an allow-list of available targets:\n\n```sh\npytyliki-apsia cpu 1000 300 100 100000 rust,wasm\npytyliki-apsia plugin 1000 300 100 100000 wasm\n```\n\nThe CLI treats every plugin workload as sandbox-mandatory. If WASM is not in the available-target list, the request is rejected.
