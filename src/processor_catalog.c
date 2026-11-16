@@ -42,7 +42,7 @@ int pl_processor_rule_validate(const pl_processor_rule *rule) {
     if (rule == NULL || rule->id == NULL || rule->title == NULL ||
         rule->evidence_source == NULL || rule->version == NULL) return -1;
     if (rule->id[0] == '\0' || rule->title[0] == '\0' ||
-        rule->version[0] == '\0' || rule->requires_human_review == 0) return -1;
+        rule->version[0] == '\0' || rule->requires_human_review != 1) return -1;
     if ((int)rule->domain < (int)PL_PROCESSOR_DOMAIN_ARCHITECTURE ||
         rule->domain >= PL_PROCESSOR_DOMAIN_COUNT) return -1;
     if (rule->evidence_source[0] == '\0' ||
