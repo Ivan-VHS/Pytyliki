@@ -12,6 +12,12 @@ Pytyliki is a native C11 desktop workstation for read-only CPU capability discov
 
 The GUI presents actions as native Windows controls and does not require a browser or runtime framework.
 
+## Recursive improvement engine
+
+Run pytyliki --improvement-plan to print the 20 capability rows and the evidence-gated iteration policy.
+
+The default target is **666,666 complete cycles**. Each cycle requires evidence for every phase and explicit human approval before integration. The state machine counts verified workflow iterations; it does not automatically execute 666,666 builds, rewrite source files, push commits, or merge pull requests. The requested **66,666,666×** factor is an aspirational goal, not a mathematical guarantee or measured benchmark. Regressions, missing evidence and failed tests stop progress. See docs/recursive-processor-improvement.md.
+
 ## CLI
 
     pytyliki --profile --suite
