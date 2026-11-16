@@ -25,6 +25,35 @@ static void usage(void) {
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
+static void print_berry_core_catalog(void) {
+    const pl_berry_core_command *items = NULL;
+    size_t count = pl_berry_core_catalog(&items);
+    puts("Berry processor-core command catalogue (dry-run planner):");
+    for (size_t i = 0u; i < count; ++i)
+        printf("%02u | %-12s | %-18s | %-28s | %s\n",
+               (unsigned)i + 1u, items[i].name, items[i].virtue,
+               items[i].operation, items[i].description);
+    puts("No hardware interrupt, register write, affinity change, or firmware operation is performed.");
+}
+static int dispatch_berry_core(const char *name, unsigned core) {
+    const pl_berry_core_command *items = NULL;
+    size_t count = pl_berry_core_catalog(&items);
+    pl_berry_core_request request;
+    pl_berry_core_result result;
+    size_t i;
+    for (i = 0u; i < count; ++i)
+        if (strcmp(items[i].name, name) == 0) break;
+    if (i == count) { fprintf(stderr, "Unknown berry command: %s\n", name); return 2; }
+    request.command = items[i].id;
+    request.target_logical_core = core;
+    if (pl_berry_core_dispatch(&request, &result) != 0) {
+        fprintf(stderr, "Core command rejected: %s\n", result.detail[0] ? result.detail : "invalid request");
+        return 2;
+    }
+    printf("%s -> logical core %u | %s | PLANNED ONLY | hardware modified: no\n",
+           result.command_name, result.target_logical_core, result.operation);
+    return 0;
+}
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
@@ -110,6 +139,9 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
         else if(!strcmp(argv[i],"--processor-catalog")) catalog=1;
         else if(!strcmp(argv[i],"--evolve")) evolve=1;
+        else if(!strcmp(argv[i],"--core-commands")) berry_list=1;
+        else if(!strcmp(argv[i],"--core-command")&&i+1<argc) berry_name=argv[++i];
+        else if(!strcmp(argv[i],"--core")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n>UINT32_MAX)return 2;berry_core=(unsigned)n;}
         else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;evolve=1;}
         else if(!strcmp(argv[i],"--target")&&i+1<argc){const char *v=argv[++i];if(!strcmp(v,"c11"))pipeline_target=PL_TARGET_C11;else if(!strcmp(v,"c23"))pipeline_target=PL_TARGET_C23;else return 2;}
         else if(!strcmp(argv[i],"--policy-check")&&i+2<argc){policy=1;if(pl_policy_parse_role(argv[++i],&policy_role)!=0||pl_policy_parse_action(argv[++i],&policy_action)!=0)return 2;}
@@ -127,6 +159,8 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
+    if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
+    if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(improvement_plan) print_improvement_plan();
     if(syntax_pie) print_syntax_pie();
     if(hw_rules) print_hw_report();
