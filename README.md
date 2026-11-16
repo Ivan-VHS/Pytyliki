@@ -95,6 +95,10 @@ Recent design work also defines three processor-oriented catalogues:
 
 These catalogues are tracked as staged integration work; they must not be confused with a complete parser, a hardware timer controller, an IPI/affinity controller or a production processor-control interface. The names Concreo, Pyemont, Bollo, JJ-HH, PenWhite and Serious Serious are experimental function-suite concepts, not stable public APIs.
 
+## Integration status of recent catalogues
+
+The `syntax_pie.c`, `mtte.c` and `berry_core.c` sources and their focused test files are present in the repository, but the current `main` CMake configuration does not yet register these modules or tests. The CLI source also references the Syntax Pie API while the default target does not link `syntax_pie.c`. Treat these as pending build-system integration, not verified features of the default executable. The Syntax Pie integration is tracked separately in [PR #19](https://github.com/Ivan-VHS/Pytyliki/pull/19); merge only after the required CI checks and review pass.
+
 ## Build and test
 
 Requirements: CMake 3.16+, a C11 compiler, Git, and Windows or Linux.
