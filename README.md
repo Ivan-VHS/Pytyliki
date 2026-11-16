@@ -10,7 +10,7 @@ read-only source review, and advisory hardware-optimization analysis.
 - Read-only source scanner for C, C++, and Rust; inspected source is never executed.
 - Hardware Optimization Rule Engine: 12 executable advisory rules and a reserved
   1,000-ID catalog organized into 20 engineering domains.
-- Analysis of supplied IPC, cache miss, branch prediction, memory stall, power,
+- Analysis API for supplied IPC, cache miss, branch prediction, memory stall, power,
   temperature, frequency and utilization measurements.
 - CMake build, CTest coverage, and Windows/Linux CI.
 
@@ -28,11 +28,15 @@ On Windows, the build also produces `pytyliki-gui`. On Linux, it produces `pytyl
 pytyliki --profile
 pytyliki --benchmark
 pytyliki --analyze path/to/source.c
+pytyliki --hw-rules
 pytyliki --json report.json
 ```
 
+`--hw-rules` runs the advisory rules without live counter input. It therefore reports
+evidence and verification gates, not measured CPU faults. The C API in
+`src/hw_rules.h` accepts explicitly supplied profiler metrics.
+
 ## Hardware rule engine
-The C API is in `src/hw_rules.h`; implementation is in `src/hw_rules.c`.
 See [docs/HARDWARE_RULE_ENGINE.md](docs/HARDWARE_RULE_ENGINE.md) for the 20-domain
 catalog, rule lifecycle, evidence contract and safety boundaries.
 
