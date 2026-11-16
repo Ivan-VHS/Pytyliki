@@ -69,7 +69,7 @@ int pl_improvement_record(pl_improvement_cycle *cycle, uint32_t evidence) {
 }
 
 int pl_improvement_advance(pl_improvement_cycle *cycle) {
-    if (cycle == NULL || cycle->phase >= PL_IMPROVE_COMPLETE) return -1;
+    if (cycle == NULL || cycle->phase < PL_IMPROVE_OBSERVE || cycle->phase >= PL_IMPROVE_COMPLETE) return -1;
     if ((cycle->evidence & required_evidence[cycle->phase]) == 0u) return -2;
     if (cycle->phase == PL_IMPROVE_INTEGRATE &&
         (cycle->evidence & PL_IMPROVE_EVIDENCE_APPROVED) == 0u) return -3;
