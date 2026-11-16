@@ -8,6 +8,7 @@
 #include "policy.h"
 #include "evolution.h"
 #include "syntax_pie.h"
+#include "berry_core.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -122,7 +123,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0; const char *berry_name=NULL,*analyze=NULL,*json=NULL; unsigned berry_core=0u;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u;
