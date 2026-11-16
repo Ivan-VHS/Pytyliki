@@ -55,7 +55,7 @@ For PR #15, both Windows and Ubuntu completed Configure, Build and CTest success
 - CPU discovery is read-only. AVX-family CPUID flags do not prove OS vector-state support.
 - No firmware, BIOS/UEFI, microcode, voltage, clock, power-limit, kernel, driver or device-register writes are performed.
 - The improvement engine records evidence and requires human approval at integration. It does not self-approve or self-merge.
-- The verified auto-merge workflow checks the latest independent approval against the current PR head SHA and separates read-only validation permissions from write permissions. GitHub branch protection must also require the relevant checks and review approval; a workflow alone cannot prevent an authorized maintainer from manually merging a PR after a failed workflow job.
+- The verified auto-merge workflow separates read-only validation permissions from write permissions, checks the latest independent approval against the triggering PR head SHA, and does not use the PR author's own review. PR #16 additionally hardens the gate by re-reading the live PR head before enabling auto-merge and using strict shell failure handling so API or parsing errors fail closed. GitHub branch protection must also require the relevant checks and review approval; a workflow alone cannot prevent an authorized maintainer from manually merging a PR after a failed workflow job.
 
 ## Recommended ongoing release gate
 
