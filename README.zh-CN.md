@@ -1,61 +1,60 @@
-# Pytyliki — C11 处理器系统工作站
-
-**TL;DR：** Pytyliki 是面向 Windows 和 Linux 的免费 MIT 许可 C11 处理器工作站，提供 CPU/ISA 探测、受限基准测试、源代码分析、本地 PCM16 音频/DSP 工具以及原生 Windows 图形界面。
-
-**语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
+# 🔵🔴 Pytyliki — C11 处理器系统工作站
 
 <p align="center">
 
 **探测 · 分析 · 优化 · 验证**
 
 ![C11](https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge)
-![平台](https://img.shields.io/badge/OS-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
+![操作系统](https://img.shields.io/badge/OS-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
 ![许可证](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)
+
+**一套精简的 C11 工作站。可验证的数据。边界明确的实验。**
 
 </p>
 
-Pytyliki 面向系统程序员、C 语言开发者和硬件爱好者，用于检查处理器能力并执行有边界的本地实验。项目不宣称能够重新编程物理芯片。
+**语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
 
-## 为什么选择 Pytyliki？
+Pytyliki 是一套模块化 C11 工作站，用于处理器能力探测、受限性能实验、源代码检查和本地 DSP 工作流。仓库整合命令行工具、原生 Windows GUI 及可测试的工程组件。
 
-处理器信息、源代码检查、性能测试和 DSP 工具通常分散在不同软件中。Pytyliki 将这些工作流整合到原生 C11 代码库中，并明确安全边界，确保结果可验证。
+## 功能概览
 
-**核心价值：** 将只读处理器探测、受限实验、源代码诊断和证据驱动的工程流程整合到一个可审计工作站。
-
-## 功能
-
-- **CPU 与 ISA 探测：** 收集处理器和架构信息；ISA 标志只是提示，不能证明操作系统已启用相应指令状态。
-- **受限基准测试：** 使用可控工作负载执行本地处理器测试；结果仅供参考，并受硬件条件影响。
-- **源代码分析：** 扫描源文件并生成 JSON 报告，不执行或改写被扫描的代码。
-- **音频与 DSP：** 在边界限制内读写 PCM16 WAV、生成音调并执行本地数字信号处理。
-- **桌面与命令行：** 提供原生 Win32 图形界面，以及适用于 Windows 和 Linux 的 CLI 工作流。
-- **改进规划：** 查看包含 20 项能力的工程/优化/自动化目录，以及基于证据的迭代计划。
-
-## 当前架构
-
-| 模块 | 实现内容 |
+| 领域 | 功能 |
 |---|---|
-| Core | CPU 配置、受限基准测试、源代码扫描器、JSON 报告 |
-| Processor | 架构/ISA 清单，以及受限计算、内存和矩阵测试 |
-| DSP | PCM16 WAV 输入输出、音调生成、处理和测量 |
-| Improvement | 20×3 能力目录和证据门控生命周期 |
-| Hardware rules | 已实现 12 条建议性规则；其他目录 ID 仅作预留 |
-| HyperFusion | 六个受限分析模块，每轮包含 36 个有向模块交互 |
-| Pipeline | C11/C23 参考流水线方案，并非生产级转译器 |
-| Policy | 默认拒绝的本地授权策略 |
-| Interfaces | 跨平台 CLI 和原生 Windows GUI |
+| CPU 与 ISA | 处理器和指令集探测；同时验证操作系统启用的执行状态 |
+| 基准测试 | 有边界的本地负载；结果仅供参考且取决于硬件 |
+| 源代码分析 | 只读扫描，不执行或改写文件，生成 JSON 报告 |
+| DSP | PCM16 WAV、音调生成和本地数字信号处理 |
+| 界面 | Windows/Linux CLI 与原生 Win32 GUI |
+| 工程 | CMake/CTest、证据门控规划、默认拒绝授权策略 |
+| CPU Suite Pro 78X | 78 项模块目录、稳定 ID、六个领域、查询 API 和建议计划 |
 
-HyperFusion 的就绪度和协同指标属于启发式规划指标，不代表实测加速，也不构成独立 CI 认证。
+## CPU Suite Pro 78X
 
-## 快速开始
+借鉴经典集成软件套件的理念，CPU Suite Pro 以统一 CPU Hub 为中心组织 78 个专业工具。
 
-### 需要什么环境？
+| 领域 | 模块 ID |
+|---|---:|
+| Hub 与基础工具 | 1–14 |
+| CPU 架构分析 | 15–26 |
+| 温度与功耗 | 27–38 |
+| 内存与缓存 | 39–50 |
+| 调度与并发 | 51–60 |
+| 诊断与基准实验室 | 61–78 |
 
-- CMake 和支持 C11 的 C 编译器。
-- Windows 或 Linux。
-- 用于克隆仓库的 Git。
+**已实现：** 确定性的 78 项目录、唯一数字 ID、六个领域、无动态内存分配的枚举、按索引/ID/名称查询、建议计划生成和 CTest 覆盖。
 
-### 如何构建和测试 Pytyliki？
+**范围说明：** 78 个目录条目不代表 78 个完整硬件控制应用。实时传感器适配器、厂商专属调节、操作系统性能计数器和独立 GUI 面板仍需单独开发并验证。当前规划器不会写入 CPU 寄存器，也不会修改电压、频率、固件、微码、风扇、中断或内核设置。
+
+参阅 [CPU Suite Pro 78X 技术规格](docs/CPU_SUITE_PRO_78.md)。
+
+## 架构与构建
+
+- **语言：** ISO C11；C23 仅出现在参考流水线方案中。
+- **构建与测试：** CMake 和 CTest。
+- **组件：** CPU 清单、受限基准测试、源代码扫描器、JSON 报告、PCM16/DSP、CLI 和 GUI。
+- **变更治理：** 证据门控、可审查集成和默认拒绝授权策略。
+
+需要 CMake、支持 C11 的编译器，以及 Windows 或 Linux。
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -65,76 +64,34 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Windows 构建还会生成 `pytyliki-gui.exe`。
+Windows 构建还定义原生应用目标 `pytyliki-gui`。
 
-## CLI 工作流
+## 质量、兼容性与限制
 
-```bash
-pytyliki --improvement-plan
-pytyliki --evolve --evolution-rounds 8
-```
-
-请使用可执行文件的帮助信息查看当前版本支持的完整命令。不同版本的选项可能有所变化。
-
-## 使用前后对比
-
-| 分散式工作流 | Pytyliki 工作流 |
-|---|---|
-| 在 CPU 工具、源代码扫描器和 DSP 工具之间切换 | 使用统一的 C11 工作站和构建/测试流程 |
-| 将 ISA 标志视为最终执行许可 | 明确考虑操作系统状态和指令可用条件 |
-| 依赖未经验证的优化声明 | 记录输入、输出和验证证据 |
-
-## 质量与自动化
-
-仓库使用 CMake 和 CTest，并通过 CI 检查 Windows 与 Linux。改进目录描述目标工作流，并不意味着所有转换都已实现自动执行。
-
-受控集成流程：
-
-1. 创建独立功能分支。
-2. 提交范围明确、可追踪的更改。
-3. 在受支持的 CI 平台上构建并运行测试。
-4. 获取独立审查，并核对已测试提交的 SHA。
-5. 仅通过仓库授权的机制合并。
-
-自动提交、自动推送和自动合并是权限不同的独立操作。检查失败必须停止晋级。请在 GitHub 中配置分支保护，要求相关 CI 检查和独立审查；单靠 workflow 无法阻止有权限的维护者手动绕过仓库策略。
-
-## 安全与实现边界
-
-- CPU 探测为只读操作。
-- 扫描器不会执行或改写被扫描的源代码。
-- Pytyliki 不会写入固件、BIOS/UEFI、微码、电压、时钟、功率限制、操作系统内核、驱动程序或设备寄存器。
-- 硬件规则仅提供建议；目前实际实现了 12 条规则。
-- C11/C23 流水线是参考方案，不是生产级转译器。
-- 基准测试结果取决于硬件、操作系统、编译器和工作负载，不保证带来性能提升。
+- CI 状态以当前 workflow 运行为准；未经确认，不宣称测试通过。
+- 结果取决于 CPU、固件、操作系统、编译器、散热和负载；不保证性能提升。
+- ISA 标志不能单独证明指令可安全执行；必须运行时检查 CPU 能力和操作系统状态。
+- 压力负载必须设置明确上限和停止条件。
+- 不宣称 macOS、ARM64 或特定 x86_64 平台的性能保证。
+- Protobuf、Parquet、Arrow 和生产级 RTL/FPGA 综合需另行验证。
+- CPU Suite Pro 不会自动调压/调频、刷写固件、关闭微码安全缓解或执行特权寄存器写入。
 
 ## 项目结构
 
-- `src/core.c/.h` — CPU 配置、基准测试、扫描器和 JSON 报告。
-- `src/processor.c/.h` — 处理器/ISA 清单和测试套件。
-- `src/dsp.c/.h` — WAV 与 DSP 操作。
-- `src/improvement.c/.h` — 改进目录和生命周期。
-- `src/hw_rules.c/.h` — 建议性硬件规则。
-- `src/evolution.c/.h` — HyperFusion 分析。
-- `src/pipeline.c/.h` — 参考流水线方案。
-- `src/policy.c/.h` — 本地授权策略。
-- `src/cli.c`、`src/win_gui.c` — 命令行和 Windows 桌面界面。
-- `.github/workflows/` — CI 和受控仓库自动化。
-
-## 兼容性与数据格式
-
-- **操作系统：** 项目 CI 矩阵包含 Windows 和 Linux。
-- **语言标准：** 实际实现采用 ISO C11；C23 出现在参考流水线方案中。
-- **数据格式：** JSON 报告和 PCM16 WAV 音频。
-- **未作出的兼容性声明：** macOS、ARM64/x86_64 性能保证、Protobuf、Parquet、Arrow，以及未经单独验证的生产级 RTL/FPGA 综合。
+- `src/cpu_suite.h/.c` — 78 模块目录和建议规划 API。
+- `tests/test_cpu_suite.c` — 目录、唯一性、查询和非法输入测试。
+- `docs/CPU_SUITE_PRO_78.md` — 模块领域、API 和安全边界。
+- `src/` — 核心、处理器、DSP、策略、改进、CLI/GUI。
+- `CMakeLists.txt` — 库、应用程序和 CTest 目标。
 
 ## 许可证
 
-Pytyliki 使用 [MIT 许可证](LICENSE) 发布。
-
----
+MIT — 参阅 [LICENSE](LICENSE)。
 
 <p align="center">
 
-**精准工程 · 验证每一项更改**
+**愿你所爱，皆有回响。**
+
+🔵 **清晰构建，以证据改进。** 🔴
 
 </p>
