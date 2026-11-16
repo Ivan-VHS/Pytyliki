@@ -49,7 +49,7 @@ static void append_finding(
     unsigned line_no, const char *finding
 ) {
     char item[256];
-    int written = snprintf(item, sizeof(item), "line %u: %s\\n", line_no, finding);
+    int written = snprintf(item, sizeof(item), "line %u: %s\n", line_no, finding);
     if (written > 0) {
         size_t used = strlen(details);
         size_t need = (size_t)written;
@@ -72,7 +72,7 @@ int pl_analyze_file(const char *path, pl_analysis *totals, char *details, size_t
         return -1;
     }
 
-    details[0] = '\\0';
+    details[0] = '\0';
     totals->files_scanned++;
     while (fgets(line, sizeof(line), f) != NULL) {
         line_no++;
