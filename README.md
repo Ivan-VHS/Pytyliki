@@ -1,11 +1,11 @@
-# 🔵🔴 Pytyliki — Processor Systems Workstation
+# 🔵🔴 Pytyliki 0.7.0 — Processor Systems Workstation
 
 <p align="center">
 
-**⚡ ANALYZE · OPTIMIZE · TRANSFORM · VERIFY · EVOLVE**
+**DISCOVER · ANALYZE · OPTIMIZE · VERIFY**
 
 ![C11](https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
+![Platforms](https://img.shields.io/badge/OS-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)
 
 </p>
@@ -18,13 +18,42 @@
 - Read-only source scanner and JSON reports.
 - PCM16 WAV tools, tone generation and local DSP processing.
 - Native Win32 GUI; CLI on Windows and Linux.
-- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, deny-by-default policy and C11/C23 pipeline plan.
+- Evidence-gated 20-capability improvement engine, 12 implemented advisory hardware rules, deny-by-default policy, C11/C23 reference pipeline and six-module HyperFusion coordinator.
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
 ## 🧬 HyperFusion six-module coordinator
 
 Run `pytyliki --evolve --evolution-rounds 8` to evaluate six bounded analysis modules and all 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups. The promotion gate stays held until independently verified CI evidence is supplied. HyperFusion does not rewrite source files or merge branches.
+
+## 🧩 Processor improvement capability matrix
+
+The C11 catalogue exposes 20 engineering / optimization / automation triplets through `pytyliki --improvement-plan`.
+
+| # | Engineering | Optimization | Automation |
+|---:|---|---|---|
+| 01 | Modernizing | Modernizing | Auto-optimizing |
+| 02 | Optimizing | Optimizing | Auto-modernizing |
+| 03 | Refining | Transpiling | Auto-adapting |
+| 04 | Refactoring | Compiling | Auto-correcting |
+| 05 | Transforming | Reconfiguring | Auto-compiling |
+| 06 | Accelerating | Scaling | Auto-transpiling |
+| 07 | Adapting | Accelerating | Auto-diagnosing |
+| 08 | Scaling | Synthesizing | Auto-verifying |
+| 09 | Automating | Decomposing | Auto-calibrating |
+| 10 | Integrating | Integrating | Auto-tuning |
+| 11 | Stabilizing | Adapting | Auto-configuring |
+| 12 | Unifying | Automating | Auto-automating |
+| 13 | Rationalizing | Parallelizing | Auto-integrating |
+| 14 | Rebuilding | Verifying | Auto-scaling |
+| 15 | Redesigning | Diagnosing | Auto-accelerating |
+| 16 | Self-learning | Stabilizing | Auto-recovering |
+| 17 | Self-tuning | Reconstructing | Auto-synthesizing |
+| 18 | Self-recovering | Initializing | Auto-reconfiguring |
+| 19 | Self-optimizing | Crystallizing | Auto-learning |
+| 20 | Evolving | Perfecting | Auto-perfecting |
+
+The catalogue is a capability/workflow taxonomy, not a claim that each transformation is autonomously applied. Changes still require tests, review and authorized integration.
 
 ## 🚀 20 × 3 Evolution Protocol
 
@@ -87,19 +116,48 @@ These triplets define the **target policy**, not implemented-feature claims.
              MAIN
 ```
 
-### Source map
+## Why Pytyliki?
 
-- `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
-- `src/processor.c/.h` — architecture/ISA inventory and processor suite.
-- `src/dsp.c/.h` — bounded WAV I/O and DSP.
-- `src/win_gui.c` — native Windows UI.
-- `src/cli.c` — cross-platform CLI.
-- `tests/test_core.c` — core, processor and DSP tests.
+- `src/core.c/.h` — CPU profile, bounded benchmark, processor source scanner and JSON report.
+- `src/processor.c/.h` — architecture/ISA inventory and bounded execution/memory/matrix suite.
+- `src/dsp.c/.h` — bounded PCM16 WAV I/O, tone generation, DSP processing and metering.
+- `src/improvement.c/.h` — 20×3 capability catalogue and evidence-gated iterative lifecycle.
+- `src/hw_rules.c/.h` — 12 implemented advisory hardware rules (remaining catalog IDs reserved).
+- `src/evolution.c/.h` — six-module HyperFusion analysis, 36 directed interactions per round.
+- `src/pipeline.c/.h` — C11/C23 reference pipeline plan (not an active transpiler).
+- `src/policy.c/.h` — deny-by-default local authorization policy.
+- `src/processor_catalog.c/.h` — processor workflow metadata and evidence validation.
+- `src/win_gui.c` — native Windows workstation UI; `src/cli.c` — cross-platform CLI.
+- `tests/` — core/DSP, improvement, hardware-rule, engineering-foundation and HyperFusion regression suites.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
-## ⚙️ Build
+| Area | Implementation |
+|---|---|
+| Core | CPU profile, bounded benchmark, source scanner, JSON report |
+| Processor | Architecture/ISA inventory and bounded execution, memory, and matrix tests |
+| DSP | PCM16 WAV I/O, tone generation, processing, and metering |
+| Improvement | 20×3 capability catalogue and evidence-gated lifecycle |
+| Hardware rules | 12 implemented advisory rules; other catalogue IDs are reserved |
+| HyperFusion | Six bounded analysis modules and 36 directed pair interactions per round |
+| Pipeline | C11/C23 reference pipeline plan, not a production transpiler |
+| Policy | Deny-by-default local authorization policy |
+| Interfaces | Cross-platform CLI and native Windows GUI |
+
+HyperFusion readiness and synergy values are heuristic planning indicators, not measured speedups or independent CI certification.
+
+## Quick start
+
+### What do I need?
+
+- CMake and a C11-capable C compiler.
+- Windows or Linux.
+- Git to clone the repository.
+
+### How do I build and test Pytyliki?
 
 ```bash
+git clone https://github.com/Ivan-VHS/Pytyliki.git
+cd Pytyliki
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
@@ -107,31 +165,78 @@ ctest --test-dir build -C Release --output-on-failure
 
 Windows builds also provide `pytyliki-gui.exe`.
 
-## 🗺️ Roadmap
+## CLI workflows
 
-- [x] Native C11 core, CLI and Windows desktop UI
-- [x] CPU discovery, bounded benchmarks and source review
-- [x] Local PCM16 DSP and Windows/Linux CI
-- [ ] Expanded profiling and benchmark history
-- [ ] Reproducible optimization/refactoring tools
-- [ ] Guarded branch, PR and release automation
-- [ ] Cross-architecture transpilation and RTL/FPGA
-- [ ] Desktop diagnostics and optimization dashboards
+```bash
+pytyliki --improvement-plan
+pytyliki --evolve --evolution-rounds 8
+```
+
+## 🧪 Quality audit and CI
+
+See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge checks for an independent approval tied to the PR head and fails closed on API errors or stale validation events; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
 
 ## 🛡️ Safety
 
-CPU discovery is read-only. Pytyliki does **not** modify firmware, microcode, voltage, clocks, power limits, kernels or drivers. Benchmarks are advisory. Physical hardware synthesis requires dedicated tools and validation.
+## Before and after
 
-**License:** MIT.
+| Separate workflow | Pytyliki workflow |
+|---|---|
+| Switch between CPU utilities, source scanners, and DSP tools | Use one C11 workstation and shared test/build workflow |
+| Treat raw ISA flags as definitive | Keep OS-state and runtime eligibility caveats explicit |
+| Rely on informal optimization claims | Record bounded inputs, outputs, and validation evidence |
+
+## Quality and automation
+
+The repository uses CMake and CTest, with Windows/Linux CI. Its improvement catalogue describes a target workflow; it does not mean every transformation is automatically applied.
+
+The guarded integration model is:
+
+1. Create an isolated feature branch.
+2. Make a small, traceable change.
+3. Build and run tests on supported CI platforms.
+4. Obtain independent review and verify the tested commit.
+5. Merge only through repository-authorized controls.
+
+Auto-commit, auto-push, and auto-merge are separate permissioned operations. Failed checks must stop promotion. Configure GitHub branch protection to require the relevant CI checks and independent review; a workflow alone cannot prevent an authorized maintainer from manually bypassing repository policy.
+
+## Safety and implementation limits
+
+- CPU discovery is read-only.
+- The scanner does not execute or rewrite scanned source.
+- Pytyliki does not write firmware, BIOS/UEFI, microcode, voltage, clocks, power limits, kernels, drivers, or device registers.
+- Hardware rules are advisory; only 12 rules are currently implemented.
+- The C11/C23 pipeline is a reference plan, not a production transpiler.
+- Benchmark results depend on hardware, operating system, compiler, and workload; they are not guaranteed performance gains.
+
+## Project layout
+
+- `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
+- `src/processor.c/.h` — processor and ISA inventory and test suite.
+- `src/dsp.c/.h` — WAV and DSP operations.
+- `src/improvement.c/.h` — improvement catalogue and lifecycle.
+- `src/hw_rules.c/.h` — advisory hardware rules.
+- `src/evolution.c/.h` — HyperFusion analysis.
+- `src/pipeline.c/.h` — reference pipeline plan.
+- `src/policy.c/.h` — local authorization policy.
+- `src/cli.c`, `src/win_gui.c` — command-line and Windows desktop interfaces.
+- `.github/workflows/` — CI and guarded repository automation.
+
+## Compatibility and formats
+
+- **Operating systems:** Windows and Linux are represented in the project CI matrix.
+- **Language:** ISO C11 implementation; C23 appears in the reference pipeline plan.
+- **Data:** JSON reports and PCM16 WAV audio.
+- **Not claimed:** macOS, ARM64, x86_64-specific performance guarantees, Protobuf, Parquet, Arrow, or production RTL/FPGA synthesis unless separately validated.
+
+## License
+
+Pytyliki is distributed under the [MIT License](LICENSE).
 
 ---
 
 <p align="center">
 
-### 🔵 ENGINEER WITH PRECISION · 🔴 EVOLVE WITH PURPOSE
-
-**「爱是理解，是陪伴，也是彼此成就。」**
-
-*Love is understanding, companionship, and helping one another grow.*
+**ENGINEER WITH PRECISION · VERIFY EVERY CHANGE**
 
 </p>
