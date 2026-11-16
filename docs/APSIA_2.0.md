@@ -1,135 +1,130 @@
 # APSIA 2.0 — Autonomous Polyglot Self-Improvement Architecture
 
-APSIA 2.0 is the evolution architecture for Pytyliki: a guarded engineering loop that observes workloads, identifies opportunities, selects an implementation strategy, generates isolated changes, verifies them, and proposes reversible integration. It extends the existing C11 workstation, Processor Recursive Evolution Engine (PREE), and HyperFusion coordinator.
+## Status and implementation contract
 
-> **Implementation status:** the C11 polyglot router in `src/apsia.c` is an implemented deterministic planning component. It does not generate code, invoke compilers, load shared libraries, run eBPF, or deploy modules. Those are staged capabilities, not claims about the current executable.
+APSIA 2.0 is the engineering control plane for bounded, evidence-driven evolution of Pytyliki and compatible repositories. This document distinguishes implemented policy primitives from future execution capabilities.
 
-## 1. Unified architecture
+**Implemented in this change:** deterministic workload-to-language routing, FFI-cost rejection, host-language optimization preference, least-privilege capability declarations, and a promotion-evidence gate in the native C11 core.
 
-| Layer | Responsibility | Current boundary |
+**Not implemented by this change:** LLM code synthesis, native compiler orchestration, production eBPF collection, automatic dependency installation, arbitrary plugin execution, dynamic library hot swapping, RCU reclamation, automatic deployment, or unattended merging. These require separately reviewed components and CI evidence; documentation must never imply they already exist.
+
+## 1. Unified system
+
+The four workstreams are delivered as one architecture:
+
+1. **Pytyliki specification:** APSIA contracts, lifecycle, threat model, and module boundaries.
+2. **Polyglot runtime foundation:** a C11 policy core with stable interfaces; optional Rust/C++/Zig/WASM/GPU backends are adapters, not dependencies of the core.
+3. **Repository fleet coordinator:** common manifests, repository discovery, isolated branches, PR queues, test evidence, and audit trails.
+4. **Verified integration:** immutable main policy, independent review, tested-head-SHA checks, sequential merge, and rollback records.
+
+The coordinator must treat every repository as a separately authorized target. A repository is not modified merely because it is discoverable.
+
+## 2. Architecture layers
+
+| Layer | Responsibility | Initial implementation |
 |---|---|---|
-| Observe | CPU/ISA inventory, bounded benchmarks, source review, future APM/eBPF adapters | Existing local diagnostics; no always-on production profiler |
-| Diagnose | Detect regressions, missing capabilities, resource pressure and repeated failures | Existing advisory rules and PREE/HyperFusion planning |
-| Route | Select a language from workload type, sandbox needs, target availability and FFI economics | Implemented C11 planner |
-| Specify | Extract pure interfaces and emit WIT, Protobuf, FlatBuffers or C ABI contracts | Design specification; no automatic AST extraction |
-| Synthesize | Generate candidate source from a pinned specification | Future isolated agent integration |
-| Build | Hermetic compiler jobs, pinned dependencies, reproducible artifacts, SBOM and signatures | Future build service |
-| Verify | Differential/property tests, fuzzing, sanitizers, static analysis and benchmarks | Existing CTest plus staged verification gates |
-| Shadow | Compare candidate results without affecting user-visible output | Future runtime capability |
-| Promote | Canary, atomic dispatch, rollback and artifact lockfile | Human-approved PR workflow; no in-process hot swap |
-| Learn | Store decision evidence, outcomes, regressions and architecture choices | Existing evolution reports; persistent episodic store is future work |
+| Observe | Collect profiling, build, test, crash, and feature-gap evidence | Existing local processor diagnostics; external APM/eBPF is future work |
+| Diagnose | Normalize bottlenecks and missing capabilities | C11 policy and analysis interfaces |
+| Route | Select a target language from workload and platform constraints | apsia.c |
+| Contract | Extract a pure boundary and define versioned IDL | Specification; WIT/Protobuf/C ABI adapters are future work |
+| Synthesize | Generate source from a constrained specification | Future isolated agent |
+| Build | Compile in hermetic, credential-free environments | Existing CMake CI for C11; polyglot builders are future work |
+| Verify | Differential tests, fuzzing, sanitizers, static analysis, benchmarks | CTest foundation; additional gates are future work |
+| Shadow | Compare old and candidate implementations without serving candidate output | Future runtime integration |
+| Promote | Require complete evidence and independent authorization | apsia.c promotion gate |
+| Integrate | Open PR, verify exact head SHA, merge sequentially | Existing guarded PR workflow; fleet coordinator is future work |
+| Learn | Store decisions, evidence, failures, and measured outcomes | Future versioned local decision store |
 
-## 2. Polyglot routing policy
+## 3. Workload routing policy
 
-The router uses workload semantics rather than language popularity:
+Routing is deterministic and policy-based, never a free-form model choice:
 
-| Workload | Preferred target | Rationale |
-|---|---|---|
-| CPU-bound parsing, tight loops, memory-safe native code | Rust | Ownership model and predictable native execution |
-| Specialized native ABI / existing C++ code | C++ | Reuse established libraries and ABI boundaries |
-| Small native utilities / cross compilation | Zig | Explicit build and target control |
-| GPU kernels | CUDA | NVIDIA GPU execution |
-| Portable untrusted plugins | WebAssembly / WASI | Capability sandbox and portable module boundary |
-| Relational aggregation | SQL / DuckDB | Execute close to columnar data |
-| Dynamic orchestration / scripting | Python | Fast iteration and ecosystem |
-| Concurrent network services | Go | Straightforward concurrency and deployment |
+- CPU-bound parsing, memory-safe systems code, and low-latency primitives: Rust; C++ or Zig may be selected by a later measured backend.
+- Tensor/GPU workloads: CUDA only when a compatible GPU backend is explicitly available; otherwise retain the host implementation.
+- Untrusted extensions: WebAssembly/WASI with explicit capability grants.
+- High-concurrency network services: Go or Elixir, subject to deployment/runtime availability.
+- Analytical aggregation: SQL or DuckDB when data locality makes it beneficial.
+- Small embedded scripting: Lua; Python is an orchestration/reference option, not an automatic hot-path replacement.
 
-Mojo, Triton, Metal, Elixir, Lua and DuckDB extensions remain optional adapters. A target is eligible only when the corresponding toolchain and capability are explicitly available.
+A route is rejected when the expected gain does not exceed estimated FFI and data-conversion costs, when host-language optimization can capture at least 70% of the estimated opportunity, or when required hardware/runtime capabilities are absent. The C11 router is an advisory decision function; it does not compile or execute generated modules.
 
-### FFI economics
+## 4. Stable boundary and data movement
 
-For each candidate, estimate:
+Every candidate module must have:
+- A versioned, explicit input/output contract.
+- No hidden global state or undeclared side effects.
+- Bounded input sizes and execution budgets.
+- Explicit ownership and lifetime rules.
+- Typed error mapping across the boundary.
+- A declared capability set, defaulting to none.
 
-`speedup = host_execution_ns / (target_execution_ns + ffi_overhead_ns)`
+Use a C ABI, WIT, Protobuf, or FlatBuffers only where the host boundary warrants it. Prefer fixed-layout buffers, offsets, and validated shared-memory views for high-frequency paths. Zero-copy is not assumed safe by default: lifetime, alignment, aliasing, bounds, and synchronization must be proven. JSON remains suitable for control-plane messages, not presumed suitable for hot-path payloads.
 
-`ffi_cpu_cores = ffi_overhead_ns * ffi_calls_per_second / 1e9`
+## 5. Synthesis and hermetic build
 
-Reject the polyglot route when the measured speedup is below the configured threshold, the FFI CPU budget is exceeded, or required target support is absent. If sandboxing is mandatory, an unavailable or uneconomic WASM route rejects the request rather than falling back to unsandboxed host execution. Batch work, use stable C ABI/WIT boundaries and prefer zero-copy buffers for high-volume data. Never assume that zero-copy is safe without explicit lifetime and ownership rules.
+A future synthesis worker may generate source only from a reviewed contract and pinned repository context. It must:
+1. Create an ephemeral branch/worktree and hermetic build environment.
+2. Run without production credentials, deployment secrets, or write access to protected branches.
+3. Pin compiler versions, dependencies, flags, and build inputs.
+4. Emit source, tests, compiler logs, SBOM, provenance, and artifact hashes.
+5. Retry compiler-directed repair only within a fixed budget.
+6. Stop on unresolved diagnostics, license conflicts, unsupported targets, or resource exhaustion.
 
-## 3. Interface and memory contract
+Generated artifacts are data until verified. The build worker cannot approve or merge its own PR.
 
-1. Extract only deterministic functions with explicit inputs, outputs and error channels.
-2. Prohibit implicit access to process globals, environment secrets and mutable host state.
-3. Describe interfaces using WIT for WASM components, Protobuf/FlatBuffers for message boundaries, or a versioned C ABI for native modules.
-4. Define ownership, allocator, alignment, lifetime, nullability and error translation in the contract.
-5. Prefer Arrow, mmap or shared-memory buffers only when the host and module agree on layout, lifetime, synchronization and bounds.
-6. Treat raw pointers as unsafe capabilities; do not expose them to untrusted modules.
-7. Version every contract and reject incompatible module manifests before loading.
+## 6. Verification and promotion gate
 
-## 4. Synthesis and hermetic builds
+Required evidence for a candidate:
+- Contract and API compatibility tests.
+- Differential/property tests against the host oracle.
+- Fuzzing of boundary and malformed inputs.
+- Relevant sanitizers and static analysis.
+- Reproducible build metadata and dependency/license inventory.
+- Statistically meaningful benchmark improvement after FFI costs, or a justified memory/reliability gain.
+- Cold-start, concurrency, resource-leak, and failure-path tests where applicable.
+- Shadow comparison with no user-visible candidate output.
+- Independent human review and approval.
 
-A future synthesis service must work from a pinned task specification, repository revision, dependency lockfile and compiler image. Build jobs run without production credentials, network access by default, or write access to the source repository. Network dependency acquisition occurs in a separate verified prefetch phase.
-
-Each candidate must record source revision, toolchain versions, build flags, dependency hashes, license inventory, SBOM, artifact digest and provenance. Release artifacts are content-addressed and signed. Reproducibility is checked by rebuilding independently and comparing digests.
-
-Compiler diagnostics may be fed back into a bounded repair loop. Repair attempts are capped; a timeout, dependency drift, untrusted diagnostic instruction or repeated failure abandons the candidate.
-
-## 5. Verification gates
-
-A candidate is ineligible for promotion until it passes:
-
-- Differential tests against the host implementation, including edge cases and numeric tolerances.
-- Property-based and fuzz testing with minimized failures retained as regression cases.
-- Static analysis and compiler warnings policy.
-- ASan/UBSan/TSan where supported; MSan only with a compatible instrumented dependency stack.
-- Concurrency, resource, descriptor and cold-start tests.
-- Benchmarks on representative data with confidence intervals and a recorded baseline.
-- License, dependency, SBOM, signature and sandbox-capability checks.
-- Shadow comparison with zero user-visible influence.
-- Independent CI checks and human review.
-
-A speedup is never inferred from heuristic scores. Promotion requires a statistically credible gain or a separately justified functional capability, with no correctness or security regression.
-
-## 6. Runtime evolution and rollback
-
-The intended runtime uses versioned module handles and a dispatcher. Candidate loading happens in a separate process or WASM sandbox first. Native in-process loading is a later opt-in capability because a segmentation fault, allocator mismatch or unsafe unload can terminate the host process.
-
-For safe promotion, use immutable module versions, atomic routing changes, reference-counted/epoch-based retirement, bounded canaries, health metrics and a known-good fallback. Never unload code while calls are active. Rollback must be tested before rollout and must not depend on the candidate module.
+Promotion must fail closed when evidence is missing, stale, or tied to a different source SHA. Canary rollout and hot swapping are future capabilities and require safe reclamation, active-call tracking, rollback verification, and platform-specific loader tests before they can be enabled.
 
 ## 7. Immutable safety kernel
 
-The self-improvement agent cannot change its own authorization kernel, verification policy, signing trust roots, rollback path or protected-branch rules. It cannot grant itself permissions, approve its own PR, suppress failed checks, or alter evidence after a run.
+The autonomous agent cannot modify:
+- The authorization and capability enforcement kernel.
+- The verification and evidence-validation code.
+- The rollback path and protected-branch policy.
+- Its own permission boundary or signing trust roots.
 
-The following actions remain denied by default:
+No agent may self-approve, bypass branch protection, force-push, rewrite protected history, or merge unreviewed code. Firmware, microcode, BIOS/UEFI, voltage, clock, power-limit, kernel, driver, and device-register writes remain outside Pytyliki's current product scope.
 
-- Executing arbitrary inspected source in the host process.
-- Writing firmware, microcode, BIOS/UEFI, device registers or CPU voltage/clock/power controls.
-- Reading production secrets from build or synthesis jobs.
-- Merging without independent approval and required CI.
-- Deploying a candidate that has not passed its declared verification profile.
+## 8. Repository fleet and sequential integration
 
-## 8. Repository-wide delivery model
+Each repository requires an explicit allowlist entry with owner, repository, default branch, allowed paths, required checks, and reviewer policy. The fleet coordinator:
+- Reads repository state before proposing work.
+- Creates one isolated branch per repository and change set.
+- Deduplicates overlapping proposals before PR creation.
+- Runs the repository's declared validation matrix.
+- Rechecks PR head SHA, branch base, required checks, and latest independent approval immediately before merge.
+- Integrates one PR at a time; dependent PRs are rebased/revalidated after each merge.
+- Records merge SHA, test evidence, reviewer identity, and rollback reference.
 
-APSIA is delivered across repositories through independent, auditable PRs:
+A failure blocks the queue; it never triggers a force merge. A successful merge in one repository does not authorize changes in another.
 
-1. Inventory repository language, build system, tests, licenses and branch protections.
-2. Generate a repository-specific integration plan; do not blindly copy C11 modules into other stacks.
-3. Create a feature branch from the current default branch.
-4. Add adapters and tests in small, reviewable commits.
-5. Run native CI plus security and compatibility checks.
-6. Open a PR with evidence, risk classification, rollback instructions and artifact provenance.
-7. Require an independent approval and all required checks before merge.
-8. Record the merged revision and observed outcome in the evolution ledger.
+## 9. Evolution manifest
 
-No cross-repository bulk push, force push, self-approval or branch-protection bypass is permitted.
+The future apsia.lock.json manifest records schema version, repository identity, module contract version, selected backend, source and artifact hashes, compiler/toolchain versions, dependency hashes, SBOM reference, test evidence, benchmark baseline, approval record, and rollback target. Secrets and credentials must never be stored in the manifest.
 
-## 9. Delivery phases
+## 10. Delivery roadmap
 
-- **Phase A — Planner (implemented):** deterministic workload-to-language routing, target availability checks, FFI-adjusted speedup and overhead budget.
-- **Phase B — Contract tooling:** versioned C ABI/WIT schemas and interface compatibility tests.
-- **Phase C — Build workers:** isolated compiler adapters, dependency pinning, SBOM and provenance.
-- **Phase D — Verification workers:** differential fuzzing, sanitizers, benchmark confidence and shadow comparison.
-- **Phase E — Runtime adapters:** WASM-first plugin runtime, versioned dispatch and tested rollback.
-- **Phase F — Repository federation:** repository inventory, per-repository PR generation and evidence ledger.
+- **Phase A — Foundation:** C11 routing and promotion gates, architecture specification, tests, and CI.
+- **Phase B — Contract layer:** stable C ABI/WIT schema, ownership rules, contract compatibility tests.
+- **Phase C — Build adapters:** one backend at a time (Rust first; then WASM; then C++/Zig), hermetic builds and SBOM.
+- **Phase D — Verification:** differential fuzzing, sanitizers, benchmark confidence intervals, artifact signing.
+- **Phase E — Runtime:** shadow execution, dispatcher, safe unload and rollback; no production activation until platform tests pass.
+- **Phase F — Fleet:** repository allowlist, deduplicated PR queue, sequential SHA-verified merge workflow.
 
-Each phase is independently useful. A later phase cannot silently upgrade the status of an earlier prototype into a production capability.
+Each phase ships as a separate, testable PR. A roadmap item is not an implemented feature until source, tests, CI evidence, and documentation agree.
 
-## 10. Local validation
+## 11. Acceptance criteria
 
-```sh
-cmake -S . -B build -DBUILD_TESTING=ON
-cmake --build build --config Release --parallel
-ctest --test-dir build -C Release --output-on-failure
-```
-
-The APSIA router tests validate workload mapping, sandbox precedence, missing targets, FFI speedup rejection, overhead budgets and invalid numeric inputs. The `pytyliki-apsia` CLI exposes the planner with explicit workload measurements and an allow-list of available targets:\n\n```sh\npytyliki-apsia cpu 1000 300 100 100000 rust,wasm\npytyliki-apsia plugin 1000 300 100 100000 wasm\n```\n\nThe CLI treats every plugin workload as sandbox-mandatory. If WASM is not in the available-target list, the request is rejected.
+APSIA is ready for a production capability only when its contract, implementation, tests, operational telemetry, security review, rollback, and documentation are all present. Performance claims require reproducible measurements on named hardware and workloads. Heuristic scores and model-generated estimates are not benchmark results.

@@ -29,7 +29,7 @@ Pytyliki 面向系统程序员、C 语言开发者和硬件爱好者，用于检
 - **源代码分析：** 扫描源文件并生成 JSON 报告，不执行或改写被扫描的代码。
 - **音频与 DSP：** 在边界限制内读写 PCM16 WAV、生成音调并执行本地数字信号处理。
 - **桌面与命令行：** 提供原生 Win32 图形界面，以及适用于 Windows 和 Linux 的 CLI 工作流。
-- **改进规划：** 查看包含 20 项能力的工程/优化/自动化目录，以及基于证据的迭代计划。\n- **APSIA 2.0：** C11 多语言路由规划器，包含 FFI 成本门控和沙箱缺失时的安全拒绝策略。
+- **改进规划：** 查看包含 20 项能力的工程/优化/自动化目录，以及基于证据的迭代计划。
 
 ## 当前架构
 
@@ -46,12 +46,6 @@ Pytyliki 面向系统程序员、C 语言开发者和硬件爱好者，用于检
 | Interfaces | 跨平台 CLI 和原生 Windows GUI |
 
 HyperFusion 的就绪度和协同指标属于启发式规划指标，不代表实测加速，也不构成独立 CI 认证。
-
-## APSIA 2.0 多语言自进化架构
-
-APSIA 在现有 C11/PREE/HyperFusion 流程上增加了受控的语言路由规划器。已实现的 C11 规划器将 CPU 密集型任务映射到 Rust，将 GPU 任务映射到 CUDA，将分析任务映射到 SQL，将网络 I/O 映射到 Go，将脚本任务映射到 Python，并将需要隔离的插件映射到 WebAssembly。路由前会检查目标工具链是否可用以及 FFI 成本；对于不可信插件，如果 WASM 不可用则直接拒绝请求，不会退回到宿主进程执行。
-
-完整 APSIA 设计还定义了接口契约、隔离构建、SBOM/来源证明、差分验证、影子测试、金丝雀发布、回滚以及逐仓库 PR 流程。这些属于分阶段规划，并不表示当前已经具备自动代码生成、原生模块加载、生产环境持续分析或热替换能力。详见 [APSIA 2.0 架构文档](docs/APSIA_2.0.md)。
 
 ## 快速开始
 
@@ -78,10 +72,7 @@ Windows 构建还会生成 `pytyliki-gui.exe`。
 ```bash
 pytyliki --improvement-plan
 pytyliki --evolve --evolution-rounds 8
-pytyliki-apsia cpu 1000 300 100 100000 rust,wasm
 ```
-
-`pytyliki-apsia` 根据给定负载和目标白名单进行路由评估；它不会编译或执行所选语言模块。
 
 请使用可执行文件的帮助信息查看当前版本支持的完整命令。不同版本的选项可能有所变化。
 
@@ -125,7 +116,7 @@ pytyliki-apsia cpu 1000 300 100 100000 rust,wasm
 - `src/hw_rules.c/.h` — 建议性硬件规则。
 - `src/evolution.c/.h` — HyperFusion 分析。
 - `src/pipeline.c/.h` — 参考流水线方案。
-- `src/policy.c/.h` — 本地授权策略。\n- `src/apsia.c/.h` — 确定性的多语言路由规划器。\n- `docs/APSIA_2.0.md` — 架构、安全门控与分阶段实施计划。
+- `src/policy.c/.h` — 本地授权策略。
 - `src/cli.c`、`src/win_gui.c` — 命令行和 Windows 桌面界面。
 - `.github/workflows/` — CI 和受控仓库自动化。
 

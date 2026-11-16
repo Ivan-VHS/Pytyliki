@@ -67,10 +67,3 @@ For PR #15, both Windows and Ubuntu completed Configure, Build and CTest success
 6. Preserve benchmark inputs, outputs and platform details; do not describe heuristic scores as measured hardware gains.
 
 **Audit result:** the consolidated processor workstation and its meaningful follow-up PRs are integrated into main; the identified DSP, scanner and report-contract defects are fixed and covered by passing Windows/Linux CI. The remaining items above are explicit scope/governance limitations, not claims of completed hardware synthesis or autonomous source rewriting.
-
-
-## APSIA 2.0 status update
-
-The follow-up APSIA PR adds a deterministic C11 language-routing planner, FFI-adjusted cost checks, a fail-closed rule for untrusted plugins, focused CTest coverage, a versioned evolution-lock schema, and a four-language architecture overview. The planner is not a code generator or runtime loader. Rust/C++/Zig/CUDA/WASM compiler adapters, eBPF/APM ingestion, native/WASM execution, artifact signing, shadow traffic and hot swapping remain future phases and must not be represented as shipped features until independently implemented and verified.
-
-PR #20 is the active APSIA integration proposal. Its CI and independent review must pass before it can be merged. This update does not change the historical PR dispositions above.

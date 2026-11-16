@@ -1,139 +1,39 @@
 #include "apsia.h"
 #include <math.h>
-#include <stdio.h>
-#include <string.h>
-
 const char *pl_apsia_language_name(pl_apsia_language language) {
-    static const char *const names[PL_APSIA_LANG_COUNT] = {
-        "host", "Rust", "C++", "Zig", "CUDA", "WebAssembly", "SQL",
-        "Python", "Go"
-    };
-    return ((unsigned)language < PL_APSIA_LANG_COUNT) ? names[language] : "unknown";
+ static const char *const names[]={"host","Rust","C++","Zig","CUDA","WebAssembly","Go","Elixir","SQL","DuckDB","Lua","Python"};
+ if ((int)language<0 || language>PL_APSIA_LANG_PYTHON) return "unknown";
+ return names[(unsigned)language];
 }
-
-const char *pl_apsia_workload_name(pl_apsia_workload workload) {
-    static const char *const names[PL_APSIA_WORK_COUNT] = {
-        "cpu-bound", "gpu-compute", "analytics", "sandboxed-plugin",
-        "network-io", "scripting"
-    };
-    return ((unsigned)workload < PL_APSIA_WORK_COUNT) ? names[workload] : "unknown";
+int pl_apsia_route(const pl_apsia_request *r, pl_apsia_decision *d) {
+ const uint32_t known_caps=PL_APSIA_CAP_NETWORK|PL_APSIA_CAP_FILESYSTEM|PL_APSIA_CAP_CLOCK|PL_APSIA_CAP_GPU|PL_APSIA_CAP_SHARED_MEMORY;
+ pl_apsia_language selected=PL_APSIA_LANG_HOST; const char *reason="retain host implementation"; int sandbox=0;
+ if (!r || !d) return -1;
+ if ((int)r->workload<0 || r->workload>=PL_APSIA_WORK_COUNT || !isfinite(r->expected_speedup) || !isfinite(r->ffi_overhead_fraction) || !isfinite(r->host_optimization_fraction) || r->expected_speedup<0.0 || r->ffi_overhead_fraction<0.0 || r->ffi_overhead_fraction>1.0 || r->host_optimization_fraction<0.0 || r->host_optimization_fraction>1.0 || (r->requested_capabilities&~known_caps)!=0u || (r->gpu_available!=0 && r->gpu_available!=1) || (r->deterministic_required!=0 && r->deterministic_required!=1) || (r->sandbox_required!=0 && r->sandbox_required!=1)) return -1;
+ /* Isolation is a requirement, not a performance optimization: force the
+  * sandbox backend whenever the caller explicitly requests a sandbox. */
+ if (r->sandbox_required || r->workload==PL_APSIA_WORK_UNTRUSTED_PLUGIN) {
+  selected=PL_APSIA_LANG_WASM; sandbox=1; reason="sandbox required: WebAssembly candidate";
+ } else if (r->host_optimization_fraction>=0.70) reason="host optimization preferred: >=70% of opportunity";
+ else if (r->expected_speedup<=1.0+r->ffi_overhead_fraction) reason="estimated gain does not exceed FFI overhead";
+ else switch(r->workload) {
+ case PL_APSIA_WORK_CPU_BOUND: selected=PL_APSIA_LANG_RUST; reason="CPU-bound workload: Rust candidate"; break;
+ case PL_APSIA_WORK_GPU_TENSOR:
+  if (r->deterministic_required) reason="deterministic result required: retain host implementation";
+  else if (r->gpu_available && (r->requested_capabilities&PL_APSIA_CAP_GPU)) { selected=PL_APSIA_LANG_CUDA; reason="GPU explicitly available: CUDA candidate"; }
+  else reason="GPU backend unavailable: retain host";
+  break;
+ case PL_APSIA_WORK_CONCURRENT_IO: selected=PL_APSIA_LANG_GO; reason="concurrent I/O workload: Go candidate"; break;
+ case PL_APSIA_WORK_ANALYTICS: selected=PL_APSIA_LANG_DUCKDB; reason="analytical workload: DuckDB candidate"; break;
+ case PL_APSIA_WORK_EMBEDDED_SCRIPT: selected=PL_APSIA_LANG_LUA; reason="embedded scripting workload: Lua candidate"; break;
+ default: return -1;
+ }
+ d->language=selected; d->use_polyglot=(selected!=PL_APSIA_LANG_HOST); d->sandbox_required=sandbox; d->human_review_required=1;
+ d->zero_copy_candidate=(d->use_polyglot && (r->requested_capabilities&PL_APSIA_CAP_SHARED_MEMORY)!=0u);
+ /* Routing never grants capabilities. A separate reviewed broker must do so. */
+ d->granted_capabilities=0u; d->reason=reason; return 0;
 }
-
-static void host_fallback(pl_apsia_decision *decision, const char *reason) {
-    decision->language = PL_APSIA_LANG_HOST;
-    decision->route_selected = 0u;
-    decision->performance_approved = 0u;
-    (void)snprintf(decision->reason, sizeof(decision->reason), "%s", reason);
-}
-
-static void reject_sandbox_request(pl_apsia_decision *decision, const char *reason) {
-    host_fallback(decision, reason);
-    /* A required sandbox must never silently fall back to in-process host code. */
-    decision->request_rejected = 1u;
-}
-
-int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision) {
-    pl_apsia_language candidate;
-    double total_native_ns;
-    double speedup;
-    double ffi_cores;
-    uint32_t sandbox_mandatory;
-
-    if (request == NULL || decision == NULL) return -1;
-    memset(decision, 0, sizeof(*decision));
-    decision->language = PL_APSIA_LANG_HOST;
-
-    if ((unsigned)request->workload >= PL_APSIA_WORK_COUNT ||
-        request->sandbox_required > 1u ||
-        !isfinite(request->host_execution_ns) ||
-        !isfinite(request->target_execution_ns) ||
-        !isfinite(request->ffi_overhead_ns) ||
-        !isfinite(request->ffi_calls_per_second) ||
-        !isfinite(request->minimum_speedup) ||
-        !isfinite(request->maximum_ffi_cpu_cores) ||
-        request->host_execution_ns <= 0.0 ||
-        request->target_execution_ns <= 0.0 ||
-        request->ffi_overhead_ns < 0.0 ||
-        request->ffi_calls_per_second < 0.0 ||
-        request->minimum_speedup < 1.0 ||
-        request->maximum_ffi_cpu_cores < 0.0) {
-        host_fallback(decision, "Invalid measurements or policy; no route approved.");
-        decision->request_rejected = 1u;
-        return -1;
-    }
-
-    /* Untrusted plugins are always sandbox-mandatory, even if a caller
-     * forgets to set the explicit sandbox flag. */
-    sandbox_mandatory = (request->sandbox_required != 0u ||
-                         request->workload == PL_APSIA_WORK_PLUGIN) ? 1u : 0u;
-
-    /* Sandboxing takes precedence over raw speed. WASM must be explicitly
-     * available; absence of WASM rejects the request instead of running it
-     * unsandboxed in the host process. */
-    if (sandbox_mandatory != 0u) {
-        candidate = PL_APSIA_LANG_WASM;
-    } else {
-        switch (request->workload) {
-            case PL_APSIA_WORK_CPU: candidate = PL_APSIA_LANG_RUST; break;
-            case PL_APSIA_WORK_GPU: candidate = PL_APSIA_LANG_CUDA; break;
-            case PL_APSIA_WORK_ANALYTICS: candidate = PL_APSIA_LANG_SQL; break;
-            case PL_APSIA_WORK_PLUGIN: candidate = PL_APSIA_LANG_WASM; break;
-            case PL_APSIA_WORK_NETWORK_IO: candidate = PL_APSIA_LANG_GO; break;
-            case PL_APSIA_WORK_SCRIPT: candidate = PL_APSIA_LANG_PYTHON; break;
-            default:
-                host_fallback(decision, "Unknown workload; retain host implementation.");
-                return 0;
-        }
-    }
-
-    if ((request->available_targets & PL_APSIA_TARGET_BIT(candidate)) == 0u) {
-        if (sandbox_mandatory != 0u)
-            reject_sandbox_request(decision, "Required sandbox target unavailable; reject request.");
-        else
-            host_fallback(decision, "Selected target unavailable; retain host implementation.");
-        return 0;
-    }
-
-    total_native_ns = request->target_execution_ns + request->ffi_overhead_ns;
-    if (!isfinite(total_native_ns) || total_native_ns <= 0.0) {
-        host_fallback(decision, "Invalid combined execution cost; no route approved.");
-        decision->request_rejected = 1u;
-        return -1;
-    }
-    speedup = request->host_execution_ns / total_native_ns;
-    ffi_cores = (request->ffi_overhead_ns * request->ffi_calls_per_second) / 1.0e9;
-    if (!isfinite(speedup) || !isfinite(ffi_cores)) {
-        host_fallback(decision, "Cost estimate overflow; no route approved.");
-        decision->request_rejected = 1u;
-        return -1;
-    }
-
-    decision->estimated_speedup = speedup;
-    decision->estimated_ffi_cpu_cores = ffi_cores;
-    if (speedup < request->minimum_speedup) {
-        if (sandbox_mandatory != 0u)
-            reject_sandbox_request(decision, "Sandbox candidate fails FFI-adjusted speedup policy; reject request.");
-        else
-            host_fallback(decision, "FFI-adjusted speedup is below the configured threshold.");
-        decision->estimated_speedup = speedup;
-        decision->estimated_ffi_cpu_cores = ffi_cores;
-        return 0;
-    }
-    if (ffi_cores > request->maximum_ffi_cpu_cores) {
-        if (request->sandbox_required != 0u)
-            reject_sandbox_request(decision, "Sandbox candidate exceeds the FFI CPU budget; reject request.");
-        else
-            host_fallback(decision, "Estimated FFI overhead exceeds the CPU budget.");
-        decision->estimated_speedup = speedup;
-        decision->estimated_ffi_cpu_cores = ffi_cores;
-        return 0;
-    }
-
-    decision->language = candidate;
-    decision->route_selected = 1u;
-    decision->performance_approved = 1u;
-    (void)snprintf(decision->reason, sizeof(decision->reason),
-        "Selected %s for %s; sandbox and FFI-adjusted cost policy passed.",
-        pl_apsia_language_name(candidate), pl_apsia_workload_name(request->workload));
-    return 0;
+int pl_apsia_can_promote(const pl_apsia_promotion_evidence *e) {
+ if (!e || !e->validated_head_token || !e->current_head_token || e->validated_head_token!=e->current_head_token) return 0;
+ return e->contract_valid==1 && e->differential_tests_passed==1 && e->fuzzing_passed==1 && e->sanitizers_passed==1 && e->static_analysis_passed==1 && e->benchmark_gain_verified==1 && e->shadow_equivalence_passed==1 && e->independent_review_approved==1 && e->artifact_signature_valid==1 && e->rollback_tested==1;
 }
