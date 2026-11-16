@@ -29,7 +29,8 @@ Processor information, source-level hints, benchmarks, and local DSP utilities o
 - **Source analysis:** scan source code and produce JSON reports without executing or rewriting scanned files.
 - **Audio and DSP:** read and write bounded PCM16 WAV data, generate tones, and run local digital signal processing.
 - **Desktop and CLI:** native Win32 graphical interface plus command-line workflows on Windows and Linux.
-- **Improvement planning:** inspect a 20-capability engineering/optimization/automation catalogue and evidence-gated iteration plans.\n- **APSIA 2.0:** C11 polyglot routing planner with FFI cost gates and fail-closed sandbox selection.
+- **Improvement planning:** inspect a 20-capability engineering/optimization/automation catalogue and evidence-gated iteration plans.
+- **APSIA 2.0:** C11 polyglot routing planner with FFI cost gates and fail-closed sandbox selection.
 
 ## 🥧 Syntax-pie function layers
 
@@ -109,8 +110,6 @@ The catalogue is a capability/workflow taxonomy, not a claim that each transform
 
 ## 🚀 20 × 3 Evolution Protocol
 
-## 20 × 3 Evolution Protocol
-
 The 60 operations below define the target engineering policy. They are a capability taxonomy, not a claim that every action is already autonomous.
 
 | # | Core operation | Workflow operation | Quality operation |
@@ -164,6 +163,27 @@ APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language
 
 HyperFusion readiness and synergy values are heuristic planning indicators, not measured speedups or independent CI certification.
 
+## 🔁 Verified GitHub Auto-Merge
+
+Pytyliki uses a guarded GitHub Actions workflow at `.github/workflows/verified-auto-merge.yml` and GitHub's native Auto-Merge (squash), not a third-party merge bot.
+
+**Automation sequence**
+
+1. A pull request targeting `main` is built and tested on `ubuntu-latest` and `windows-latest`.
+2. CMake configures and builds the project; CTest runs the registered test suite on both platforms.
+3. Before enabling Auto-Merge, the workflow re-reads the PR and verifies that its current head SHA still matches the commit that was tested.
+4. It retrieves submitted reviews and requires at least one `APPROVED` review from someone other than the PR author, specifically for that exact head commit. A stale approval does not qualify.
+5. Only after those gates pass does it run `gh pr merge --auto --squash --delete-branch`. GitHub completes the merge when all repository-required checks and review rules are satisfied.
+
+**Repository setup**
+
+- Enable **Allow auto-merge** in GitHub repository settings.
+- Protect `main` and require the applicable CI checks and independent review; select the exact required status-check names shown by GitHub after a successful run.
+- Keep workflow permissions limited to read access for validation and pull-request/content write access only for the merge job.
+- Do not use a personal access token to bypass branch protection. The workflow must fail closed when approval is missing, the PR head changes, or the GitHub API returns an error.
+
+**Important:** Enabling Auto-Merge does not mean a PR has already merged. A PR remains open while approval or required checks are missing. The workflow does not manufacture approval, dismiss review requirements, or override branch protection. A maintainer must still provide a valid independent review where required.
+
 ## Quick start
 
 ### What do I need?
@@ -193,7 +213,7 @@ pytyliki --evolve --evolution-rounds 8
 
 ## 🧪 Quality audit and CI
 
-See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge checks for an independent approval tied to the PR head and fails closed on API errors or stale validation events; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
+See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified Auto-Merge checks an independent approval tied to the exact PR head and fails closed on API errors or stale validation events. See [Verified GitHub Auto-Merge](#-verified-github-auto-merge) for the workflow and repository configuration. Branch protection remains the authoritative enforcement layer.
 
 `pytyliki-apsia` evaluates a supplied workload and target allow-list; it does not compile or execute the selected language module.
 
@@ -217,7 +237,7 @@ The guarded integration model is:
 4. Obtain independent review and verify the tested commit.
 5. Merge only through repository-authorized controls.
 
-Auto-commit, auto-push, and auto-merge are separate permissioned operations. Failed checks must stop promotion. Configure GitHub branch protection to require the relevant CI checks and independent review; a workflow alone cannot prevent an authorized maintainer from manually bypassing repository policy.
+Auto-commit, auto-push, and auto-merge are separate permissioned operations. Failed checks must stop promotion. Configure GitHub branch protection to require the relevant CI checks and independent review. The verified workflow enables native Auto-Merge only after the tested head and independent approval are confirmed; branch protection remains authoritative.
 
 ## Safety and implementation limits
 
