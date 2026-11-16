@@ -10,9 +10,13 @@
 
 </p>
 
-> Native C11 workstation for processor discovery, bounded benchmarking, read-only source review and local audio/DSP experiments.
+Pytyliki helps systems programmers, hardware enthusiasts, and C developers inspect processor capabilities and run bounded local experiments without claiming to reprogram physical silicon.
 
-## 💎 Current capabilities
+## Why Pytyliki?
+
+Processor information, source-level hints, benchmarks, and local DSP utilities often live in separate tools. Pytyliki brings these workflows together in a native C11 codebase with explicit safety boundaries and testable outputs.
+
+**Unique value:** one auditable workstation for read-only processor discovery, bounded experiments, source diagnostics, and evidence-gated engineering workflows.
 
 - CPU/ISA discovery, memory information and bounded processor benchmarks.
 - Read-only source scanner and JSON reports.
@@ -20,7 +24,12 @@
 - Native Win32 GUI; CLI on Windows and Linux.
 - Evidence-gated 20-capability improvement engine, 12 implemented advisory hardware rules, deny-by-default policy, C11/C23 reference pipeline and six-module HyperFusion coordinator.
 
-The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
+- **CPU and ISA discovery:** collect processor and architecture information; treat feature flags as hints, not proof of OS-enabled instruction state.
+- **Bounded benchmarks:** run local processor tests with controlled workloads; results are advisory and hardware-dependent.
+- **Source analysis:** scan source code and produce JSON reports without executing or rewriting scanned files.
+- **Audio and DSP:** read and write bounded PCM16 WAV data, generate tones, and run local digital signal processing.
+- **Desktop and CLI:** native Win32 graphical interface plus command-line workflows on Windows and Linux.
+- **Improvement planning:** inspect a 20-capability engineering/optimization/automation catalogue and evidence-gated iteration plans.\n- **APSIA 2.0:** C11 polyglot routing planner with FFI cost gates and fail-closed sandbox selection.
 
 ## 🥧 Syntax-pie function layers
 
@@ -28,7 +37,17 @@ Run `pytyliki --syntax-pie` to inspect the deterministic 20-layer mapping from f
 
 ## 🧬 HyperFusion six-module coordinator
 
-Run `pytyliki --evolve --evolution-rounds 8` to evaluate six bounded analysis modules and all 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups. The promotion gate stays held until independently verified CI evidence is supplied. HyperFusion does not rewrite source files or merge branches.
+| Area | Implementation |
+|---|---|
+| Core | CPU profile, bounded benchmark, source scanner, JSON report |
+| Processor | Architecture/ISA inventory and bounded execution, memory, and matrix tests |
+| DSP | PCM16 WAV I/O, tone generation, processing, and metering |
+| Improvement | 20×3 capability catalogue and evidence-gated lifecycle |
+| Hardware rules | 12 implemented advisory rules; other catalogue IDs are reserved |
+| HyperFusion | Six bounded analysis modules and 36 directed pair interactions per round |
+| Pipeline | C11/C23 reference pipeline plan, not a production transpiler |
+| Policy | Deny-by-default local authorization policy |
+| Interfaces | Cross-platform CLI and native Windows GUI |
 
 ## 🧩 Processor improvement capability matrix
 
@@ -61,7 +80,9 @@ The catalogue is a capability/workflow taxonomy, not a claim that each transform
 
 ## 🚀 20 × 3 Evolution Protocol
 
-These triplets define the **target policy**, not implemented-feature claims.
+## 20 × 3 Evolution Protocol
+
+The 60 operations below define the target engineering policy. They are a capability taxonomy, not a claim that every action is already autonomous.
 
 | # | Core operation | Workflow operation | Quality operation |
 |---:|---|---|---|
@@ -86,41 +107,9 @@ These triplets define the **target policy**, not implemented-feature claims.
 | 19 | Auto-transpiling | Auto-documenting | Auto-hardening |
 | 20 | Auto-evolving | Auto-integrating | Auto-evolving |
 
-### 🔐 Guarded automation contract
+## APSIA 2.0 polyglot evolution
 
-1. Use isolated branches; protect `main`.
-2. Commit traceable, relevant changes.
-3. Push feature branches and open PRs.
-4. Run lint, static checks, builds and tests.
-5. Merge only after checks and review approval.
-6. Never force-push, bypass protections or self-approve.
-7. Deploy only configured, validated artifacts.
-8. Keep recovery paths and operation logs.
-9. Require human approval for destructive actions/releases.
-10. Record inputs, outputs, versions and benchmark baselines.
-
-**Auto-commit, auto-push and auto-merge are separate permissioned stages.** A failed check stops promotion. Automation must be observable, bounded, reversible and test-gated.
-
-## 🧬 Architecture
-
-```text
-          PYTYLIKI
-              |
-      +-------+--------+
-      |       |        |
-   DISCOVER TRANSFORM VERIFY
-      |       |        |
-   CPU/ISA  C11/DSP  TESTS/CI
-   BENCH    ANALYSIS STATIC
-      |       |        |
-      +-------+--------+
-              |
-        REVIEWED PR
-              |
-             MAIN
-```
-
-### Source map
+APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language-routing planner. The implemented C11 planner maps CPU-bound work to Rust, GPU work to CUDA, analytics to SQL, network I/O to Go, scripting to Python, and sandboxed plugins to WebAssembly. It checks target availability and FFI-adjusted cost before selecting a route; untrusted plugins fail closed if WASM is unavailable.
 
 - `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
 - `src/syntax_pie.c/.h` — 20-level syntax/function catalogue and lookups.
@@ -176,7 +165,7 @@ pytyliki --evolve --evolution-rounds 8
 
 See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge checks for an independent approval tied to the PR head and fails closed on API errors or stale validation events; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
 
-## 🛡️ Safety
+`pytyliki-apsia` evaluates a supplied workload and target allow-list; it does not compile or execute the selected language module.
 
 ## Before and after
 

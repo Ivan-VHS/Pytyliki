@@ -18,3 +18,5 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Validate APSIA evolution-lock schema JSON
+        run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"

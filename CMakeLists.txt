@@ -23,6 +23,8 @@ if(WIN32)
 endif()
 add_executable(pytyliki src/cli.c)
 target_link_libraries(pytyliki PRIVATE pytyliki_core)
+add_executable(pytyliki-apsia src/apsia_cli.c)
+target_link_libraries(pytyliki-apsia PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
