@@ -5,7 +5,8 @@
 1. **Core (core.c)** — portable CPU identity/topology and OS memory query, bounded integer benchmark, read-only heuristic source review, and JSON output.
 2. **Processor (processor.c)** — architecture classification, selected ISA capability discovery, and three bounded workloads (integer dependency chain, memory traversal, compact matrix arithmetic).
 3. **DSP (dsp.c)** — bounded in-memory audio buffer, PCM16 WAV import/export, tone generation, gain, one-pole low-pass, static-ratio compression, soft saturation, and signal metering.
-4. **HyperFusion (evolution.c/.h)** — six cooperating analysis modules: Concreo, Pyemont, Bollo, JJ-HH, PenWhite and Serious Serious. Every bounded round executes all six modules and all 36 directed pair interactions, including self-checks. The coordinator records module scores, trace events, pair counts, convergence and a final promotion gate.\n5. **Presentation** — native Win32 GUI on Windows (editable DSP controls, file dialogs, session log and JSON report export) and a cross-platform CLI.
+4. **HyperFusion (evolution.c/.h)** — six cooperating analysis modules: Concreo, Pyemont, Bollo, JJ-HH, PenWhite and Serious Serious. Every bounded round executes all six modules and all 36 directed pair interactions, including self-checks. The coordinator records module scores, trace events, pair counts, convergence and a final promotion gate.
+5. **Presentation** — native Win32 GUI on Windows (editable DSP controls, file dialogs, session log and JSON report export) and a cross-platform CLI.
 
 ## Data flow
 
@@ -19,7 +20,14 @@
 
 Medical terms from the source material are intentionally anonymized into engineering vocabulary: etiology becomes root-cause analysis; strain/phenotype becomes CPU family and ISA profile; resistance becomes fault tolerance and validation; remission/recurrence becomes stable operation/regression; pharmacokinetics becomes data-path and resource-flow analysis; auditory modulation becomes the DSP signal chain; prognosis becomes repeatability and regression monitoring.
 
-## HyperFusion semantics\n\n- Concreo scores architecture/source-review readiness; Pyemont creates transformation candidates, not rewritten files; Bollo evaluates available benchmark/memory evidence; JJ-HH checks the supplied test and scan evidence; PenWhite counts trace events; Serious Serious controls promotion.\n- The 6×6 interaction matrix yields 36 directed edges per round. A caller-selected limit of 1–64 rounds prevents unbounded work; diminishing returns permit early convergence.\n- Readiness and synergy scores are heuristic coordination metrics, not benchmark speedups, correctness proofs, or physical processor modifications.\n- The CLI does not claim CI success; it leaves the promotion gate held because it cannot certify an external test run.\n\n## Safety boundaries
+## HyperFusion semantics
+
+- Concreo scores architecture/source-review readiness; Pyemont creates transformation candidates, not rewritten files; Bollo evaluates available benchmark/memory evidence; JJ-HH checks the supplied test and scan evidence; PenWhite counts trace events; Serious Serious controls promotion.
+- The 6×6 interaction matrix yields 36 directed edges per round. A caller-selected limit of 1–64 rounds prevents unbounded work; diminishing returns permit early convergence.
+- Readiness and synergy scores are heuristic coordination metrics, not benchmark speedups, correctness proofs, or physical processor modifications.
+- The CLI does not claim CI success; it leaves the promotion gate held because it cannot certify an external test run.
+
+## Safety boundaries
 
 - No privileged elevation, kernel driver, BIOS/UEFI, firmware, microcode, voltage, frequency, or power-limit writes.
 - CPUID capability bits are reported as hardware facts only. The implementation does not dispatch AVX/AVX-512 instructions.
