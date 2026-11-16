@@ -1,72 +1,144 @@
-# Pytyliki — Processor Systems Workstation 0.5.0
+# 🔵🔴 Pytyliki — Processor Systems Workstation
 
-Pytyliki is a native C11 desktop workstation for read-only CPU capability discovery, bounded processor benchmarking, heuristic source review, and local PCM audio/DSP experiments. Windows builds include a native Win32 GUI; Windows and Linux builds include the CLI.
+<p align="center">
 
-## Desktop workstation
+**⚡ ANALYZE · OPTIMIZE · TRANSFORM · VERIFY · EVOLVE**
 
-- **CPU capability scan:** identifies the target architecture, CPU marketing string where CPUID exposes it, vendor/family/model, logical processor count and OS-reported physical/available memory, plus selected x86 ISA feature flags (SSE2, SSE4.2, AVX, AVX2, AVX-512F, AES, FMA, virtualization bit).
-- **Processor suite:** bounded integer, memory-touch, and matrix workloads with elapsed-time measurements and an integrity checksum.
-- **Source review:** read-only heuristic scan for selected process-execution, unbounded-string, manual-memory-mapping, and inline-assembly patterns.
-- **DSP laboratory:** import PCM 16-bit mono/stereo WAV, generate a 440 Hz test tone, configure low-pass cutoff/compressor threshold and ratio/saturation drive/gain in the GUI, measure peak/RMS/DC/crest/clipping, and export PCM16 WAV.
-- **Session log and report export:** visible results/error feedback plus a user-triggered JSON CPU/benchmark report.
+![C11](https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
+![Interface](https://img.shields.io/badge/Desktop-Native-1D4ED8?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)
 
-The GUI presents actions as native Windows controls and does not require a browser or runtime framework.
+</p>
 
-## CLI
+> **A native C11 workstation for processor discovery, bounded benchmarking, source review and local audio/DSP experiments.**
 
-    pytyliki --profile --suite
-    pytyliki --capabilities
-    pytyliki --analyze path/to/source.c
-    pytyliki --json report.json
-    pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
-    pytyliki --audio-info input.wav
-    pytyliki --process-wav input.wav output.wav --lowpass 5000 --compress -12 4 --saturate 1.8 --gain -1
+🔵 **BLUE** — precision, architecture and analysis.  
+🔴 **RED** — transformation, performance and execution.  
+⚪ **WHITE** — clarity, safety and engineering discipline.
 
-The process command accepts uncompressed PCM16 WAV (mono or stereo, 8–192 kHz). Unsupported formats are rejected instead of guessed or silently converted.
+---
 
-## Build and test
+## 💎 What Pytyliki does today
 
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
-    cmake --build build --config Release --parallel
-    ctest --test-dir build -C Release --output-on-failure
+- **CPU discovery:** architecture, CPU identity, logical processors, memory information and selected x86 ISA flags.
+- **Processor suite:** bounded integer, memory-touch and matrix workloads with elapsed-time measurements and integrity checksums.
+- **Source review:** read-only heuristic scanning for selected risky source patterns.
+- **DSP laboratory:** PCM16 WAV import/export, tone generation, filtering, compression, saturation, gain and audio metering.
+- **Native desktop UI:** Win32 workstation interface on Windows; CLI on Windows and Linux.
+- **Reports:** user-triggered JSON CPU and benchmark export.
 
-On Windows, CMake also builds pytyliki-gui.exe. The GUI links the system common-dialog library for file selection.
+The source scanner does not compile, execute or rewrite scanned files. ISA flags are informational and do not alone establish safe instruction eligibility.
 
-## Processor terminology mapping
+## 🚀 The 20 × 3 Evolution Protocol
 
-| Source concept | Processor/workstation interpretation |
-|---|---|
-| Etiology / root cause | Failure-origin analysis, subsystem classification, diagnostic event source |
-| Mutation / strain / phenotype | CPU family/model, ISA feature profile, microarchitecture and build variants |
-| Resistance / immunity | Fault containment, bounds checks, input validation, integrity verification |
-| Proliferation / dissemination | Workload scaling, thread topology, memory pressure and task fan-out |
-| Remission / recurrence / exacerbation | Stable run, regression, repeatability drift and performance degradation |
-| Receptor / antagonist / synergy | Instruction-feature compatibility, competing resource use and optimization trade-offs |
-| Pharmacokinetics / metabolism | Data-path throughput, memory movement, cache locality and resource lifecycle |
-| Auditory stimulation / modulation | DSP processing chain: filter, compressor, saturation, gain and metering |
-| Chronicity / survival / prognosis | Long-run reliability metrics, trend reports, benchmark history and regression monitoring |
-| Classification / coding / audit | Capability taxonomy, structured reports, deterministic tests and CI validation |
+These 20 triplets define the **target automation policy** for Pytyliki. They are engineering objectives, not a claim that every automation is already implemented.
 
-These mappings are software engineering metaphors, not medical models. Pytyliki is not a medical tool and does not diagnose people or devices.
+| # | Core operation | Workflow automation | Quality objective |
+|---:|---|---|---|
+| 01 | Auto-improving | Auto-committing | Auto-optimizing |
+| 02 | Auto-modernizing | Auto-pushing | Auto-refactoring |
+| 03 | Auto-optimizing | Auto-merging | Auto-modernizing |
+| 04 | Auto-adapting | Auto-integrating | Auto-improving |
+| 05 | Auto-correcting | Auto-branching | Auto-simplifying |
+| 06 | Auto-perfecting | Auto-cloning | Auto-accelerating |
+| 07 | Auto-developing | Auto-forking | Auto-adapting |
+| 08 | Automating | Auto-synchronizing | Auto-correcting |
+| 09 | Auto-diagnosing | Auto-deploying | Auto-decomposing |
+| 10 | Auto-restoring | Auto-building | Automating |
+| 11 | Auto-restructuring | Auto-testing | Auto-standardizing |
+| 12 | Auto-calibrating | Auto-linting | Auto-perfecting |
+| 13 | Auto-configuring | Auto-checking | Auto-rewriting |
+| 14 | Auto-testing | Auto-scanning | Auto-transpiling |
+| 15 | Auto-validating | Auto-analyzing | Auto-converting |
+| 16 | Auto-checking | Auto-fixing | Auto-typing |
+| 17 | Auto-rechecking | Auto-updating | Auto-modularizing |
+| 18 | Auto-compiling | Auto-generating | Auto-deduplicating |
+| 19 | Auto-transpiling | Auto-documenting | Auto-hardening |
+| 20 | Auto-evolving | Auto-integrating | Auto-evolving |
 
-## Safety contract
+### 🔐 Safe automation contract
 
-- CPU inspection uses documented read-only operating-system and CPUID queries.
-- No BIOS/UEFI, firmware, microcode, voltage, clock, power-limit, kernel, or driver changes are performed.
-- ISA flags are informational; AVX-family hardware flags do not establish OS vector-state support or safe execution eligibility.
-- Benchmarks have hard workload and allocation bounds and run in the current process.
-- The source scanner reads source as text. It does not compile, link, load, execute, or rewrite scanned files.
-- Audio is processed in a bounded local memory buffer. WAV import supports PCM16 only; no network, device capture, or background recording is performed.
-- Findings and benchmark comparisons are advisory. They are not certification, proof of vulnerabilities, or guarantees of performance.
+Automation must be **observable, bounded, reversible and test-gated**:
 
-## Project layout
+1. Work on isolated feature branches; never rewrite `main` directly.
+2. Commit only reviewed, relevant changes with traceable messages.
+3. Push automation output to a branch and open a pull request.
+4. Run formatting, lint, static checks, builds and tests before promotion.
+5. Merge only after required checks and repository review rules pass.
+6. Never force-push, bypass branch protection, or auto-approve its own PR.
+7. Deploy only explicitly configured artifacts/environments, after validation.
+8. Keep backups or recovery paths for generated and transformed files.
+9. Require human approval for destructive changes, release publication and hardware-affecting actions.
+10. Record logs, tool versions, inputs, outputs and benchmark baselines.
 
-- src/core.c, src/core.h — CPU profile, bounded benchmark, static scanner, JSON report.
-- src/processor.c, src/processor.h — architecture/ISA inventory and bounded processor suite.
-- src/dsp.c, src/dsp.h — bounded WAV I/O and local DSP pipeline.
-- src/win_gui.c — native Win32 workstation UI.
-- src/cli.c — cross-platform command-line interface.
-- tests/test_core.c — core, processor, and DSP tests.
-- .github/workflows/ci.yml — Windows/Linux build and test matrix.
+**Auto-commit, auto-push and auto-merge are separate permissioned stages.** A failed check stops the pipeline; no automation may silently promote an unverified result.
 
-License: MIT.
+## 🧬 Engineering architecture
+
+```text
+          PYTYLIKI
+              |
+      +-------+--------+
+      |       |        |
+   DISCOVER TRANSFORM VERIFY
+      |       |        |
+   CPU/ISA  C11/DSP  TESTS/CI
+   BENCH    ANALYSIS STATIC
+      |       |        |
+      +-------+--------+
+              |
+       REVIEWED PR
+              |
+            MAIN
+```
+
+**Current source map**
+
+- `src/core.c/.h` — CPU profile, benchmark, source scanner and JSON report.
+- `src/processor.c/.h` — architecture/ISA inventory and processor suite.
+- `src/dsp.c/.h` — bounded WAV I/O and DSP pipeline.
+- `src/win_gui.c` — native Windows GUI.
+- `src/cli.c` — cross-platform CLI.
+- `tests/test_core.c` — core, processor and DSP tests.
+- `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
+
+## ⚙️ Build
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+Windows builds also provide `pytyliki-gui.exe`.
+
+## 🗺️ Roadmap
+
+- [x] Native C11 foundation, CLI and Windows desktop UI
+- [x] CPU capability discovery and bounded benchmarks
+- [x] Read-only source review and local PCM16 DSP
+- [x] Windows/Linux CI build-and-test matrix
+- [ ] Expanded processor profiling and benchmark history
+- [ ] Reproducible optimization and refactoring tools
+- [ ] Guarded branch/PR automation and release workflows
+- [ ] Cross-architecture transpilation and RTL/FPGA integrations
+- [ ] Desktop diagnostics, rule manager and benchmark dashboards
+
+## 🛡️ Safety boundaries
+
+Pytyliki performs read-only CPU discovery. It does **not** modify BIOS/UEFI, firmware, microcode, voltage, clocks, power limits, kernels or drivers. Benchmarks are bounded and advisory. Software optimization does not directly alter physical processor fabrication. Hardware synthesis requires dedicated toolchains and validation.
+
+**License:** MIT.
+
+---
+
+<p align="center">
+
+### 🔵 ENGINEER WITH PRECISION · 🔴 EVOLVE WITH PURPOSE
+
+**「爱是理解，是陪伴，也是彼此成就。」**
+
+*Love is understanding, companionship, and helping one another grow.*
+
+</p>
