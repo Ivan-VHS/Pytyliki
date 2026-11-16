@@ -6,6 +6,8 @@
 
 #define PL_IMPROVEMENT_CAPABILITY_COUNT 20u
 #define PL_IMPROVEMENT_LABEL_MAX 40u
+#define PL_IMPROVEMENT_DEFAULT_ITERATIONS UINT64_C(666666)
+#define PL_IMPROVEMENT_MAX_ITERATIONS UINT64_C(666666)
 
 typedef struct {
     unsigned id;
@@ -46,6 +48,8 @@ typedef struct {
     pl_improvement_phase phase;
     uint32_t evidence;
     uint32_t generation;
+    uint64_t completed_iterations;
+    uint64_t target_iterations;
 } pl_improvement_cycle;
 
 /* Static, deterministic catalogue. Returned strings have static lifetime. */
@@ -53,6 +57,9 @@ size_t pl_improvement_catalog(const pl_improvement_capability **out);
 
 /* Start a new bounded improvement cycle. */
 int pl_improvement_cycle_init(pl_improvement_cycle *cycle);
+
+/* Set a target from 1 through PL_IMPROVEMENT_MAX_ITERATIONS before recording evidence. */
+int pl_improvement_cycle_set_target(pl_improvement_cycle *cycle, uint64_t target);
 
 /* Record evidence for the current phase; evidence cannot be fabricated by advance. */
 int pl_improvement_record(pl_improvement_cycle *cycle, uint32_t evidence);
