@@ -1,0 +1,5 @@
+#include "dsp_engine.h"
+#include <assert.h>
+#include <math.h>
+#include <string.h>
+int main(void){pl_dsp_engine e;pl_dsp_biquad b;pl_dsp_fir f;pl_dsp_limiter l;pl_dsp_block_stats s;float in[128],out[128],state[4],c[4]={0.25f,0.25f,0.25f,0.25f};size_t i;assert(pl_dsp_engine_init(&e,48000,128)==0);assert(!strcmp(pl_dsp_backend_name(e.backend),"portable-c11-scalar"));assert(pl_dsp_engine_init(&e,1000,128)!=0);for(i=0;i<128;i++)in[i]=(float)sin(2.0*3.141592653589793*440.0*i/48000.0);assert(pl_dsp_biquad_lowpass_init(&b,48000,5000.0,0.707)==0);assert(pl_dsp_biquad_process(&b,in,out,128)==0);assert(pl_dsp_measure_block(out,128,&s)==0&&s.rms>0.0);pl_dsp_biquad_reset(&b);assert(pl_dsp_fir_init(&f,c,4,state,4)==0);assert(pl_dsp_fir_process(&f,in,out,128)==0);pl_dsp_fir_reset(&f);assert(pl_dsp_limiter_init(&l,48000,-1.0,5.0,80.0)==0);for(i=0;i<128;i++)in[i]=1.5f;assert(pl_dsp_limiter_process(&l,in,out,128)==0);assert(fabs((double)out[127])<=0.9);in[0]=NAN;assert(pl_dsp_measure_block(in,128,&s)==0&&s.non_finite_samples==1);assert(pl_dsp_biquad_process(&b,in,out,128)!=0);return 0;}
