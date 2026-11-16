@@ -30,7 +30,7 @@ static void print_berry_core_catalog(void) {
     size_t count = pl_berry_core_catalog(&items);
     puts("Berry processor-core command catalogue (dry-run planner):");
     for (size_t i = 0u; i < count; ++i)
-        printf("%02u | %-12s | %-18s | %-28s | %s\\n",
+        printf("%02u | %-12s | %-18s | %-28s | %s\n",
                (unsigned)i + 1u, items[i].name, items[i].virtue,
                items[i].operation, items[i].description);
     puts("No hardware interrupt, register write, affinity change, or firmware operation is performed.");
@@ -43,14 +43,14 @@ static int dispatch_berry_core(const char *name, unsigned core) {
     size_t i;
     for (i = 0u; i < count; ++i)
         if (strcmp(items[i].name, name) == 0) break;
-    if (i == count) { fprintf(stderr, "Unknown berry command: %s\\n", name); return 2; }
+    if (i == count) { fprintf(stderr, "Unknown berry command: %s\n", name); return 2; }
     request.command = items[i].id;
     request.target_logical_core = core;
     if (pl_berry_core_dispatch(&request, &result) != 0) {
-        fprintf(stderr, "Core command rejected: %s\\n", result.detail[0] ? result.detail : "invalid request");
+        fprintf(stderr, "Core command rejected: %s\n", result.detail[0] ? result.detail : "invalid request");
         return 2;
     }
-    printf("%s -> logical core %u | %s | PLANNED ONLY | hardware modified: no\\n",
+    printf("%s -> logical core %u | %s | PLANNED ONLY | hardware modified: no\n",
            result.command_name, result.target_logical_core, result.operation);
     return 0;
 }
