@@ -7,6 +7,8 @@
 #include "pipeline.h"
 #include "policy.h"
 #include "evolution.h"
+#include "berry_core.h"
+#include "trimatrix_autoforge.h"
 #include "syntax_pie.h"
 #include <stdio.h>
 #include <math.h>
@@ -18,7 +20,7 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--improvement-plan] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -57,6 +59,24 @@ static int dispatch_berry_core(const char *name, unsigned core) {
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
+
+static void print_trimatrix(unsigned depth) {
+    pl_tma_plan plan;
+    pl_tma_step step;
+    const pl_tma_cell *cells = NULL;
+    size_t count = pl_tma_catalog(&cells);
+    if (count != PL_TMA_CELL_COUNT || pl_tma_plan_init(&plan, depth) != 0) {
+        fputs("TriMatrix depth must be 1..100.\\n", stderr);
+        return;
+    }
+    printf("TriMatrix AutoForge: 3 lines x 3 matrices x 3 stages | %u generations | %u steps\\n",
+           depth, pl_tma_plan_total(&plan));
+    while (pl_tma_plan_next(&plan, &step) == 1)
+        printf("%04u | generation %03u | %-8s | %-16s | %s\\n",
+               step.step, step.depth, pl_tma_line_name(step.cell.line),
+               pl_tma_matrix_name(step.cell.matrix), step.cell.name);
+}
+
 static void print_improvement_plan(void) {
     const pl_improvement_capability *items = NULL;
     size_t count = pl_improvement_catalog(&items);
@@ -122,7 +142,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,trimatrix=0; const char *berry_name=NULL,*analyze=NULL,*json=NULL; unsigned berry_core=0u;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u;
@@ -134,6 +154,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
+        else if(!strcmp(argv[i],"--trimatrix")) { trimatrix=1; if(i+1<argc && argv[i+1][0]!='-'){ char *end=NULL; unsigned long n=strtoul(argv[++i],&end,10); if(!end||*end||n<1u||n>PL_TMA_MAX_DEPTH)return 2; evolution_rounds=(unsigned)n; }}
         else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
@@ -162,6 +183,7 @@ int main(int argc,char **argv) {
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(improvement_plan) print_improvement_plan();
+    if(trimatrix) print_trimatrix(evolution_rounds);
     if(syntax_pie) print_syntax_pie();
     if(hw_rules) print_hw_report();
     if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
@@ -185,8 +207,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if((improvement_plan || syntax_pie) && argc==2) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve){profile=1;bench=1;}
+    if((improvement_plan || syntax_pie || trimatrix) && (argc==2 || (trimatrix && argc<=3))) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
