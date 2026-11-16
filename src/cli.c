@@ -1,6 +1,7 @@
 #include "core.h"
 #include "processor.h"
 #include "dsp.h"
+#include "evolution.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +30,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,evolve=0; unsigned evolution_rounds=8u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
@@ -38,6 +39,8 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
+        else if(!strcmp(argv[i],"--evolve")) evolve=1;
+        else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;}
         else if(!strcmp(argv[i],"--analyze")&&i+1<argc) analyze=argv[++i];
         else if(!strcmp(argv[i],"--json")&&i+1<argc) json=argv[++i];
         else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
@@ -71,7 +74,7 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json){profile=1;bench=1;}
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!evolve){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
