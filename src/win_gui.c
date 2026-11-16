@@ -3,6 +3,7 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "core.h"
@@ -41,7 +42,7 @@ static void log_text(const char *text) {
 }
 static void log_format(const char *fmt, ...) {
     char buffer[2048]; va_list args; va_start(args, fmt);
-    _vsnprintf(buffer, sizeof(buffer)-1, fmt, args); buffer[sizeof(buffer)-1] = '\0';
+    (void)_vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, fmt, args); buffer[sizeof(buffer)-1] = '\0';
     va_end(args); log_text(buffer);
 }
 static void apply_font(HWND control) { if (g_font) SendMessageA(control, WM_SETFONT, (WPARAM)g_font, TRUE); }
