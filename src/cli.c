@@ -6,7 +6,8 @@
 #include "processor_catalog.h"
 #include "pipeline.h"
 #include "policy.h"
-#include "evolution.h"\n#include "syntax_pie.h"
+#include "evolution.h"
+#include "syntax_pie.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -46,7 +47,7 @@ static void print_syntax_pie(void) {
     size_t count = pl_syntax_pie_catalog(&items);
     puts("Syntax-pie function layers (20 levels):");
     for (size_t i = 0u; i < count; ++i)
-        printf("%02u | %-18s | %-12s | %-36s | %s\\n", items[i].id,
+        printf("%02u | %-18s | %-12s | %-36s | %s\n", items[i].id,
                items[i].function_name, items[i].room_name, items[i].level_name,
                items[i].operation);
     puts("This is a deterministic syntax/function catalogue; it does not execute generated code.");
