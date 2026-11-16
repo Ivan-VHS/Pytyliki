@@ -95,6 +95,10 @@ HyperFusion 的就绪度和协同指标属于启发式规划数据，不代表�
 
 这些是分阶段集成的目录，不是完整解析器、硬件计时器控制器、IPI/亲和性控制器或生产级处理器控制接口。Concreo、Pyemont、Bollo、JJ-HH、PenWhite 和 Serious Serious 是实验性功能套件概念，不是稳定的公共 API。
 
+## 新目录的集成状态
+
+仓库中已经存在 `syntax_pie.c`、`mtte.c`、`berry_core.c` 及其专项测试文件，但当前 `main` 分支的 CMake 配置尚未注册这些模块和测试。CLI 源文件也调用了 Syntax Pie API，而默认构建目标尚未链接 `syntax_pie.c`。因此，这些内容属于待完成的构建系统集成，不能视为默认可执行文件中已经验证的功能。Syntax Pie 集成由 [PR #19](https://github.com/Ivan-VHS/Pytyliki/pull/19) 单独跟踪；只有必需 CI 检查和代码审查通过后才能合并。
+
 ## 构建与测试
 
 需要 CMake 3.16+、支持 C11 的编译器、Git，以及 Windows 或 Linux。
