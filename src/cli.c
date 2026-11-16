@@ -9,12 +9,12 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.5.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--analyze FILE] [--json FILE]\n"
+         "           [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
-         "All hardware inspection is read-only. Benchmarks and DSP processing are bounded.");
+         "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
 static int parse_double(const char *s,double *out) {
     char *end=NULL; double v=strtod(s,&end); if(!s[0]||!end||*end||v!=v) return -1; *out=v; return 0;
@@ -38,7 +38,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
-        else if(!strcmp(argv[i],"--analyze")&&i+1<argc) analyze=argv[++i];
+        else if((!strcmp(argv[i],"--review-processor")||!strcmp(argv[i],"--analyze"))&&i+1<argc) analyze=argv[++i];
         else if(!strcmp(argv[i],"--json")&&i+1<argc) json=argv[++i];
         else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
         else if(!strcmp(argv[i],"--audio-info")&&i+1<argc) audio_info=argv[++i];
@@ -77,7 +77,7 @@ int main(int argc,char **argv) {
     if((profile||capabilities))print_profile();
     if(bench){if(pl_run_benchmark(UINT64_C(10000000),&b)!=0)return 1;printf("Benchmark: %llu iterations, %.3f ms, %.1f iterations/ms\n",(unsigned long long)b.iterations,b.elapsed_ms,b.score);}
     if(suite){pl_suite_result sr;int rc=pl_processor_benchmark_suite(UINT64_C(12000000),8,4,&sr);if(rc!=0){fprintf(stderr,"Processor suite failed (%d).\n",rc);return 1;}printf("Suite: integer %.2f ms | memory %.2f ms | matrix %.2f ms | checksum %llu | integrity %s\n",sr.integer_ms,sr.memory_ms,sr.matrix_ms,(unsigned long long)sr.checksum,sr.integrity_ok?"PASS":"CHECK");}
-    if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not read: %s\n",analyze);return 1;}printf("Static scan: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
+    if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not inspect processor source: %s\n",analyze);return 1;}printf("Processor implementation review: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
     if(json){if(pl_write_json(json,&cpu,&b,&a)!=0){fprintf(stderr,"Could not write JSON report: %s\n",json);return 1;}printf("JSON report: %s\n",json);}
     return 0;
 }
