@@ -1,28 +1,26 @@
-# Pytyliki — Processor Systems Workstation 0.5.0
+# Pytyliki — Processor Engineering Workstation 0.6.0
 
-Pytyliki is a native C11 desktop workstation for read-only CPU capability discovery, bounded processor benchmarking, heuristic source review, and local PCM audio/DSP experiments. Windows builds include a native Win32 GUI; Windows and Linux builds include the CLI.
+Pytyliki is a native C11 desktop workstation for processor architecture discovery, instruction-set inventory, bounded micro-workload benchmarking, processor-source review, and digital signal-processing datapath experiments. Windows builds include a native Win32 GUI; Windows and Linux builds include the CLI.
 
-## Desktop workstation
+## Processor engineering modules
 
-- **CPU capability scan:** identifies the target architecture, CPU marketing string where CPUID exposes it, vendor/family/model, logical processor count and OS-reported physical/available memory, plus selected x86 ISA feature flags (SSE2, SSE4.2, AVX, AVX2, AVX-512F, AES, FMA, virtualization bit).
-- **Processor suite:** bounded integer, memory-touch, and matrix workloads with elapsed-time measurements and an integrity checksum.
-- **Source review:** read-only heuristic scan for selected process-execution, unbounded-string, manual-memory-mapping, and inline-assembly patterns.
-- **DSP laboratory:** import PCM 16-bit mono/stereo WAV, generate a 440 Hz test tone, configure low-pass cutoff/compressor threshold and ratio/saturation drive/gain in the GUI, measure peak/RMS/DC/crest/clipping, and export PCM16 WAV.
-- **Session log and report export:** visible results/error feedback plus a user-triggered JSON CPU/benchmark report.
-
-The GUI presents actions as native Windows controls and does not require a browser or runtime framework.
+- **Architecture inventory:** CPU vendor, family/model, brand string, architecture, logical topology, OS-reported memory and selected ISA capability flags.
+- **Execution workload lab:** deterministic integer dependency chains, bounded memory traversal and matrix arithmetic, with timing and integrity checks.
+- **Processor implementation review:** read-only source inspection for CPUID use, timestamp counters, SIMD intrinsics, vector widths, cache prefetch, atomics, memory fences, volatile accesses, non-temporal stores, alignment and inline assembly.
+- **DSP datapath laboratory:** bounded sample-vector workloads for filter, compressor, saturation, gain and numerical metering. PCM16 WAV is retained strictly as a portable test-vector container; this is not an audio-production or recording application.
+- **Engineering evidence:** structured JSON reports, deterministic tests, CMake builds and Windows/Linux CI.
 
 ## CLI
 
     pytyliki --profile --suite
     pytyliki --capabilities
-    pytyliki --analyze path/to/source.c
-    pytyliki --json report.json
-    pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
-    pytyliki --audio-info input.wav
-    pytyliki --process-wav input.wav output.wav --lowpass 5000 --compress -12 4 --saturate 1.8 --gain -1
+    pytyliki --analyze path/to/processor_kernel.c
+    pytyliki --json processor-report.json
+    pytyliki --tone-out datapath-vector.wav --frequency 440 --seconds 3
+    pytyliki --audio-info datapath-vector.wav
+    pytyliki --process-wav input-vector.wav output-vector.wav --lowpass 5000 --compress -12 4 --saturate 1.8 --gain -1
 
-The process command accepts uncompressed PCM16 WAV (mono or stereo, 8–192 kHz). Unsupported formats are rejected instead of guessed or silently converted.
+The legacy WAV option names are retained for command-line compatibility. Their data is treated as bounded DSP test vectors, not as a general audio workflow. Input is uncompressed PCM16 mono/stereo, 8–192 kHz; unsupported formats are rejected.
 
 ## Build and test
 
@@ -30,43 +28,46 @@ The process command accepts uncompressed PCM16 WAV (mono or stereo, 8–192 kHz)
     cmake --build build --config Release --parallel
     ctest --test-dir build -C Release --output-on-failure
 
-On Windows, CMake also builds pytyliki-gui.exe. The GUI links the system common-dialog library for file selection.
+On Windows, CMake also builds `pytyliki-gui.exe`.
 
-## Processor terminology mapping
+## Processor-domain translation
 
-| Source concept | Processor/workstation interpretation |
+All formerly general-purpose or non-processor concepts are assigned a concrete processor-engineering role:
+
+| General concept | Processor engineering function |
 |---|---|
-| Etiology / root cause | Failure-origin analysis, subsystem classification, diagnostic event source |
-| Mutation / strain / phenotype | CPU family/model, ISA feature profile, microarchitecture and build variants |
-| Resistance / immunity | Fault containment, bounds checks, input validation, integrity verification |
-| Proliferation / dissemination | Workload scaling, thread topology, memory pressure and task fan-out |
-| Remission / recurrence / exacerbation | Stable run, regression, repeatability drift and performance degradation |
-| Receptor / antagonist / synergy | Instruction-feature compatibility, competing resource use and optimization trade-offs |
-| Pharmacokinetics / metabolism | Data-path throughput, memory movement, cache locality and resource lifecycle |
-| Auditory stimulation / modulation | DSP processing chain: filter, compressor, saturation, gain and metering |
-| Chronicity / survival / prognosis | Long-run reliability metrics, trend reports, benchmark history and regression monitoring |
-| Classification / coding / audit | Capability taxonomy, structured reports, deterministic tests and CI validation |
+| Root cause / etiology | Fault-origin tracing across front end, execution, cache, memory, interconnect and power/thermal domains |
+| Population / cluster / epicenter | CPU fleet topology, socket/core/thread grouping and affected-silicon scope |
+| Mutation / phenotype / variant | Stepping, family/model, microarchitecture, ISA profile and build-target variants |
+| Infection / contamination / invasion | Corrupted inputs, compromised build dependencies, invalid instruction paths and fault propagation |
+| Resistance / immunity | Fault containment, ECC awareness, bounds checks, reset recovery and integrity verification |
+| Proliferation / hypertrophy | Thread scaling, queue growth, cache pressure, memory bandwidth saturation and execution-resource occupancy |
+| Ischemia / hypoxia / thrombosis | Pipeline starvation, cache misses, memory stalls, port contention and interconnect backpressure |
+| Pharmacokinetics / metabolism | Operand movement, register allocation, cache residency, data-path throughput and resource lifetime |
+| Auditory modulation / stimulation | DSP execution kernels, vector arithmetic, filter state, saturation and numerical signal metering |
+| Remission / recurrence / exacerbation | Stable operating point, repeatability drift, performance regression and thermal throttling |
+| Screening / diagnosis / audit | Capability enumeration, processor-source review, benchmark validation and reproducible CI evidence |
 
-These mappings are software engineering metaphors, not medical models. Pytyliki is not a medical tool and does not diagnose people or devices.
+These are engineering translations only. No clinical terminology or human-health interpretation is used by the application.
 
-## Safety contract
+## Safety and evidence contract
 
-- CPU inspection uses documented read-only operating-system and CPUID queries.
-- No BIOS/UEFI, firmware, microcode, voltage, clock, power-limit, kernel, or driver changes are performed.
-- ISA flags are informational; AVX-family hardware flags do not establish OS vector-state support or safe execution eligibility.
-- Benchmarks have hard workload and allocation bounds and run in the current process.
-- The source scanner reads source as text. It does not compile, link, load, execute, or rewrite scanned files.
-- Audio is processed in a bounded local memory buffer. WAV import supports PCM16 only; no network, device capture, or background recording is performed.
-- Findings and benchmark comparisons are advisory. They are not certification, proof of vulnerabilities, or guarantees of performance.
+- CPU discovery uses documented read-only OS queries and CPUID.
+- ISA flags are informational. AVX-family flags do not establish OS vector-state readiness and are not permission to execute those instructions.
+- Benchmarks have fixed workload and allocation limits and run without privileged access.
+- Source review reads text only. It does not compile, link, execute, load or rewrite inspected code. Findings are review prompts, not vulnerability verdicts.
+- DSP vectors are bounded local test data. There is no microphone capture, background recording, device control or network transfer.
+- No BIOS/UEFI, firmware, microcode, voltage, clock, power-limit, kernel or driver writes are performed.
+- Results are advisory and are not silicon certification or guarantees of performance.
 
 ## Project layout
 
-- src/core.c, src/core.h — CPU profile, bounded benchmark, static scanner, JSON report.
-- src/processor.c, src/processor.h — architecture/ISA inventory and bounded processor suite.
-- src/dsp.c, src/dsp.h — bounded WAV I/O and local DSP pipeline.
-- src/win_gui.c — native Win32 workstation UI.
-- src/cli.c — cross-platform command-line interface.
-- tests/test_core.c — core, processor, and DSP tests.
-- .github/workflows/ci.yml — Windows/Linux build and test matrix.
+- `src/core.c`, `src/core.h` — CPU identity, bounded baseline benchmark, processor-source review and JSON output.
+- `src/processor.c`, `src/processor.h` — architecture/ISA inventory and execution workload suite.
+- `src/dsp.c`, `src/dsp.h` — bounded DSP datapath test-vector operations.
+- `src/win_gui.c` — native Windows engineering workstation UI.
+- `src/cli.c` — cross-platform command-line interface.
+- `tests/test_core.c` — processor, DSP datapath and core tests.
+- `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
 License: MIT.
