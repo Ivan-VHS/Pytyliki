@@ -4,6 +4,7 @@
 #endif
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 int main(void) {
     const pl_improvement_capability *catalog = NULL;
@@ -17,6 +18,11 @@ int main(void) {
         assert(catalog[i].automation != NULL);
     }
     assert(pl_improvement_catalog(NULL) == 0u);
+    assert(pl_improvement_cycle_init(&cycle) == 0);
+    cycle.phase = (pl_improvement_phase)-1;
+    assert(pl_improvement_advance(&cycle) == -1);
+    assert(pl_improvement_record(&cycle, PL_IMPROVE_EVIDENCE_OBSERVED) == -1);
+    assert(strcmp(pl_improvement_phase_name((pl_improvement_phase)-1), "invalid") == 0);
     assert(pl_improvement_cycle_init(&cycle) == 0);
     assert(cycle.phase == PL_IMPROVE_OBSERVE);
     assert(pl_improvement_advance(&cycle) == -2);
