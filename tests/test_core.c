@@ -34,7 +34,7 @@ int main(void) {
     const char *source_path = "pytyliki_test_input.c";
     FILE *source = fopen(source_path, "wb");
     assert(source);
-    fputs("int main(){\n strcpy(dst, src);\n system(cmd);\n}\n", source);
+    fputs("void kernel(void){\\n __cpuid(regs, 1);\\n __m256 v;\\n _mm_prefetch(ptr, 0);\\n atomic_thread_fence(memory_order_relaxed);\\n}\\n", source);
     fclose(source);
 
     pl_analysis analysis = {0};
