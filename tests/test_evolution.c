@@ -13,6 +13,7 @@ int main(void) {
     assert(report.rounds_completed >= 1u && report.rounds_completed <= 8u);
     assert(report.module_invocations == (uint64_t)report.rounds_completed * 6u);
     assert(report.pairwise_interactions == (uint64_t)report.rounds_completed * 36u);
+    assert(report.interaction_product_sum > 0u);
     assert(report.planned_transformations == input.source_files);
     assert(report.gate_passed == 1);
     assert(report.readiness_score > 0.0 && report.readiness_score <= 100.0);
