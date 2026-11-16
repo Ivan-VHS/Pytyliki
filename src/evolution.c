@@ -14,7 +14,7 @@ static unsigned penalty(unsigned value, unsigned scale) {
 
 int pl_concreo_analyze(const pl_evolution_input *input, unsigned *score) {
     if (!input || !score) return -1;
-    *score = clamp_score(100u - penalty(input->static_findings, 2u));
+    { unsigned p = penalty(input->static_findings, 2u); *score = p >= 100u ? 0u : 100u - p; }
     if (input->source_files == 0u) *score = *score > 20u ? *score - 20u : 0u;
     return 0;
 }
