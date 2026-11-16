@@ -22,6 +22,10 @@
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
+## 🥧 Syntax-pie function layers
+
+Run `pytyliki --syntax-pie` to inspect the deterministic 20-layer mapping from function verbs and room metaphors to syntax abstractions, from **Зал / Комната / Лексема** through **Залегендарить / Анфилада / Иерархическая грамматика**. The C API in `src/syntax_pie.h` exposes indexed lookup and lookup by function name, room name or syntax level. This is a catalogue and validation layer; it does not claim to parse or execute arbitrary source code.
+
 ## 🧬 HyperFusion six-module coordinator
 
 Run `pytyliki --evolve --evolution-rounds 8` to evaluate six bounded analysis modules and all 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups. The promotion gate stays held until independently verified CI evidence is supplied. HyperFusion does not rewrite source files or merge branches.
@@ -116,19 +120,15 @@ These triplets define the **target policy**, not implemented-feature claims.
              MAIN
 ```
 
-## Why Pytyliki?
+### Source map
 
-- `src/core.c/.h` — CPU profile, bounded benchmark, processor source scanner and JSON report.
-- `src/processor.c/.h` — architecture/ISA inventory and bounded execution/memory/matrix suite.
-- `src/dsp.c/.h` — bounded PCM16 WAV I/O, tone generation, DSP processing and metering.
-- `src/improvement.c/.h` — 20×3 capability catalogue and evidence-gated iterative lifecycle.
-- `src/hw_rules.c/.h` — 12 implemented advisory hardware rules (remaining catalog IDs reserved).
-- `src/evolution.c/.h` — six-module HyperFusion analysis, 36 directed interactions per round.
-- `src/pipeline.c/.h` — C11/C23 reference pipeline plan (not an active transpiler).
-- `src/policy.c/.h` — deny-by-default local authorization policy.
-- `src/processor_catalog.c/.h` — processor workflow metadata and evidence validation.
-- `src/win_gui.c` — native Windows workstation UI; `src/cli.c` — cross-platform CLI.
-- `tests/` — core/DSP, improvement, hardware-rule, engineering-foundation and HyperFusion regression suites.
+- `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
+- `src/syntax_pie.c/.h` — 20-level syntax/function catalogue and lookups.
+- `src/processor.c/.h` — architecture/ISA inventory and processor suite.
+- `src/dsp.c/.h` — bounded WAV I/O and DSP.
+- `src/win_gui.c` — native Windows UI.
+- `src/cli.c` — cross-platform CLI.
+- `tests/test_core.c` — core, processor and DSP tests.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
 | Area | Implementation |
