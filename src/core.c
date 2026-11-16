@@ -126,23 +126,36 @@ int pl_run_benchmark(uint64_t iterations, pl_benchmark *out) {
 }
 static int contains(const char *s, const char *needle) { return strstr(s, needle) != NULL; }
 int pl_analyze_file(const char *path, pl_analysis *totals, char *details, size_t cap) {
+    static const struct { const char *token; const char *label; } checks[] = {
+        {"__cpuid", "CPUID feature discovery; validate leaf bounds and vendor semantics"},
+        {"__rdtsc", "timestamp-counter use; validate serialization and invariant-TSC assumptions"},
+        {"_mm_", "x86 SIMD intrinsic; verify ISA dispatch and OS vector-state support"},
+        {"__m256", "wide-vector type; verify alignment, feature gating and fallback path"},
+        {"__m512", "512-bit vector type; verify hardware and operating-system state support"},
+        {"_mm_prefetch", "cache prefetch hint; benchmark locality and avoid assuming guaranteed benefit"},
+        {"__builtin_prefetch", "compiler prefetch hint; measure workload-specific effect"},
+        {"memory_order_relaxed", "relaxed atomic ordering; review synchronization correctness"},
+        {"atomic_thread_fence", "memory fence; verify ordering requirements and cost"},
+        {"volatile", "volatile access; distinguish MMIO semantics from thread synchronization"},
+        {"__asm", "inline assembly; verify ABI, clobbers and target ISA constraints"},
+        {"asm volatile", "inline assembly; verify ABI, clobbers and target ISA constraints"},
+        {"_mm_stream", "non-temporal store; verify alignment, fences and write-combining assumptions"},
+        {"alignas", "explicit data alignment; validate ABI and allocation alignment"}
+    };
     if (!path || !totals || !details || cap == 0) return -1;
     FILE *f = fopen(path, "rb");
     if (!f) { totals->read_errors++; return -1; }
     char line[2048]; unsigned line_no = 0; details[0] = '\0'; totals->files_scanned++;
     while (fgets(line, sizeof(line), f)) {
         line_no++;
-        const char *finding = NULL;
-        if (contains(line, "system(") || contains(line, "popen(")) finding = "process execution API";
-        else if (contains(line, "strcpy(") || contains(line, "strcat(") || contains(line, "sprintf(")) finding = "unbounded string API";
-        else if (contains(line, "VirtualAlloc(") || contains(line, "mmap(")) finding = "manual memory mapping; review bounds and permissions";
-        else if (contains(line, "__asm") || contains(line, "asm volatile")) finding = "inline assembly; architecture-specific review required";
-        if (finding) {
-            char item[256];
-            snprintf(item, sizeof(item), "line %u: %s\n", line_no, finding);
-            size_t used = strlen(details), need = strlen(item);
-            if (used + need + 1u < cap) memcpy(details + used, item, need + 1u);
-            totals->findings++;
+        for (size_t i = 0; i < sizeof(checks)/sizeof(checks[0]); ++i) {
+            if (contains(line, checks[i].token)) {
+                char item[384];
+                snprintf(item, sizeof(item), "line %u: %s\n", line_no, checks[i].label);
+                size_t used = strlen(details), need = strlen(item);
+                if (used + need + 1u < cap) memcpy(details + used, item, need + 1u);
+                totals->findings++;
+            }
         }
     }
     if (ferror(f)) { fclose(f); totals->read_errors++; return -1; }
