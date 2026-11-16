@@ -18,7 +18,7 @@ The C11 API in `src/improvement.h` exposes the catalogue and an evidence-gated s
 
 `observe -> diagnose -> propose -> implement -> verify -> evaluate -> review -> integrate -> learn -> improve-engine`.
 
-The lifecycle requires evidence for each phase, prohibits skipping phases and requires explicit human approval before integration. The library records workflow state; it does not silently rewrite source code or merge changes. See [the engine specification](docs/recursive-processor-improvement.md).
+The default target is **666,666 complete evidence-gated cycles**. Each cycle requires evidence for every phase and explicit human approval before integration. The state machine counts verified workflow iterations; it does not automatically execute 666,666 builds, rewrite source files, push commits, or merge pull requests. The requested **66,666,666×** factor is an aspirational goal, not a mathematical guarantee or measured benchmark. Regressions, missing evidence and failed tests stop progress. See [the engine specification](docs/recursive-processor-improvement.md).
 
 ## CLI
 
