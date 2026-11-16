@@ -21,7 +21,20 @@
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility. The HyperFusion engine coordinates six bounded analysis modules; its readiness score is heuristic, not a measured speedup.
 
-## 🧬 HyperFusion Six-Module Engine\n\n`Concreo`, `Pyemont`, `Bollo`, `JJ-HH`, `PenWhite` and `Serious Serious` operate as one C11 evaluation pipeline. Each round invokes all six modules and evaluates all 36 directed module pairs (including self-checks). Repeated rounds use diminishing-return scoring and stop at convergence or the configured cap.\n\n- **Concreo:** architecture and source-review readiness.\n- **Pyemont:** bounded transformation planning (no automatic source rewrite).\n- **Bollo:** benchmark and memory evidence assessment.\n- **JJ-HH:** cross-validation against test and scan evidence.\n- **PenWhite:** per-round trace accounting.\n- **Serious Serious:** final promotion gate; test success and known architecture are required.\n\nRun `pytyliki --evolve --evolution-rounds 8`. The CLI deliberately keeps the promotion gate closed because it cannot independently certify that CI passed. The reported readiness/synergy values are planning indicators, not proof of faster hardware or modified processor silicon.\n\n## 🚀 20 × 3 Evolution Protocol
+## 🧬 HyperFusion Six-Module Engine
+
+`Concreo`, `Pyemont`, `Bollo`, `JJ-HH`, `PenWhite` and `Serious Serious` operate as one C11 evaluation pipeline. Each round invokes all six modules and evaluates all 36 directed module pairs (including self-checks). Repeated rounds use diminishing-return scoring and stop at convergence or the configured cap.
+
+- **Concreo:** architecture and source-review readiness.
+- **Pyemont:** bounded transformation planning (no automatic source rewrite).
+- **Bollo:** benchmark and memory evidence assessment.
+- **JJ-HH:** cross-validation against test and scan evidence.
+- **PenWhite:** per-round trace accounting.
+- **Serious Serious:** final promotion gate; test success and known architecture are required.
+
+Run `pytyliki --evolve --evolution-rounds 8`. The CLI deliberately keeps the promotion gate closed because it cannot independently certify that CI passed. The reported readiness/synergy values are planning indicators, not proof of faster hardware or modified processor silicon.
+
+## 🚀 20 × 3 Evolution Protocol
 
 These triplets define the **target policy**, not implemented-feature claims.
 
@@ -85,11 +98,13 @@ These triplets define the **target policy**, not implemented-feature claims.
 ### Source map
 
 - `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
-- `src/processor.c/.h` — architecture/ISA inventory and processor suite.\n- `src/evolution.c/.h` — six-module HyperFusion coordinator and 36-edge interaction matrix.
+- `src/processor.c/.h` — architecture/ISA inventory and processor suite.
+- `src/evolution.c/.h` — six-module HyperFusion coordinator and 36-edge interaction matrix.
 - `src/dsp.c/.h` — bounded WAV I/O and DSP.
 - `src/win_gui.c` — native Windows UI.
 - `src/cli.c` — cross-platform CLI.
-- `tests/test_core.c` — core, processor and DSP tests.\n- `tests/test_evolution.c` — module interaction, convergence bounds and promotion-gate tests.
+- `tests/test_core.c` — core, processor and DSP tests.
+- `tests/test_evolution.c` — module interaction, convergence bounds and promotion-gate tests.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
 ## ⚙️ Build
@@ -108,7 +123,8 @@ Windows builds also provide `pytyliki-gui.exe`.
 - [x] CPU discovery, bounded benchmarks and source review
 - [x] Local PCM16 DSP and Windows/Linux CI
 - [ ] Expanded profiling and benchmark history
-- [x] Bounded six-module HyperFusion orchestration and pairwise interaction engine\n- [ ] Reproducible source optimization/refactoring tools
+- [x] Bounded six-module HyperFusion orchestration and pairwise interaction engine
+- [ ] Reproducible source optimization/refactoring tools
 - [ ] Guarded branch, PR and release automation
 - [ ] Cross-architecture transpilation and RTL/FPGA
 - [ ] Desktop diagnostics and optimization dashboards
