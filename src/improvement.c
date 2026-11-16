@@ -102,6 +102,7 @@ int pl_improvement_advance(pl_improvement_cycle *cycle) {
 
     cycle->phase = (pl_improvement_phase)(cycle->phase + 1);
     return 0;
+}
 
 const char *pl_improvement_phase_name(pl_improvement_phase phase) {
     if ((int)phase < (int)PL_IMPROVE_OBSERVE || phase > PL_IMPROVE_COMPLETE) return "invalid";
