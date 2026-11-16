@@ -1,4 +1,5 @@
 #include "apsia.h"
+
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
@@ -8,63 +9,32 @@
 static int parse_number(const char *text, double *value) {
     char *end = NULL;
     double parsed;
+    if (text == NULL || text[0] == '\\0' || value == NULL) return -1;
     errno = 0;
     parsed = strtod(text, &end);
-    if (text == NULL || text[0] == '\0' || end == text || *end != '\0' ||
-        errno == ERANGE || !isfinite(parsed)) return -1;
+    if (end == text || *end != '\\0' || errno == ERANGE || !isfinite(parsed)) return -1;
     *value = parsed;
     return 0;
 }
 
-static int parse_workload(const char *text, pl_apsia_workload *workload) {
-    static const char *const names[PL_APSIA_WORK_COUNT] = {
-        "cpu", "gpu", "analytics", "plugin", "network-io", "script"
-    };
-    unsigned i;
-    for (i = 0u; i < PL_APSIA_WORK_COUNT; ++i) {
-        if (strcmp(text, names[i]) == 0) {
-            *workload = (pl_apsia_workload)i;
-            return 0;
-        }
-    }
-    return -1;
-}
-
-static int add_target(const char *name, uint32_t *mask) {
-    static const char *const names[PL_APSIA_LANG_COUNT] = {
-        "host", "rust", "cpp", "zig", "cuda", "wasm", "sql", "python", "go"
-    };
-    unsigned i;
-    for (i = 1u; i < PL_APSIA_LANG_COUNT; ++i) {
-        if (strcmp(name, names[i]) == 0) {
-            *mask |= PL_APSIA_TARGET_BIT(i);
-            return 0;
-        }
-    }
-    return -1;
-}
-
-static int parse_targets(const char *text, uint32_t *mask) {
-    char copy[256];
-    char *token;
-    size_t length = strlen(text);
-    if (length == 0u || length >= sizeof(copy)) return -1;
-    memcpy(copy, text, length + 1u);
-    *mask = 0u;
-    token = strtok(copy, ",");
-    while (token != NULL) {
-        if (add_target(token, mask) != 0) return -1;
-        token = strtok(NULL, ",");
-    }
-    return *mask != 0u ? 0 : -1;
+static int parse_workload(const char *name, pl_apsia_workload *workload) {
+    if (name == NULL || workload == NULL) return -1;
+    if (strcmp(name, "cpu") == 0) *workload = PL_APSIA_WORK_CPU_BOUND;
+    else if (strcmp(name, "gpu") == 0) *workload = PL_APSIA_WORK_GPU_TENSOR;
+    else if (strcmp(name, "plugin") == 0) *workload = PL_APSIA_WORK_UNTRUSTED_PLUGIN;
+    else if (strcmp(name, "io") == 0) *workload = PL_APSIA_WORK_CONCURRENT_IO;
+    else if (strcmp(name, "analytics") == 0) *workload = PL_APSIA_WORK_ANALYTICS;
+    else if (strcmp(name, "script") == 0) *workload = PL_APSIA_WORK_EMBEDDED_SCRIPT;
+    else return -1;
+    return 0;
 }
 
 static void usage(void) {
-    puts("Pytyliki APSIA route planner\n"
-         "Usage: pytyliki-apsia WORKLOAD HOST_NS TARGET_NS FFI_NS FFI_CALLS_PER_SEC TARGETS [--sandbox]\n"
-         "WORKLOAD: cpu | gpu | analytics | plugin | network-io | script\n"
-         "TARGETS: comma-separated rust,cpp,zig,cuda,wasm,sql,python,go\n"
-         "Example: pytyliki-apsia cpu 1000 300 100 100000 rust,wasm");
+    puts("Pytyliki APSIA advisory route planner\\n"
+         "Usage: pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [--sandbox]\\n"
+         "WORKLOAD: cpu | gpu | plugin | io | analytics | script\\n"
+         "Fractions must be in [0,1]; speedup must be non-negative.\\n"
+         "Example: pytyliki-apsia cpu 2.0 0.05 0.10");
 }
 
 int main(int argc, char **argv) {
@@ -74,39 +44,40 @@ int main(int argc, char **argv) {
         usage();
         return 0;
     }
-    if (argc != 7 && argc != 8) {
+    if (argc != 5 && argc != 6) {
         usage();
         return 2;
     }
-    if (argc == 8 && strcmp(argv[7], "--sandbox") != 0) {
+    if (argc == 6 && strcmp(argv[5], "--sandbox") != 0) {
         usage();
         return 2;
     }
     if (parse_workload(argv[1], &request.workload) != 0 ||
-        parse_number(argv[2], &request.host_execution_ns) != 0 ||
-        parse_number(argv[3], &request.target_execution_ns) != 0 ||
-        parse_number(argv[4], &request.ffi_overhead_ns) != 0 ||
-        parse_number(argv[5], &request.ffi_calls_per_second) != 0 ||
-        parse_targets(argv[6], &request.available_targets) != 0) {
-        fputs("Invalid workload, numeric measurement, or target list.\n", stderr);
+        parse_number(argv[2], &request.expected_speedup) != 0 ||
+        parse_number(argv[3], &request.ffi_overhead_fraction) != 0 ||
+        parse_number(argv[4], &request.host_optimization_fraction) != 0 ||
+        request.expected_speedup < 0.0 ||
+        request.ffi_overhead_fraction < 0.0 || request.ffi_overhead_fraction > 1.0 ||
+        request.host_optimization_fraction < 0.0 || request.host_optimization_fraction > 1.0) {
+        fputs("Invalid workload or measurement.\\n", stderr);
         return 2;
     }
-    request.sandbox_required = (argc == 8 || request.workload == PL_APSIA_WORK_PLUGIN) ? 1u : 0u;
-    request.minimum_speedup = 1.5;
-    request.maximum_ffi_cpu_cores = 0.25;
+    request.gpu_available = request.workload == PL_APSIA_WORK_GPU_TENSOR;
+    if (request.gpu_available) request.requested_capabilities |= PL_APSIA_CAP_GPU;
+    request.sandbox_required = (argc == 6 || request.workload == PL_APSIA_WORK_UNTRUSTED_PLUGIN);
+    request.deterministic_required = 0;
 
     if (pl_apsia_route(&request, &decision) != 0) {
-        fprintf(stderr, "APSIA rejected invalid input: %s\n", decision.reason);
+        fputs("APSIA rejected invalid input.\\n", stderr);
         return 3;
     }
-    printf("Workload: %s\nTarget: %s\nRoute selected: %s\n"
-           "Estimated speedup: %.3fx\nEstimated FFI CPU cores: %.6f\nReason: %s\n",
-           pl_apsia_workload_name(request.workload),
+    printf("Workload: %u\\nTarget: %s\\nPolyglot candidate: %s\\nSandbox required: %s\\nHuman review required: %s\\nGranted capabilities: 0x%08x\\nReason: %s\\n",
+           (unsigned)request.workload,
            pl_apsia_language_name(decision.language),
-           decision.route_selected ? "yes" : "no",
-           decision.estimated_speedup,
-           decision.estimated_ffi_cpu_cores,
+           decision.use_polyglot ? "yes" : "no",
+           decision.sandbox_required ? "yes" : "no",
+           decision.human_review_required ? "yes" : "no",
+           decision.granted_capabilities,
            decision.reason);
-    if (decision.request_rejected != 0u) return 4;
     return 0;
 }
