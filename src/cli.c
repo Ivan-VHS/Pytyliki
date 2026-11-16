@@ -28,7 +28,7 @@ static void print_improvement_plan(void) {
         printf("%02u | %-16s | %-16s | %s\n", items[i].id,
                items[i].engineering, items[i].optimization, items[i].automation);
     puts("Lifecycle: observe -> diagnose -> propose -> implement -> verify -> evaluate -> review -> integrate -> learn -> improve-engine");
-    printf("Evidence-gated iteration target: %llu (maximum %llu)\\n",
+    printf("Evidence-gated iteration target: %llu (maximum %llu)\n",
            (unsigned long long)PL_IMPROVEMENT_DEFAULT_ITERATIONS,
            (unsigned long long)PL_IMPROVEMENT_MAX_ITERATIONS);
     puts("The 66,666,666x ambition is not a guaranteed multiplier; progress requires measured evidence.");
