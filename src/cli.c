@@ -10,7 +10,7 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.5.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--analyze FILE] [--json FILE]\n"
+         "           [--analyze FILE] [--json FILE] [--evolve] [--evolution-rounds N]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -82,5 +82,29 @@ int main(int argc,char **argv) {
     if(suite){pl_suite_result sr;int rc=pl_processor_benchmark_suite(UINT64_C(12000000),8,4,&sr);if(rc!=0){fprintf(stderr,"Processor suite failed (%d).\n",rc);return 1;}printf("Suite: integer %.2f ms | memory %.2f ms | matrix %.2f ms | checksum %llu | integrity %s\n",sr.integer_ms,sr.memory_ms,sr.matrix_ms,(unsigned long long)sr.checksum,sr.integrity_ok?"PASS":"CHECK");}
     if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not read: %s\n",analyze);return 1;}printf("Static scan: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
     if(json){if(pl_write_json(json,&cpu,&b,&a)!=0){fprintf(stderr,"Could not write JSON report: %s\n",json);return 1;}printf("JSON report: %s\n",json);}
+    if(evolve){
+        pl_processor_snapshot snapshot;
+        pl_evolution_input input={0};
+        pl_evolution_report report;
+        input.source_files=a.files_scanned;
+        input.static_findings=a.findings;
+        input.benchmark_samples=bench?1u:0u;
+        input.baseline_iterations_per_ms=b.score;
+        if(pl_processor_scan(&snapshot)==0){
+            input.architecture_known=(strcmp(snapshot.architecture,"unknown")!=0)?1u:0u;
+            input.memory_mib=snapshot.physical_memory_mib?1u:0u;
+        }
+        /* The CLI cannot certify that CI tests passed; keep promotion closed. */
+        input.tests_passed=0u;
+        if(pl_evolution_run(&input,evolution_rounds,&report)!=0){
+            fprintf(stderr,"HyperFusion evaluation failed.\\n");return 1;
+        }
+        printf("HyperFusion: %u round(s), %llu module calls, %llu directed interactions\\n",
+            report.rounds_completed,(unsigned long long)report.module_invocations,
+            (unsigned long long)report.pairwise_interactions);
+        printf("Readiness: %.2f/100 | synergy: %.2f | convergence: %s | promotion gate: %s\\n",
+            report.readiness_score,report.synergy_score,report.converged?"YES":"NO",
+            report.gate_passed?"PASS":"HELD (CI test result required)");
+    }
     return 0;
 }
