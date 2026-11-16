@@ -173,7 +173,7 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-The C11 API in `src/forge66.h` exposes 66 individually named functions across six domains: APSIA routing, Concreo diagnostics, Pyemont transformation planning, Bollo DSP metrics, JJ-HH validation, and PenWhite provenance. Each entry has a stable numeric ID, unique name, purpose, and callable function pointer. The bounded scalar operations are deterministic analysis primitives; they do not rewrite source, modify processor state, grant permissions, or merge code. Invalid, non-finite, and out-of-range inputs are rejected. See `tests/test_forge66.c` for exhaustive catalogue and input-boundary checks.
+The C11 API in `src/forge66.h` exposes 66 individually named scalar-scoring functions across six domains: APSIA routing, Concreo diagnostics, Pyemont transformation planning, Bollo DSP metrics, JJ-HH validation, and PenWhite provenance. Each entry has a stable numeric ID, unique name, purpose, and callable function pointer. The functions are deterministic scalar-scoring primitives (six bounded transform families), not full implementations of routing, sandbox enforcement, FIR convolution, refactoring, or merge control. They do not rewrite source, modify processor state, grant permissions, or merge code. Invalid, non-finite, and out-of-range inputs are rejected. See `tests/test_forge66.c` for exhaustive catalogue and input-boundary checks.
 
 ## Quick start
 
