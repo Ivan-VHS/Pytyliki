@@ -31,7 +31,6 @@ static const uint32_t required_evidence[] = {
     PL_IMPROVE_EVIDENCE_TESTED,
     PL_IMPROVE_EVIDENCE_EVALUATED,
     PL_IMPROVE_EVIDENCE_REVIEWED,
-    PL_IMPROVE_EVIDENCE_APPROVED,
     PL_IMPROVE_EVIDENCE_INTEGRATED,
     PL_IMPROVE_EVIDENCE_LEARNED,
     PL_IMPROVE_EVIDENCE_META_EVALUATED
@@ -58,10 +57,13 @@ int pl_improvement_cycle_init(pl_improvement_cycle *cycle) {
 
 int pl_improvement_record(pl_improvement_cycle *cycle, uint32_t evidence) {
     const uint32_t known = (1u << 11) - 1u;
+    uint32_t allowed;
     if (cycle == NULL || cycle->phase >= PL_IMPROVE_COMPLETE ||
-        evidence == 0u || (evidence & ~known) != 0u ||
-        (evidence & required_evidence[cycle->phase]) == 0u ||
-        (evidence & ~required_evidence[cycle->phase]) != 0u) return -1;
+        evidence == 0u || (evidence & ~known) != 0u) return -1;
+    allowed = required_evidence[cycle->phase];
+    if (cycle->phase == PL_IMPROVE_INTEGRATE)
+        allowed |= PL_IMPROVE_EVIDENCE_APPROVED;
+    if ((evidence & ~allowed) != 0u) return -1;
     cycle->evidence |= evidence;
     return 0;
 }
@@ -71,11 +73,10 @@ int pl_improvement_advance(pl_improvement_cycle *cycle) {
     if ((cycle->evidence & required_evidence[cycle->phase]) == 0u) return -2;
     if (cycle->phase == PL_IMPROVE_INTEGRATE &&
         (cycle->evidence & PL_IMPROVE_EVIDENCE_APPROVED) == 0u) return -3;
+    if (cycle->phase == PL_IMPROVE_IMPROVE_ENGINE &&
+        cycle->generation == UINT32_MAX) return -4;
     cycle->phase = (pl_improvement_phase)(cycle->phase + 1);
-    if (cycle->phase == PL_IMPROVE_COMPLETE) {
-        if (cycle->generation == UINT32_MAX) return -4;
-        cycle->generation++;
-    }
+    if (cycle->phase == PL_IMPROVE_COMPLETE) cycle->generation++;
     return 0;
 }
 
