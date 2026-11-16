@@ -1,36 +1,35 @@
-# Architecture and safety contract
+# Processor workstation architecture and safety contract
+
+## Product boundary
+
+Every module must inspect, measure, validate or simulate a CPU, microarchitecture, processor implementation, execution path, memory subsystem, or DSP datapath. General-purpose functionality is accepted only when it directly supports those tasks.
 
 ## Layers
 
-1. **Core (core.c)** — portable CPU identity/topology and OS memory query, bounded integer benchmark, read-only heuristic source review, and JSON output.
-2. **Processor (processor.c)** — architecture classification, selected ISA capability discovery, and three bounded workloads (integer dependency chain, memory traversal, compact matrix arithmetic).
-3. **DSP (dsp.c)** — bounded in-memory audio buffer, PCM16 WAV import/export, tone generation, gain, one-pole low-pass, static-ratio compression, soft saturation, and signal metering.
-4. **Presentation** — native Win32 GUI on Windows (editable DSP controls, file dialogs, session log and JSON report export) and a cross-platform CLI.
+1. **Core** — processor identity, platform topology, bounded baseline execution benchmark, processor-source review and structured report output.
+2. **Processor inventory** — architecture classification, vendor/family/model, selected ISA flags, OS memory inventory and logical processor topology.
+3. **Execution lab** — bounded integer dependency, memory traversal and matrix workloads; timing and integrity checksum.
+4. **Implementation review** — read-only inspection of CPUID, timestamp counters, SIMD intrinsics, vector types, prefetch hints, atomics, fences, volatile accesses, non-temporal stores, alignment and inline assembly.
+5. **DSP datapath lab** — bounded numerical sample vectors processed by filter, compressor, saturation and gain kernels. PCM16 WAV is only an import/export test-vector envelope.
+6. **Presentation** — native Win32 GUI and cross-platform CLI, both exposing the same local processor-engineering operations.
 
 ## Data flow
 
-- The GUI/CLI requests a processor snapshot; the core reads OS topology and CPUID where supported.
-- Benchmark operations run fixed workloads with hard upper bounds. The processor suite reports wall-clock duration and an integrity checksum.
-- Source review opens only the selected source file in binary-read mode, scans text lines, and records heuristic findings.
-- WAV input is checked for RIFF/WAVE, PCM format, 16-bit samples, supported channel count, sample-rate range, alignment and bounded payload size before allocation.
-- DSP operators modify only the in-memory float buffer. WAV export clamps samples to the PCM16 output range.
-
-## Concept translation
-
-Medical terms from the source material are intentionally anonymized into engineering vocabulary: etiology becomes root-cause analysis; strain/phenotype becomes CPU family and ISA profile; resistance becomes fault tolerance and validation; remission/recurrence becomes stable operation/regression; pharmacokinetics becomes data-path and resource-flow analysis; auditory modulation becomes the DSP signal chain; prognosis becomes repeatability and regression monitoring.
+- The presentation layer requests a processor snapshot; the core obtains OS topology and CPUID data where supported.
+- The execution lab runs bounded workloads and reports elapsed time and checksums.
+- The implementation reviewer reads selected source files as text and emits heuristic prompts for architecture-specific review.
+- The DSP lab validates vector dimensions, sample rate, channel count and payload bounds before allocating test data. Kernels operate only on in-memory vectors.
+- Reports contain measurements and explicit evidence limitations; missing telemetry is never invented.
 
 ## Safety boundaries
 
-- No privileged elevation, kernel driver, BIOS/UEFI, firmware, microcode, voltage, frequency, or power-limit writes.
-- CPUID capability bits are reported as hardware facts only. The implementation does not dispatch AVX/AVX-512 instructions.
-- The processor suite is capped at 100 million integer iterations, 64 MiB memory, and 32 memory passes.
-- Audio duration is capped at 30 seconds for tone generation; the in-memory frame ceiling is 4.8 million; file import is capped at 32 MiB.
-- Only PCM16 mono/stereo WAV at 8–192 kHz is accepted. Compressed WAV variants and other bit depths are rejected.
-- The static scanner is heuristic and does not parse or execute code. Findings are review prompts, not vulnerability verdicts.
-- No automatic source rewriting, remote code execution, code downloading, device capture, or background recording is implemented.
+- No privileged elevation, kernel driver, BIOS/UEFI, firmware, microcode, voltage, frequency or power-limit writes.
+- CPUID feature bits do not establish OSXSAVE/XCR0 readiness. AVX-family instructions are not dispatched by capability flags alone.
+- Workloads retain hard iteration, memory, pass-count and sample-frame ceilings.
+- Source review never compiles, loads, executes or modifies inspected files.
+- DSP vectors are local test data. No hardware audio capture, device playback, background monitoring or network activity is performed.
+- Findings are advisory and must be corroborated by trusted profiler, simulator, compiler, formal, timing or physical-design evidence.
 
-## Known limits
+## Extension rules
 
-- AVX flags do not inspect OSXSAVE/XCR0 vector-state readiness and must not be treated as permission to execute AVX instructions.
-- Benchmark numbers are sensitive to the OS scheduler, power policy, thermal state, and competing workloads.
-- The current audio chain is a practical PCM16 lab, not a real-time audio engine: there is no ASIO/WASAPI capture, plugin host, multiband processing, or hardware output.
+New modules must declare: processor subsystem, required telemetry, supported architectures, workload limits, failure behavior, evidence quality, and whether the operation is read-only or simulated. Hardware-affecting actions remain out of scope unless a separately reviewed, vendor-documented and explicitly approved interface is designed.

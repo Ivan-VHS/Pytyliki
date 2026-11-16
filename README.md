@@ -18,6 +18,7 @@
 - Read-only source scanner and JSON reports.
 - PCM16 WAV tools, tone generation and local DSP processing.
 - Native Win32 GUI; CLI on Windows and Linux.
+- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, deny-by-default policy and C11/C23 pipeline plan.
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
