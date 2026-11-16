@@ -21,7 +21,9 @@ The new C11 planner models a three-line × three-matrix × three-stage system:
 
 The 27 deterministic cells are traversed for up to 100 logical generations (2,700 bounded planning steps). The planner is iterative, allocation-free and deterministic; it does not recursively execute generated code, modify repositories, deploy artifacts, or bypass human review. It is a planning/catalogue primitive for future evidence-gated automation.
 
-API: `src/trimatrix_autoforge.h`; tests: `tests/test_trimatrix_autoforge.c`; CLI exposure and autonomous execution are not claimed.
+API: `src/trimatrix_autoforge.h`; implementation: `src/trimatrix_autoforge.c`; tests: `tests/test_trimatrix_autoforge.c`; full design contract: [`docs/trimatrix-autoforge.md`](docs/trimatrix-autoforge.md).
+
+CLI: `pytyliki --trimatrix` prints the default 100-generation plan (2,700 steps); `pytyliki --trimatrix 1` prints one generation. This remains a deterministic planner, not an autonomous executor.
 
 ## Why Pytyliki?
 
