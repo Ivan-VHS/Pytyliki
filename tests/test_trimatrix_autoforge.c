@@ -41,7 +41,7 @@ int main(void) {
             assert(step.cell.id == cell + 1u);
         }
     }
-    assert(pl_tma_plan_next(&plan, &step) == -1);
+    assert(pl_tma_plan_next(&plan, &step) == 0);
     assert(plan.emitted_steps == PL_TMA_MAX_STEPS);
     assert(plan.current_depth == PL_TMA_MAX_DEPTH + 1u);
 
@@ -49,7 +49,7 @@ int main(void) {
     assert(pl_tma_plan_total(&plan) == 27u);
     for (unsigned i = 0u; i < 27u; ++i) assert(pl_tma_plan_next(&plan, &step) == 1);
     assert(plan.current_depth == 2u);
-    assert(pl_tma_plan_next(&plan, &step) == -1);
+    assert(pl_tma_plan_next(&plan, &step) == 0);
     assert(pl_tma_plan_total(NULL) == 0u);
     puts("TriMatrix AutoForge 100 tests passed.");
     return 0;
