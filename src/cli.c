@@ -7,7 +7,7 @@
 #include "pipeline.h"
 #include "policy.h"
 #include "evolution.h"
-#include "mtte.h"
+#include "syntax_pie.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -18,12 +18,41 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--improvement-plan] [--mtte] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--improvement-plan] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
+}
+static void print_berry_core_catalog(void) {
+    const pl_berry_core_command *items = NULL;
+    size_t count = pl_berry_core_catalog(&items);
+    puts("Berry processor-core command catalogue (dry-run planner):");
+    for (size_t i = 0u; i < count; ++i)
+        printf("%02u | %-12s | %-18s | %-28s | %s\n",
+               (unsigned)i + 1u, items[i].name, items[i].virtue,
+               items[i].operation, items[i].description);
+    puts("No hardware interrupt, register write, affinity change, or firmware operation is performed.");
+}
+static int dispatch_berry_core(const char *name, unsigned core) {
+    const pl_berry_core_command *items = NULL;
+    size_t count = pl_berry_core_catalog(&items);
+    pl_berry_core_request request;
+    pl_berry_core_result result;
+    size_t i;
+    for (i = 0u; i < count; ++i)
+        if (strcmp(items[i].name, name) == 0) break;
+    if (i == count) { fprintf(stderr, "Unknown berry command: %s\n", name); return 2; }
+    request.command = items[i].id;
+    request.target_logical_core = core;
+    if (pl_berry_core_dispatch(&request, &result) != 0) {
+        fprintf(stderr, "Core command rejected: %s\n", result.detail[0] ? result.detail : "invalid request");
+        return 2;
+    }
+    printf("%s -> logical core %u | %s | PLANNED ONLY | hardware modified: no\n",
+           result.command_name, result.target_logical_core, result.operation);
+    return 0;
 }
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
@@ -42,23 +71,15 @@ static void print_improvement_plan(void) {
     puts("The 66,666,666x ambition is not a guaranteed multiplier; progress requires measured evidence.");
     puts("Integration requires human approval. This command displays the plan; it does not rewrite or merge code.");
 }
-static void print_mtte(void) {
-    const pl_mtte_layer *items = NULL;
-    pl_mtte_clock clock;
-    size_t count = pl_mtte_catalog(&items);
-    puts("Mechanical Tick & Type Engine (20 layers):");
-    puts("ID | Semantic layer | Function layer | Mechanical tick operation");
+static void print_syntax_pie(void) {
+    const pl_syntax_pie_layer *items = NULL;
+    size_t count = pl_syntax_pie_catalog(&items);
+    puts("Syntax-pie function layers (20 levels):");
     for (size_t i = 0u; i < count; ++i)
-        printf("%02u | %s | %s | %s\n", items[i].id, items[i].concept,
-               items[i].function, items[i].mechanical_operation);
-    if (pl_mtte_clock_init(&clock, UINT64_C(1000000)) == 0) {
-        (void)pl_mtte_clock_advance(&clock, 1u);
-        printf("Logical tick demo: count=%llu elapsed=%llu ns period=%llu ns\n",
-               (unsigned long long)clock.tick_count,
-               (unsigned long long)clock.elapsed_ns,
-               (unsigned long long)clock.period_ns);
-    }
-    puts("Software-only logical ticks; no CPU clock, timer hardware or processor registers are changed.");
+        printf("%02u | %-18s | %-12s | %-36s | %s\n", items[i].id,
+               items[i].function_name, items[i].room_name, items[i].level_name,
+               items[i].operation);
+    puts("This is a deterministic syntax/function catalogue; it does not execute generated code.");
 }
 static void print_hw_report(void) {
     pl_hw_metrics metrics = {0};
@@ -101,7 +122,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,mtte=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u;
@@ -113,11 +134,14 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
-        else if(!strcmp(argv[i],"--mtte")) mtte=1;
+        else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
         else if(!strcmp(argv[i],"--processor-catalog")) catalog=1;
         else if(!strcmp(argv[i],"--evolve")) evolve=1;
+        else if(!strcmp(argv[i],"--core-commands")) berry_list=1;
+        else if(!strcmp(argv[i],"--core-command")&&i+1<argc) berry_name=argv[++i];
+        else if(!strcmp(argv[i],"--core")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n>UINT32_MAX)return 2;berry_core=(unsigned)n;}
         else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;evolve=1;}
         else if(!strcmp(argv[i],"--target")&&i+1<argc){const char *v=argv[++i];if(!strcmp(v,"c11"))pipeline_target=PL_TARGET_C11;else if(!strcmp(v,"c23"))pipeline_target=PL_TARGET_C23;else return 2;}
         else if(!strcmp(argv[i],"--policy-check")&&i+2<argc){policy=1;if(pl_policy_parse_role(argv[++i],&policy_role)!=0||pl_policy_parse_action(argv[++i],&policy_action)!=0)return 2;}
@@ -135,8 +159,10 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
+    if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
+    if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(improvement_plan) print_improvement_plan();
-    if(mtte) print_mtte();
+    if(syntax_pie) print_syntax_pie();
     if(hw_rules) print_hw_report();
     if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
     if(policy && !pl_policy_authorize(policy_role,policy_action)) return 3;
@@ -159,8 +185,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if((improvement_plan || mtte) && argc==2) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!mtte&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve){profile=1;bench=1;}
+    if((improvement_plan || syntax_pie) && argc==2) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();

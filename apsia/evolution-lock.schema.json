@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pytyliki.dev/schemas/evolution-lock.schema.json",
+  "title": "APSIA Evolution Lock",
+  "description": "Manifest for verified, immutable APSIA module artifacts. A manifest entry is metadata, not permission to execute or load an artifact.",
+  "type": "object",
+  "required": ["schema_version", "host_revision", "modules"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "host_revision": { "type": "string", "minLength": 7 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["module_id", "language", "contract_version", "artifact_sha256", "verification", "approval"],
+        "additionalProperties": false,
+        "properties": {
+          "module_id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
+          "language": { "enum": ["rust", "cpp", "zig", "cuda", "wasm", "sql", "python", "go"] },
+          "contract_version": { "type": "string", "minLength": 1 },
+          "artifact_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+          "sbom_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+          "signature_ref": { "type": "string", "minLength": 1 },
+          "verification": {
+            "type": "object",
+            "required": ["ci_run", "tests_passed", "benchmark_record"],
+            "additionalProperties": false,
+            "properties": {
+              "ci_run": { "type": "string", "minLength": 1 },
+              "tests_passed": { "const": true },
+              "benchmark_record": { "type": "string", "minLength": 1 },
+              "sanitizers": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+            }
+          },
+          "approval": {
+            "type": "object",
+            "required": ["reviewed_by", "approved_revision"],
+            "additionalProperties": false,
+            "properties": {
+              "reviewed_by": { "type": "string", "minLength": 1 },
+              "approved_revision": { "type": "string", "minLength": 7 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
