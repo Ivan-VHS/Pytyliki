@@ -9,10 +9,10 @@
 static int parse_number(const char *text, double *value) {
     char *end = NULL;
     double parsed;
-    if (text == NULL || text[0] == '\\0' || value == NULL) return -1;
+    if (text == NULL || text[0] == '\0' || value == NULL) return -1;
     errno = 0;
     parsed = strtod(text, &end);
-    if (end == text || *end != '\\0' || errno == ERANGE || !isfinite(parsed)) return -1;
+    if (end == text || *end != '\0' || errno == ERANGE || !isfinite(parsed)) return -1;
     *value = parsed;
     return 0;
 }
@@ -30,10 +30,10 @@ static int parse_workload(const char *name, pl_apsia_workload *workload) {
 }
 
 static void usage(void) {
-    puts("Pytyliki APSIA advisory route planner\\n"
-         "Usage: pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [--sandbox]\\n"
-         "WORKLOAD: cpu | gpu | plugin | io | analytics | script\\n"
-         "Fractions must be in [0,1]; speedup must be non-negative.\\n"
+    puts("Pytyliki APSIA advisory route planner\n"
+         "Usage: pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [--sandbox]\n"
+         "WORKLOAD: cpu | gpu | plugin | io | analytics | script\n"
+         "Fractions must be in [0,1]; speedup must be non-negative.\n"
          "Example: pytyliki-apsia cpu 2.0 0.05 0.10");
 }
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
         request.expected_speedup < 0.0 ||
         request.ffi_overhead_fraction < 0.0 || request.ffi_overhead_fraction > 1.0 ||
         request.host_optimization_fraction < 0.0 || request.host_optimization_fraction > 1.0) {
-        fputs("Invalid workload or measurement.\\n", stderr);
+        fputs("Invalid workload or measurement.\n", stderr);
         return 2;
     }
     request.gpu_available = request.workload == PL_APSIA_WORK_GPU_TENSOR;
@@ -68,10 +68,10 @@ int main(int argc, char **argv) {
     request.deterministic_required = 0;
 
     if (pl_apsia_route(&request, &decision) != 0) {
-        fputs("APSIA rejected invalid input.\\n", stderr);
+        fputs("APSIA rejected invalid input.\n", stderr);
         return 3;
     }
-    printf("Workload: %u\\nTarget: %s\\nPolyglot candidate: %s\\nSandbox required: %s\\nHuman review required: %s\\nGranted capabilities: 0x%08x\\nReason: %s\\n",
+    printf("Workload: %u\nTarget: %s\nPolyglot candidate: %s\nSandbox required: %s\nHuman review required: %s\nGranted capabilities: 0x%08x\nReason: %s\n",
            (unsigned)request.workload,
            pl_apsia_language_name(decision.language),
            decision.use_polyglot ? "yes" : "no",
