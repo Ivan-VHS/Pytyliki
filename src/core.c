@@ -44,10 +44,59 @@ int pl_run_benchmark(uint64_t iterations,pl_benchmark *out){
  if(!out||iterations==0||iterations>UINT64_C(500000000))return -1;volatile uint64_t x=UINT64_C(0x9e3779b97f4a7c15);double start=now_ms();for(uint64_t i=0;i<iterations;i++){x^=x>>12;x^=x<<25;x^=x>>27;x*=UINT64_C(2685821657736338717);}double elapsed=now_ms()-start;if(x==0)fputc(' ',stdout);out->iterations=iterations;out->elapsed_ms=elapsed;out->score=elapsed>0?(double)iterations/elapsed:0.0;return 0;
 }
 static int contains(const char*s,const char*n){return strstr(s,n)!=NULL;}
-int pl_analyze_file(const char*path,pl_analysis*totals,char*details,size_t cap){
- if(!path||!totals||!details||cap==0)return -1;FILE*f=fopen(path,"rb");if(!f){totals->read_errors++;return -1;}char line[2048];unsigned line_no=0;details[0]=0;totals->files_scanned++;
- while(fgets(line,sizeof(line),f)){line_no++;const char*finding=NULL;if(contains(line,"system(")||contains(line,"popen("))finding="process execution API";else if(contains(line,"strcpy(")||contains(line,"strcat(")||contains(line,"sprintf("))finding="unbounded string API";else if(contains(line,"VirtualAlloc(")||contains(line,"mmap("))finding="manual memory mapping; review bounds and permissions";else if(contains(line,"__asm")||contains(line,"asm volatile"))finding="inline assembly; architecture-specific review required";if(finding){char item[256];snprintf(item,sizeof(item),"line %u: %s\n",line_no,finding);size_t used=strlen(details),need=strlen(item);if(used+need+1<cap)memcpy(details+used,item,need+1);totals->findings++;}}
- if(ferror(f)){fclose(f);totals->read_errors++;return -1;}fclose(f);return 0;
+static void append_finding(
+    pl_analysis *totals, char *details, size_t cap,
+    unsigned line_no, const char *finding
+) {
+    char item[256];
+    int written = snprintf(item, sizeof(item), "line %u: %s\\n", line_no, finding);
+    if (written > 0) {
+        size_t used = strlen(details);
+        size_t need = (size_t)written;
+        if (need < sizeof(item) && used + need + 1u <= cap) {
+            memcpy(details + used, item, need + 1u);
+        }
+        totals->findings++;
+    }
+}
+
+int pl_analyze_file(const char *path, pl_analysis *totals, char *details, size_t cap) {
+    FILE *f;
+    char line[2048];
+    unsigned line_no = 0u;
+
+    if (path == NULL || totals == NULL || details == NULL || cap == 0u) return -1;
+    f = fopen(path, "rb");
+    if (f == NULL) {
+        totals->read_errors++;
+        return -1;
+    }
+
+    details[0] = '\\0';
+    totals->files_scanned++;
+    while (fgets(line, sizeof(line), f) != NULL) {
+        line_no++;
+        /* Evaluate each category independently: one source line may contain
+           multiple distinct risky patterns and must not hide later matches. */
+        if (contains(line, "system(") || contains(line, "popen("))
+            append_finding(totals, details, cap, line_no, "process execution API");
+        if (contains(line, "strcpy(") || contains(line, "strcat(") || contains(line, "sprintf("))
+            append_finding(totals, details, cap, line_no, "unbounded string API");
+        if (contains(line, "VirtualAlloc(") || contains(line, "mmap("))
+            append_finding(totals, details, cap, line_no,
+                           "manual memory mapping; review bounds and permissions");
+        if (contains(line, "__asm") || contains(line, "asm volatile"))
+            append_finding(totals, details, cap, line_no,
+                           "inline assembly; architecture-specific review required");
+    }
+
+    if (ferror(f)) {
+        fclose(f);
+        totals->read_errors++;
+        return -1;
+    }
+    fclose(f);
+    return 0;
 }
 static void json_string(FILE*f,const char*s){fputc('"',f);for(;*s;s++){unsigned char c=(unsigned char)*s;if(c=='"'||c=='\\'){fputc('\\',f);fputc(c,f);}else if(c<32)fprintf(f,"\\u%04x",c);else fputc(c,f);}fputc('"',f);}
 int pl_write_json(const char*path,const pl_cpu_info*cpu,const pl_benchmark*b,const pl_analysis*a){
