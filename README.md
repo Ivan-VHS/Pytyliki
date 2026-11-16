@@ -12,6 +12,19 @@
 
 Pytyliki helps systems programmers, hardware enthusiasts, and C developers inspect processor capabilities and run bounded local experiments without claiming to reprogram physical silicon.
 
+## TriMatrix AutoForge 100
+
+The new C11 planner models a three-line × three-matrix × three-stage system:
+- **Lines:** Build, Evolve, Verify.
+- **Matrices:** Function, Automation, Meta-Automation.
+- **Stages:** Discover, Design, Generate.
+
+The 27 deterministic cells are traversed for up to 100 logical generations (2,700 bounded planning steps). The planner is iterative, allocation-free and deterministic; it does not recursively execute generated code, modify repositories, deploy artifacts, or bypass human review. It is a planning/catalogue primitive for future evidence-gated automation.
+
+API: `src/trimatrix_autoforge.h`; implementation: `src/trimatrix_autoforge.c`; tests: `tests/test_trimatrix_autoforge.c`; full design contract: [`docs/trimatrix-autoforge.md`](docs/trimatrix-autoforge.md).
+
+CLI: `pytyliki --trimatrix` prints the default 100-generation plan (2,700 steps); `pytyliki --trimatrix 1` prints one generation. This remains a deterministic planner, not an autonomous executor.
+
 ## Why Pytyliki?
 
 Processor information, source-level hints, benchmarks, and local DSP utilities often live in separate tools. Pytyliki brings these workflows together in a native C11 codebase with explicit safety boundaries and testable outputs.

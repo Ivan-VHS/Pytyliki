@@ -31,6 +31,19 @@ Pytyliki 面向系统程序员、C 语言开发者和硬件爱好者，用于检
 - **桌面与命令行：** 提供原生 Win32 图形界面，以及适用于 Windows 和 Linux 的 CLI 工作流。
 - **改进规划：** 查看包含 20 项能力的工程/优化/自动化目录，以及基于证据的迭代计划。
 
+## TriMatrix AutoForge 100
+
+新增的 C11 规划器对 **三条执行线 × 三个矩阵 × 三个阶段** 进行建模：
+- **执行线：** 构建、演进、验证。
+- **矩阵：** 功能、自动化、元自动化。
+- **阶段：** 发现、设计、生成。
+
+27 个确定性单元最多遍历 100 个逻辑代次（共 2,700 个有界规划步骤）。规划器采用迭代方式，无动态内存分配且结果确定；它不会递归执行生成代码、修改代码仓库、部署产物或绕过人工审查。这是未来证据门控自动化的规划与目录基础。
+
+API：`src/trimatrix_autoforge.h`；实现：`src/trimatrix_autoforge.c`；测试：`tests/test_trimatrix_autoforge.c`；完整架构契约：[`docs/trimatrix-autoforge.md`](docs/trimatrix-autoforge.md)。
+
+CLI：`pytyliki --trimatrix` 输出默认 100 代计划（2,700 步）；`pytyliki --trimatrix 1` 输出一代计划。这是确定性规划器，不是自主执行器。
+
 ## 当前架构
 
 | 模块 | 实现内容 |
