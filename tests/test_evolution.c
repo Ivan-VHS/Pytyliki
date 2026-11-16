@@ -16,7 +16,7 @@ int main(void) {
     assert(report.planned_transformations == input.source_files);
     assert(report.gate_passed == 1);
     assert(report.readiness_score > 0.0 && report.readiness_score <= 100.0);
-    assert(report.trace_events == 1u);
+    assert(report.trace_events == report.rounds_completed);
 
     for (unsigned i = 0; i < PL_EVOLUTION_MODULE_COUNT; ++i)
         for (unsigned j = 0; j < PL_EVOLUTION_MODULE_COUNT; ++j)
