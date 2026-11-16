@@ -88,15 +88,14 @@ int pl_evolution_run(const pl_evolution_input *input, unsigned max_rounds,
         return -1;
 
     memset(report, 0, sizeof(*report));
-    if (evaluate_modules(input, report) != 0) return -1;
 
-    unsigned score_sum = 0u;
-    for (size_t i = 0; i < PL_EVOLUTION_MODULE_COUNT; ++i)
-        score_sum += report->module_scores[i];
-    const double base_score = (double)score_sum / (double)PL_EVOLUTION_MODULE_COUNT;
-
-    double previous_score = base_score;
+    double previous_score = -1.0;
     for (unsigned round = 1u; round <= max_rounds; ++round) {
+        if (evaluate_modules(input, report) != 0) return -1;
+        unsigned score_sum = 0u;
+        for (size_t i = 0; i < PL_EVOLUTION_MODULE_COUNT; ++i)
+            score_sum += report->module_scores[i];
+        const double base_score = (double)score_sum / (double)PL_EVOLUTION_MODULE_COUNT;
         unsigned weighted_synergy = 0u;
         for (size_t from = 0; from < PL_EVOLUTION_MODULE_COUNT; ++from) {
             for (size_t to = 0; to < PL_EVOLUTION_MODULE_COUNT; ++to) {
