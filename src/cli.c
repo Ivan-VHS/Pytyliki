@@ -40,7 +40,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
         else if(!strcmp(argv[i],"--evolve")) evolve=1;
-        else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;}
+        else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;}
         else if(!strcmp(argv[i],"--analyze")&&i+1<argc) analyze=argv[++i];
         else if(!strcmp(argv[i],"--json")&&i+1<argc) json=argv[++i];
         else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
@@ -97,12 +97,12 @@ int main(int argc,char **argv) {
         /* The CLI cannot certify that CI tests passed; keep promotion closed. */
         input.tests_passed=0u;
         if(pl_evolution_run(&input,evolution_rounds,&report)!=0){
-            fprintf(stderr,"HyperFusion evaluation failed.\\n");return 1;
+            fprintf(stderr,"HyperFusion evaluation failed.\n");return 1;
         }
-        printf("HyperFusion: %u round(s), %llu module calls, %llu directed interactions\\n",
+        printf("HyperFusion: %u round(s), %llu module calls, %llu directed interactions\n",
             report.rounds_completed,(unsigned long long)report.module_invocations,
             (unsigned long long)report.pairwise_interactions);
-        printf("Readiness: %.2f/100 | synergy: %.2f | convergence: %s | promotion gate: %s\\n",
+        printf("Readiness: %.2f/100 | synergy: %.2f | convergence: %s | promotion gate: %s\n",
             report.readiness_score,report.synergy_score,report.converged?"YES":"NO",
             report.gate_passed?"PASS":"HELD (CI test result required)");
     }
