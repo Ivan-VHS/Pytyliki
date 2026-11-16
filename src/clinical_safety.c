@@ -126,8 +126,15 @@ int pl_sterilization_evaluate(
         !valid_range(profile->min_pressure_kpa_abs, profile->max_pressure_kpa_abs) ||
         !valid_range(profile->min_humidity_pct, profile->max_humidity_pct) ||
         !valid_range(profile->min_exposure_seconds, profile->max_exposure_seconds) ||
-        !isfinite(cycle->temperature_c) || !isfinite(cycle->pressure_kpa_abs) ||
-        !isfinite(cycle->humidity_pct) || !isfinite(cycle->exposure_seconds)) return -1;
+        profile->min_temperature_c < -273.15 ||
+        profile->min_pressure_kpa_abs < 0.0 ||
+        profile->min_humidity_pct < 0.0 || profile->max_humidity_pct > 100.0 ||
+        profile->min_exposure_seconds < 0.0 ||
+        !isfinite(cycle->temperature_c) || cycle->temperature_c < -273.15 ||
+        !isfinite(cycle->pressure_kpa_abs) || cycle->pressure_kpa_abs < 0.0 ||
+        !isfinite(cycle->humidity_pct) || cycle->humidity_pct < 0.0 ||
+        cycle->humidity_pct > 100.0 ||
+        !isfinite(cycle->exposure_seconds) || cycle->exposure_seconds < 0.0) return -1;
 
     result.out_of_profile_mask = 0u;
     if (cycle->temperature_c < profile->min_temperature_c ||
@@ -155,23 +162,24 @@ int pl_sterilization_chain_digest(
     pl_sha256_provider sha256, void *provider_context,
     unsigned char digest_out[32]
 ) {
-    unsigned char input[32u + 768u];
+    unsigned char input[32u + 1024u];
+    pl_sterilization_evaluation verified;
     int written;
     if (previous_digest == NULL || profile == NULL || cycle == NULL ||
         evaluation == NULL || sha256 == NULL || digest_out == NULL ||
-        !valid_token(profile->profile_id, sizeof(profile->profile_id)) ||
-        !valid_token(profile->reference_id, sizeof(profile->reference_id)) ||
-        !valid_token(cycle->cycle_id, sizeof(cycle->cycle_id)) ||
-        !valid_token(cycle->sterilizer_id, sizeof(cycle->sterilizer_id)) ||
-        !valid_token(cycle->load_id, sizeof(cycle->load_id)) ||
-        !isfinite(cycle->temperature_c) || !isfinite(cycle->pressure_kpa_abs) ||
-        !isfinite(cycle->humidity_pct) || !isfinite(cycle->exposure_seconds)) return -1;
+        pl_sterilization_evaluate(profile, cycle, &verified) != 0 ||
+        evaluation->out_of_profile_mask != verified.out_of_profile_mask ||
+        evaluation->within_configured_profile != verified.within_configured_profile) return -1;
 
     memcpy(input, previous_digest, 32u);
     written = snprintf((char *)input + 32u, sizeof(input) - 32u,
-        "PYTYLIKI-STERILIZATION-LEDGER-v1|%s|%s|%s|%s|%a|%a|%a|%a|%u|%d",
+        "PYTYLIKI-STERILIZATION-LEDGER-v1|%s|%s|%s|%s|%s|%a|%a|%a|%a|%a|%a|%a|%a|%a|%a|%a|%a|%u|%d",
         profile->profile_id, profile->reference_id,
-        cycle->cycle_id, cycle->sterilizer_id,
+        cycle->cycle_id, cycle->sterilizer_id, cycle->load_id,
+        profile->min_temperature_c, profile->max_temperature_c,
+        profile->min_pressure_kpa_abs, profile->max_pressure_kpa_abs,
+        profile->min_humidity_pct, profile->max_humidity_pct,
+        profile->min_exposure_seconds, profile->max_exposure_seconds,
         cycle->temperature_c, cycle->pressure_kpa_abs,
         cycle->humidity_pct, cycle->exposure_seconds,
         evaluation->out_of_profile_mask, evaluation->within_configured_profile);
@@ -188,11 +196,14 @@ int pl_cpr_review_measurement(
     if (bounds == NULL || observation == NULL || out_flags == NULL ||
         !valid_range(bounds->min_rate_per_minute, bounds->max_rate_per_minute) ||
         !valid_range(bounds->min_depth_mm, bounds->max_depth_mm) ||
+        bounds->min_rate_per_minute < 0.0 || bounds->min_depth_mm < 0.0 ||
         !isfinite(bounds->max_signal_noise_fraction) ||
         bounds->max_signal_noise_fraction < 0.0 ||
         bounds->max_signal_noise_fraction > 1.0 ||
         !isfinite(observation->observed_rate_per_minute) ||
         !isfinite(observation->observed_depth_mm) ||
+        observation->observed_rate_per_minute < 0.0 ||
+        observation->observed_depth_mm < 0.0 ||
         !isfinite(observation->signal_noise_fraction) ||
         observation->signal_noise_fraction < 0.0 ||
         observation->signal_noise_fraction > 1.0) return -1;
