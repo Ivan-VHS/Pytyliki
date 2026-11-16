@@ -21,6 +21,12 @@ Every module must inspect, measure, validate or simulate a CPU, microarchitectur
 - The DSP lab validates vector dimensions, sample rate, channel count and payload bounds before allocating test data. Kernels operate only on in-memory vectors.
 - Reports contain measurements and explicit evidence limitations; missing telemetry is never invented.
 
+## HyperFusion semantics
+
+- Concreo scores architecture/source-review readiness; Pyemont plans transformations without rewriting files; Bollo evaluates benchmark/memory evidence; JJ-HH cross-checks test and scan evidence; PenWhite records trace events; Serious Serious controls promotion.
+- The 6×6 interaction matrix evaluates 36 directed pairs per round, including self-checks. A 1–64 round limit bounds work; diminishing returns permit early convergence.
+- Scores are heuristic coordination metrics, not benchmark speedups, correctness proofs or physical processor modifications. The CLI cannot certify CI success and keeps promotion held.
+
 ## Safety boundaries
 
 - No privileged elevation, kernel driver, BIOS/UEFI, firmware, microcode, voltage, frequency or power-limit writes.
