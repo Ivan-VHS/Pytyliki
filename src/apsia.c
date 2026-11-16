@@ -37,6 +37,7 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
     double total_native_ns;
     double speedup;
     double ffi_cores;
+    uint32_t sandbox_mandatory;
 
     if (request == NULL || decision == NULL) return -1;
     memset(decision, 0, sizeof(*decision));
@@ -61,10 +62,15 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
         return -1;
     }
 
+    /* Untrusted plugins are always sandbox-mandatory, even if a caller
+     * forgets to set the explicit sandbox flag. */
+    sandbox_mandatory = (request->sandbox_required != 0u ||
+                         request->workload == PL_APSIA_WORK_PLUGIN) ? 1u : 0u;
+
     /* Sandboxing takes precedence over raw speed. WASM must be explicitly
      * available; absence of WASM rejects the request instead of running it
      * unsandboxed in the host process. */
-    if (request->sandbox_required != 0u) {
+    if (sandbox_mandatory != 0u) {
         candidate = PL_APSIA_LANG_WASM;
     } else {
         switch (request->workload) {
@@ -81,7 +87,7 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
     }
 
     if ((request->available_targets & PL_APSIA_TARGET_BIT(candidate)) == 0u) {
-        if (request->sandbox_required != 0u)
+        if (sandbox_mandatory != 0u)
             reject_sandbox_request(decision, "Required sandbox target unavailable; reject request.");
         else
             host_fallback(decision, "Selected target unavailable; retain host implementation.");
@@ -105,7 +111,7 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
     decision->estimated_speedup = speedup;
     decision->estimated_ffi_cpu_cores = ffi_cores;
     if (speedup < request->minimum_speedup) {
-        if (request->sandbox_required != 0u)
+        if (sandbox_mandatory != 0u)
             reject_sandbox_request(decision, "Sandbox candidate fails FFI-adjusted speedup policy; reject request.");
         else
             host_fallback(decision, "FFI-adjusted speedup is below the configured threshold.");

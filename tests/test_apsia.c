@@ -54,6 +54,13 @@ int main(void) {
     assert(d.request_rejected == 1u);
 
     r = base_request();
+    r.workload = PL_APSIA_WORK_PLUGIN;
+    r.available_targets &= ~PL_APSIA_TARGET_BIT(PL_APSIA_LANG_WASM);
+    assert(pl_apsia_route(&r, &d) == 0);
+    assert(d.route_selected == 0u);
+    assert(d.request_rejected == 1u); /* plugins never fall back unsandboxed */
+
+    r = base_request();
     r.ffi_overhead_ns = 600.0;
     assert(pl_apsia_route(&r, &d) == 0);
     assert(d.route_selected == 0u);
