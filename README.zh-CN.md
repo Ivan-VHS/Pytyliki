@@ -125,7 +125,9 @@ pytyliki --evolve --evolution-rounds 8
 - **操作系统：** 项目 CI 矩阵包含 Windows 和 Linux。
 - **语言标准：** 实际实现采用 ISO C11；C23 出现在参考流水线方案中。
 - **数据格式：** JSON 报告和 PCM16 WAV 音频。
-- **未作出的兼容性声明：** macOS、ARM64/x86_64 性能保证、Protobuf、Parquet、Arrow，以及未经单独验证的生产级 RTL/FPGA 综合。
+- **未作出的兼容性声明：** macOS 支持、ARM64/x86_64 专项性能保证、Protobuf、Parquet、Arrow，以及未经单独验证的生产级 RTL/FPGA 综合。
+
+添加上述任何声明前，必须满足[平台与能力验证政策](docs/PLATFORM_VALIDATION_POLICY.md)中的证据要求。
 
 ## 许可证
 
