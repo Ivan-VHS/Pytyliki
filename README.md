@@ -18,11 +18,11 @@
 - Read-only source scanner and JSON reports.
 - PCM16 WAV tools, tone generation and local DSP processing.
 - Native Win32 GUI; CLI on Windows and Linux.
-- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, deny-by-default policy and C11/C23 pipeline plan.
+- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, 20-layer syntax-pie function catalogue, deny-by-default policy and C11/C23 pipeline plan.
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
-## 🧬 HyperFusion six-module coordinator
+## 🥧 Syntax-pie function layers\n\nRun `pytyliki --syntax-pie` to inspect the deterministic 20-layer mapping from function verbs and room metaphors to syntax abstractions, from **Зал / Комната / Лексема** through **Залегендарить / Анфилада / Иерархическая грамматика**. The C API in `src/syntax_pie.h` exposes indexed lookup and lookup by function name, room name or syntax level. This is a catalogue and validation layer; it does not claim to parse or execute arbitrary source code.\n\n## 🧬 HyperFusion six-module coordinator
 
 Run `pytyliki --evolve --evolution-rounds 8` to evaluate six bounded analysis modules and all 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups. The promotion gate stays held until independently verified CI evidence is supplied. HyperFusion does not rewrite source files or merge branches.
 
@@ -89,7 +89,7 @@ These triplets define the **target policy**, not implemented-feature claims.
 
 ### Source map
 
-- `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
+- `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.\n- `src/syntax_pie.c/.h` — 20-level syntax/function catalogue and lookups.
 - `src/processor.c/.h` — architecture/ISA inventory and processor suite.
 - `src/dsp.c/.h` — bounded WAV I/O and DSP.
 - `src/win_gui.c` — native Windows UI.
@@ -110,7 +110,7 @@ Windows builds also provide `pytyliki-gui.exe`.
 ## 🗺️ Roadmap
 
 - [x] Native C11 core, CLI and Windows desktop UI
-- [x] CPU discovery, bounded benchmarks and source review
+- [x] CPU discovery, bounded benchmarks and source review\n- [x] 20-layer syntax-pie function catalogue with lookup API and CTest coverage
 - [x] Local PCM16 DSP and Windows/Linux CI
 - [ ] Expanded profiling and benchmark history
 - [ ] Reproducible optimization/refactoring tools
