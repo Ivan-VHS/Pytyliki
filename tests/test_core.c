@@ -34,14 +34,14 @@ int main(void) {
     const char *source_path = "pytyliki_test_input.c";
     FILE *source = fopen(source_path, "wb");
     assert(source);
-    fputs("int main(){\n strcpy(dst, src);\n system(cmd);\n}\n", source);
+    fputs("void kernel(void){\n __cpuid(regs, 1);\n __m256 v;\n _mm_prefetch(ptr, 0);\n atomic_thread_fence(memory_order_relaxed);\n}\n", source);
     fclose(source);
 
     pl_analysis analysis = {0};
     char details[1024];
     assert(pl_analyze_file(source_path, &analysis, details, sizeof(details)) == 0);
     assert(analysis.files_scanned == 1);
-    assert(analysis.findings == 2);
+    assert(analysis.findings == 4);
     remove(source_path);
 
     pl_audio_buffer audio = {0}, loaded = {0};
@@ -70,6 +70,6 @@ int main(void) {
     pl_audio_free(&audio);
     assert(pl_audio_generate_tone(&audio, 48000, 2, 24000.0, 1.0) != 0);
 
-    puts("All processor, DSP and core tests passed.");
+    puts("All processor, processor-DSP and core tests passed.");
     return 0;
 }
