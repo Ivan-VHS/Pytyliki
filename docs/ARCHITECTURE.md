@@ -45,3 +45,16 @@ The current APSIA module is a planning library only. It does not generate source
 ## Extension rules
 
 New modules must declare: processor subsystem, required telemetry, supported architectures, workload limits, failure behavior, evidence quality, and whether the operation is read-only or simulated. Hardware-affecting actions remain out of scope unless a separately reviewed, vendor-documented and explicitly approved interface is designed.
+
+## ISA capability semantics
+
+- CPUID hardware advertisement and operating-system execution readiness are separate facts.
+- `avx_hw` records the CPU AVX bit; `osxsave` records OSXSAVE advertisement; `avx_os_state` confirms XCR0 enables XMM and YMM state.
+- `avx`, `avx2`, and `fma` are exposed as usable capabilities only when the required OS vector state is enabled. `avx512f` additionally requires XCR0 opmask, ZMM-hi256, and hi16-ZMM state.
+- Capability reporting is not instruction dispatch. A future SIMD backend must still use a safe dispatcher, preserve a scalar fallback, and test the exact runtime environment.
+
+## Build and verification profiles
+
+- Default builds use C11 and compiler warnings; MSVC additionally enables SDL checks.
+- GCC/Clang builds may enable `PYTYLIKI_ENABLE_SANITIZERS=ON` for AddressSanitizer and UndefinedBehaviorSanitizer.
+- CI runs the normal Windows/Linux build and test matrix plus a Linux sanitizer pass. Sanitizer results are correctness diagnostics, not performance guarantees.
