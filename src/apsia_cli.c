@@ -23,20 +23,30 @@ static int parse_workload(const char *text, pl_apsia_workload *workload) {
     return -1;
 }
 static int parse_capabilities(const char *text, uint32_t *caps) {
-    char copy[256], *token; size_t length;
+    char copy[256];
+    char *cursor;
+    size_t length;
     if (text == NULL || caps == NULL) return -1;
-    length = strlen(text); if (length == 0u || length >= sizeof(copy)) return -1;
-    memcpy(copy, text, length + 1u); *caps = 0u; token = strtok(copy, ",");
-    while (token != NULL) {
-        if (strcmp(token, "network") == 0) *caps |= PL_APSIA_CAP_NETWORK;
-        else if (strcmp(token, "filesystem") == 0) *caps |= PL_APSIA_CAP_FILESYSTEM;
-        else if (strcmp(token, "clock") == 0) *caps |= PL_APSIA_CAP_CLOCK;
-        else if (strcmp(token, "gpu") == 0) *caps |= PL_APSIA_CAP_GPU;
-        else if (strcmp(token, "shared-memory") == 0) *caps |= PL_APSIA_CAP_SHARED_MEMORY;
+    length = strlen(text);
+    if (length == 0u || length >= sizeof(copy)) return -1;
+    memcpy(copy, text, length + 1u);
+    *caps = 0u;
+    cursor = copy;
+    while (cursor != NULL) {
+        char *comma = strchr(cursor, ',');
+        if (comma != NULL) *comma = '\0';
+        if (cursor[0] == '\0') return -1;
+        if (strcmp(cursor, "network") == 0) *caps |= PL_APSIA_CAP_NETWORK;
+        else if (strcmp(cursor, "filesystem") == 0) *caps |= PL_APSIA_CAP_FILESYSTEM;
+        else if (strcmp(cursor, "clock") == 0) *caps |= PL_APSIA_CAP_CLOCK;
+        else if (strcmp(cursor, "gpu") == 0) *caps |= PL_APSIA_CAP_GPU;
+        else if (strcmp(cursor, "shared-memory") == 0) *caps |= PL_APSIA_CAP_SHARED_MEMORY;
         else return -1;
-        token = strtok(NULL, ",");
+        if (comma == NULL) break;
+        cursor = comma + 1;
+        if (cursor[0] == '\0') return -1;
     }
-    return 0;
+    return *caps != 0u ? 0 : -1;
 }
 static void usage(void) {
     puts("Pytyliki APSIA route planner\nUsage: pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [options]\nWORKLOAD: cpu | gpu | plugin | network-io | analytics | script\nOptions: --gpu --deterministic --sandbox --capabilities network,filesystem,clock,gpu,shared-memory\nExample: pytyliki-apsia cpu 2.0 0.1 0.2");
