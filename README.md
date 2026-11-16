@@ -35,6 +35,35 @@ Processor information, source-level hints, benchmarks, and local DSP utilities o
 
 Run `pytyliki --syntax-pie` to inspect the deterministic 20-layer mapping from function verbs and room metaphors to syntax abstractions, from **Зал / Комната / Лексема** through **Залегендарить / Анфилада / Иерархическая грамматика**. The C API in `src/syntax_pie.h` exposes indexed lookup and lookup by function name, room name or syntax level. This is a catalogue and validation layer; it does not claim to parse or execute arbitrary source code.
 
+## ⏱️ Mechanical Tick & Type Engine (MTTE)
+
+Run `pytyliki --mtte` to inspect 20 linked layers. Each row binds a semantic operation (such as **Типизация**), a function designation (**Типизирующий**) and a mechanical tick operation (**Механизирующий**). The C API in `src/mtte.h` provides catalogue enumeration, indexed lookup, name lookup and a deterministic logical tick counter.
+
+The counter uses an explicit nanosecond period, checks integer overflow and supports reset. It is a software model for scheduling and measurement logic: it does **not** change CPU frequency, hardware timers, processor registers, firmware or voltage.
+
+| # | Semantic layer | Function layer | Mechanical operation |
+|---:|---|---|---|
+| 01 | Типизация | Типизирующий | Механизирующий |
+| 02 | Классификация | Классифицирующий | Тактирующий |
+| 03 | Категоризация | Категоризирующий | Тактогенерирующий |
+| 04 | Таксономизация | Структурирующий | Тактосинхронизирующий |
+| 05 | Спецификация | Классификационный | Тактосчитающий |
+| 06 | Структуризация | Параметризующий | Тактоконтролирующий |
+| 07 | Формализация | Атрибутирующий | Тактокорректирующий |
+| 08 | Систематизация | Маркирующий | Тактокалибрующий |
+| 09 | Кодирование | Аннотируемый | Тактопреобразующий |
+| 10 | Маркировка | Идентифицирующий | Тактоделящий |
+| 11 | Аннотирование | Дифференцирующий | Тактосуммирующий |
+| 12 | Идентификация | Специфицирующий | Тактодетектирующий |
+| 13 | Дифференциация | Формализующий | Тактопланирующий |
+| 14 | Сигнатуризация | Нормализующий | Тактопрофилирующий |
+| 15 | Параметризация | Кодирующий | Тактосогласующий |
+| 16 | Атрибутизация | Сигнатурирующий | Тактопозиционирующий |
+| 17 | Нормализация | Схематизирующий | Тактодискретизирующий |
+| 18 | Схематизация | Унифицирующий | Тактопериодизирующий |
+| 19 | Унификация | Метатипизирующий | Тактосеквенирующий |
+| 20 | Метаклассификация | Автотипизирующий | Тактодиагностирующий |
+
 ## 🧬 HyperFusion six-module coordinator
 
 | Area | Implementation |
@@ -117,6 +146,7 @@ APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language
 - `src/dsp.c/.h` — bounded WAV I/O and DSP.
 - `src/win_gui.c` — native Windows UI.
 - `src/cli.c` — cross-platform CLI.
+- `tests/test_mtte.c` — MTTE catalogue, lookup, bounds and overflow tests.
 - `tests/test_core.c` — core, processor and DSP tests.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 

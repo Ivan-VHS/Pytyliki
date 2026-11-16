@@ -207,7 +207,6 @@ int main(int argc,char **argv) {
             input.memory_mib=snapshot.physical_memory_mib>PL_EVOLUTION_MAX_MEMORY_MIB
                 ? PL_EVOLUTION_MAX_MEMORY_MIB : (unsigned)snapshot.physical_memory_mib;
         }
-        /* The CLI cannot certify external CI success, so the promotion gate stays held. */
         input.tests_passed=0u;
         if(pl_evolution_run(&input,evolution_rounds,&report)!=0){
             fprintf(stderr,"HyperFusion evaluation failed.\n");return 1;
