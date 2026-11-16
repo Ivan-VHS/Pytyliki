@@ -100,6 +100,7 @@ FORGE66_FN(pl_penwhite_ci_witness, 62u)
 FORGE66_FN(pl_penwhite_review_bridge, 63u)
 FORGE66_FN(pl_penwhite_merge_guard, 64u)
 FORGE66_FN(pl_penwhite_learning_digest, 65u)
+FORGE66_FN(pl_penwhite_retention_oracle, 66u)
 
 static const pl_forge66_descriptor catalogue[PL_FORGE66_FUNCTION_COUNT] = {
     { 1u, "pl_apsia_route_refiner", "APSIA", "Rank a candidate language route", pl_apsia_route_refiner },
@@ -166,7 +167,8 @@ static const pl_forge66_descriptor catalogue[PL_FORGE66_FUNCTION_COUNT] = {
     { 62u, "pl_penwhite_ci_witness", "PenWhite / provenance", "Aggregate CI evidence confidence", pl_penwhite_ci_witness },
     { 63u, "pl_penwhite_review_bridge", "PenWhite / provenance", "Bridge review and verification evidence", pl_penwhite_review_bridge },
     { 64u, "pl_penwhite_merge_guard", "PenWhite / provenance", "Hold merge pending required proof", pl_penwhite_merge_guard },
-    { 65u, "pl_penwhite_learning_digest", "PenWhite / provenance", "Summarize validated learning signals", pl_penwhite_learning_digest }
+    { 65u, "pl_penwhite_learning_digest", "PenWhite / provenance", "Summarize validated learning signals", pl_penwhite_learning_digest },
+    { 66u, "pl_penwhite_retention_oracle", "PenWhite / provenance", "Assess evidence retention completeness", pl_penwhite_retention_oracle }
 };
 
 size_t pl_forge66_catalog(const pl_forge66_descriptor **out) {
