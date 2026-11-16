@@ -41,7 +41,17 @@ static void print_improvement_plan(void) {
     puts("The 66,666,666x ambition is not a guaranteed multiplier; progress requires measured evidence.");
     puts("Integration requires human approval. This command displays the plan; it does not rewrite or merge code.");
 }
-static void print_syntax_pie(void) {\n    const pl_syntax_pie_layer *items = NULL;\n    size_t count = pl_syntax_pie_catalog(&items);\n    puts("Syntax-pie function layers (20 levels):");\n    for (size_t i = 0u; i < count; ++i)\n        printf("%02u | %-18s | %-12s | %-36s | %s\\n", items[i].id,\n               items[i].function_name, items[i].room_name, items[i].level_name,\n               items[i].operation);\n    puts("This is a deterministic syntax/function catalogue; it does not execute generated code.");\n}\nstatic void print_hw_report(void) {
+static void print_syntax_pie(void) {
+    const pl_syntax_pie_layer *items = NULL;
+    size_t count = pl_syntax_pie_catalog(&items);
+    puts("Syntax-pie function layers (20 levels):");
+    for (size_t i = 0u; i < count; ++i)
+        printf("%02u | %-18s | %-12s | %-36s | %s\\n", items[i].id,
+               items[i].function_name, items[i].room_name, items[i].level_name,
+               items[i].operation);
+    puts("This is a deterministic syntax/function catalogue; it does not execute generated code.");
+}
+static void print_hw_report(void) {
     pl_hw_metrics metrics = {0};
     pl_hw_report report;
     size_t i;
