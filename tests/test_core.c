@@ -4,9 +4,6 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -44,7 +41,9 @@ int main(void) {
     char details[1024];
     assert(pl_analyze_file(source_path, &analysis, details, sizeof(details)) == 0);
     assert(analysis.files_scanned == 1);
-    assert(analysis.findings == 2);
+    assert(analysis.findings == 6);
+    assert(strstr(details, "CPUID feature discovery") != NULL);
+    assert(strstr(details, "cache prefetch hint") != NULL);
     remove(source_path);
 
     pl_audio_buffer audio = {0}, loaded = {0};
