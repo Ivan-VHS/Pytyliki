@@ -95,14 +95,17 @@ int pl_evolution_run(const pl_evolution_input *input, unsigned max_rounds,
         unsigned weighted_synergy = 0u;
         for (size_t from = 0; from < PL_EVOLUTION_MODULE_COUNT; ++from) {
             for (size_t to = 0; to < PL_EVOLUTION_MODULE_COUNT; ++to) {
+                uint64_t product = (uint64_t)report->module_scores[from] *
+                    (uint64_t)report->module_scores[to];
                 ++report->interaction_counts[from][to];
                 ++report->pairwise_interactions;
-                weighted_synergy += synergy[from][to];
+                report->interaction_product_sum += product;
+                weighted_synergy += (unsigned)((product * synergy[from][to]) / 1000u);
             }
         }
         report->rounds_completed = round;
         report->synergy_score = 10.0 * (double)weighted_synergy /
-            (double)(PL_EVOLUTION_MODULE_COUNT * PL_EVOLUTION_MODULE_COUNT * 5u);
+            (double)(PL_EVOLUTION_MODULE_COUNT * PL_EVOLUTION_MODULE_COUNT * 50u);
         /* Diminishing-return refinement: repeated passes approach, but never exceed, the cap. */
         report->readiness_score = base_score * 0.90 +
             report->synergy_score * 0.10 * (1.0 - 1.0 / (double)(round + 1u));
