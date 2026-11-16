@@ -146,13 +146,13 @@ int pl_analyze_file(const char *path, pl_analysis *totals, char *details, size_t
     if (!path || !totals || !details || cap == 0) return -1;
     FILE *f = fopen(path, "rb");
     if (!f) { totals->read_errors++; return -1; }
-    char line[2048]; unsigned line_no = 0; details[0] = '\\0'; totals->files_scanned++;
+    char line[2048]; unsigned line_no = 0; details[0] = '\0'; totals->files_scanned++;
     while (fgets(line, sizeof(line), f)) {
         line_no++;
         for (size_t i = 0; i < sizeof(checks)/sizeof(checks[0]); ++i) {
             if (contains(line, checks[i].token)) {
                 char item[384];
-                snprintf(item, sizeof(item), "line %u: %s\\n", line_no, checks[i].label);
+                snprintf(item, sizeof(item), "line %u: %s\n", line_no, checks[i].label);
                 size_t used = strlen(details), need = strlen(item);
                 if (used + need + 1u < cap) memcpy(details + used, item, need + 1u);
                 totals->findings++;
