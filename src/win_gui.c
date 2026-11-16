@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 #include "core.h"
 #include "processor.h"
 #include "dsp.h"
@@ -55,7 +56,7 @@ static HWND add_edit(HWND parent, const char *value, int id) {
 static double read_parameter(int id, double fallback) {
     char text[64], *end=NULL; GetWindowTextA(GetDlgItem(g_main,id),text,(int)sizeof(text));
     double value=strtod(text,&end);
-    if (!text[0] || !end || *end || value!=value) return fallback;
+    if (!text[0] || !end || end==text || *end || !isfinite(value)) return fallback;
     return value;
 }
 static HWND add_button(HWND parent, const char *label, int id) {

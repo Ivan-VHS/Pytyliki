@@ -8,6 +8,8 @@
 #include "policy.h"
 #include "evolution.h"
 #include <stdio.h>
+#include <math.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,7 +25,7 @@ static void usage(void) {
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
 static int parse_double(const char *s,double *out) {
-    char *end=NULL; double v=strtod(s,&end); if(!s[0]||!end||*end||v!=v) return -1; *out=v; return 0;
+    char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
 static void print_improvement_plan(void) {
     const pl_improvement_capability *items = NULL;
