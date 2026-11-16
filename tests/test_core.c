@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define CHECK(expr) do { if (!(expr)) { \
-    fprintf(stderr, "CHECK failed at %s:%d: %s\\n", __FILE__, __LINE__, #expr); \
+    fprintf(stderr, "CHECK failed at %s:%d: %s\n", __FILE__, __LINE__, #expr); \
     return 1; \
 } } while (0)
 
@@ -17,8 +17,8 @@ int main(void) {
 
     CHECK(pl_cpu_profile(&cpu)==0);
     CHECK(cpu.logical_cpus>=1u);
-    CHECK(cpu.vendor[0]!='\\0');
-    CHECK(cpu.model[0]!='\\0');
+    CHECK(cpu.vendor[0]!='\0');
+    CHECK(cpu.model[0]!='\0');
 
     CHECK(pl_run_benchmark(10000u,&b)==0);
     CHECK(b.iterations==10000u);
@@ -28,7 +28,7 @@ int main(void) {
 
     f=fopen(src,"wb");
     CHECK(f!=NULL);
-    CHECK(fputs("int main(void) { strcpy(dst, src); system(cmd); }\\n",f)>=0);
+    CHECK(fputs("int main(void) { strcpy(dst, src); system(cmd); }\n",f)>=0);
     CHECK(fclose(f)==0);
 
     CHECK(pl_analyze_file(src,&a,details,sizeof(details))==0);
