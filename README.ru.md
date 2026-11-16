@@ -122,7 +122,7 @@ pytyliki --review-processor source.c
 pytyliki --json report.json
 ```
 
-Полный перечень опций текущей сборки доступен через `pytyliki --help`. Аудиокоманды включают `--tone-out`, `--audio-info` и `--process-wav`.
+Опции: `pytyliki --help`; аудио: `--tone-out`, `--audio-info`, `--process-wav`.
 
 ## Проверки качества и интеграция
 
