@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-add_library(pytyliki_core src/core.c src/processor.c src/dsp.c)
+add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/clinical_safety.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(MSVC)
   target_compile_options(pytyliki_core PRIVATE /W4)
