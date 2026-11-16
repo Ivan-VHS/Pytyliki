@@ -83,7 +83,7 @@ static void run_suite(void) {
 static int choose_file(char *path,size_t cap,int save) {
     OPENFILENAMEA ofn; memset(&ofn,0,sizeof(ofn)); path[0]='\0';
     ofn.lStructSize=sizeof(ofn); ofn.hwndOwner=GetActiveWindow(); ofn.lpstrFile=path; ofn.nMaxFile=(DWORD)cap;
-    ofn.lpstrFilter="WAV audio (*.wav)\0*.wav\0C/C++/Rust source (*.c;*.h;*.cpp;*.rs)\0*.c;*.h;*.cpp;*.rs\0All files (*.*)\0*.*\0";
+    ofn.lpstrFilter="DSP test vectors (*.wav)\0*.wav\0C/C++/Rust source (*.c;*.h;*.cpp;*.rs)\0*.c;*.h;*.cpp;*.rs\0All files (*.*)\0*.*\0";
     ofn.nFilterIndex=save?1:3; ofn.lpstrDefExt=save?"wav":NULL; ofn.Flags=OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|(save?(OFN_OVERWRITEPROMPT|OFN_EXPLORER):(OFN_FILEMUSTEXIST|OFN_EXPLORER));
     return save?GetSaveFileNameA(&ofn):GetOpenFileNameA(&ofn);
 }
@@ -105,25 +105,25 @@ static void save_report(void) {
 static void review_source(void) {
     char path[1024]; if(!choose_file(path,sizeof(path),0)) return;
     pl_analysis a={0}; char details[8192]={0};
-    if(pl_analyze_file(path,&a,details,sizeof(details))!=0) { log_format("[SOURCE REVIEW] Could not read: %s\r\n",path); return; }
-    log_format("\r\n[SOURCE REVIEW] %s\r\nFiles: %u | review flags: %u | read errors: %u\r\n%s",
+    if(pl_analyze_file(path,&a,details,sizeof(details))!=0) { log_format("[PROCESSOR CODE REVIEW] Could not read: %s\r\n",path); return; }
+    log_format("\r\n[PROCESSOR CODE REVIEW] %s\r\nFiles: %u | review flags: %u | read errors: %u\r\n%s",
          path,a.files_scanned,a.findings,a.read_errors,details[0]?details:"No heuristic flags found.\r\n");
     log_text("Flags are review prompts, not vulnerability verdicts. Source files are never executed or modified.\r\n");
 }
 static void load_wav(void) {
     char path[1024]; if(!choose_file(path,sizeof(path),0)) return;
     int rc=pl_audio_load_wav(path,&g_audio);
-    if(rc!=0) { log_format("[AUDIO IMPORT] WAV load failed (%d). Expected PCM 16-bit mono/stereo WAV, 8–192 kHz, bounded file size.\r\n",rc); return; }
-    log_format("\r\n[DSP IMPORT] %s | %u Hz | %u channel(s) | %lu frames\r\n",path,g_audio.sample_rate,g_audio.channels,(unsigned long)g_audio.frames);
+    if(rc!=0) { log_format("[DSP VECTOR IMPORT] WAV load failed (%d). Expected PCM 16-bit mono/stereo WAV, 8–192 kHz, bounded file size.\r\n",rc); return; }
+    log_format("\r\n[DSP TEST-VECTOR IMPORT] %s | %u Hz | %u channel(s) | %lu frames\r\n",path,g_audio.sample_rate,g_audio.channels,(unsigned long)g_audio.frames);
     pl_audio_stats s; if(pl_audio_measure(&g_audio,&s)==0) log_format("Peak %.4f | RMS %.4f | crest %.2f dB | clipped samples %lu\r\n",s.peak,s.rms,s.crest_db,(unsigned long)s.clipped_samples);
 }
 static void generate_tone(void) {
     int rc=pl_audio_generate_tone(&g_audio,48000,2,440.0,3.0);
-    if(rc!=0) { log_format("[DSP GENERATOR] Tone generation failed (%d).\r\n",rc); return; }
-    log_text("\r\n[DSP GENERATOR] Created 440 Hz stereo test tone, 48 kHz, 3 seconds, -3.1 dBFS peak.\r\n");
+    if(rc!=0) { log_format("[DSP VECTOR GENERATOR] Tone generation failed (%d).\r\n",rc); return; }
+    log_text("\r\n[DSP VECTOR GENERATOR] Created 440 Hz stereo test tone, 48 kHz, 3 seconds, -3.1 dBFS peak.\r\n");
 }
 static void audio_effect(int id) {
-    if(!g_audio.samples) { log_text("[DSP] Load a PCM WAV or generate a test tone first.\r\n"); return; }
+    if(!g_audio.samples) { log_text("[DSP] Load a DSP test vector or generate a test vector first.\r\n"); return; }
     int rc=0; const char *name="";
     if(id==ID_LOWPASS) { double cutoff=read_parameter(ID_CUTOFF,5000.0); rc=pl_audio_apply_lowpass(&g_audio,cutoff); log_format("[DSP PROCESS] One-pole low-pass %.1f Hz: %s\r\n",cutoff,rc==0?"applied":"invalid parameter"); return; }
     else if(id==ID_COMPRESS) { double threshold=read_parameter(ID_THRESHOLD,-12.0), ratio=read_parameter(ID_RATIO,4.0); rc=pl_audio_apply_compressor(&g_audio,threshold,ratio); log_format("[DSP PROCESS] Compressor %.1f dB / %.2f:1: %s\r\n",threshold,ratio,rc==0?"applied":"invalid parameter"); return; }
@@ -137,10 +137,10 @@ static void measure_audio(void) {
          s.peak,s.rms,s.dc,s.crest_db,(unsigned long)s.clipped_samples);
 }
 static void export_wav(void) {
-    if(!g_audio.samples) { log_text("[DSP EXPORT] No audio buffer to export.\r\n"); return; }
+    if(!g_audio.samples) { log_text("[DSP VECTOR EXPORT] No audio buffer to export.\r\n"); return; }
     char path[1024]; if(!choose_file(path,sizeof(path),1)) return;
-    if(pl_audio_write_wav(path,&g_audio)==0) log_format("[DSP EXPORT] Wrote PCM16 WAV: %s\r\n",path);
-    else log_format("[DSP EXPORT] Write failed: %s\r\n",path);
+    if(pl_audio_write_wav(path,&g_audio)==0) log_format("[DSP VECTOR EXPORT] Wrote PCM16 WAV: %s\r\n",path);
+    else log_format("[DSP VECTOR EXPORT] Write failed: %s\r\n",path);
 }
 
 static void layout(HWND w) {
