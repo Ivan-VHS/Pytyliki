@@ -57,10 +57,11 @@ uint32_t pl_tma_plan_total(const pl_tma_plan *plan) {
 
 int pl_tma_plan_next(pl_tma_plan *plan, pl_tma_step *out) {
     if (plan == NULL || out == NULL || plan->target_depth == 0u ||
-        plan->target_depth > PL_TMA_MAX_DEPTH ||
-        plan->current_depth == 0u || plan->current_depth > plan->target_depth ||
+        plan->target_depth > PL_TMA_MAX_DEPTH) return -1;
+    if (plan->emitted_steps == pl_tma_plan_total(plan)) return 0;
+    if (plan->current_depth == 0u || plan->current_depth > plan->target_depth ||
         plan->next_cell >= PL_TMA_CELL_COUNT ||
-        plan->emitted_steps >= pl_tma_plan_total(plan)) return -1;
+        plan->emitted_steps > pl_tma_plan_total(plan)) return -1;
 
     out->depth = plan->current_depth;
     out->step = plan->emitted_steps + 1u;
