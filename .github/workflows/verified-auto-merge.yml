@@ -61,7 +61,7 @@ jobs:
             echo "Auto-merge blocked: PR head changed while this validation run was executing."
             exit 1
           fi
-          set -euo pipefail\n          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"\n          if [ "${current_head}" != "${PR_HEAD_SHA}" ]; then\n            echo "Auto-merge blocked: PR head changed while this validation run was executing."\n            exit 1\n          fi\n          reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
+          reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
           approvals="$(printf '%s' "${reviews}" | jq --arg author "${PR_AUTHOR}" --arg head "${PR_HEAD_SHA}" '
             [.[][] | select(.user.login != $author)]
             | sort_by(.user.login, .submitted_at)
