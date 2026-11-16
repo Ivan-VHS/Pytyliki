@@ -70,3 +70,16 @@ These mappings are software engineering metaphors, not medical models. Pytyliki 
 - .github/workflows/ci.yml — Windows/Linux build and test matrix.
 
 License: MIT.
+
+
+## Processor improvement and verification
+
+- `--improvement-plan` prints the deterministic 20-row engineering / optimization / automation catalogue.
+- `--hw-rules` evaluates 12 implemented advisory hardware rules. The 1,000-ID catalog is reserved; unimplemented rules are never reported as executed. Missing profiler evidence remains unknown.
+- `--pipeline --target c11|c23` prints a deterministic reference transpilation workflow. It does not claim to perform transpilation.
+- `--policy-check ROLE ACTION` evaluates deny-by-default local policy. Execution of inspected code, firmware writes and CPU-control changes are always denied.
+- `--clinical-catalog` prints workflow metadata templates only; it is not a clinical instruction system.
+
+The recursive improvement cycle requires phase evidence, independent tests and human approval before integration. It cannot approve or merge its own pull requests, weaken tests or bypass branch protection.
+
+Build verification covers C11 compilation and CTest on Windows and Linux. A passing build is necessary but not a silicon-level certification; benchmark and hardware-rule results remain advisory.
