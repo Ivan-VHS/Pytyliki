@@ -41,7 +41,7 @@ int main(void) {
     char details[1024];
     assert(pl_analyze_file(source_path, &analysis, details, sizeof(details)) == 0);
     assert(analysis.files_scanned == 1);
-    assert(analysis.findings == 4);
+    assert(analysis.findings == 5);
     remove(source_path);
 
     pl_audio_buffer audio = {0}, loaded = {0};
