@@ -4,6 +4,7 @@
 #endif
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 int main(void) {
     pl_hw_metrics metrics;
@@ -28,6 +29,11 @@ int main(void) {
         if (report.findings[i].id == 11u) saw_missing_ppa = 1;
     }
     assert(saw_l1 && saw_temp && saw_missing_ppa);
+    metrics.temperature_c = NAN;
+    assert(pl_hw_evaluate(&metrics, &report) == -2);
+    metrics.temperature_c = 94.0;
+    metrics.utilization_valid = 1; metrics.utilization_pct = 101.0;
+    assert(pl_hw_evaluate(&metrics, &report) == -2);
     assert(strcmp(pl_hw_domain_name(PL_HW_DOMAIN_CACHE_MEMORY), "cache-memory") == 0);
     assert(strcmp(pl_hw_severity_name(PL_HW_SEVERITY_WARNING), "warning") == 0);
     return 0;
