@@ -3,7 +3,7 @@
 #include "dsp.h"
 #include "improvement.h"
 #include "hw_rules.h"
-#include "clinical_rules.h"
+#include "processor_catalog.h"
 #include "pipeline.h"
 #include "policy.h"
 #include <stdio.h>
@@ -14,7 +14,7 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--improvement-plan] [--hw-rules] [--pipeline] [--clinical-catalog] [--policy-check ROLE ACTION] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--improvement-plan] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -50,7 +50,7 @@ static void print_hw_report(void) {
         printf("  [%03u] %s / %s: %s\n      %s\n", f->id, pl_hw_domain_name(f->domain), pl_hw_severity_name(f->severity), f->title, f->recommendation);
     }
 }
-static void print_foundations(int pipeline, int clinical, int policy, pl_pipeline_target target, pl_role role, pl_action action) {
+static void print_foundations(int pipeline, int catalog, int policy, pl_pipeline_target target, pl_role role, pl_action action) {
     if (pipeline) {
         pl_pipeline_plan plan; size_t i;
         if (pl_pipeline_build(target, &plan) != 0) { fputs("Pipeline plan failed.\n", stderr); return; }
@@ -58,11 +58,11 @@ static void print_foundations(int pipeline, int clinical, int policy, pl_pipelin
         for (i = 0; i < plan.stage_count; ++i) printf("%u. %s\n", (unsigned)(i + 1u), pl_pipeline_stage_name(plan.stages[i]));
         puts("Semantic equivalence and human review are mandatory; this is a plan, not an active transpiler.");
     }
-    if (clinical) {
-        size_t i; pl_clinical_rule rule;
-        puts("Engineering workflow templates (not clinical instructions):");
-        for (i = 0; i < pl_clinical_catalog_count(); ++i) if (pl_clinical_catalog_get(i, &rule) == 0)
-            printf("- %s | %s | %s | source=%s | expert-signoff=required\n", rule.id, pl_clinical_domain_name(rule.domain), rule.title, rule.approved_source);
+    if (catalog) {
+        size_t i; pl_processor_rule rule;
+        puts("Processor engineering workflow catalogue:");
+        for (i = 0; i < pl_processor_catalog_count(); ++i) if (pl_processor_catalog_get(i, &rule) == 0)
+            printf("- %s | %s | %s | source=%s | expert-signoff=required\n", rule.id, pl_processor_domain_name(rule.domain), rule.title, rule.evidence_source);
     }
     if (policy) {
         int allowed = pl_policy_authorize(role, action);
@@ -79,7 +79,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,hw_rules=0,pipeline=0,clinical=0,policy=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,hw_rules=0,pipeline=0,catalog=0,policy=0; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
@@ -92,7 +92,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
-        else if(!strcmp(argv[i],"--clinical-catalog")) clinical=1;
+        else if(!strcmp(argv[i],"--processor-catalog")) catalog=1;
         else if(!strcmp(argv[i],"--target")&&i+1<argc){const char *v=argv[++i];if(!strcmp(v,"c11"))pipeline_target=PL_TARGET_C11;else if(!strcmp(v,"c23"))pipeline_target=PL_TARGET_C23;else return 2;}
         else if(!strcmp(argv[i],"--policy-check")&&i+2<argc){policy=1;if(pl_policy_parse_role(argv[++i],&policy_role)!=0||pl_policy_parse_action(argv[++i],&policy_action)!=0)return 2;}
         else if((!strcmp(argv[i],"--review-processor")||!strcmp(argv[i],"--analyze"))&&i+1<argc) analyze=argv[++i];
@@ -111,7 +111,7 @@ int main(int argc,char **argv) {
     }
     if(improvement_plan) print_improvement_plan();
     if(hw_rules) print_hw_report();
-    if(pipeline||clinical||policy) print_foundations(pipeline,clinical,policy,pipeline_target,policy_role,policy_action);
+    if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
     if(policy && !pl_policy_authorize(policy_role,policy_action)) return 3;
     if(tone_out) {
         pl_audio_buffer a={0}; int rc=pl_audio_generate_tone(&a,48000,2,frequency,seconds);
@@ -133,7 +133,7 @@ int main(int argc,char **argv) {
         pl_audio_free(&a); return 0;
     }
     if(improvement_plan && argc==2) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!hw_rules&&!pipeline&&!clinical&&!policy){profile=1;bench=1;}
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!hw_rules&&!pipeline&&!catalog&&!policy){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
