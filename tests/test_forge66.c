@@ -9,7 +9,7 @@
 int main(void) {
     const pl_forge66_descriptor *items = NULL;
     pl_forge66_input input = { 42.5 };
-    pl_forge66_result result;
+    pl_forge66_result result, repeated;
     size_t count = pl_forge66_catalog(&items);
     assert(count == PL_FORGE66_FUNCTION_COUNT && items != NULL);
     for (size_t i = 0u; i < count; ++i) {
@@ -21,6 +21,8 @@ int main(void) {
         assert(items[i].function(&input, &result) == 0);
         assert(result.id == i + 1u && isfinite(result.value));
         assert(fabs(result.value) <= 1000000000.0);
+        assert(items[i].function(&input, &repeated) == 0);
+        assert(repeated.id == result.id && repeated.value == result.value);
         assert(pl_forge66_apply((unsigned)i + 1u, &input, &result) == 0);
         assert(result.id == i + 1u);
     }
