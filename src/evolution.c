@@ -1,0 +1,125 @@
+#include "evolution.h"
+
+#include <stddef.h>
+#include <string.h>
+
+static unsigned clamp_score(unsigned value) {
+    return value > 100u ? 100u : value;
+}
+
+static unsigned penalty(unsigned value, unsigned scale) {
+    if (scale == 0u) return 0u;
+    return value / scale;
+}
+
+int pl_concreo_analyze(const pl_evolution_input *input, unsigned *score) {
+    if (!input || !score) return -1;
+    *score = clamp_score(100u - penalty(input->static_findings, 2u));
+    if (input->source_files == 0u) *score = *score > 20u ? *score - 20u : 0u;
+    return 0;
+}
+
+int pl_pyemont_plan(const pl_evolution_input *input, unsigned *score, unsigned *planned) {
+    if (!input || !score || !planned) return -1;
+    *planned = input->source_files;
+    *score = input->architecture_known ? 90u : 55u;
+    if (input->source_files == 0u) *score -= 15u;
+    return 0;
+}
+
+int pl_bollo_profile(const pl_evolution_input *input, unsigned *score) {
+    if (!input || !score) return -1;
+    *score = input->benchmark_samples ? 85u : 50u;
+    if (input->baseline_iterations_per_ms <= 0.0) *score -= 10u;
+    if (input->memory_mib == 0u) *score -= 5u;
+    return 0;
+}
+
+int pl_jjhh_validate(const pl_evolution_input *input, unsigned *score) {
+    if (!input || !score) return -1;
+    *score = input->tests_passed ? 95u : 25u;
+    if (input->static_findings) {
+        unsigned deduction = penalty(input->static_findings, 4u);
+        *score = deduction >= *score ? 0u : *score - deduction;
+    }
+    return 0;
+}
+
+int pl_penwhite_trace(unsigned *trace_events) {
+    if (!trace_events) return -1;
+    if (*trace_events == UINT32_MAX) return -1;
+    ++(*trace_events);
+    return 0;
+}
+
+int pl_serious_gate(const pl_evolution_input *input, int *gate_passed) {
+    if (!input || !gate_passed) return -1;
+    *gate_passed = (input->tests_passed != 0u && input->architecture_known != 0u);
+    return 0;
+}
+
+/* Rows and columns are modules; every ordered pair, including self-checks, participates. */
+static const unsigned char synergy[PL_EVOLUTION_MODULE_COUNT][PL_EVOLUTION_MODULE_COUNT] = {
+    {3, 5, 3, 4, 4, 5},
+    {5, 3, 5, 4, 4, 5},
+    {3, 5, 3, 5, 3, 4},
+    {4, 4, 5, 3, 5, 5},
+    {4, 4, 3, 5, 3, 5},
+    {5, 5, 4, 5, 5, 3}
+};
+
+static int evaluate_modules(const pl_evolution_input *input, pl_evolution_report *report) {
+    if (pl_concreo_analyze(input, &report->module_scores[PL_EV_CONCREO]) != 0) return -1;
+    if (pl_pyemont_plan(input, &report->module_scores[PL_EV_PYEMONT],
+                        &report->planned_transformations) != 0) return -1;
+    if (pl_bollo_profile(input, &report->module_scores[PL_EV_BOLLO]) != 0) return -1;
+    if (pl_jjhh_validate(input, &report->module_scores[PL_EV_JJ_HH]) != 0) return -1;
+    if (pl_penwhite_trace(&report->trace_events) != 0) return -1;
+    report->module_scores[PL_EV_PENWHITE] = 95u;
+    if (pl_serious_gate(input, &report->gate_passed) != 0) return -1;
+    report->module_scores[PL_EV_SERIOUS_SERIOUS] = report->gate_passed ? 100u : 0u;
+    report->module_invocations += PL_EVOLUTION_MODULE_COUNT;
+    return 0;
+}
+
+int pl_evolution_run(const pl_evolution_input *input, unsigned max_rounds,
+                     pl_evolution_report *report) {
+    if (!input || !report || max_rounds == 0u || max_rounds > PL_EVOLUTION_MAX_ROUNDS)
+        return -1;
+
+    memset(report, 0, sizeof(*report));
+    if (evaluate_modules(input, report) != 0) return -1;
+
+    unsigned score_sum = 0u;
+    for (size_t i = 0; i < PL_EVOLUTION_MODULE_COUNT; ++i)
+        score_sum += report->module_scores[i];
+    const double base_score = (double)score_sum / (double)PL_EVOLUTION_MODULE_COUNT;
+
+    double previous_score = base_score;
+    for (unsigned round = 1u; round <= max_rounds; ++round) {
+        unsigned weighted_synergy = 0u;
+        for (size_t from = 0; from < PL_EVOLUTION_MODULE_COUNT; ++from) {
+            for (size_t to = 0; to < PL_EVOLUTION_MODULE_COUNT; ++to) {
+                ++report->interaction_counts[from][to];
+                ++report->pairwise_interactions;
+                weighted_synergy += synergy[from][to];
+            }
+        }
+        report->rounds_completed = round;
+        report->synergy_score = 10.0 * (double)weighted_synergy /
+            (double)(PL_EVOLUTION_MODULE_COUNT * PL_EVOLUTION_MODULE_COUNT * 5u);
+        /* Diminishing-return refinement: repeated passes approach, but never exceed, the cap. */
+        report->readiness_score = base_score * 0.90 +
+            report->synergy_score * 0.10 * (1.0 - 1.0 / (double)(round + 1u));
+
+        if (round > 1u && (report->readiness_score - previous_score) < 0.01) {
+            report->converged = 1;
+            break;
+        }
+        previous_score = report->readiness_score;
+    }
+
+    /* A failed gate remains failed regardless of a high heuristic score. */
+    if (!report->gate_passed) report->readiness_score *= 0.5;
+    return 0;
+}
