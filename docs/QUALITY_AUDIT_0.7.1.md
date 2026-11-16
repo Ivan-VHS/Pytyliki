@@ -67,3 +67,8 @@ For PR #15, both Windows and Ubuntu completed Configure, Build and CTest success
 6. Preserve benchmark inputs, outputs and platform details; do not describe heuristic scores as measured hardware gains.
 
 **Audit result:** the consolidated processor workstation and its meaningful follow-up PRs are integrated into main; the identified DSP, scanner and report-contract defects are fixed and covered by passing Windows/Linux CI. The remaining items above are explicit scope/governance limitations, not claims of completed hardware synthesis or autonomous source rewriting.
+
+
+## APSIA planner integration addendum
+
+The APSIA foundation is extended with a dedicated `pytyliki-apsia` CLI, explicit workload/capability inputs, Windows/Linux CTest coverage, and an evolution-lock JSON Schema syntax check. The CLI exposes the existing advisory router; it does not compile, load or execute generated modules. Cross-language compiler workers, production eBPF/APM, shadow traffic and runtime hot swapping remain future phases and must not be described as shipped.

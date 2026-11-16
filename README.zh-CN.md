@@ -31,6 +31,12 @@ Pytyliki 面向系统程序员、C 语言开发者和硬件爱好者，用于检
 - **桌面与命令行：** 提供原生 Win32 图形界面，以及适用于 Windows 和 Linux 的 CLI 工作流。
 - **改进规划：** 查看包含 20 项能力的工程/优化/自动化目录，以及基于证据的迭代计划。
 
+## APSIA 2.0 多语言自进化
+
+APSIA 在 C11 中整合了工作负载路由与证据晋级策略。CPU 密集型任务映射到 Rust；检测到可用 GPU 时，GPU 任务映射到 CUDA；并发 I/O 映射到 Go；分析任务映射到 DuckDB；嵌入式脚本映射到 Lua；不可信插件映射到 WebAssembly。规划器会比较宿主语言优化收益与 FFI 开销，不会自行授予任何能力，并始终要求人工审查。
+
+`pytyliki-apsia` CLI 可查看路由决策，但不会编译或执行生成的代码。详见 [APSIA 2.0](docs/APSIA_2.0.md) 和 [evolution-lock](apsia/evolution-lock.schema.json)。
+
 ## 当前架构
 
 | 模块 | 实现内容 |
@@ -68,6 +74,8 @@ ctest --test-dir build -C Release --output-on-failure
 Windows 构建还会生成 `pytyliki-gui.exe`。
 
 ## CLI 工作流
+
+示例：`pytyliki-apsia cpu 2.0 0.1 0.2` — 仅规划路由，不会编译或加载模块。
 
 ```bash
 pytyliki --improvement-plan
@@ -117,6 +125,8 @@ pytyliki --evolve --evolution-rounds 8
 - `src/evolution.c/.h` — HyperFusion 分析。
 - `src/pipeline.c/.h` — 参考流水线方案。
 - `src/policy.c/.h` — 本地授权策略。
+- `src/apsia.c/.h`、`src/apsia_cli.c` — APSIA 路由器与 CLI。
+- `docs/APSIA_2.0.md`、`apsia/evolution-lock.schema.json` — 架构与证据模式。
 - `src/cli.c`、`src/win_gui.c` — 命令行和 Windows 桌面界面。
 - `.github/workflows/` — CI 和受控仓库自动化。
 

@@ -29,11 +29,41 @@ Processor information, source-level hints, benchmarks, and local DSP utilities o
 - **Source analysis:** scan source code and produce JSON reports without executing or rewriting scanned files.
 - **Audio and DSP:** read and write bounded PCM16 WAV data, generate tones, and run local digital signal processing.
 - **Desktop and CLI:** native Win32 graphical interface plus command-line workflows on Windows and Linux.
-- **Improvement planning:** inspect a 20-capability engineering/optimization/automation catalogue and evidence-gated iteration plans.\n- **APSIA 2.0:** C11 polyglot routing planner with FFI cost gates and fail-closed sandbox selection.
+- **Improvement planning:** inspect a 20-capability engineering/optimization/automation catalogue and evidence-gated iteration plans.
+- **APSIA 2.0:** C11 polyglot routing planner with FFI cost gates and fail-closed sandbox selection.
 
 ## 🥧 Syntax-pie function layers
 
 Run `pytyliki --syntax-pie` to inspect the deterministic 20-layer mapping from function verbs and room metaphors to syntax abstractions, from **Зал / Комната / Лексема** through **Залегендарить / Анфилада / Иерархическая грамматика**. The C API in `src/syntax_pie.h` exposes indexed lookup and lookup by function name, room name or syntax level. This is a catalogue and validation layer; it does not claim to parse or execute arbitrary source code.
+
+## ⏱️ Mechanical Tick & Type Engine (MTTE)
+
+Run `pytyliki --mtte` to inspect 20 linked layers. Each row binds a semantic operation (such as **Типизация**), a function designation (**Типизирующий**) and a mechanical tick operation (**Механизирующий**). The C API in `src/mtte.h` provides catalogue enumeration, indexed lookup, name lookup and a deterministic logical tick counter.
+
+The counter uses an explicit nanosecond period, checks integer overflow and supports reset. It is a software model for scheduling and measurement logic: it does **not** change CPU frequency, hardware timers, processor registers, firmware or voltage.
+
+| # | Semantic layer | Function layer | Mechanical operation |
+|---:|---|---|---|
+| 01 | Типизация | Типизирующий | Механизирующий |
+| 02 | Классификация | Классифицирующий | Тактирующий |
+| 03 | Категоризация | Категоризирующий | Тактогенерирующий |
+| 04 | Таксономизация | Структурирующий | Тактосинхронизирующий |
+| 05 | Спецификация | Классификационный | Тактосчитающий |
+| 06 | Структуризация | Параметризующий | Тактоконтролирующий |
+| 07 | Формализация | Атрибутирующий | Тактокорректирующий |
+| 08 | Систематизация | Маркирующий | Тактокалибрующий |
+| 09 | Кодирование | Аннотируемый | Тактопреобразующий |
+| 10 | Маркировка | Идентифицирующий | Тактоделящий |
+| 11 | Аннотирование | Дифференцирующий | Тактосуммирующий |
+| 12 | Идентификация | Специфицирующий | Тактодетектирующий |
+| 13 | Дифференциация | Формализующий | Тактопланирующий |
+| 14 | Сигнатуризация | Нормализующий | Тактопрофилирующий |
+| 15 | Параметризация | Кодирующий | Тактосогласующий |
+| 16 | Атрибутизация | Сигнатурирующий | Тактопозиционирующий |
+| 17 | Нормализация | Схематизирующий | Тактодискретизирующий |
+| 18 | Схематизация | Унифицирующий | Тактопериодизирующий |
+| 19 | Унификация | Метатипизирующий | Тактосеквенирующий |
+| 20 | Метаклассификация | Автотипизирующий | Тактодиагностирующий |
 
 ## 🧬 HyperFusion six-module coordinator
 
@@ -109,7 +139,7 @@ The 60 operations below define the target engineering policy. They are a capabil
 
 ## APSIA 2.0 polyglot evolution
 
-APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language-routing planner. The implemented C11 planner maps CPU-bound work to Rust, GPU work to CUDA, analytics to SQL, network I/O to Go, scripting to Python, and sandboxed plugins to WebAssembly. It checks target availability and FFI-adjusted cost before selecting a route; untrusted plugins fail closed if WASM is unavailable.
+APSIA extends the C11/PREE/HyperFusion workflow with a guarded language-routing and promotion-evidence planner. CPU-bound work routes to Rust, GPU workloads to CUDA when explicitly available, concurrent I/O to Go, analytics to DuckDB, embedded scripting to Lua, and untrusted plugins to WebAssembly. It prefers host-language optimization when that captures at least 70% of the opportunity, accounts for FFI cost, grants no capabilities itself, and requires human review.
 
 - `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
 - `src/syntax_pie.c/.h` — 20-level syntax/function catalogue and lookups.
@@ -117,6 +147,9 @@ APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language
 - `src/dsp.c/.h` — bounded WAV I/O and DSP.
 - `src/win_gui.c` — native Windows UI.
 - `src/cli.c` — cross-platform CLI.
+- `src/apsia.c/.h`, `src/apsia_cli.c` — APSIA routing/promotion planner and CLI.
+- `docs/APSIA_2.0.md`, `apsia/evolution-lock.schema.json` — architecture and artifact-evidence schema.
+- `tests/test_mtte.c` — MTTE catalogue, lookup, bounds and overflow tests.
 - `tests/test_core.c` — core, processor and DSP tests.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
@@ -155,6 +188,8 @@ ctest --test-dir build -C Release --output-on-failure
 Windows builds also provide `pytyliki-gui.exe`.
 
 ## CLI workflows
+
+Example: `pytyliki-apsia cpu 2.0 0.1 0.2` (advisory route planning only; no generated code is compiled or loaded).
 
 ```bash
 pytyliki --improvement-plan

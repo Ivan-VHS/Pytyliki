@@ -8,105 +8,61 @@
 static int parse_number(const char *text, double *value) {
     char *end = NULL;
     double parsed;
+    if (text == NULL || value == NULL || text[0] == '\0') return -1;
     errno = 0;
     parsed = strtod(text, &end);
-    if (text == NULL || text[0] == '\0' || end == text || *end != '\0' ||
-        errno == ERANGE || !isfinite(parsed)) return -1;
+    if (end == text || *end != '\0' || errno == ERANGE || !isfinite(parsed)) return -1;
     *value = parsed;
     return 0;
 }
-
 static int parse_workload(const char *text, pl_apsia_workload *workload) {
-    static const char *const names[PL_APSIA_WORK_COUNT] = {
-        "cpu", "gpu", "analytics", "plugin", "network-io", "script"
-    };
+    static const char *const names[PL_APSIA_WORK_COUNT] = {"cpu", "gpu", "plugin", "network-io", "analytics", "script"};
     unsigned i;
-    for (i = 0u; i < PL_APSIA_WORK_COUNT; ++i) {
-        if (strcmp(text, names[i]) == 0) {
-            *workload = (pl_apsia_workload)i;
-            return 0;
-        }
-    }
+    if (text == NULL || workload == NULL) return -1;
+    for (i = 0u; i < PL_APSIA_WORK_COUNT; ++i) if (strcmp(text, names[i]) == 0) { *workload = (pl_apsia_workload)i; return 0; }
     return -1;
 }
-
-static int add_target(const char *name, uint32_t *mask) {
-    static const char *const names[PL_APSIA_LANG_COUNT] = {
-        "host", "rust", "cpp", "zig", "cuda", "wasm", "sql", "python", "go"
-    };
-    unsigned i;
-    for (i = 1u; i < PL_APSIA_LANG_COUNT; ++i) {
-        if (strcmp(name, names[i]) == 0) {
-            *mask |= PL_APSIA_TARGET_BIT(i);
-            return 0;
-        }
-    }
-    return -1;
-}
-
-static int parse_targets(const char *text, uint32_t *mask) {
-    char copy[256];
-    char *token;
-    size_t length = strlen(text);
-    if (length == 0u || length >= sizeof(copy)) return -1;
-    memcpy(copy, text, length + 1u);
-    *mask = 0u;
-    token = strtok(copy, ",");
+static int parse_capabilities(const char *text, uint32_t *caps) {
+    char copy[256], *token; size_t length;
+    if (text == NULL || caps == NULL) return -1;
+    length = strlen(text); if (length == 0u || length >= sizeof(copy)) return -1;
+    memcpy(copy, text, length + 1u); *caps = 0u; token = strtok(copy, ",");
     while (token != NULL) {
-        if (add_target(token, mask) != 0) return -1;
+        if (strcmp(token, "network") == 0) *caps |= PL_APSIA_CAP_NETWORK;
+        else if (strcmp(token, "filesystem") == 0) *caps |= PL_APSIA_CAP_FILESYSTEM;
+        else if (strcmp(token, "clock") == 0) *caps |= PL_APSIA_CAP_CLOCK;
+        else if (strcmp(token, "gpu") == 0) *caps |= PL_APSIA_CAP_GPU;
+        else if (strcmp(token, "shared-memory") == 0) *caps |= PL_APSIA_CAP_SHARED_MEMORY;
+        else return -1;
         token = strtok(NULL, ",");
     }
-    return *mask != 0u ? 0 : -1;
+    return 0;
 }
-
 static void usage(void) {
-    puts("Pytyliki APSIA route planner\n"
-         "Usage: pytyliki-apsia WORKLOAD HOST_NS TARGET_NS FFI_NS FFI_CALLS_PER_SEC TARGETS [--sandbox]\n"
-         "WORKLOAD: cpu | gpu | analytics | plugin | network-io | script\n"
-         "TARGETS: comma-separated rust,cpp,zig,cuda,wasm,sql,python,go\n"
-         "Example: pytyliki-apsia cpu 1000 300 100 100000 rust,wasm");
+    puts("Pytyliki APSIA route planner\nUsage: pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [options]\nWORKLOAD: cpu | gpu | plugin | network-io | analytics | script\nOptions: --gpu --deterministic --sandbox --capabilities network,filesystem,clock,gpu,shared-memory\nExample: pytyliki-apsia cpu 2.0 0.1 0.2");
 }
-
 int main(int argc, char **argv) {
-    pl_apsia_request request = {0};
-    pl_apsia_decision decision;
-    if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-        usage();
-        return 0;
-    }
-    if (argc != 7 && argc != 8) {
-        usage();
-        return 2;
-    }
-    if (argc == 8 && strcmp(argv[7], "--sandbox") != 0) {
-        usage();
-        return 2;
-    }
+    pl_apsia_request request = {0}; pl_apsia_decision decision; int i;
+    if (argc == 2 && strcmp(argv[1], "--help") == 0) { usage(); return 0; }
+    if (argc < 5) { usage(); return 2; }
     if (parse_workload(argv[1], &request.workload) != 0 ||
-        parse_number(argv[2], &request.host_execution_ns) != 0 ||
-        parse_number(argv[3], &request.target_execution_ns) != 0 ||
-        parse_number(argv[4], &request.ffi_overhead_ns) != 0 ||
-        parse_number(argv[5], &request.ffi_calls_per_second) != 0 ||
-        parse_targets(argv[6], &request.available_targets) != 0) {
-        fputs("Invalid workload, numeric measurement, or target list.\n", stderr);
-        return 2;
+        parse_number(argv[2], &request.expected_speedup) != 0 ||
+        parse_number(argv[3], &request.ffi_overhead_fraction) != 0 ||
+        parse_number(argv[4], &request.host_optimization_fraction) != 0) {
+        fputs("Invalid workload or numeric policy input.\n", stderr); return 2;
     }
-    request.sandbox_required = (argc == 8 || request.workload == PL_APSIA_WORK_PLUGIN) ? 1u : 0u;
-    request.minimum_speedup = 1.5;
-    request.maximum_ffi_cpu_cores = 0.25;
-
-    if (pl_apsia_route(&request, &decision) != 0) {
-        fprintf(stderr, "APSIA rejected invalid input: %s\n", decision.reason);
-        return 3;
+    for (i = 5; i < argc; ++i) {
+        if (strcmp(argv[i], "--gpu") == 0) { request.gpu_available = 1; request.requested_capabilities |= PL_APSIA_CAP_GPU; }
+        else if (strcmp(argv[i], "--deterministic") == 0) request.deterministic_required = 1;
+        else if (strcmp(argv[i], "--sandbox") == 0) request.sandbox_required = 1;
+        else if (strcmp(argv[i], "--capabilities") == 0 && i + 1 < argc) {
+            if (parse_capabilities(argv[++i], &request.requested_capabilities) != 0) { fputs("Invalid capability list.\n", stderr); return 2; }
+        } else { fprintf(stderr, "Unknown or incomplete option: %s\n", argv[i]); usage(); return 2; }
     }
-    printf("Workload: %s\nTarget: %s\nRoute selected: %s\n"
-           "Estimated speedup: %.3fx\nEstimated FFI CPU cores: %.6f\nReason: %s\n",
-           pl_apsia_workload_name(request.workload),
-           pl_apsia_language_name(decision.language),
-           decision.route_selected ? "yes" : "no",
-           decision.estimated_speedup,
-           decision.estimated_ffi_cpu_cores,
-           decision.reason);
-    if (decision.request_rejected != 0u) return 4;
+    if (pl_apsia_route(&request, &decision) != 0) { fputs("APSIA rejected invalid routing input.\n", stderr); return 3; }
+    printf("Workload: %s\nLanguage: %s\nPolyglot: %s\nSandbox required: %s\nZero-copy candidate: %s\nGranted capabilities: 0x%08x\nHuman review required: %s\nDecision: %s\n",
+        argv[1], pl_apsia_language_name(decision.language), decision.use_polyglot ? "yes" : "no",
+        decision.sandbox_required ? "yes" : "no", decision.zero_copy_candidate ? "yes" : "no",
+        (unsigned)decision.granted_capabilities, decision.human_review_required ? "yes" : "no", decision.reason);
     return 0;
 }

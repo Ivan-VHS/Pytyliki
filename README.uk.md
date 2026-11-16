@@ -31,6 +31,12 @@ Pytyliki допомагає системним програмістам, роз�
 - **Інтерфейси:** нативний графічний інтерфейс Win32 і CLI для Windows та Linux.
 - **Планування вдосконалень:** каталог із 20 можливостей інженерії, оптимізації й автоматизації з ітераціями, що залежать від підтверджених даних.
 
+## APSIA 2.0 — поліглотна еволюція
+
+APSIA об’єднує маршрутизацію задач і перевірку доказів у C11. CPU-bound задачі спрямовуються до Rust, GPU — до CUDA за наявності пристрою, конкурентний I/O — до Go, аналітика — до DuckDB, вбудовані скрипти — до Lua, а недовірені плагіни — до WebAssembly. Планувальник враховує вигоду від оптимізації основною мовою та накладні витрати FFI, не надає capabilities і вимагає людського рев’ю.
+
+`pytyliki-apsia` надає CLI для перегляду маршруту, але не компілює й не запускає згенерований код. Докладніше: [APSIA 2.0](docs/APSIA_2.0.md), [evolution-lock](apsia/evolution-lock.schema.json).
+
 ## Архітектура та поточний стан
 
 | Напрям | Реалізація |
@@ -68,6 +74,8 @@ ctest --test-dir build -C Release --output-on-failure
 Збірки для Windows також містять `pytyliki-gui.exe`.
 
 ## Сценарії CLI
+
+Приклад: `pytyliki-apsia cpu 2.0 0.1 0.2` — планування маршруту без компіляції чи завантаження модуля.
 
 ```bash
 pytyliki --improvement-plan
@@ -117,6 +125,8 @@ pytyliki --evolve --evolution-rounds 8
 - `src/evolution.c/.h` — аналітика HyperFusion.
 - `src/pipeline.c/.h` — довідковий план конвеєра.
 - `src/policy.c/.h` — локальна політика авторизації.
+- `src/apsia.c/.h`, `src/apsia_cli.c` — маршрутизатор APSIA та CLI.
+- `docs/APSIA_2.0.md`, `apsia/evolution-lock.schema.json` — архітектура й схема доказів.
 - `src/cli.c`, `src/win_gui.c` — CLI та графічний інтерфейс Windows.
 - `.github/workflows/` — CI та контрольована автоматизація репозиторію.
 
