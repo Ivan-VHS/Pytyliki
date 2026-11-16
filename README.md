@@ -1,26 +1,37 @@
-# Pytyliki — Processor Engineering Workstation 0.6.0
+# Pytyliki — Processor Engineering Workstation 0.7.0
 
-Pytyliki is a native C11 desktop workstation for processor architecture discovery, instruction-set inventory, bounded micro-workload benchmarking, processor-source review, and digital signal-processing datapath experiments. Windows builds include a native Win32 GUI; Windows and Linux builds include the CLI.
+Pytyliki is a native C11 desktop workstation for processor architecture discovery, instruction-set inventory, bounded micro-workload benchmarking, processor-source review, DSP datapath experiments and evidence-gated improvement planning. Windows builds include a native Win32 GUI; Windows and Linux builds include the CLI.
 
 ## Processor engineering modules
 
 - **Architecture inventory:** CPU vendor, family/model, brand string, architecture, logical topology, OS-reported memory and selected ISA capability flags.
 - **Execution workload lab:** deterministic integer dependency chains, bounded memory traversal and matrix arithmetic, with timing and integrity checks.
 - **Processor implementation review:** read-only source inspection for CPUID use, timestamp counters, SIMD intrinsics, vector widths, cache prefetch, atomics, memory fences, volatile accesses, non-temporal stores, alignment and inline assembly.
-- **DSP datapath laboratory:** bounded sample-vector workloads for filter, compressor, saturation, gain and numerical metering. PCM16 WAV is retained strictly as a portable test-vector container; this is not an audio-production or recording application.
-- **Engineering evidence:** structured JSON reports, deterministic tests, CMake builds and Windows/Linux CI.
+- **DSP datapath laboratory:** bounded sample-vector workloads for filter, compressor, saturation, gain and numerical metering. PCM16 WAV is retained strictly as a portable test-vector container.
+- **Recursive improvement engine:** a deterministic 20-row capability catalogue and a gated lifecycle from observation through verification, human review, integration and meta-improvement.
+
+## Recursive improvement engine
+
+Run `pytyliki --improvement-plan` to print the 20 capability rows. Each row combines an engineering transformation, an optimization activity and an automation direction.
+
+The C11 API in `src/improvement.h` exposes the catalogue and an evidence-gated state machine:
+
+`observe -> diagnose -> propose -> implement -> verify -> evaluate -> review -> integrate -> learn -> improve-engine`.
+
+The lifecycle requires evidence for each phase, prohibits skipping phases and requires explicit human approval before integration. The library records workflow state; it does not silently rewrite source code or merge changes. See [the engine specification](docs/recursive-processor-improvement.md).
 
 ## CLI
 
     pytyliki --profile --suite
     pytyliki --capabilities
-    pytyliki --analyze path/to/processor_kernel.c
+    pytyliki --improvement-plan
+    pytyliki --review-processor path/to/processor_kernel.c
     pytyliki --json processor-report.json
     pytyliki --tone-out datapath-vector.wav --frequency 440 --seconds 3
-    pytyliki --audio-info datapath-vector.wav
+    pytyliki --audio-info input-vector.wav
     pytyliki --process-wav input-vector.wav output-vector.wav --lowpass 5000 --compress -12 4 --saturate 1.8 --gain -1
 
-The legacy WAV option names are retained for command-line compatibility. Their data is treated as bounded DSP test vectors, not as a general audio workflow. Input is uncompressed PCM16 mono/stereo, 8–192 kHz; unsupported formats are rejected.
+The legacy WAV option names are retained for command-line compatibility. Input is uncompressed PCM16 mono/stereo, 8–192 kHz; unsupported formats are rejected.
 
 ## Build and test
 
@@ -32,42 +43,40 @@ On Windows, CMake also builds `pytyliki-gui.exe`.
 
 ## Processor-domain translation
 
-All formerly general-purpose or non-processor concepts are assigned a concrete processor-engineering role:
-
 | General concept | Processor engineering function |
 |---|---|
-| Root cause / etiology | Fault-origin tracing across front end, execution, cache, memory, interconnect and power/thermal domains |
-| Population / cluster / epicenter | CPU fleet topology, socket/core/thread grouping and affected-silicon scope |
-| Mutation / phenotype / variant | Stepping, family/model, microarchitecture, ISA profile and build-target variants |
-| Infection / contamination / invasion | Corrupted inputs, compromised build dependencies, invalid instruction paths and fault propagation |
-| Resistance / immunity | Fault containment, ECC awareness, bounds checks, reset recovery and integrity verification |
-| Proliferation / hypertrophy | Thread scaling, queue growth, cache pressure, memory bandwidth saturation and execution-resource occupancy |
-| Ischemia / hypoxia / thrombosis | Pipeline starvation, cache misses, memory stalls, port contention and interconnect backpressure |
-| Pharmacokinetics / metabolism | Operand movement, register allocation, cache residency, data-path throughput and resource lifetime |
-| Auditory modulation / stimulation | DSP execution kernels, vector arithmetic, filter state, saturation and numerical signal metering |
-| Remission / recurrence / exacerbation | Stable operating point, repeatability drift, performance regression and thermal throttling |
-| Screening / diagnosis / audit | Capability enumeration, processor-source review, benchmark validation and reproducible CI evidence |
-
-These are engineering translations only. No clinical terminology or human-health interpretation is used by the application.
+| Root cause / origin | Fault-origin tracing across front end, execution, cache, memory, interconnect and power/thermal domains |
+| Topology / cluster | CPU fleet topology, socket/core/thread grouping and affected-silicon scope |
+| Variant / phenotype | Stepping, family/model, microarchitecture, ISA profile and build-target variants |
+| Contamination / propagation | Corrupted inputs, compromised build dependencies, invalid instruction paths and fault propagation |
+| Resistance / recovery | Fault containment, bounds checks, reset recovery and integrity verification |
+| Scaling / saturation | Thread scaling, queue growth, cache pressure, bandwidth saturation and execution-resource occupancy |
+| Bottlenecks | Pipeline starvation, cache misses, memory stalls, port contention and interconnect backpressure |
+| Data-path efficiency | Operand movement, register allocation, cache residency, throughput and resource lifetime |
+| DSP execution | Vector arithmetic, filter state, saturation and numerical signal metering |
+| Regression / stability | Stable operating point, repeatability drift, performance regression and thermal throttling |
+| Audit / verification | Capability enumeration, source review, benchmark validation and reproducible CI evidence |
 
 ## Safety and evidence contract
 
 - CPU discovery uses documented read-only OS queries and CPUID.
-- ISA flags are informational. AVX-family flags do not establish OS vector-state readiness and are not permission to execute those instructions.
+- ISA flags are informational. AVX-family flags do not establish OS vector-state readiness.
 - Benchmarks have fixed workload and allocation limits and run without privileged access.
-- Source review reads text only. It does not compile, link, execute, load or rewrite inspected code. Findings are review prompts, not vulnerability verdicts.
-- DSP vectors are bounded local test data. There is no microphone capture, background recording, device control or network transfer.
+- Source review reads text only. It does not compile, link, execute, load or rewrite inspected code.
+- DSP vectors are bounded local test data; there is no microphone capture, device control or network transfer.
 - No BIOS/UEFI, firmware, microcode, voltage, clock, power-limit, kernel or driver writes are performed.
-- Results are advisory and are not silicon certification or guarantees of performance.
+- Improvement proposals require deterministic tests, review and explicit human authorization. The engine cannot approve or merge its own changes, weaken tests or bypass branch protection.
+- Results are advisory, not silicon certification or performance guarantees.
 
 ## Project layout
 
 - `src/core.c`, `src/core.h` — CPU identity, bounded baseline benchmark, processor-source review and JSON output.
 - `src/processor.c`, `src/processor.h` — architecture/ISA inventory and execution workload suite.
 - `src/dsp.c`, `src/dsp.h` — bounded DSP datapath test-vector operations.
+- `src/improvement.c`, `src/improvement.h` — 20-capability catalogue and evidence-gated evolution lifecycle.
 - `src/win_gui.c` — native Windows engineering workstation UI.
 - `src/cli.c` — cross-platform command-line interface.
-- `tests/test_core.c` — processor, DSP datapath and core tests.
+- `tests/test_core.c`, `tests/test_improvement.c` — core and improvement-engine tests.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
 License: MIT.
