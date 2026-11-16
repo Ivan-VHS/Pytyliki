@@ -96,7 +96,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
         else if(!strcmp(argv[i],"--processor-catalog")) catalog=1;
         else if(!strcmp(argv[i],"--evolve")) evolve=1;
-        else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;evolve=1;}
+        else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;evolve=1;}
         else if(!strcmp(argv[i],"--target")&&i+1<argc){const char *v=argv[++i];if(!strcmp(v,"c11"))pipeline_target=PL_TARGET_C11;else if(!strcmp(v,"c23"))pipeline_target=PL_TARGET_C23;else return 2;}
         else if(!strcmp(argv[i],"--policy-check")&&i+2<argc){policy=1;if(pl_policy_parse_role(argv[++i],&policy_role)!=0||pl_policy_parse_action(argv[++i],&policy_action)!=0)return 2;}
         else if((!strcmp(argv[i],"--review-processor")||!strcmp(argv[i],"--analyze"))&&i+1<argc) analyze=argv[++i];
@@ -145,5 +145,30 @@ int main(int argc,char **argv) {
     if(suite){pl_suite_result sr;int rc=pl_processor_benchmark_suite(UINT64_C(12000000),8,4,&sr);if(rc!=0){fprintf(stderr,"Processor suite failed (%d).\n",rc);return 1;}printf("Suite: integer %.2f ms | memory %.2f ms | matrix %.2f ms | checksum %llu | integrity %s\n",sr.integer_ms,sr.memory_ms,sr.matrix_ms,(unsigned long long)sr.checksum,sr.integrity_ok?"PASS":"CHECK");}
     if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not inspect processor source: %s\n",analyze);return 1;}printf("Processor implementation review: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
     if(json){if(pl_write_json(json,&cpu,&b,&a)!=0){fprintf(stderr,"Could not write JSON report: %s\n",json);return 1;}printf("JSON report: %s\n",json);}
+    if(evolve){
+        pl_processor_snapshot snapshot;
+        pl_evolution_input input={0};
+        pl_evolution_report report;
+        input.source_files=a.files_scanned;
+        input.static_findings=a.findings;
+        input.benchmark_samples=bench?1u:0u;
+        input.baseline_iterations_per_ms=bench?b.score:0.0;
+        if(pl_processor_scan(&snapshot)==0){
+            input.architecture_known=strcmp(snapshot.architecture,"unknown")!=0?1u:0u;
+            input.memory_mib=snapshot.physical_memory_mib>PL_EVOLUTION_MAX_MEMORY_MIB
+                ? PL_EVOLUTION_MAX_MEMORY_MIB : (unsigned)snapshot.physical_memory_mib;
+        }
+        /* The CLI cannot certify external CI success, so the promotion gate stays held. */
+        input.tests_passed=0u;
+        if(pl_evolution_run(&input,evolution_rounds,&report)!=0){
+            fprintf(stderr,"HyperFusion evaluation failed.\n");return 1;
+        }
+        printf("HyperFusion: %u round(s), %llu module calls, %llu directed interactions\n",
+            report.rounds_completed,(unsigned long long)report.module_invocations,
+            (unsigned long long)report.pairwise_interactions);
+        printf("Readiness: %.2f/100 | synergy: %.2f | convergence: %s | promotion gate: %s\n",
+            report.readiness_score,report.synergy_score,report.converged?"YES":"NO",
+            report.gate_passed?"PASS":"HELD (CI test result required)");
+    }
     return 0;
 }
