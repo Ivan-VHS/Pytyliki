@@ -90,6 +90,22 @@ int main(void) {
     assert(pl_audio_measure(&audio, &stats) == 0);
     pl_audio_free(&audio);
 
+    pl_benchmark invalid_benchmark = b;
+    invalid_benchmark.elapsed_ms = NAN;
+    pl_analysis empty_analysis = {0};
+    assert(pl_write_json("pytyliki_invalid_report.json", &cpu, &invalid_benchmark, &empty_analysis) != 0);
+    const char *json_path = "pytyliki_test_report.json";
+    assert(pl_write_json(json_path, &cpu, &b, &analysis) == 0);
+    FILE *json_file = fopen(json_path, "rb");
+    assert(json_file != NULL);
+    char json_text[2048] = {0};
+    size_t json_size = fread(json_text, 1, sizeof(json_text) - 1u, json_file);
+    assert(!ferror(json_file));
+    fclose(json_file);
+    assert(json_size > 0u);
+    assert(strstr(json_text, "\"version\": \"0.7.0\"") != NULL);
+    remove(json_path);
+
     puts("All processor, DSP and core tests passed.");
     return 0;
 }
