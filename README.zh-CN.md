@@ -40,7 +40,9 @@ Pytyliki 面向系统程序员、C 语言开发者和硬件爱好者，用于检
 
 27 个确定性单元最多遍历 100 个逻辑代次（共 2,700 个有界规划步骤）。规划器采用迭代方式，无动态内存分配且结果确定；它不会递归执行生成代码、修改代码仓库、部署产物或绕过人工审查。这是未来证据门控自动化的规划与目录基础。
 
-API：`src/trimatrix_autoforge.h`；测试：`tests/test_trimatrix_autoforge.c`。目前不宣称支持 CLI 暴露或自主执行。
+API：`src/trimatrix_autoforge.h`；实现：`src/trimatrix_autoforge.c`；测试：`tests/test_trimatrix_autoforge.c`；完整架构契约：[`docs/trimatrix-autoforge.md`](docs/trimatrix-autoforge.md)。
+
+CLI：`pytyliki --trimatrix` 输出默认 100 代计划（2,700 步）；`pytyliki --trimatrix 1` 输出一代计划。这是确定性规划器，不是自主执行器。
 
 ## 当前架构
 
