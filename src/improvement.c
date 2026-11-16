@@ -52,6 +52,16 @@ int pl_improvement_cycle_init(pl_improvement_cycle *cycle) {
     cycle->phase = PL_IMPROVE_OBSERVE;
     cycle->evidence = 0u;
     cycle->generation = 1u;
+    cycle->completed_iterations = 0u;
+    cycle->target_iterations = PL_IMPROVEMENT_DEFAULT_ITERATIONS;
+    return 0;
+}
+
+int pl_improvement_cycle_set_target(pl_improvement_cycle *cycle, uint64_t target) {
+    if (cycle == NULL || target == 0u || target > PL_IMPROVEMENT_MAX_ITERATIONS) return -1;
+    if (cycle->phase != PL_IMPROVE_OBSERVE || cycle->evidence != 0u ||
+        cycle->completed_iterations != 0u) return -2;
+    cycle->target_iterations = target;
     return 0;
 }
 
@@ -70,13 +80,24 @@ int pl_improvement_record(pl_improvement_cycle *cycle, uint32_t evidence) {
 
 int pl_improvement_advance(pl_improvement_cycle *cycle) {
     if (cycle == NULL || cycle->phase >= PL_IMPROVE_COMPLETE) return -1;
+    if (cycle->target_iterations == 0u ||
+        cycle->target_iterations > PL_IMPROVEMENT_MAX_ITERATIONS) return -1;
     if ((cycle->evidence & required_evidence[cycle->phase]) == 0u) return -2;
     if (cycle->phase == PL_IMPROVE_INTEGRATE &&
         (cycle->evidence & PL_IMPROVE_EVIDENCE_APPROVED) == 0u) return -3;
-    if (cycle->phase == PL_IMPROVE_IMPROVE_ENGINE &&
-        cycle->generation == UINT32_MAX) return -4;
+
+    if (cycle->phase == PL_IMPROVE_IMPROVE_ENGINE) {
+        if (cycle->generation == UINT32_MAX ||
+            cycle->completed_iterations >= cycle->target_iterations) return -4;
+        cycle->completed_iterations++;
+        cycle->generation++;
+        cycle->evidence = 0u;
+        cycle->phase = cycle->completed_iterations == cycle->target_iterations
+            ? PL_IMPROVE_COMPLETE : PL_IMPROVE_OBSERVE;
+        return 0;
+    }
+
     cycle->phase = (pl_improvement_phase)(cycle->phase + 1);
-    if (cycle->phase == PL_IMPROVE_COMPLETE) cycle->generation++;
     return 0;
 }
 
