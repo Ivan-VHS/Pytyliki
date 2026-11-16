@@ -30,13 +30,18 @@ int main(void) {
         PL_IMPROVE_EVIDENCE_TESTED,
         PL_IMPROVE_EVIDENCE_EVALUATED,
         PL_IMPROVE_EVIDENCE_REVIEWED,
-        PL_IMPROVE_EVIDENCE_APPROVED,
         PL_IMPROVE_EVIDENCE_INTEGRATED,
         PL_IMPROVE_EVIDENCE_LEARNED,
         PL_IMPROVE_EVIDENCE_META_EVALUATED
     };
     for (unsigned i = 0u; i < sizeof(evidence) / sizeof(evidence[0]); ++i) {
-        assert(pl_improvement_record(&cycle, evidence[i]) == 0);
+        if (i == 7u) {
+            assert(pl_improvement_record(&cycle, PL_IMPROVE_EVIDENCE_INTEGRATED) == 0);
+            assert(pl_improvement_advance(&cycle) == -3);
+            assert(pl_improvement_record(&cycle, PL_IMPROVE_EVIDENCE_APPROVED) == 0);
+        } else {
+            assert(pl_improvement_record(&cycle, evidence[i]) == 0);
+        }
         assert(pl_improvement_advance(&cycle) == 0);
     }
     assert(cycle.phase == PL_IMPROVE_COMPLETE);
