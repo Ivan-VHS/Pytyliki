@@ -44,5 +44,9 @@ if(BUILD_TESTING)
 
   add_executable(pytyliki-evolution-tests tests/test_evolution.c)
   target_link_libraries(pytyliki-evolution-tests PRIVATE pytyliki_core)
-  add_test(NAME evolution-tests COMMAND pytyliki-evolution-tests)\n\n  add_executable(pytyliki-syntax-pie-tests tests/test_syntax_pie.c)\n  target_link_libraries(pytyliki-syntax-pie-tests PRIVATE pytyliki_core)\n  add_test(NAME syntax-pie-tests COMMAND pytyliki-syntax-pie-tests)
+  add_test(NAME evolution-tests COMMAND pytyliki-evolution-tests)
+
+  add_executable(pytyliki-syntax-pie-tests tests/test_syntax_pie.c)
+  target_link_libraries(pytyliki-syntax-pie-tests PRIVATE pytyliki_core)
+  add_test(NAME syntax-pie-tests COMMAND pytyliki-syntax-pie-tests)
 endif()
