@@ -154,7 +154,7 @@ Windows builds also provide `pytyliki-gui.exe`.
 
 ## 🧪 Quality audit and CI
 
-See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge also checks for an independent approval tied to the current PR head; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
+See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge checks for an independent approval tied to the PR head and fails closed on API errors or stale validation events; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
 
 ## 🛡️ Safety
 
