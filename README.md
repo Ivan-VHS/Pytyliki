@@ -164,6 +164,17 @@ APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language
 
 HyperFusion readiness and synergy values are heuristic planning indicators, not measured speedups or independent CI certification.
 
+
+## Forge66 — 66 uniquely named processor functions
+
+```bash
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+The C11 API in `src/forge66.h` exposes 66 individually named functions across six domains: APSIA routing, Concreo diagnostics, Pyemont transformation planning, Bollo DSP metrics, JJ-HH validation, and PenWhite provenance. Each entry has a stable numeric ID, unique name, purpose, and callable function pointer. The bounded scalar operations are deterministic analysis primitives; they do not rewrite source, modify processor state, grant permissions, or merge code. Invalid, non-finite, and out-of-range inputs are rejected. See `tests/test_forge66.c` for exhaustive catalogue and input-boundary checks.
+
 ## Quick start
 
 ### What do I need?
