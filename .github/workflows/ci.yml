@@ -1,20 +1,161 @@
-name: C11 CI
+name: Deterministic C11 CI
+
 on:
   push:
     branches: [main, "feat/**"]
+    paths-ignore:
+      - README.md
+      - docs/REPOSITORY_STATE.md
   pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pytyliki-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
-  build-test:
+  native:
+    name: Native C11 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Configure
+        id: configure
         run: cmake -S . -B build -DBUILD_TESTING=ON
       - name: Build
+        id: build
         run: cmake --build build --config Release --parallel
       - name: Test
+        id: test
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Record telemetry
+        if: always()
+        shell: bash
+        run: |
+          python scripts/meta/collect_telemetry.py \
+            --output telemetry/record.json \
+            --shard "native-${{ matrix.os }}" \
+            --status "${{ job.status }}" \
+            --check "configure=${{ steps.configure.outcome }}" \
+            --check "build=${{ steps.build.outcome }}" \
+            --check "ctest=${{ steps.test.outcome }}"
+      - name: Upload telemetry
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: telemetry-native-${{ matrix.os }}
+          path: telemetry/
+          if-no-files-found: error
+          retention-days: 14
+
+  cross-isa:
+    name: Cross-ISA / ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [aarch64, riscv64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install cross toolchains and QEMU user emulators
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-riscv64-linux-gnu qemu-user
+      - name: Compile target and inspect assembly
+        id: cross
+        run: sh scripts/ci/cross_compile.sh "${{ matrix.target }}" build/cross
+      - name: QEMU CLI smoke test
+        id: qemu
+        run: |
+          case "${{ matrix.target }}" in
+            aarch64) qemu-aarch64 build/cross/aarch64/pytyliki --help ;;
+            riscv64) qemu-riscv64 build/cross/riscv64/pytyliki --help ;;
+          esac
+      - name: Record telemetry
+        if: always()
+        run: |
+          python3 scripts/meta/collect_telemetry.py \
+            --output telemetry/record.json \
+            --shard "cross-${{ matrix.target }}" \
+            --status "${{ job.status }}" \
+            --check "compile=${{ steps.cross.outcome }}" \
+            --check "qemu=${{ steps.qemu.outcome }}"
+      - name: Upload assembly and telemetry
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cross-isa-${{ matrix.target }}
+          path: |
+            build/cross/
+            telemetry/
+          if-no-files-found: warn
+          retention-days: 14
+
+  static-analysis:
+    name: Static analysis and tooling tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install Clang
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Clang static analyzer
+        run: clang --analyze -std=c11 -Isrc src/core.c src/cli.c
+      - name: Python tooling syntax
+        run: python3 -m compileall -q scripts
+      - name: Documentation invariants
+        run: python3 scripts/docs/verify_readme_invariants.py --target README.md
+
+  telemetry-summary:
+    name: Aggregate CI telemetry
+    if: always()
+    needs: [native, cross-isa, static-analysis]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Download telemetry artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab7868d0a18495cb34 # v4.2.1
+        with:
+          pattern: telemetry-*
+          merge-multiple: true
+          path: telemetry-input/
+      - name: Aggregate telemetry
+        run: |
+          python3 scripts/meta/analyze_telemetry.py \
+            --input telemetry-input \
+            --json-output telemetry-summary.json \
+            --markdown-output telemetry-summary.md
+          python3 scripts/meta/evolve_verification_rules.py \
+            --summary telemetry-summary.json \
+            --output verification-evolution-proposal.md
+      - name: Upload telemetry summary and review proposal
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pytyliki-ci-telemetry-summary
+          path: |
+            telemetry-summary.json
+            telemetry-summary.md
+            verification-evolution-proposal.md
+          retention-days: 30
+      - name: Preserve verification gate result
+        if: needs.native.result != 'success' || needs.cross-isa.result != 'success' || needs.static-analysis.result != 'success'
+        run: |
+          echo "One or more verification gates failed. Telemetry is advisory and cannot override the failure."
+          exit 1
