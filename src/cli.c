@@ -1,15 +1,16 @@
 #include "core.h"
 #include "processor.h"
 #include "dsp.h"
+#include "improvement.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static void usage(void) {
-    puts("Pytyliki Processor Systems Workstation 0.5.0\n"
+    puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--improvement-plan] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -18,6 +19,16 @@ static void usage(void) {
 }
 static int parse_double(const char *s,double *out) {
     char *end=NULL; double v=strtod(s,&end); if(!s[0]||!end||*end||v!=v) return -1; *out=v; return 0;
+}
+static void print_improvement_plan(void) {
+    const pl_improvement_capability *items = NULL;
+    size_t count = pl_improvement_catalog(&items);
+    puts("Recursive processor improvement capability matrix:");
+    for (size_t i = 0u; i < count; ++i)
+        printf("%02u | %-16s | %-16s | %s\n", items[i].id,
+               items[i].engineering, items[i].optimization, items[i].automation);
+    puts("Lifecycle: observe -> diagnose -> propose -> implement -> verify -> evaluate -> review -> integrate -> learn -> improve-engine");
+    puts("Integration is gated by human approval; this command only displays the deterministic catalogue.");
 }
 static void print_profile(void) {
     pl_processor_snapshot p; if(pl_processor_scan(&p)!=0){fprintf(stderr,"Processor scan failed.\n");return;}
@@ -29,7 +40,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
@@ -38,6 +49,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
+        else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
         else if((!strcmp(argv[i],"--review-processor")||!strcmp(argv[i],"--analyze"))&&i+1<argc) analyze=argv[++i];
         else if(!strcmp(argv[i],"--json")&&i+1<argc) json=argv[++i];
         else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
@@ -52,6 +64,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
+    if(improvement_plan) print_improvement_plan();
     if(tone_out) {
         pl_audio_buffer a={0}; int rc=pl_audio_generate_tone(&a,48000,2,frequency,seconds);
         if(rc!=0){fprintf(stderr,"Tone parameters rejected (%d).\n",rc);return 1;}
@@ -71,7 +84,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json){profile=1;bench=1;}
+    if(improvement_plan && argc==2) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
