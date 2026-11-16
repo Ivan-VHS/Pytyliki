@@ -149,6 +149,9 @@ int pl_analyze_file(const char *path, pl_analysis *totals, char *details, size_t
     while (fgets(line, sizeof(line), f)) {
         line_no++;
         for (size_t i = 0; i < sizeof(checks)/sizeof(checks[0]); ++i) {
+            if (strcmp(checks[i].token, "_mm_") == 0 &&
+                (contains(line, "_mm_prefetch") || contains(line, "_mm_stream"))) continue;
+            if (strcmp(checks[i].token, "__asm") == 0 && contains(line, "asm volatile")) continue;
             if (contains(line, checks[i].token)) {
                 char item[384];
                 snprintf(item, sizeof(item), "line %u: %s\n", line_no, checks[i].label);
