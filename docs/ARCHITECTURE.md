@@ -23,7 +23,7 @@ Medical terms from the source material are intentionally anonymized into enginee
 ## HyperFusion semantics
 
 - Concreo scores architecture/source-review readiness; Pyemont creates transformation candidates, not rewritten files; Bollo evaluates available benchmark/memory evidence; JJ-HH checks the supplied test and scan evidence; PenWhite counts trace events; Serious Serious controls promotion.
-- The 6×6 interaction matrix yields 36 directed edges per round. A caller-selected limit of 1–64 rounds prevents unbounded work; diminishing returns permit early convergence.
+- The 6×6 interaction matrix yields 36 directed edges per round. Each edge multiplies the source and destination module scores, applies a bounded compatibility coefficient, and contributes to the accumulated interaction-product total and synergy score. A caller-selected limit of 1–64 rounds prevents unbounded work; diminishing returns permit early convergence.
 - Readiness and synergy scores are heuristic coordination metrics, not benchmark speedups, correctness proofs, or physical processor modifications.
 - The CLI does not claim CI success; it leaves the promotion gate held because it cannot certify an external test run.
 
