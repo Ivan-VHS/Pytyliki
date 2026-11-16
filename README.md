@@ -1,4 +1,4 @@
-# 🔵🔴 Pytyliki — Processor Systems Workstation
+# 🔵🔴 Pytyliki 0.7.0 — Processor Systems Workstation
 
 <p align="center">
 
@@ -18,13 +18,42 @@
 - Read-only source scanner and JSON reports.
 - PCM16 WAV tools, tone generation and local DSP processing.
 - Native Win32 GUI; CLI on Windows and Linux.
-- Evidence-gated 20-capability improvement engine, 12 advisory hardware rules, deny-by-default policy and C11/C23 pipeline plan.
+- Evidence-gated 20-capability improvement engine, 12 implemented advisory hardware rules, deny-by-default policy, C11/C23 reference pipeline and six-module HyperFusion coordinator.
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
 ## 🧬 HyperFusion six-module coordinator
 
 Run `pytyliki --evolve --evolution-rounds 8` to evaluate six bounded analysis modules and all 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups. The promotion gate stays held until independently verified CI evidence is supplied. HyperFusion does not rewrite source files or merge branches.
+
+## 🧩 Processor improvement capability matrix
+
+The C11 catalogue exposes 20 engineering / optimization / automation triplets through `pytyliki --improvement-plan`.
+
+| # | Engineering | Optimization | Automation |
+|---:|---|---|---|
+| 01 | Modernizing | Modernizing | Auto-optimizing |
+| 02 | Optimizing | Optimizing | Auto-modernizing |
+| 03 | Refining | Transpiling | Auto-adapting |
+| 04 | Refactoring | Compiling | Auto-correcting |
+| 05 | Transforming | Reconfiguring | Auto-compiling |
+| 06 | Accelerating | Scaling | Auto-transpiling |
+| 07 | Adapting | Accelerating | Auto-diagnosing |
+| 08 | Scaling | Synthesizing | Auto-verifying |
+| 09 | Automating | Decomposing | Auto-calibrating |
+| 10 | Integrating | Integrating | Auto-tuning |
+| 11 | Stabilizing | Adapting | Auto-configuring |
+| 12 | Unifying | Automating | Auto-automating |
+| 13 | Rationalizing | Parallelizing | Auto-integrating |
+| 14 | Rebuilding | Verifying | Auto-scaling |
+| 15 | Redesigning | Diagnosing | Auto-accelerating |
+| 16 | Self-learning | Stabilizing | Auto-recovering |
+| 17 | Self-tuning | Reconstructing | Auto-synthesizing |
+| 18 | Self-recovering | Initializing | Auto-reconfiguring |
+| 19 | Self-optimizing | Crystallizing | Auto-learning |
+| 20 | Evolving | Perfecting | Auto-perfecting |
+
+The catalogue is a capability/workflow taxonomy, not a claim that each transformation is autonomously applied. Changes still require tests, review and authorized integration.
 
 ## 🚀 20 × 3 Evolution Protocol
 
@@ -89,12 +118,17 @@ These triplets define the **target policy**, not implemented-feature claims.
 
 ### Source map
 
-- `src/core.c/.h` — CPU profile, benchmark, scanner, JSON report.
-- `src/processor.c/.h` — architecture/ISA inventory and processor suite.
-- `src/dsp.c/.h` — bounded WAV I/O and DSP.
-- `src/win_gui.c` — native Windows UI.
-- `src/cli.c` — cross-platform CLI.
-- `tests/test_core.c` — core, processor and DSP tests.
+- `src/core.c/.h` — CPU profile, bounded benchmark, processor source scanner and JSON report.
+- `src/processor.c/.h` — architecture/ISA inventory and bounded execution/memory/matrix suite.
+- `src/dsp.c/.h` — bounded PCM16 WAV I/O, tone generation, DSP processing and metering.
+- `src/improvement.c/.h` — 20×3 capability catalogue and evidence-gated iterative lifecycle.
+- `src/hw_rules.c/.h` — 12 implemented advisory hardware rules (remaining catalog IDs reserved).
+- `src/evolution.c/.h` — six-module HyperFusion analysis, 36 directed interactions per round.
+- `src/pipeline.c/.h` — C11/C23 reference pipeline plan (not an active transpiler).
+- `src/policy.c/.h` — deny-by-default local authorization policy.
+- `src/processor_catalog.c/.h` — processor workflow metadata and evidence validation.
+- `src/win_gui.c` — native Windows workstation UI; `src/cli.c` — cross-platform CLI.
+- `tests/` — core/DSP, improvement, hardware-rule, engineering-foundation and HyperFusion regression suites.
 - `.github/workflows/ci.yml` — Windows/Linux build and test matrix.
 
 ## ⚙️ Build
@@ -117,6 +151,10 @@ Windows builds also provide `pytyliki-gui.exe`.
 - [ ] Guarded branch, PR and release automation
 - [ ] Cross-architecture transpilation and RTL/FPGA
 - [ ] Desktop diagnostics and optimization dashboards
+
+## 🧪 Quality audit and CI
+
+See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge checks for an independent approval tied to the PR head and fails closed on API errors or stale validation events; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
 
 ## 🛡️ Safety
 

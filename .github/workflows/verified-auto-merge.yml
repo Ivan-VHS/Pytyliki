@@ -55,6 +55,12 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          set -euo pipefail
+          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          if [ "${current_head}" != "${PR_HEAD_SHA}" ]; then
+            echo "Auto-merge blocked: PR head changed while this validation run was executing."
+            exit 1
+          fi
           reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
           approvals="$(printf '%s' "${reviews}" | jq --arg author "${PR_AUTHOR}" --arg head "${PR_HEAD_SHA}" '
             [.[][] | select(.user.login != $author)]
@@ -64,7 +70,7 @@ jobs:
             | map(select(.state == "APPROVED" and .commit_id == $head))
             | length
           ')"
-          if [ "${approvals}" -lt 1 ]; then
+          if ! [[ "${approvals}" =~ ^[0-9]+$ ]] || [ "${approvals}" -lt 1 ]; then
             echo "Auto-merge blocked: an approval from someone other than the PR author is required."
             exit 1
           fi
