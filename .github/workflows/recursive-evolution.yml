@@ -1,6 +1,8 @@
 name: Recursive Evolution Gate
 
 on:
+  push:
+    branches: [main, "feat/**", "integration/**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
