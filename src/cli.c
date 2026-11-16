@@ -66,7 +66,7 @@ static void print_trimatrix(unsigned depth) {
     const pl_tma_cell *cells = NULL;
     size_t count = pl_tma_catalog(&cells);
     if (count != PL_TMA_CELL_COUNT || pl_tma_plan_init(&plan, depth) != 0) {
-        fputs("TriMatrix depth must be 1..100.\\n", stderr);
+        fputs("TriMatrix depth must be 1..100.\n", stderr);
         return;
     }
     printf("TriMatrix AutoForge: 3 lines x 3 matrices x 3 stages | %u generations | %u steps\\n",
@@ -145,7 +145,7 @@ int main(int argc,char **argv) {
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,trimatrix=0; const char *berry_name=NULL,*analyze=NULL,*json=NULL; unsigned berry_core=0u;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
-    unsigned evolution_rounds=8u;
+    unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
     for(int i=1;i<argc;i++) {
@@ -154,7 +154,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
-        else if(!strcmp(argv[i],"--trimatrix")) { trimatrix=1; if(i+1<argc && argv[i+1][0]!='-'){ char *end=NULL; unsigned long n=strtoul(argv[++i],&end,10); if(!end||*end||n<1u||n>PL_TMA_MAX_DEPTH)return 2; evolution_rounds=(unsigned)n; }}
+        else if(!strcmp(argv[i],"--trimatrix")) { trimatrix=1; if(i+1<argc && argv[i+1][0]!='-'){ char *end=NULL; unsigned long n=strtoul(argv[++i],&end,10); if(!end||*end||n<1u||n>PL_TMA_MAX_DEPTH)return 2; trimatrix_depth=(unsigned)n; }}
         else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
@@ -183,7 +183,7 @@ int main(int argc,char **argv) {
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(improvement_plan) print_improvement_plan();
-    if(trimatrix) print_trimatrix(evolution_rounds);
+    if(trimatrix) print_trimatrix(trimatrix_depth);
     if(syntax_pie) print_syntax_pie();
     if(hw_rules) print_hw_report();
     if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
