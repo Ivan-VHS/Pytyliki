@@ -29,6 +29,7 @@ typedef struct {
     unsigned rounds_completed;
     uint64_t module_invocations;
     uint64_t pairwise_interactions;
+    uint64_t interaction_product_sum;
     uint64_t interaction_counts[PL_EVOLUTION_MODULE_COUNT][PL_EVOLUTION_MODULE_COUNT];
     unsigned module_scores[PL_EVOLUTION_MODULE_COUNT];
     unsigned trace_events;
