@@ -3,10 +3,6 @@
 #include <stddef.h>
 #include <string.h>
 
-static unsigned clamp_score(unsigned value) {
-    return value > 100u ? 100u : value;
-}
-
 static unsigned penalty(unsigned value, unsigned scale) {
     if (scale == 0u) return 0u;
     return value / scale;
