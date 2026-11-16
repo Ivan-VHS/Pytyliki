@@ -1,6 +1,7 @@
 #include "hw_rules.h"
 
 #include <string.h>
+#include <math.h>
 
 typedef struct {
     unsigned id;
@@ -56,6 +57,15 @@ size_t pl_hw_rule_count(void) {
 int pl_hw_evaluate(const pl_hw_metrics *metrics, pl_hw_report *report) {
     size_t i;
     if (metrics == NULL || report == NULL) return -1;
+    if ((metrics->ipc_valid && (!isfinite(metrics->ipc) || metrics->ipc < 0.0)) ||
+        (metrics->l1d_valid && (!isfinite(metrics->l1d_miss_rate_pct) || metrics->l1d_miss_rate_pct < 0.0 || metrics->l1d_miss_rate_pct > 100.0)) ||
+        (metrics->l2_valid && (!isfinite(metrics->l2_miss_rate_pct) || metrics->l2_miss_rate_pct < 0.0 || metrics->l2_miss_rate_pct > 100.0)) ||
+        (metrics->branch_valid && (!isfinite(metrics->branch_mispredict_pct) || metrics->branch_mispredict_pct < 0.0 || metrics->branch_mispredict_pct > 100.0)) ||
+        (metrics->memory_stall_valid && (!isfinite(metrics->memory_stall_pct) || metrics->memory_stall_pct < 0.0 || metrics->memory_stall_pct > 100.0)) ||
+        (metrics->power_valid && (!isfinite(metrics->package_power_w) || metrics->package_power_w < 0.0)) ||
+        (metrics->temperature_valid && (!isfinite(metrics->temperature_c) || metrics->temperature_c < -273.15 || metrics->temperature_c > 200.0)) ||
+        (metrics->frequency_valid && (!isfinite(metrics->frequency_mhz) || metrics->frequency_mhz < 0.0)) ||
+        (metrics->utilization_valid && (!isfinite(metrics->utilization_pct) || metrics->utilization_pct < 0.0 || metrics->utilization_pct > 100.0))) return -2;
     memset(report, 0, sizeof(*report));
     report->rules_evaluated = pl_hw_rule_count();
 
