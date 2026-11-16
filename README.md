@@ -23,7 +23,7 @@ The scanner never executes or rewrites source. ISA flags alone do not establish 
 
 ## 🧬 HyperFusion Six-Module Engine
 
-`Concreo`, `Pyemont`, `Bollo`, `JJ-HH`, `PenWhite` and `Serious Serious` operate as one C11 evaluation pipeline. Each round invokes all six modules and evaluates all 36 directed module pairs (including self-checks). Repeated rounds use diminishing-return scoring and stop at convergence or the configured cap.
+`Concreo`, `Pyemont`, `Bollo`, `JJ-HH`, `PenWhite` and `Serious Serious` operate as one C11 evaluation pipeline. Each round invokes all six modules and evaluates all 36 directed module pairs (including self-checks). Every pair multiplies the two module scores and applies a compatibility weight; the products accumulate into a cross-module synergy score. Repeated rounds use diminishing-return scoring and stop at convergence or the configured cap.
 
 - **Concreo:** architecture and source-review readiness.
 - **Pyemont:** bounded transformation planning (no automatic source rewrite).
