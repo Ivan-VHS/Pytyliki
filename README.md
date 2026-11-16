@@ -47,6 +47,33 @@ Processor information, source-level hints, benchmarks, and local DSP utilities o
 
 HyperFusion readiness and synergy values are heuristic planning indicators, not measured speedups or independent CI certification.
 
+## 20 × 3 Evolution Protocol
+
+The 60 operations below define the target engineering policy. They are a capability taxonomy, not a claim that every action is already autonomous.
+
+| # | Core operation | Workflow operation | Quality operation |
+|---:|---|---|---|
+| 01 | Auto-improving | Auto-committing | Auto-optimizing |
+| 02 | Auto-modernizing | Auto-pushing | Auto-refactoring |
+| 03 | Auto-optimizing | Auto-merging | Auto-modernizing |
+| 04 | Auto-adapting | Auto-integrating | Auto-improving |
+| 05 | Auto-correcting | Auto-branching | Auto-simplifying |
+| 06 | Auto-perfecting | Auto-cloning | Auto-accelerating |
+| 07 | Auto-developing | Auto-forking | Auto-adapting |
+| 08 | Automating | Auto-synchronizing | Auto-correcting |
+| 09 | Auto-diagnosing | Auto-deploying | Auto-decomposing |
+| 10 | Auto-restoring | Auto-building | Automating |
+| 11 | Auto-restructuring | Auto-testing | Auto-standardizing |
+| 12 | Auto-calibrating | Auto-linting | Auto-perfecting |
+| 13 | Auto-configuring | Auto-checking | Auto-rewriting |
+| 14 | Auto-testing | Auto-scanning | Auto-transpiling |
+| 15 | Auto-validating | Auto-analyzing | Auto-converting |
+| 16 | Auto-checking | Auto-fixing | Auto-typing |
+| 17 | Auto-rechecking | Auto-updating | Auto-modularizing |
+| 18 | Auto-compiling | Auto-generating | Auto-deduplicating |
+| 19 | Auto-transpiling | Auto-documenting | Auto-hardening |
+| 20 | Auto-evolving | Auto-integrating | Auto-evolving |
+
 ## APSIA 2.0 polyglot evolution
 
 APSIA extends the existing C11/PREE/HyperFusion workflow with a guarded language-routing planner. The implemented C11 planner maps CPU-bound work to Rust, GPU work to CUDA, analytics to SQL, network I/O to Go, scripting to Python, and sandboxed plugins to WebAssembly. It checks target availability and FFI-adjusted cost before selecting a route; untrusted plugins fail closed if WASM is unavailable.
