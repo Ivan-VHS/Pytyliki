@@ -30,9 +30,13 @@ int main(void) {
     assert(pl_policy_parse_role("root", &role) != 0);
     assert(pl_processor_catalog_count() == 3u);
     assert(pl_processor_catalog_get(0u, &rule) == 0);
+    assert(strcmp(pl_processor_domain_name(PL_PROCESSOR_DOMAIN_EXECUTION), "execution") == 0);
+    assert(pl_processor_rule_validate(NULL) != 0);
     assert(pl_processor_rule_validate(&rule) != 0);
     rule.evidence_source = "approved-profiler:CPU-DEP-001";
     assert(pl_processor_rule_validate(&rule) == 0);
     assert(pl_processor_catalog_get(99u, &rule) != 0);
+    rule.domain = (pl_processor_domain)-1;
+    assert(pl_processor_rule_validate(&rule) != 0);
     return 0;
 }
