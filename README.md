@@ -246,7 +246,9 @@ Auto-commit, auto-push, and auto-merge are separate permissioned operations. Fai
 - **Operating systems:** Windows and Linux are represented in the project CI matrix.
 - **Language:** ISO C11 implementation; C23 appears in the reference pipeline plan.
 - **Data:** JSON reports and PCM16 WAV audio.
-- **Not claimed:** macOS, ARM64, x86_64-specific performance guarantees, Protobuf, Parquet, Arrow, or production RTL/FPGA synthesis unless separately validated.
+- **Not claimed:** macOS support, ARM64/x86_64-specific performance guarantees, Protobuf, Parquet, Arrow, or production RTL/FPGA synthesis without separate validation.
+
+See [Platform and capability validation policy](docs/PLATFORM_VALIDATION_POLICY.md) for the evidence required before adding any such claim.
 
 ## License
 
