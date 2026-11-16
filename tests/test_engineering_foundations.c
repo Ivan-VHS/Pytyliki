@@ -35,6 +35,9 @@ int main(void) {
     assert(pl_processor_rule_validate(&rule) != 0);
     rule.evidence_source = "approved-profiler:CPU-DEP-001";
     assert(pl_processor_rule_validate(&rule) == 0);
+    rule.requires_human_review = 2;
+    assert(pl_processor_rule_validate(&rule) != 0);
+    rule.requires_human_review = 1;
     assert(pl_processor_catalog_get(99u, &rule) != 0);
     rule.domain = (pl_processor_domain)-1;
     assert(pl_processor_rule_validate(&rule) != 0);
