@@ -38,10 +38,19 @@ int main(void) {
     assert(catalog != NULL);
     for (unsigned i = 0u; i < PL_IMPROVEMENT_CAPABILITY_COUNT; ++i) {
         assert(catalog[i].id == i + 1u);
-        assert(catalog[i].engineering != NULL);
-        assert(catalog[i].optimization != NULL);
-        assert(catalog[i].automation != NULL);
+        assert(catalog[i].engineering != NULL && catalog[i].engineering[0] != '\0');
+        assert(catalog[i].optimization != NULL && catalog[i].optimization[0] != '\0');
+        assert(catalog[i].automation != NULL && catalog[i].automation[0] != '\0');
     }
+    assert(strcmp(catalog[0].engineering, "Modernizing") == 0);
+    assert(strcmp(catalog[0].optimization, "Modernizing") == 0);
+    assert(strcmp(catalog[0].automation, "Auto-optimizing") == 0);
+    assert(strcmp(catalog[2].optimization, "Transpiling") == 0);
+    assert(strcmp(catalog[7].automation, "Auto-verifying") == 0);
+    assert(strcmp(catalog[12].optimization, "Parallelizing") == 0);
+    assert(strcmp(catalog[19].engineering, "Evolving") == 0);
+    assert(strcmp(catalog[19].optimization, "Perfecting") == 0);
+    assert(strcmp(catalog[19].automation, "Auto-perfecting") == 0);
     assert(pl_improvement_catalog(NULL) == 0u);
 
     assert(pl_improvement_cycle_init(&cycle) == 0);

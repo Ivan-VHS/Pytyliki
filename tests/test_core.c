@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 int main(void) {
     pl_cpu_info cpu;
@@ -41,7 +42,8 @@ int main(void) {
     char details[1024];
     assert(pl_analyze_file(source_path, &analysis, details, sizeof(details)) == 0);
     assert(analysis.files_scanned == 1);
-    assert(analysis.findings == 6);
+    assert(analysis.findings == 5);
+    assert(strstr(details, "x86 SIMD intrinsic") == NULL);
     assert(strstr(details, "CPUID feature discovery") != NULL);
     assert(strstr(details, "cache prefetch hint") != NULL);
     remove(source_path);
@@ -71,6 +73,38 @@ int main(void) {
     pl_audio_free(&loaded);
     pl_audio_free(&audio);
     assert(pl_audio_generate_tone(&audio, 48000, 2, 24000.0, 1.0) != 0);
+    assert(pl_audio_generate_tone(&audio, 48000, 2, NAN, 1.0) != 0);
+    assert(pl_audio_generate_tone(&audio, 48000, 2, 440.0, NAN) != 0);
+    assert(pl_audio_generate_tone(&audio, 48000, 2, INFINITY, 1.0) != 0);
+    assert(pl_audio_generate_tone(&audio, 48000, 2, 440.0, INFINITY) != 0);
+    assert(pl_audio_generate_tone(&audio, 48000, 2, 440.0, 0.25) == 0);
+    float original_sample = audio.samples[0];
+    audio.samples[0] = NAN;
+    assert(pl_audio_measure(&audio, &stats) != 0);
+    assert(pl_audio_apply_gain(&audio, 0.0) != 0);
+    assert(pl_audio_apply_lowpass(&audio, 5000.0) != 0);
+    assert(pl_audio_apply_compressor(&audio, -12.0, 4.0) != 0);
+    assert(pl_audio_apply_saturation(&audio, 1.5) != 0);
+    assert(pl_audio_write_wav("pytyliki_invalid_audio.wav", &audio) != 0);
+    audio.samples[0] = original_sample;
+    assert(pl_audio_measure(&audio, &stats) == 0);
+    pl_audio_free(&audio);
+
+    pl_benchmark invalid_benchmark = b;
+    invalid_benchmark.elapsed_ms = NAN;
+    pl_analysis empty_analysis = {0};
+    assert(pl_write_json("pytyliki_invalid_report.json", &cpu, &invalid_benchmark, &empty_analysis) != 0);
+    const char *json_path = "pytyliki_test_report.json";
+    assert(pl_write_json(json_path, &cpu, &b, &analysis) == 0);
+    FILE *json_file = fopen(json_path, "rb");
+    assert(json_file != NULL);
+    char json_text[2048] = {0};
+    size_t json_size = fread(json_text, 1, sizeof(json_text) - 1u, json_file);
+    assert(!ferror(json_file));
+    fclose(json_file);
+    assert(json_size > 0u);
+    assert(strstr(json_text, "\"version\": \"0.7.0\"") != NULL);
+    remove(json_path);
 
     puts("All processor, DSP and core tests passed.");
     return 0;

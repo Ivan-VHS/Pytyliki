@@ -1,26 +1,26 @@
 #include "improvement.h"
 
 static const pl_improvement_capability capabilities[PL_IMPROVEMENT_CAPABILITY_COUNT] = {
-    { 1u, "Modernize", "Optimize", "Auto-optimize" },
-    { 2u, "Optimize", "Transpile", "Auto-modernize" },
-    { 3u, "Refine", "Compile", "Auto-adapt" },
-    { 4u, "Refactor", "Reconfigure", "Auto-correct" },
-    { 5u, "Transform", "Scale", "Auto-compile" },
-    { 6u, "Accelerate", "Synthesize", "Auto-transpile" },
-    { 7u, "Adapt", "Decompose", "Auto-diagnose" },
-    { 8u, "Scale", "Integrate", "Auto-verify" },
-    { 9u, "Automate", "Stabilize", "Auto-calibrate" },
-    { 10u, "Integrate", "Unify", "Auto-tune" },
-    { 11u, "Stabilize", "Rationalize", "Auto-configure" },
-    { 12u, "Unify", "Rebuild", "Auto-automate" },
-    { 13u, "Rationalize", "Parallelize", "Auto-integrate" },
-    { 14u, "Rebuild", "Verify", "Auto-scale" },
-    { 15u, "Redesign", "Diagnose", "Auto-accelerate" },
-    { 16u, "Self-learn", "Stabilize", "Auto-recover" },
-    { 17u, "Self-tune", "Reconstruct", "Auto-synthesize" },
-    { 18u, "Self-recover", "Initialize", "Auto-reconfigure" },
-    { 19u, "Self-optimize", "Crystallize", "Auto-learn" },
-    { 20u, "Evolve", "Improve", "Self-improve" }
+    { 1u, "Modernizing", "Modernizing", "Auto-optimizing" },
+    { 2u, "Optimizing", "Optimizing", "Auto-modernizing" },
+    { 3u, "Refining", "Transpiling", "Auto-adapting" },
+    { 4u, "Refactoring", "Compiling", "Auto-correcting" },
+    { 5u, "Transforming", "Reconfiguring", "Auto-compiling" },
+    { 6u, "Accelerating", "Scaling", "Auto-transpiling" },
+    { 7u, "Adapting", "Accelerating", "Auto-diagnosing" },
+    { 8u, "Scaling", "Synthesizing", "Auto-verifying" },
+    { 9u, "Automating", "Decomposing", "Auto-calibrating" },
+    { 10u, "Integrating", "Integrating", "Auto-tuning" },
+    { 11u, "Stabilizing", "Adapting", "Auto-configuring" },
+    { 12u, "Unifying", "Automating", "Auto-automating" },
+    { 13u, "Rationalizing", "Parallelizing", "Auto-integrating" },
+    { 14u, "Rebuilding", "Verifying", "Auto-scaling" },
+    { 15u, "Redesigning", "Diagnosing", "Auto-accelerating" },
+    { 16u, "Self-learning", "Stabilizing", "Auto-recovering" },
+    { 17u, "Self-tuning", "Reconstructing", "Auto-synthesizing" },
+    { 18u, "Self-recovering", "Initializing", "Auto-reconfiguring" },
+    { 19u, "Self-optimizing", "Crystallizing", "Auto-learning" },
+    { 20u, "Evolving", "Perfecting", "Auto-perfecting" }
 };
 
 static const uint32_t required_evidence[] = {
