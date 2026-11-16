@@ -24,9 +24,9 @@ static const rule_def rules[] = {
     {3, PL_HW_DOMAIN_CACHE_MEMORY, PL_HW_SEVERITY_WARNING, "Elevated L2 cache miss rate", "Profile cache capacity, conflict behavior and memory-level parallelism before changing cache policy.", M_L2, 20.0, 1},
     {4, PL_HW_DOMAIN_ARCHITECTURE, PL_HW_SEVERITY_REVIEW, "Branch prediction pressure", "Use branch-level profiling; consider reducing unpredictable control flow or evaluating predictor design in RTL.", M_BRANCH, 5.0, 1},
     {5, PL_HW_DOMAIN_CACHE_MEMORY, PL_HW_SEVERITY_WARNING, "Memory stall pressure", "Measure bandwidth, latency, NUMA placement and outstanding memory requests.", M_MEM_STALL, 30.0, 1},
-    {6, PL_HW_DOMAIN_POWER_THERMAL, PL_HW_SEVERITY_REVIEW, "High package power observation", "Compare against the processor's documented power envelope and workload baseline; do not force voltage changes.", M_POWER, 0.0, 1},
+    {6, PL_HW_DOMAIN_POWER_THERMAL, PL_HW_SEVERITY_REVIEW, "Power telemetry needs a platform limit", "Compare the observed value with the exact CPU model's documented power envelope and workload baseline; never infer a universal wattage limit.", M_POWER, 0.0, 1},
     {7, PL_HW_DOMAIN_POWER_THERMAL, PL_HW_SEVERITY_WARNING, "High reported temperature", "Check cooling, airflow, sensor validity and manufacturer thermal limits; avoid automatic fan or voltage writes.", M_TEMP, 90.0, 1},
-    {8, PL_HW_DOMAIN_POWER_THERMAL, PL_HW_SEVERITY_REVIEW, "Low frequency under high utilization", "Check operating-system power policy, thermal/power limits and workload behavior using read-only telemetry.", M_FREQ, 0.0, 0},
+    {8, PL_HW_DOMAIN_POWER_THERMAL, PL_HW_SEVERITY_REVIEW, "Frequency telemetry needs a baseline", "Compare frequency with the same processor's documented operating range under a reproducible workload; check thermal and power limits.", M_FREQ, 0.0, 0},
     {9, PL_HW_DOMAIN_EXECUTION, PL_HW_SEVERITY_INFO, "Low utilization observation", "Check whether the workload is serial, blocked on I/O, synchronized or limited by memory latency.", M_UTIL, 20.0, 0},
     {10, PL_HW_DOMAIN_TOOLCHAIN, PL_HW_SEVERITY_REVIEW, "Insufficient profiler evidence", "Collect valid hardware-counter measurements before drawing architectural conclusions.", -1, 0.0, 0},
     {11, PL_HW_DOMAIN_VERIFICATION, PL_HW_SEVERITY_WARNING, "No physical-design evidence supplied", "Any proposed RTL change must pass lint, formal equivalence, timing, power and area analysis.", -1, 0.0, 0},
@@ -64,9 +64,14 @@ int pl_hw_evaluate(const pl_hw_metrics *metrics, pl_hw_report *report) {
         double value = 0.0;
         int has_value = metric_value(metrics, r->metric, &value);
         int issue = 0;
+        const char *evidence;
         pl_hw_finding *f;
 
-        if (r->metric >= 0) {
+        if (r->id == 6) {
+            issue = has_value; /* Requires model-specific limit; not a fault threshold. */
+        } else if (r->id == 8) {
+            issue = has_value && metrics->utilization_pct >= 80.0;
+        } else if (r->metric >= 0) {
             if (!has_value) continue;
             issue = r->greater_is_issue ? value > r->threshold : value < r->threshold;
         } else if (r->id == 10) {
@@ -83,8 +88,11 @@ int pl_hw_evaluate(const pl_hw_metrics *metrics, pl_hw_report *report) {
         f->severity = r->severity;
         f->title = r->title;
         f->recommendation = r->recommendation;
-        f->evidence = has_value ? "Threshold triggered by supplied profiler metric." :
-                                  "Required evidence was not supplied; this is a process warning, not a measured defect.";
+        if (r->id == 6) evidence = "Power reading supplied; compare with a model-specific limit.";
+        else if (r->id == 8) evidence = "Frequency and high utilization supplied; no platform baseline is available.";
+        else evidence = has_value ? "Threshold triggered by supplied profiler metric." :
+            "Required evidence was not supplied; this is a process warning, not a measured defect.";
+        f->evidence = evidence;
     }
     return 0;
 }
