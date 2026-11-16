@@ -50,13 +50,15 @@ typedef struct {
     pl_apsia_language language;
     uint32_t route_selected;
     uint32_t performance_approved;
+    uint32_t request_rejected;
     double estimated_speedup;
     double estimated_ffi_cpu_cores;
     char reason[160];
 } pl_apsia_decision;
 
-/* Returns 0 for a valid plan, -1 for invalid input. Unknown/unsafe requests
- * fail closed to the host implementation. */
+/* Returns 0 for a valid plan, -1 for invalid input. If sandbox_required is
+ * set, an unavailable or uneconomic sandbox rejects the request; it never
+ * falls back to executing the plugin in the host process. */
 int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision);
 const char *pl_apsia_language_name(pl_apsia_language language);
 const char *pl_apsia_workload_name(pl_apsia_workload workload);

@@ -26,6 +26,7 @@ int main(void) {
     assert(pl_apsia_route(&r, &d) == 0);
     assert(d.route_selected == 1u);
     assert(d.performance_approved == 1u);
+    assert(d.request_rejected == 0u);
     assert(d.language == PL_APSIA_LANG_RUST);
     assert(d.estimated_speedup == 2.5);
 
@@ -44,17 +45,25 @@ int main(void) {
     r.sandbox_required = 1u;
     assert(pl_apsia_route(&r, &d) == 0);
     assert(d.language == PL_APSIA_LANG_WASM);
+    assert(d.request_rejected == 0u);
 
     r.available_targets &= ~PL_APSIA_TARGET_BIT(PL_APSIA_LANG_WASM);
     assert(pl_apsia_route(&r, &d) == 0);
     assert(d.route_selected == 0u);
     assert(d.language == PL_APSIA_LANG_HOST);
+    assert(d.request_rejected == 1u);
 
     r = base_request();
     r.ffi_overhead_ns = 600.0;
     assert(pl_apsia_route(&r, &d) == 0);
     assert(d.route_selected == 0u);
     assert(d.language == PL_APSIA_LANG_HOST);
+    assert(d.request_rejected == 0u);
+
+    r.sandbox_required = 1u;
+    assert(pl_apsia_route(&r, &d) == 0);
+    assert(d.route_selected == 0u);
+    assert(d.request_rejected == 1u);
 
     r = base_request();
     r.ffi_calls_per_second = 1000000000.0;
@@ -65,6 +74,7 @@ int main(void) {
     r.host_execution_ns = NAN;
     assert(pl_apsia_route(&r, &d) != 0);
     assert(d.language == PL_APSIA_LANG_HOST);
+    assert(d.request_rejected == 1u);
     assert(pl_apsia_route(NULL, &d) != 0);
     assert(pl_apsia_route(&r, NULL) != 0);
 

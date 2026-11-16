@@ -8,8 +8,7 @@ const char *pl_apsia_language_name(pl_apsia_language language) {
         "host", "Rust", "C++", "Zig", "CUDA", "WebAssembly", "SQL",
         "Python", "Go"
     };
-    return (language >= 0 && language < PL_APSIA_LANG_COUNT)
-        ? names[language] : "unknown";
+    return ((unsigned)language < PL_APSIA_LANG_COUNT) ? names[language] : "unknown";
 }
 
 const char *pl_apsia_workload_name(pl_apsia_workload workload) {
@@ -17,8 +16,7 @@ const char *pl_apsia_workload_name(pl_apsia_workload workload) {
         "cpu-bound", "gpu-compute", "analytics", "sandboxed-plugin",
         "network-io", "scripting"
     };
-    return (workload >= 0 && workload < PL_APSIA_WORK_COUNT)
-        ? names[workload] : "unknown";
+    return ((unsigned)workload < PL_APSIA_WORK_COUNT) ? names[workload] : "unknown";
 }
 
 static void host_fallback(pl_apsia_decision *decision, const char *reason) {
@@ -26,6 +24,12 @@ static void host_fallback(pl_apsia_decision *decision, const char *reason) {
     decision->route_selected = 0u;
     decision->performance_approved = 0u;
     (void)snprintf(decision->reason, sizeof(decision->reason), "%s", reason);
+}
+
+static void reject_sandbox_request(pl_apsia_decision *decision, const char *reason) {
+    host_fallback(decision, reason);
+    /* A required sandbox must never silently fall back to in-process host code. */
+    decision->request_rejected = 1u;
 }
 
 int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision) {
@@ -38,7 +42,7 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
     memset(decision, 0, sizeof(*decision));
     decision->language = PL_APSIA_LANG_HOST;
 
-    if (request->workload < 0 || request->workload >= PL_APSIA_WORK_COUNT ||
+    if ((unsigned)request->workload >= PL_APSIA_WORK_COUNT ||
         request->sandbox_required > 1u ||
         !isfinite(request->host_execution_ns) ||
         !isfinite(request->target_execution_ns) ||
@@ -52,12 +56,14 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
         request->ffi_calls_per_second < 0.0 ||
         request->minimum_speedup < 1.0 ||
         request->maximum_ffi_cpu_cores < 0.0) {
-        host_fallback(decision, "Invalid measurements or policy; retain host implementation.");
+        host_fallback(decision, "Invalid measurements or policy; no route approved.");
+        decision->request_rejected = 1u;
         return -1;
     }
 
     /* Sandboxing takes precedence over raw speed. WASM must be explicitly
-     * available; otherwise the request is not routed to native code. */
+     * available; absence of WASM rejects the request instead of running it
+     * unsandboxed in the host process. */
     if (request->sandbox_required != 0u) {
         candidate = PL_APSIA_LANG_WASM;
     } else {
@@ -75,32 +81,43 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
     }
 
     if ((request->available_targets & PL_APSIA_TARGET_BIT(candidate)) == 0u) {
-        host_fallback(decision, "Selected target is unavailable; retain host implementation.");
+        if (request->sandbox_required != 0u)
+            reject_sandbox_request(decision, "Required sandbox target unavailable; reject request.");
+        else
+            host_fallback(decision, "Selected target unavailable; retain host implementation.");
         return 0;
     }
 
     total_native_ns = request->target_execution_ns + request->ffi_overhead_ns;
     if (!isfinite(total_native_ns) || total_native_ns <= 0.0) {
-        host_fallback(decision, "Invalid combined execution cost; retain host implementation.");
+        host_fallback(decision, "Invalid combined execution cost; no route approved.");
+        decision->request_rejected = 1u;
         return -1;
     }
     speedup = request->host_execution_ns / total_native_ns;
     ffi_cores = (request->ffi_overhead_ns * request->ffi_calls_per_second) / 1.0e9;
     if (!isfinite(speedup) || !isfinite(ffi_cores)) {
-        host_fallback(decision, "Cost estimate overflow; retain host implementation.");
+        host_fallback(decision, "Cost estimate overflow; no route approved.");
+        decision->request_rejected = 1u;
         return -1;
     }
 
     decision->estimated_speedup = speedup;
     decision->estimated_ffi_cpu_cores = ffi_cores;
     if (speedup < request->minimum_speedup) {
-        host_fallback(decision, "FFI-adjusted speedup is below the configured threshold.");
+        if (request->sandbox_required != 0u)
+            reject_sandbox_request(decision, "Sandbox candidate fails FFI-adjusted speedup policy; reject request.");
+        else
+            host_fallback(decision, "FFI-adjusted speedup is below the configured threshold.");
         decision->estimated_speedup = speedup;
         decision->estimated_ffi_cpu_cores = ffi_cores;
         return 0;
     }
     if (ffi_cores > request->maximum_ffi_cpu_cores) {
-        host_fallback(decision, "Estimated FFI overhead exceeds the CPU budget.");
+        if (request->sandbox_required != 0u)
+            reject_sandbox_request(decision, "Sandbox candidate exceeds the FFI CPU budget; reject request.");
+        else
+            host_fallback(decision, "Estimated FFI overhead exceeds the CPU budget.");
         decision->estimated_speedup = speedup;
         decision->estimated_ffi_cpu_cores = ffi_cores;
         return 0;

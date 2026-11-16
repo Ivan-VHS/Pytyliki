@@ -44,7 +44,7 @@ For each candidate, estimate:
 
 `ffi_cpu_cores = ffi_overhead_ns * ffi_calls_per_second / 1e9`
 
-Reject the polyglot route when the measured speedup is below the configured threshold, the FFI CPU budget is exceeded, or required target support is absent. Batch work, use stable C ABI/WIT boundaries and prefer zero-copy buffers for high-volume data. Never assume that zero-copy is safe without explicit lifetime and ownership rules.
+Reject the polyglot route when the measured speedup is below the configured threshold, the FFI CPU budget is exceeded, or required target support is absent. If sandboxing is mandatory, an unavailable or uneconomic WASM route rejects the request rather than falling back to unsandboxed host execution. Batch work, use stable C ABI/WIT boundaries and prefer zero-copy buffers for high-volume data. Never assume that zero-copy is safe without explicit lifetime and ownership rules.
 
 ## 3. Interface and memory contract
 
