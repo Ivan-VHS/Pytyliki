@@ -51,6 +51,15 @@ int main(void) {
     assert(plan.current_depth == 2u);
     assert(pl_tma_plan_next(&plan, &step) == 0);
     assert(pl_tma_plan_total(NULL) == 0u);
+    assert(pl_tma_plan_init(&plan, 2u) == 0);
+    plan.current_depth = 2u;
+    assert(pl_tma_plan_next(&plan, &step) == -1);
+    assert(pl_tma_plan_init(&plan, 2u) == 0);
+    plan.next_cell = 1u;
+    assert(pl_tma_plan_next(&plan, &step) == -1);
+    assert(pl_tma_plan_init(&plan, 1u) == 0);
+    plan.emitted_steps = 28u;
+    assert(pl_tma_plan_next(&plan, &step) == -1);
     puts("TriMatrix AutoForge 100 tests passed.");
     return 0;
 }
