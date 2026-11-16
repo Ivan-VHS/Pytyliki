@@ -22,6 +22,10 @@
 
 The scanner never executes or rewrites source. ISA flags alone do not establish safe instruction eligibility.
 
+## 🧬 HyperFusion six-module coordinator
+
+Run `pytyliki --evolve --evolution-rounds 8` to evaluate six bounded analysis modules and all 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups. The promotion gate stays held until independently verified CI evidence is supplied. HyperFusion does not rewrite source files or merge branches.
+
 ## 🚀 20 × 3 Evolution Protocol
 
 These triplets define the **target policy**, not implemented-feature claims.
