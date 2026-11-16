@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "core.h"
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -176,10 +177,14 @@ static void json_string(FILE *f, const char *s) {
     fputc('"', f);
 }
 int pl_write_json(const char *path, const pl_cpu_info *cpu, const pl_benchmark *bench, const pl_analysis *analysis) {
-    if (!path || !cpu || !bench || !analysis) return -1;
+    if (!path || path[0] == '\0' || !cpu || !bench || !analysis ||
+        memchr(cpu->vendor, '\0', sizeof(cpu->vendor)) == NULL ||
+        memchr(cpu->model, '\0', sizeof(cpu->model)) == NULL ||
+        !isfinite(bench->elapsed_ms) || bench->elapsed_ms < 0.0 ||
+        !isfinite(bench->score) || bench->score < 0.0) return -1;
     FILE *f = fopen(path, "wb");
     if (!f) return -1;
-    fputs("{\n  \"version\": \"0.5.0\",\n  \"cpu\": {\"vendor\":", f);
+    fputs("{\n  \"version\": \"0.7.0\",\n  \"cpu\": {\"vendor\":", f);
     json_string(f, cpu->vendor); fputs(",\"model\":", f); json_string(f, cpu->model);
     fprintf(f, ",\"logical_cpus\":%u,\"family\":%u,\"model_id\":%u},\n", cpu->logical_cpus, cpu->family, cpu->model_id);
     fprintf(f, "  \"benchmark\": {\"iterations\":%llu,\"elapsed_ms\":%.3f,\"iterations_per_ms\":%.3f},\n",
