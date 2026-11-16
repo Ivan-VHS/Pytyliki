@@ -1,4 +1,4 @@
-#include "clinical_rules.h"
+#include "processor_catalog.h"
 #include "pipeline.h"
 #include "policy.h"
 #ifdef NDEBUG
@@ -11,7 +11,7 @@ int main(void) {
     pl_pipeline_plan plan;
     pl_role role;
     pl_action action;
-    pl_clinical_rule rule;
+    pl_processor_rule rule;
     assert(pl_pipeline_build(PL_TARGET_C11, &plan) == 0);
     assert(plan.stage_count == PL_STAGE_COUNT && plan.deterministic);
     assert(plan.semantic_equivalence_required && plan.human_review_required);
@@ -28,11 +28,11 @@ int main(void) {
     assert(pl_policy_parse_role("maintainer", &role) == 0 && role == PL_ROLE_MAINTAINER);
     assert(pl_policy_parse_action("apply-patch", &action) == 0 && action == PL_ACTION_APPLY_PATCH);
     assert(pl_policy_parse_role("root", &role) != 0);
-    assert(pl_clinical_catalog_count() == 3u);
-    assert(pl_clinical_catalog_get(0u, &rule) == 0);
-    assert(pl_clinical_rule_validate(&rule) != 0);
-    rule.approved_source = "approved-local-guideline:INF-CHAIN-001";
-    assert(pl_clinical_rule_validate(&rule) == 0);
-    assert(pl_clinical_catalog_get(99u, &rule) != 0);
+    assert(pl_processor_catalog_count() == 3u);
+    assert(pl_processor_catalog_get(0u, &rule) == 0);
+    assert(pl_processor_rule_validate(&rule) != 0);
+    rule.evidence_source = "approved-profiler:CPU-DEP-001";
+    assert(pl_processor_rule_validate(&rule) == 0);
+    assert(pl_processor_catalog_get(99u, &rule) != 0);
     return 0;
 }
