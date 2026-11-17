@@ -3,6 +3,7 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "core.h"
@@ -41,7 +42,7 @@ static void log_text(const char *text) {
 }
 static void log_format(const char *fmt, ...) {
     char buffer[2048]; va_list args; va_start(args, fmt);
-    _vsnprintf(buffer, sizeof(buffer)-1, fmt, args); buffer[sizeof(buffer)-1] = '\0';
+    (void)_vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, fmt, args); buffer[sizeof(buffer)-1] = '\0';
     va_end(args); log_text(buffer);
 }
 static void apply_font(HWND control) { if (g_font) SendMessageA(control, WM_SETFONT, (WPARAM)g_font, TRUE); }
@@ -69,9 +70,9 @@ static void show_profile(void) {
     log_format("\r\n[PROCESSOR PROFILE] %s / %s\r\nVendor: %s | logical threads: %u | family/model: %u/%u\r\nPhysical memory: %llu MiB | available: %llu MiB\r\n",
          p.architecture,p.base.model,p.base.vendor,p.base.logical_cpus,p.base.family,p.base.model_id,
          (unsigned long long)p.physical_memory_mib,(unsigned long long)p.available_memory_mib);
-    log_format("ISA flags: SSE2=%u SSE4.2=%u AVX=%u AVX2=%u AVX-512F=%u AES=%u FMA=%u | virtualization=%u\r\n",
-         p.sse2,p.sse42,p.avx,p.avx2,p.avx512f,p.aes,p.fma,p.virtualization);
-    log_text("Interpretation: capability flags are discovered, not executed; AVX-family flags do not imply OS vector-state support. No firmware or clock settings are changed.\r\n");
+    log_format("ISA: SSE2=%u SSE4.2=%u AVX-HW=%u OSXSAVE=%u AVX-OS=%u AVX-usable=%u AVX2-usable=%u AVX512F-usable=%u AES=%u FMA-usable=%u | virtualization=%u\r\n",
+         p.sse2,p.sse42,p.avx_hw,p.osxsave,p.avx_os_state,p.avx,p.avx2,p.avx512f,p.aes,p.fma,p.virtualization);
+    log_text("AVX-family usable flags include OS-managed XCR0 state validation. Capability reporting does not execute SIMD instructions or modify firmware/clock settings.\r\n");
 }
 static void run_suite(void) {
     pl_suite_result r;
