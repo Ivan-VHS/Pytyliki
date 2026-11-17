@@ -1,60 +1,37 @@
-# 🔵🔴 Pytyliki — C11 处理器系统工作站
+# Pytyliki — 基于 C11 的处理器系统工作站
 
 <p align="center">
-
-**探测 · 分析 · 优化 · 验证**
-
-![C11](https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge)
-![操作系统](https://img.shields.io/badge/OS-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
-![许可证](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)
-
-**一套精简的 C11 工作站。可验证的数据。边界明确的实验。**
-
+<strong>发现 · 分析 · 优化 · 验证</strong><br>
+<img alt="C11" src="https://img.shields.io/badge/C-ISO_C11-2563EB?style=flat-square">
+<img alt="Windows 和 Linux" src="https://img.shields.io/badge/平台-Windows%20%7C%20Linux-DC2626?style=flat-square">
+<img alt="MIT" src="https://img.shields.io/badge/许可证-MIT-FFFFFF?style=flat-square&labelColor=1F2937">
 </p>
 
-**语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
+**Pytyliki 是一个模块化 C11 工作站，用于只读处理器信息发现、受限本地基准测试、源代码诊断以及 PCM16 WAV/DSP 工具。** 项目提供适用于 Windows 和 Linux 的 CLI，以及原生 Win32 图形界面。它不会重新编程物理芯片。
 
-Pytyliki 是一套模块化 C11 工作站，用于处理器能力探测、受限性能实验、源代码检查和本地 DSP 工作流。仓库整合命令行工具、原生 Windows GUI 及可测试的工程组件。
+**文档语言：** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · 简体中文
+
+---
 
 ## 功能概览
 
 | 领域 | 功能 |
 |---|---|
-| CPU 与 ISA | 处理器和指令集探测；同时验证操作系统启用的执行状态 |
-| 基准测试 | 有边界的本地负载；结果仅供参考且取决于硬件 |
-| 源代码分析 | 只读扫描，不执行或改写文件，生成 JSON 报告 |
-| DSP | PCM16 WAV、音调生成和本地数字信号处理 |
-| 界面 | Windows/Linux CLI 与原生 Win32 GUI |
-| 工程 | CMake/CTest、证据门控规划、默认拒绝授权策略 |
-| CPU Suite Pro 78X | 78 项模块目录、稳定 ID、六个领域、查询 API 和建议计划 |
+| 处理器 | CPU/ISA 信息清单；受限处理器、内存和矩阵测试 |
+| 分析 | 只读源代码扫描器和 JSON 报告 |
+| 音频/DSP | PCM16 WAV 读写、音调生成与处理 |
+| 界面 | Windows/Linux CLI 和原生 Windows GUI |
+| 改进 | 20 项能力目录及基于证据的规划 |
+| 协调 | 六个受限 HyperFusion 分析模块 |
+| 策略 | 默认拒绝的本地授权模型 |
+| CI | Windows 和 Linux 上的 CMake/CTest 验证 |
 
-## CPU Suite Pro 78X
+> [!NOTE]
+> 能力目录描述分类体系和预期工作流程，并不表示所有转换都能自主执行、自动修改源代码或保证性能提升。
 
-借鉴经典集成软件套件的理念，CPU Suite Pro 以统一 CPU Hub 为中心组织 78 个专业工具。
+## 快速开始
 
-| 领域 | 模块 ID |
-|---|---:|
-| Hub 与基础工具 | 1–14 |
-| CPU 架构分析 | 15–26 |
-| 温度与功耗 | 27–38 |
-| 内存与缓存 | 39–50 |
-| 调度与并发 | 51–60 |
-| 诊断与基准实验室 | 61–78 |
-
-**已实现：** 确定性的 78 项目录、唯一数字 ID、六个领域、无动态内存分配的枚举、按索引/ID/名称查询、建议计划生成和 CTest 覆盖。
-
-**范围说明：** 78 个目录条目不代表 78 个完整硬件控制应用。实时传感器适配器、厂商专属调节、操作系统性能计数器和独立 GUI 面板仍需单独开发并验证。当前规划器不会写入 CPU 寄存器，也不会修改电压、频率、固件、微码、风扇、中断或内核设置。
-
-参阅 [CPU Suite Pro 78X 技术规格](docs/CPU_SUITE_PRO_78.md)。
-
-## 架构与构建
-
-- **语言：** ISO C11；C23 仅出现在参考流水线方案中。
-- **构建与测试：** CMake 和 CTest。
-- **组件：** CPU 清单、受限基准测试、源代码扫描器、JSON 报告、PCM16/DSP、CLI 和 GUI。
-- **变更治理：** 证据门控、可审查集成和默认拒绝授权策略。
-
-需要 CMake、支持 C11 的编译器，以及 Windows 或 Linux。
+**环境要求：** CMake、支持 C11 的编译器、Windows 或 Linux、Git。
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -64,34 +41,97 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Windows 构建还定义原生应用目标 `pytyliki-gui`。
+Windows 构建还会提供 `pytyliki-gui.exe`。
 
-## 质量、兼容性与限制
+```bash
+pytyliki --improvement-plan
+pytyliki --evolve --evolution-rounds 8
+pytyliki --syntax-pie
+pytyliki --mtte
+```
 
-- CI 状态以当前 workflow 运行为准；未经确认，不宣称测试通过。
-- 结果取决于 CPU、固件、操作系统、编译器、散热和负载；不保证性能提升。
-- ISA 标志不能单独证明指令可安全执行；必须运行时检查 CPU 能力和操作系统状态。
-- 压力负载必须设置明确上限和停止条件。
-- 不宣称 macOS、ARM64 或特定 x86_64 平台的性能保证。
-- Protobuf、Parquet、Arrow 和生产级 RTL/FPGA 综合需另行验证。
-- CPU Suite Pro 不会自动调压/调频、刷写固件、关闭微码安全缓解或执行特权寄存器写入。
+## 架构
 
-## 项目结构
+| 模块 | 职责 |
+|---|---|
+| `src/core.c/.h` | CPU 配置、受限基准测试、扫描器、JSON 报告 |
+| `src/processor.c/.h` | 处理器/ISA 清单与测试套件 |
+| `src/dsp.c/.h` | 受限 WAV 和 DSP 操作 |
+| `src/improvement.c/.h` | 改进目录与生命周期 |
+| `src/hw_rules.c/.h` | 建议性硬件规则 |
+| `src/evolution.c/.h` | HyperFusion 分析 |
+| `src/pipeline.c/.h` | C11/C23 参考流水线方案 |
+| `src/policy.c/.h` | 本地授权策略 |
+| `src/cli.c`、`src/win_gui.c` | CLI 与 Windows 桌面界面 |
+| `.github/workflows/` | CI 和受控仓库自动化 |
 
-- `src/cpu_suite.h/.c` — 78 模块目录和建议规划 API。
-- `tests/test_cpu_suite.c` — 目录、唯一性、查询和非法输入测试。
-- `docs/CPU_SUITE_PRO_78.md` — 模块领域、API 和安全边界。
-- `src/` — 核心、处理器、DSP、策略、改进、CLI/GUI。
-- `CMakeLists.txt` — 库、应用程序和 CTest 目标。
+### 能力目录与实现状态
+
+- **Syntax-pie：** 确定性的 20 层函数与语法抽象映射；这是目录和查询 API，不是通用解析器。
+- **MTTE：** 20 个语义/函数/机械关联层及逻辑节拍计数器。它只模拟软件调度，不会更改硬件计时器、CPU 频率、寄存器、固件或电压。
+- **改进矩阵：** 20 项工程分类、20 项优化分类和 20 项自动化分类。
+- **HyperFusion：** 六个受限分析模块，每轮包含 36 个有向配对交互。就绪度和协同值是规划启发式指标，不是实测加速结果。
+- **APSIA 2.0：** 带有目标可用性和 FFI 成本门控的路由规划器。它提出路由方案，但不会编译或执行所选语言模块。
+- 目前已实现 **12 条建议性硬件规则**；其他目录标识符为预留项。C11/C23 流水线是参考方案，并非生产级转译器。
+
+## 已验证的 GitHub 自动合并
+
+仓库使用 `.github/workflows/verified-auto-merge.yml` 和 GitHub 原生 Auto-Merge（squash）。
+
+1. 目标为 `main` 的 PR 会在 `ubuntu-latest` 和 `windows-latest` 上构建与测试。
+2. CMake 配置并构建项目；CTest 运行已注册的测试。
+3. 工作流验证当前 PR HEAD SHA 与通过验证的提交完全一致。
+4. 必须有针对该 HEAD 提交的独立 `APPROVED` 审查；旧提交的批准不符合要求。
+5. 随后请求执行 `gh pr merge --auto --squash --delete-branch`。只有满足仓库全部规则后，GitHub 才会完成合并。
+
+配置要求：启用 **Allow auto-merge**；保护 `main` 并要求适用的 CI 检查和独立审查；仅向合并任务授予写权限。缺少批准、HEAD SHA 变化或 API 出错时必须停止，不得绕过分支保护。
+
+> [!IMPORTANT]
+> 启用 Auto-Merge 不代表 PR 已经合并。缺少批准或必需检查时，PR 会保持打开。工作流不会伪造批准，也不会覆盖仓库保护规则。
+
+## 文档设计系统
+
+项目统一采用蓝 / 白 / 红配色：
+
+| 令牌 | 数值 | 用途 |
+|---|---|---|
+| 蓝色 | `#2563EB` | 链接、结构和中性技术强调 |
+| 白色 | `#FFFFFF` | 页面背景和高对比表面 |
+| 红色 | `#DC2626` | 错误、阻塞和关键状态 |
+| 正文 | `#111827` | 标题与正文 |
+| 次要文本 | `#6B7280` | 元数据 |
+
+规范：
+
+- 只使用一个 H1；后续标题层级连续，不跳级。
+- 在深入架构细节前，先说明用途、平台范围和第一个可执行步骤。
+- 段落简短，每个章节都应具备独立的信息完整性。
+- 以 8 px 为间距基准：8 / 16 / 24 / 32 px。这是内容布局规范，不是 CSS 保证；Markdown 页面由 GitHub 渲染。
+- 可比较的信息使用表格；有顺序的操作使用列表。
+- 代码示例应可执行、标注语言，并适合窄屏阅读。
+- 使用语义明确的链接锚点、GitHub Alerts，以及能解释关系的文本图表。
+- 避免徽章堆叠、过量 emoji、重复内容和未经验证的性能承诺。
+- 对比度和语义不能只依赖颜色。GitHub 控制响应式布局与字体；README 无法强制指定字体、精确行宽或像素级网格。
+
+## CI 与质量验证
+
+Pull Request 使用 Windows/Linux CMake/CTest 矩阵和 Recursive Evolution Gate。请参阅[质量审计](docs/QUALITY_AUDIT_0.7.1.md)，了解已记录的审查发现和验证证据。提交状态以 workflow 结果为准。
+
+## 兼容性与限制
+
+- **CI 验证平台：** Windows 和 Linux。
+- **语言：** ISO C11 实现；C23 出现在参考流水线方案中。
+- **数据格式：** JSON 报告和 PCM16 WAV 音频。
+- **未作出以下保证：** macOS、ARM64 或 x86_64 专项性能保证、Protobuf、Parquet、Arrow，以及未经单独验证的生产级 RTL/FPGA 综合。
+
+## 安全边界
+
+- 处理器信息发现为只读操作。
+- 源代码扫描器不会执行或改写被扫描文件。
+- 不写入 firmware、BIOS/UEFI、microcode、电压、时钟、功率限制、操作系统内核、驱动或设备寄存器。
+- 基准测试结果取决于硬件、操作系统、编译器和工作负载；不保证性能提升。
+- 建议性规则和规划评分不构成硬件认证。
 
 ## 许可证
 
-MIT — 参阅 [LICENSE](LICENSE)。
-
-<p align="center">
-
-**愿你所爱，皆有回响。**
-
-🔵 **清晰构建，以证据改进。** 🔴
-
-</p>
+本项目采用 [MIT 许可证](LICENSE)。
