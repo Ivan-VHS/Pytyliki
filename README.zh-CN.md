@@ -1,37 +1,107 @@
-# Pytyliki — 基于 C11 的处理器系统工作站
+# Pytyliki — C11 处理器系统工作站
+
+**简介：** Pytyliki 是面向 Windows 和 Linux 的原生 C11 工作站，支持只读 CPU/ISA 检查、受限处理器基准测试、源代码诊断、本地 PCM16 WAV/DSP 处理，以及证据门控的工程工作流。提供 CLI 和原生 Win32 桌面 GUI。项目不会重新编程物理处理器。
+
+**语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
 
 <p align="center">
-<strong>发现 · 分析 · 优化 · 验证</strong><br>
-<img alt="C11" src="https://img.shields.io/badge/C-ISO_C11-2563EB?style=flat-square">
-<img alt="Windows 和 Linux" src="https://img.shields.io/badge/平台-Windows%20%7C%20Linux-DC2626?style=flat-square">
-<img alt="MIT" src="https://img.shields.io/badge/许可证-MIT-FFFFFF?style=flat-square&labelColor=1F2937">
+
+**探测 · 分析 · 规划 · 验证**
+
+![C11](https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge)
+![平台](https://img.shields.io/badge/OS-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
+![许可证](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)
+
 </p>
 
-**Pytyliki 是一个模块化 C11 工作站，用于只读处理器信息发现、受限本地基准测试、源代码诊断以及 PCM16 WAV/DSP 工具。** 项目提供适用于 Windows 和 Linux 的 CLI，以及原生 Win32 图形界面。它不会重新编程物理芯片。
+## 功能
 
-**文档语言：** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · 简体中文
+- **CPU 与 ISA：** 读取处理器、架构、内存和指令集信息。ISA 标志本身不能证明操作系统已启用相应执行状态。
+- **基准测试：** 执行受限的本地计算、内存和矩阵测试；结果取决于硬件、编译器、操作系统和工作负载。
+- **源代码诊断：** 检查处理器相关代码模式并生成报告，不执行或改写被检查的源代码。
+- **音频/DSP：** 在边界限制内读写 PCM16 WAV、生成音调、处理并测量信号。
+- **桌面与 CLI：** Windows/Linux 命令行工作流和原生 Win32 图形界面。
+- **改进规划：** 20 组三元工程/优化/自动化目录，以及证据门控的递归改进流程。
+- **硬件建议：** 已实现 12 条建议性规则；其他目录 ID 保留，不能视为已实现。
+- **APSIA 2.0：** 确定性工作负载语言路由，以及默认拒绝的晋级证据门。
 
----
+## 架构
 
-## 功能概览
-
-| 领域 | 功能 |
+| 层 | 当前范围 |
 |---|---|
-| 处理器 | CPU/ISA 信息清单；受限处理器、内存和矩阵测试 |
-| 分析 | 只读源代码扫描器和 JSON 报告 |
-| 音频/DSP | PCM16 WAV 读写、音调生成与处理 |
-| 界面 | Windows/Linux CLI 和原生 Windows GUI |
-| 改进 | 20 项能力目录及基于证据的规划 |
-| 协调 | 六个受限 HyperFusion 分析模块 |
-| 策略 | 默认拒绝的本地授权模型 |
-| CI | Windows 和 Linux 上的 CMake/CTest 验证 |
+| Core | CPU 配置、受限基准测试、源代码扫描器、JSON 报告 |
+| Processor | 架构/ISA 清单和受限处理器测试 |
+| DSP | PCM16 WAV 输入输出、音调生成、处理和测量 |
+| Improvement | 20×3 能力目录和证据门控迭代规划 |
+| HyperFusion | 六个受限分析模块；每轮 36 次有向配对交互 |
+| Hardware rules | 12 条建议性规则，并验证指标范围 |
+| APSIA 2.0 | 工作负载路由、FFI 成本评估、能力声明和晋级门 |
+| Pipeline | C11/C23 参考流水线方案，并非生产级转译器 |
+| Policy | 默认拒绝的本地授权策略 |
+| UI | Windows/Linux CLI 与原生 Windows GUI |
 
-> [!NOTE]
-> 能力目录描述分类体系和预期工作流程，并不表示所有转换都能自主执行、自动修改源代码或保证性能提升。
+HyperFusion 的就绪度和协同指标属于启发式规划数据，不代表实测加速或独立 CI 认证。APSIA 路由器不会编译、加载、热替换或执行生成的模块，也不会授予运行时能力。
 
-## 快速开始
+## 递归改进模型
 
-**环境要求：** CMake、支持 C11 的编译器、Windows 或 Linux、Git。
+工程生命周期：
+
+`观察 → 诊断 → 提议 → 实现 → 验证 → 评估 → 审查 → 集成 → 学习 → 改进引擎`
+
+迭代目标和计数器用于约束规划，并不意味着系统会自动执行同等数量的构建或源代码重写。66,666,666× 是愿景目标，不是实测倍率。
+
+20×3 目录定义了 60 项工程、工作流和质量操作。它是术语体系与策略矩阵，并不表示每项操作都已自主执行。
+
+| # | 工程 | 优化 | 自动化 |
+|---:|---|---|---|
+| 01 | 现代化 | 现代化 | 自动优化 |
+| 02 | 优化 | 优化 | 自动现代化 |
+| 03 | 改进 | 转译 | 自动适配 |
+| 04 | 重构 | 编译 | 自动纠错 |
+| 05 | 转换 | 重新配置 | 自动编译 |
+| 06 | 加速 | 扩展 | 自动转译 |
+| 07 | 适配 | 加速 | 自动诊断 |
+| 08 | 扩展 | 综合 | 自动验证 |
+| 09 | 自动化 | 分解 | 自动校准 |
+| 10 | 集成 | 集成 | 自动调优 |
+| 11 | 稳定化 | 适配 | 自动配置 |
+| 12 | 统一 | 自动化 | 自动自动化 |
+| 13 | 合理化 | 并行化 | 自动集成 |
+| 14 | 重建 | 验证 | 自动扩展 |
+| 15 | 重新设计 | 诊断 | 自动加速 |
+| 16 | 自学习 | 稳定化 | 自动恢复 |
+| 17 | 自调优 | 重构 | 自动综合 |
+| 18 | 自恢复 | 初始化 | 自动重新配置 |
+| 19 | 自优化 | 晶化 | 自动学习 |
+| 20 | 演进 | 完善 | 自动完善 |
+
+## APSIA 2.0：受控多语言演进
+
+已实现的 C11 基础模块会评估工作负载类型、预期收益、FFI 开销、宿主语言优化空间和平台可用性。候选语言/后端包括 Rust、C++、Zig、CUDA、WebAssembly、Go、Elixir、SQL/DuckDB、Lua 和 Python。
+
+证据不完整时禁止晋级。检查项包括接口契约、差分测试、模糊测试、消毒器、静态分析、实测收益、影子等价性、独立审查、制品签名、回滚测试，以及已验证与当前版本令牌的一致性。
+
+**已实现：** 路由策略和晋级证据门。
+
+**尚未实现：** LLM 源码合成、多语言编译器集群、自动安装依赖、生产级 eBPF/APM、FFI 代码生成、运行时 hot-swap/RCU、无人值守部署和跨仓库执行器。详见 [APSIA 2.0 设计](docs/APSIA_2.0.md)。
+
+## 开发中的目录
+
+近期设计讨论还定义了三个处理器方向的目录：
+
+- **Syntax Pie：** 20 层“函数 / 房间 / 语法”映射，从词素、词元到 AST、语法规则、图和层级。
+- **MTTE：** 20 层“语义概念 / 函数 / 机械操作”映射，以及确定性软件 tick 计数器模型。
+- **Berry Core：** 面向逻辑处理器核心的 20 条命令目录，采用 dry-run 规划语义。
+
+这些是分阶段集成的目录，不是完整解析器、硬件计时器控制器、IPI/亲和性控制器或生产级处理器控制接口。Concreo、Pyemont、Bollo、JJ-HH、PenWhite 和 Serious Serious 是实验性功能套件概念，不是稳定的公共 API。
+
+## 新目录的集成状态
+
+仓库中已经存在 `syntax_pie.c`、`mtte.c`、`berry_core.c` 及其专项测试文件，但当前 `main` 分支的 CMake 配置尚未注册这些模块和测试。CLI 源文件也调用了 Syntax Pie API，而默认构建目标尚未链接 `syntax_pie.c`。因此，这些内容属于待完成的构建系统集成，不能视为默认可执行文件中已经验证的功能。Syntax Pie 集成由 [PR #19](https://github.com/Ivan-VHS/Pytyliki/pull/19) 单独跟踪；只有必需 CI 检查和代码审查通过后才能合并。
+
+## 构建与测试
+
+需要 CMake 3.16+、支持 C11 的编译器、Git，以及 Windows 或 Linux。
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -41,97 +111,74 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Windows 构建还会提供 `pytyliki-gui.exe`。
+Windows 构建还包含原生 `pytyliki-gui.exe` 目标。
+
+## CLI 示例
 
 ```bash
 pytyliki --improvement-plan
 pytyliki --evolve --evolution-rounds 8
-pytyliki --syntax-pie
-pytyliki --mtte
+pytyliki --review-processor source.c
+pytyliki --json report.json
 ```
 
-## 架构
+请使用 `pytyliki --help` 查看当前构建支持的选项。音频工作流包括 `--tone-out`、`--audio-info` 和 `--process-wav`。
 
-| 模块 | 职责 |
-|---|---|
-| `src/core.c/.h` | CPU 配置、受限基准测试、扫描器、JSON 报告 |
-| `src/processor.c/.h` | 处理器/ISA 清单与测试套件 |
-| `src/dsp.c/.h` | 受限 WAV 和 DSP 操作 |
-| `src/improvement.c/.h` | 改进目录与生命周期 |
-| `src/hw_rules.c/.h` | 建议性硬件规则 |
-| `src/evolution.c/.h` | HyperFusion 分析 |
-| `src/pipeline.c/.h` | C11/C23 参考流水线方案 |
-| `src/policy.c/.h` | 本地授权策略 |
-| `src/cli.c`、`src/win_gui.c` | CLI 与 Windows 桌面界面 |
-| `.github/workflows/` | CI 和受控仓库自动化 |
+## 质量门与仓库自动化
 
-### 能力目录与实现状态
+1. 创建隔离的功能分支。
+2. 提交范围明确、可追踪的更改。
+3. 在受支持的 CI 平台上构建并运行 CTest。
+4. 检查回归、证据以及已测试提交的 SHA。
+5. 获取独立人工批准。
+6. 通过仓库授权机制按顺序集成。
 
-- **Syntax-pie：** 确定性的 20 层函数与语法抽象映射；这是目录和查询 API，不是通用解析器。
-- **MTTE：** 20 个语义/函数/机械关联层及逻辑节拍计数器。它只模拟软件调度，不会更改硬件计时器、CPU 频率、寄存器、固件或电压。
-- **改进矩阵：** 20 项工程分类、20 项优化分类和 20 项自动化分类。
-- **HyperFusion：** 六个受限分析模块，每轮包含 36 个有向配对交互。就绪度和协同值是规划启发式指标，不是实测加速结果。
-- **APSIA 2.0：** 带有目标可用性和 FFI 成本门控的路由规划器。它提出路由方案，但不会编译或执行所选语言模块。
-- 目前已实现 **12 条建议性硬件规则**；其他目录标识符为预留项。C11/C23 流水线是参考方案，并非生产级转译器。
+自动提交、自动推送、自动合并和部署是权限不同的独立操作。检查失败、过期或证据不完整时必须阻止晋级。应为 `main` 配置分支保护、必需 CI 检查和独立审查。
 
-## 已验证的 GitHub 自动合并
+未来的 README 生成应从仓库状态确定性地产生，包括 API/AST、指标、CI、依赖和历史记录。在生成器实现并验证之前，README 仍由人工维护。
 
-仓库使用 `.github/workflows/verified-auto-merge.yml` 和 GitHub 原生 Auto-Merge（squash）。
+## 安全与边界
 
-1. 目标为 `main` 的 PR 会在 `ubuntu-latest` 和 `windows-latest` 上构建与测试。
-2. CMake 配置并构建项目；CTest 运行已注册的测试。
-3. 工作流验证当前 PR HEAD SHA 与通过验证的提交完全一致。
-4. 必须有针对该 HEAD 提交的独立 `APPROVED` 审查；旧提交的批准不符合要求。
-5. 随后请求执行 `gh pr merge --auto --squash --delete-branch`。只有满足仓库全部规则后，GitHub 才会完成合并。
+- CPU 探测只读；扫描器不会执行或改写被检查的代码。
+- 不写入固件、BIOS/UEFI、微码、电压、时钟、功率限制、内核、驱动或设备寄存器。
+- 不任意执行生成代码，也不自动授予插件权限。
+- 硬件规则仅提供建议；基准测试和 HyperFusion 估算不保证性能提升。
+- 实现基线为 C11。C23 仅作为参考流水线目标，不代表完整转译器。
+- 文档声明的 CI 目标为 Windows/Linux；未经单独验证，不宣称支持 macOS、ARM64 或特定 ISA 性能保证。
 
-配置要求：启用 **Allow auto-merge**；保护 `main` 并要求适用的 CI 检查和独立审查；仅向合并任务授予写权限。缺少批准、HEAD SHA 变化或 API 出错时必须停止，不得绕过分支保护。
+## 项目结构
 
-> [!IMPORTANT]
-> 启用 Auto-Merge 不代表 PR 已经合并。缺少批准或必需检查时，PR 会保持打开。工作流不会伪造批准，也不会覆盖仓库保护规则。
+- `src/core.c/.h`、`src/processor.c/.h` — 核心和处理器检查。
+- `src/dsp.c/.h` — WAV 与 DSP 操作。
+- `src/improvement.c/.h`、`src/evolution.c/.h` — 改进目录和演进分析。
+- `src/hw_rules.c/.h` — 处理器建议规则。
+- `src/apsia.c/.h`、`src/apsia_cli.c` — APSIA 路由与晋级策略。
+- `src/pipeline.c/.h`、`src/policy.c/.h` — 参考流水线和授权策略。
+- `src/cli.c`、`src/win_gui.c` — CLI 和 Windows GUI。
+- `.github/workflows/` — CI 和受控仓库自动化。
 
-## 文档设计系统
 
-项目统一采用蓝 / 白 / 红配色：
+## 其他工程目录
 
-| 令牌 | 数值 | 用途 |
-|---|---|---|
-| 蓝色 | `#2563EB` | 链接、结构和中性技术强调 |
-| 白色 | `#FFFFFF` | 页面背景和高对比表面 |
-| 红色 | `#DC2626` | 错误、阻塞和关键状态 |
-| 正文 | `#111827` | 标题与正文 |
-| 次要文本 | `#6B7280` | 元数据 |
+- **Forge66：** 包含 66 个处理器工程函数及其元数据的确定性目录；它用于规划和检索，不会自动改写代码或控制硬件。
+- **CPU Suite Pro 78：** 包含 78 个专用工作站模块的确定性、无动态分配目录。参见 [CPU Suite Pro 文档](docs/CPU_SUITE_PRO_78.md)。
+- **TriMatrix AutoForge 100：** 受限的“三条线 × 三个矩阵”规划模型，具有经过验证的深度上限。参见 [TriMatrix 文档](docs/trimatrix-autoforge.md)。
 
-规范：
+## 平台与能力验证政策
 
-- 只使用一个 H1；后续标题层级连续，不跳级。
-- 在深入架构细节前，先说明用途、平台范围和第一个可执行步骤。
-- 段落简短，每个章节都应具备独立的信息完整性。
-- 以 8 px 为间距基准：8 / 16 / 24 / 32 px。这是内容布局规范，不是 CSS 保证；Markdown 页面由 GitHub 渲染。
-- 可比较的信息使用表格；有顺序的操作使用列表。
-- 代码示例应可执行、标注语言，并适合窄屏阅读。
-- 使用语义明确的链接锚点、GitHub Alerts，以及能解释关系的文本图表。
-- 避免徽章堆叠、过量 emoji、重复内容和未经验证的性能承诺。
-- 对比度和语义不能只依赖颜色。GitHub 控制响应式布局与字体；README 无法强制指定字体、精确行宽或像素级网格。
+有关平台、数据格式和性能的声明必须有验证证据支持。请参阅[平台验证政策](docs/PLATFORM_VALIDATION_POLICY.md)，了解当前支持范围及扩展声明所需的证据。
 
-## CI 与质量验证
-
-Pull Request 使用 Windows/Linux CMake/CTest 矩阵和 Recursive Evolution Gate。请参阅[质量审计](docs/QUALITY_AUDIT_0.7.1.md)，了解已记录的审查发现和验证证据。提交状态以 workflow 结果为准。
-
-## 兼容性与限制
-
-- **CI 验证平台：** Windows 和 Linux。
-- **语言：** ISO C11 实现；C23 出现在参考流水线方案中。
-- **数据格式：** JSON 报告和 PCM16 WAV 音频。
-- **未作出以下保证：** macOS、ARM64 或 x86_64 专项性能保证、Protobuf、Parquet、Arrow，以及未经单独验证的生产级 RTL/FPGA 综合。
-
-## 安全边界
-
-- 处理器信息发现为只读操作。
-- 源代码扫描器不会执行或改写被扫描文件。
-- 不写入 firmware、BIOS/UEFI、microcode、电压、时钟、功率限制、操作系统内核、驱动或设备寄存器。
-- 基准测试结果取决于硬件、操作系统、编译器和工作负载；不保证性能提升。
-- 建议性规则和规划评分不构成硬件认证。
 
 ## 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+MIT — 参见 [LICENSE](LICENSE)。
+
+---
+
+<p align="center">
+
+**精确工程 · 验证每一项更改**
+
+</p>
+
+爱与耐心，让每一次改进都有意义。

@@ -1,43 +1,107 @@
 # Pytyliki — C11 Processor Systems Workstation
 
 <p align="center">
-  <strong>DISCOVER · ANALYZE · OPTIMIZE · VERIFY</strong><br>
-  <img alt="C11" src="https://img.shields.io/badge/C-ISO_C11-2563EB?style=flat-square">
-  <img alt="Windows and Linux" src="https://img.shields.io/badge/Platforms-Windows%20%7C%20Linux-DC2626?style=flat-square">
-  <img alt="MIT License" src="https://img.shields.io/badge/License-MIT-FFFFFF?style=flat-square&labelColor=1F2937">
+
+**DISCOVER · ANALYZE · PLAN · VERIFY**
+
+![C11](https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge)
+![Platforms](https://img.shields.io/badge/OS-Windows%20%7C%20Linux-DC2626?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-2563EB?style=for-the-badge)
+
 </p>
 
-**Pytyliki is a modular C11 workstation for read-only processor discovery, bounded local benchmarks, source diagnostics, and PCM16 audio/DSP utilities.** It provides a CLI on Windows and Linux and a native Win32 GUI. It does not reprogram physical silicon.
+**TL;DR:** Pytyliki is a native C11 workstation for read-only CPU/ISA inspection, bounded processor benchmarks, source diagnostics, local PCM16 WAV/DSP tasks, and evidence-gated engineering workflows. It provides a CLI on Windows/Linux and a native Win32 desktop GUI. It does not reprogram physical processors.
 
-**Documentation:** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md)
+**Languages:** English · [简体中文](README.zh-CN.md) · [Русский](README.ru.md) · [Українська](README.uk.md)
 
----
+## What Pytyliki does
 
-## At a glance
+- **Processor discovery:** collect CPU, architecture, memory and ISA information. Feature flags are hints; OS-enabled instruction state and runtime eligibility must also be considered.
+- **Bounded benchmarks:** run controlled local compute, memory and matrix workloads. Results are hardware-, compiler-, OS- and workload-dependent.
+- **Source diagnostics:** inspect source-level processor patterns and produce reports without executing or rewriting the inspected source.
+- **Audio/DSP:** bounded PCM16 WAV input/output, tone generation, processing and metering.
+- **Desktop + CLI:** native Win32 GUI and command-line workflows for Windows and Linux.
+- **Improvement planning:** a 20-row engineering/optimization/automation catalogue and a recursive, evidence-gated lifecycle.
+- **Hardware guidance:** 12 implemented advisory rules; other catalogue IDs are reserved, not implemented.
+- **APSIA 2.0 foundation:** deterministic workload routing and a fail-closed promotion-evidence gate in the C11 core.
 
-| Area | What is included |
+## Architecture
+
+| Layer | Current scope |
 |---|---|
-| Processor | CPU and ISA inventory; bounded processor, memory, and matrix tests |
-| Analysis | Read-only source scanner and JSON reports |
-| Audio/DSP | PCM16 WAV I/O, tone generation, processing, and metering |
-| Interfaces | Cross-platform CLI and native Windows GUI |
-| Improvement | 20-capability catalogue and evidence-gated planning |
-| Coordination | Six bounded HyperFusion analysis modules |
-| Policy | Deny-by-default local authorization model |
-| CI | CMake/CTest validation on Windows and Linux |
+| Core | CPU profile, bounded benchmarks, source scanner, JSON reporting |
+| Processor | Architecture/ISA inventory and bounded processor tests |
+| DSP | PCM16 WAV I/O, tone generation, processing and metering |
+| Improvement | 20 capability triplets and evidence-gated iteration planning |
+| HyperFusion | Six bounded analysis modules; 36 directed pair interactions per round |
+| Hardware rules | 12 advisory rules with validated metric ranges |
+| APSIA 2.0 | Workload-to-language routing, FFI-cost checks, capability declarations and promotion gate |
+| Pipeline | C11/C23 reference pipeline plan; not a production transpiler |
+| Policy | Deny-by-default local authorization |
+| Interfaces | Windows/Linux CLI and native Windows GUI |
 
-> [!NOTE]
-> Capability catalogues and evolution plans describe available classifications and intended workflows. They do not mean that every transformation is autonomous, applied to source code, or guaranteed to improve performance.
+HyperFusion readiness/synergy values are heuristic planning indicators, not measured speedups or independent CI certification. APSIA routing is advisory: it does not compile, load, hot-swap or execute generated modules, and it grants no runtime capabilities.
 
-## Quick start
+## Recursive improvement model
 
-### Requirements
+The engineering lifecycle is:
 
-- CMake and a C11-capable compiler.
-- Windows or Linux.
-- Git.
+`observe → diagnose → propose → implement → verify → evaluate → review → integrate → learn → improve-engine`
 
-### Build and test
+A configurable iteration target is a planning/counter boundary, not a promise to perform that many builds or source rewrites. The requested 66,666,666× improvement ambition is aspirational, not a measured multiplier.
+
+The 20×3 catalogue describes 60 engineering, workflow and quality operations. It is a vocabulary and policy matrix, not proof that every operation is autonomous.
+
+| # | Engineering | Optimization | Automation |
+|---:|---|---|---|
+| 01 | Modernizing | Modernizing | Auto-optimizing |
+| 02 | Optimizing | Optimizing | Auto-modernizing |
+| 03 | Refining | Transpiling | Auto-adapting |
+| 04 | Refactoring | Compiling | Auto-correcting |
+| 05 | Transforming | Reconfiguring | Auto-compiling |
+| 06 | Accelerating | Scaling | Auto-transpiling |
+| 07 | Adapting | Accelerating | Auto-diagnosing |
+| 08 | Scaling | Synthesizing | Auto-verifying |
+| 09 | Automating | Decomposing | Auto-calibrating |
+| 10 | Integrating | Integrating | Auto-tuning |
+| 11 | Stabilizing | Adapting | Auto-configuring |
+| 12 | Unifying | Automating | Auto-automating |
+| 13 | Rationalizing | Parallelizing | Auto-integrating |
+| 14 | Rebuilding | Verifying | Auto-scaling |
+| 15 | Redesigning | Diagnosing | Auto-accelerating |
+| 16 | Self-learning | Stabilizing | Auto-recovering |
+| 17 | Self-tuning | Reconstructing | Auto-synthesizing |
+| 18 | Self-recovering | Initializing | Auto-reconfiguring |
+| 19 | Self-optimizing | Crystallizing | Auto-learning |
+| 20 | Evolving | Perfecting | Auto-perfecting |
+
+## APSIA 2.0: guarded polyglot evolution
+
+The implemented C11 foundation evaluates workload type, estimated gain, FFI overhead, host optimization opportunity and platform availability before recommending a language route. Candidate backends include Rust, C++, Zig, CUDA, WebAssembly, Go, Elixir, SQL/DuckDB, Lua and Python.
+
+Promotion is fail-closed. Evidence includes contract validity, differential tests, fuzzing, sanitizers, static analysis, measured benchmark gain, shadow equivalence, independent review, artifact signature, rollback test and matching validated/current head tokens.
+
+**Implemented:** routing policy and promotion-evidence gate.
+
+**Not implemented:** LLM source synthesis, a hermetic multi-language compiler fleet, automatic dependency installation, production eBPF/APM collection, FFI code generation, runtime hot swapping/RCU, unattended deployment or a cross-repository fleet executor. See [APSIA 2.0 design](docs/APSIA_2.0.md).
+
+## Current development boundaries
+
+Recent design work also defines three processor-oriented catalogues:
+
+- **Syntax Pie:** a 20-level function/room/syntax taxonomy, from lexemes and tokens through AST, grammar rules, graphs and hierarchy.
+- **MTTE:** a 20-layer semantic/function/mechanical-operation taxonomy with a deterministic software tick-counter design.
+- **Berry Core:** a 20-command logical-core request catalogue using dry-run planning semantics.
+
+These catalogues are tracked as staged integration work; they must not be confused with a complete parser, a hardware timer controller, an IPI/affinity controller or a production processor-control interface. The names Concreo, Pyemont, Bollo, JJ-HH, PenWhite and Serious Serious are experimental function-suite concepts, not stable public APIs.
+
+## Integration status of recent catalogues
+
+The `syntax_pie.c`, `mtte.c` and `berry_core.c` sources and their focused test files are present in the repository, but the current `main` CMake configuration does not yet register these modules or tests. The CLI source also references the Syntax Pie API while the default target does not link `syntax_pie.c`. Treat these as pending build-system integration, not verified features of the default executable. The Syntax Pie integration is tracked separately in [PR #19](https://github.com/Ivan-VHS/Pytyliki/pull/19); merge only after the required CI checks and review pass.
+
+## Build and test
+
+Requirements: CMake 3.16+, a C11 compiler, Git, and Windows or Linux.
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -47,107 +111,74 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Windows builds also provide `pytyliki-gui.exe`.
+Windows builds include the native `pytyliki-gui.exe` target.
 
-### CLI examples
+## CLI examples
 
 ```bash
 pytyliki --improvement-plan
 pytyliki --evolve --evolution-rounds 8
-pytyliki --syntax-pie
-pytyliki --mtte
+pytyliki --review-processor source.c
+pytyliki --json report.json
 ```
 
-## Architecture
+Use `pytyliki --help` for the options supported by the checked-out build. Audio workflows include `--tone-out`, `--audio-info` and `--process-wav`.
 
-| Module | Responsibility |
-|---|---|
-| `src/core.c/.h` | CPU profile, bounded benchmark, scanner, JSON report |
-| `src/processor.c/.h` | Processor and ISA inventory and test suite |
-| `src/dsp.c/.h` | Bounded WAV and DSP operations |
-| `src/improvement.c/.h` | Improvement catalogue and lifecycle |
-| `src/hw_rules.c/.h` | Advisory hardware rules |
-| `src/evolution.c/.h` | HyperFusion analysis |
-| `src/pipeline.c/.h` | C11/C23 reference pipeline plan |
-| `src/policy.c/.h` | Local authorization policy |
-| `src/cli.c`, `src/win_gui.c` | CLI and Windows desktop interface |
-| `.github/workflows/` | CI and guarded repository automation |
+## Quality gates and repository automation
 
-### Capability catalogues
+The intended integration sequence is:
 
-- **Syntax-pie:** deterministic 20-layer mapping from function verbs and room metaphors to syntax abstractions. It is a catalogue and lookup layer, not a general-purpose parser.
-- **MTTE:** 20 linked semantic/function/mechanical layers and a deterministic logical tick counter. The counter models software scheduling; it does not change hardware timers, CPU frequency, registers, firmware, or voltage.
-- **Improvement matrix:** 20 engineering, 20 optimization, and 20 automation classifications exposed through `pytyliki --improvement-plan`.
-- **HyperFusion:** six bounded analysis modules with 36 directed pair interactions per round. Readiness and synergy values are heuristic planning indicators, not measured speedups.
-- **APSIA 2.0:** C11 language-routing planner with target-availability and FFI-cost gates. It proposes routes; it does not compile or execute the selected language module.
+1. Create an isolated feature branch.
+2. Make a small, traceable change.
+3. Build and run CTest on supported CI platforms.
+4. Review regressions, evidence and the exact tested commit SHA.
+5. Obtain independent human approval.
+6. Integrate sequentially through repository-authorized controls.
 
-### Evidence and implementation status
+Auto-commit, auto-push, auto-merge and deployment are separate permissioned operations. Failed, stale or incomplete evidence blocks promotion. Protect `main` with required CI checks and independent review; a workflow alone cannot prevent an authorized maintainer from bypassing repository settings.
 
-The hardware-rule catalogue currently has **12 implemented advisory rules**; other catalogue identifiers are reserved. The C11/C23 pipeline is a reference plan, not a production transpiler. Any source change or integration requires explicit authorization, tests, and review.
+README generation is intended to become deterministic and repository-derived (API/AST, metrics, CI, dependencies and history), with Markdown/link checks and idempotent publication. Until that generator is implemented and validated, this README is manually maintained and must not be described as auto-generated.
 
-## Verified GitHub Auto-Merge
+## Safety and non-goals
 
-The repository includes `.github/workflows/verified-auto-merge.yml` and GitHub native Auto-Merge (squash).
+- CPU discovery is read-only; the source scanner does not execute or rewrite scanned code.
+- No firmware, BIOS/UEFI, microcode, voltage, clock, power-limit, kernel, driver or device-register writes.
+- No arbitrary generated-code execution and no automatic grant of plugin capabilities.
+- Hardware rules are advisory; benchmark and HyperFusion estimates are not guaranteed performance gains.
+- C11 is the implementation baseline. C23 is referenced as a pipeline target, not claimed as a complete transpiler.
+- Windows/Linux are the documented CI targets. Do not infer macOS, ARM64 or unverified ISA-specific performance support.
 
-1. Pull requests targeting `main` are built and tested on `ubuntu-latest` and `windows-latest`.
-2. CMake configures and builds the project; CTest runs the registered suite.
-3. Before enabling Auto-Merge, the workflow verifies that the current PR head SHA is the exact commit that passed validation.
-4. It requires an independent `APPROVED` review tied to that exact head commit. An approval for an older commit does not qualify.
-5. It requests `gh pr merge --auto --squash --delete-branch`. GitHub performs the merge only after all repository rules are satisfied.
+## Project map
 
-Repository requirements:
+- `src/core.c/.h`, `src/processor.c/.h` — core and processor inspection.
+- `src/dsp.c/.h` — WAV and DSP operations.
+- `src/improvement.c/.h`, `src/evolution.c/.h` — improvement catalogue and evolution analysis.
+- `src/hw_rules.c/.h` — advisory processor rules.
+- `src/apsia.c/.h`, `src/apsia_cli.c` — APSIA routing and promotion policy.
+- `src/pipeline.c/.h`, `src/policy.c/.h` — reference pipeline and authorization policy.
+- `src/cli.c`, `src/win_gui.c` — CLI and Windows GUI.
+- `.github/workflows/` — CI and guarded repository automation.
 
-- Enable **Allow auto-merge**.
-- Protect `main`; require the applicable CI checks and independent review.
-- Grant write permissions only to the merge job.
-- Fail closed on missing approval, changed head SHA, or API errors. Never bypass branch protection.
 
-> [!IMPORTANT]
-> Auto-Merge being enabled does not mean that a pull request has merged. Missing approvals or required checks keep it open. The workflow cannot create approval or override repository protections.
+## Additional engineering catalogues
 
-## Quality and documentation policy
+- **Forge66:** a deterministic 66-entry catalogue of processor-engineering functions and their metadata; it is a planning/catalogue layer, not autonomous code rewriting or hardware control.
+- **CPU Suite Pro 78:** a deterministic, allocation-free catalogue of 78 specialized workstation modules. See [CPU Suite Pro documentation](docs/CPU_SUITE_PRO_78.md).
+- **TriMatrix AutoForge 100:** a bounded three-line/three-matrix planning model with validated depth limits. See [TriMatrix documentation](docs/trimatrix-autoforge.md).
 
-The documentation system follows a restrained blue / white / red identity:
+## Platform and capability validation
 
-| Token | Value | Use |
-|---|---|---|
-| Blue | `#2563EB` | Primary links, structure, neutral technical emphasis |
-| White | `#FFFFFF` | Canvas and high-contrast surfaces |
-| Red | `#DC2626` | Errors, blockers, destructive or critical states |
-| Ink | `#111827` | Body text and headings |
-| Muted | `#6B7280` | Secondary metadata |
+Supported-platform and data-format statements are evidence-gated. See the [platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md) for the current scope and the evidence required before claiming additional compatibility or performance guarantees.
 
-Layout rules:
-
-- Use one H1, followed by a gap-free heading hierarchy.
-- Put purpose, platform scope, and the first useful action before deep technical detail.
-- Keep paragraphs short and each section independently understandable.
-- Use consistent 8 px rhythm as the design reference: 8 / 16 / 24 / 32 px. GitHub controls actual Markdown rendering, so these are content/layout guidelines rather than CSS guarantees.
-- Prefer concise tables for comparable facts and lists for sequential actions.
-- Keep code examples executable, language-tagged, and narrow enough to read on small screens.
-- Use descriptive link text, stable section anchors, GitHub Alerts, and text-based diagrams where they clarify system relationships.
-- Avoid decorative badge walls, emoji-heavy headings, redundant summaries, and unsupported performance claims.
-- Preserve contrast and meaning without relying on color alone. GitHub's Markdown renderer controls responsive layout and typography; this repository cannot enforce a custom font, exact line width, or pixel-perfect grid inside README pages.
-
-## CI and verification
-
-The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are used on pull requests. See [the quality audit](docs/QUALITY_AUDIT_0.7.1.md) for recorded review findings and verification evidence. Workflow results, not README statements, are the source of truth for the current status of a commit.
-
-## Compatibility and limits
-
-- **Validated CI targets:** Windows and Linux.
-- **Language:** ISO C11 implementation; C23 appears in the reference pipeline plan.
-- **Data formats:** JSON reports and PCM16 WAV audio.
-- **Not claimed:** macOS, ARM64, x86_64-specific performance guarantees, Protobuf, Parquet, Arrow, or production RTL/FPGA synthesis unless separately validated.
-
-## Safety boundaries
-
-- Processor discovery is read-only.
-- The source scanner does not execute or rewrite scanned files.
-- No writes to firmware, BIOS/UEFI, microcode, voltage, clocks, power limits, kernels, drivers, or device registers.
-- Benchmarks are workload-, compiler-, OS-, and hardware-dependent; no speedup is guaranteed.
-- Advisory rules and planning scores are not hardware certification.
 
 ## License
 
-Distributed under the [MIT License](LICENSE).
+MIT — see [LICENSE](LICENSE).
+
+---
+
+<p align="center">
+
+**ENGINEER WITH PRECISION · VERIFY EVERY CHANGE**
+
+</p>
