@@ -65,13 +65,13 @@ static void print_trimatrix(unsigned depth) {
     const pl_tma_cell *cells = NULL;
     size_t count = pl_tma_catalog(&cells);
     if (count != PL_TMA_CELL_COUNT || pl_tma_plan_init(&plan, depth) != 0) {
-        fputs("TriMatrix depth must be 1..100.\\n", stderr);
+        fputs("TriMatrix depth must be 1..100.\n", stderr);
         return;
     }
-    printf("TriMatrix AutoForge: 3 lines x 3 matrices x 3 stages | %u generations | %u steps\\n",
+    printf("TriMatrix AutoForge: 3 lines x 3 matrices x 3 stages | %u generations | %u steps\n",
            depth, pl_tma_plan_total(&plan));
     while (pl_tma_plan_next(&plan, &step) == 1)
-        printf("%04u | generation %03u | %-8s | %-16s | %s\\n",
+        printf("%04u | generation %03u | %-8s | %-16s | %s\n",
                step.step, step.depth, pl_tma_line_name(step.cell.line),
                pl_tma_matrix_name(step.cell.matrix), step.cell.name);
 }
