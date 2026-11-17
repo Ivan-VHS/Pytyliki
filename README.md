@@ -208,7 +208,7 @@ pytyliki --evolve --evolution-rounds 8
 
 See [the 0.7.1 quality audit](docs/QUALITY_AUDIT_0.7.1.md) for the PR consolidation review, fixes, verification evidence and remaining governance limits. The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are run on pull requests. Verified auto-merge checks for an independent approval tied to the PR head and fails closed on API errors or stale validation events; configure GitHub branch protection to require the relevant checks and review so manual merges cannot bypass that workflow gate.
 
-`pytyliki-apsia` evaluates a supplied workload and target allow-list; it does not compile or execute the selected language module.
+`pytyliki-apsia` evaluates an advisory routing request using expected speedup and cost fractions. `--gpu` and `--wasm` explicitly declare candidate backend availability; they do not probe hardware or runtimes. `--capabilities` adds requested capability flags without replacing earlier options. Plugin and explicit sandbox requests are rejected unless `--wasm` is supplied. Routing never compiles, loads, executes modules, or grants capabilities.
 
 ## Before and after
 
