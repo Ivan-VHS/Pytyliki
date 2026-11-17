@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/dsp_engine.c)
+add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
@@ -78,6 +78,19 @@ if(BUILD_TESTING)
   add_executable(pytyliki-dsp-engine-tests tests/test_dsp_engine.c)
   target_link_libraries(pytyliki-dsp-engine-tests PRIVATE pytyliki_core)
   add_test(NAME dsp-engine-tests COMMAND pytyliki-dsp-engine-tests)
+
+  add_executable(pytyliki-forge66-tests tests/test_forge66.c)
+  target_link_libraries(pytyliki-forge66-tests PRIVATE pytyliki_core)
+  add_test(NAME forge66-tests COMMAND pytyliki-forge66-tests)
+
+  add_executable(pytyliki-cpu-suite-tests tests/test_cpu_suite.c)
+  target_link_libraries(pytyliki-cpu-suite-tests PRIVATE pytyliki_core)
+  add_test(NAME cpu-suite-tests COMMAND pytyliki-cpu-suite-tests)
+
+  add_executable(pytyliki-trimatrix-tests tests/test_trimatrix_autoforge.c)
+  target_link_libraries(pytyliki-trimatrix-tests PRIVATE pytyliki_core)
+  add_test(NAME trimatrix-autoforge-tests COMMAND pytyliki-trimatrix-tests)
+  add_test(NAME trimatrix-cli-smoke COMMAND pytyliki --trimatrix 1)
 
   add_test(NAME apsia-cli-cpu COMMAND pytyliki-apsia cpu 2.0 0.1 0.2)
   add_test(NAME apsia-cli-plugin COMMAND pytyliki-apsia plugin 1.0 0.0 0.0 --wasm)
