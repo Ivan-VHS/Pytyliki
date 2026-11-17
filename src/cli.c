@@ -7,9 +7,9 @@
 #include "pipeline.h"
 #include "policy.h"
 #include "evolution.h"
+#include "syntax_pie.h"
 #include "berry_core.h"
 #include "trimatrix_autoforge.h"
-#include "syntax_pie.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -59,20 +59,19 @@ static int dispatch_berry_core(const char *name, unsigned core) {
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
-
 static void print_trimatrix(unsigned depth) {
     pl_tma_plan plan;
     pl_tma_step step;
     const pl_tma_cell *cells = NULL;
     size_t count = pl_tma_catalog(&cells);
     if (count != PL_TMA_CELL_COUNT || pl_tma_plan_init(&plan, depth) != 0) {
-        fputs("TriMatrix depth must be 1..100.\n", stderr);
+        fputs("TriMatrix depth must be 1..100.\\n", stderr);
         return;
     }
-    printf("TriMatrix AutoForge: 3 lines x 3 matrices x 3 stages | %u generations | %u steps\n",
+    printf("TriMatrix AutoForge: 3 lines x 3 matrices x 3 stages | %u generations | %u steps\\n",
            depth, pl_tma_plan_total(&plan));
     while (pl_tma_plan_next(&plan, &step) == 1)
-        printf("%04u | generation %03u | %-8s | %-16s | %s\n",
+        printf("%04u | generation %03u | %-8s | %-16s | %s\\n",
                step.step, step.depth, pl_tma_line_name(step.cell.line),
                pl_tma_matrix_name(step.cell.matrix), step.cell.name);
 }
@@ -137,12 +136,12 @@ static void print_profile(void) {
     printf("Architecture: %s\nCPU: %s\nVendor: %s\nLogical processors: %u\nFamily/model: %u/%u\nPhysical memory: %llu MiB | available: %llu MiB\n",
            p.architecture,p.base.model,p.base.vendor,p.base.logical_cpus,p.base.family,p.base.model_id,
            (unsigned long long)p.physical_memory_mib,(unsigned long long)p.available_memory_mib);
-    printf("ISA: SSE2=%u SSE4.2=%u AVX=%u AVX2=%u AVX-512F=%u AES=%u FMA=%u virtualization=%u\n",
-           p.sse2,p.sse42,p.avx,p.avx2,p.avx512f,p.aes,p.fma,p.virtualization);
-    puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
+    printf("ISA: SSE2=%u SSE4.2=%u AVX-HW=%u OSXSAVE=%u AVX-OS=%u AVX-usable=%u AVX2-usable=%u AVX512F-usable=%u AES=%u FMA-usable=%u virtualization=%u\n",
+           p.sse2,p.sse42,p.avx_hw,p.osxsave,p.avx_os_state,p.avx,p.avx2,p.avx512f,p.aes,p.fma,p.virtualization);
+    puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,trimatrix=0; const char *berry_name=NULL,*analyze=NULL,*json=NULL; unsigned berry_core=0u;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
@@ -154,7 +153,15 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
-        else if(!strcmp(argv[i],"--trimatrix")) { trimatrix=1; if(i+1<argc && argv[i+1][0]!='-'){ char *end=NULL; unsigned long n=strtoul(argv[++i],&end,10); if(!end||*end||n<1u||n>PL_TMA_MAX_DEPTH)return 2; trimatrix_depth=(unsigned)n; }}
+        else if(!strcmp(argv[i],"--trimatrix")) {
+            trimatrix=1;
+            if(i+1<argc && argv[i+1][0]!='-') {
+                char *end=NULL;
+                unsigned long n=strtoul(argv[++i],&end,10);
+                if(!end || *end || n<1u || n>PL_TMA_MAX_DEPTH) return 2;
+                trimatrix_depth=(unsigned)n;
+            }
+        }
         else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
