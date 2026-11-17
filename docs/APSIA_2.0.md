@@ -128,3 +128,18 @@ Each phase ships as a separate, testable PR. A roadmap item is not an implemente
 ## 11. Acceptance criteria
 
 APSIA is ready for a production capability only when its contract, implementation, tests, operational telemetry, security review, rollback, and documentation are all present. Performance claims require reproducible measurements on named hardware and workloads. Heuristic scores and model-generated estimates are not benchmark results.
+
+
+## Local planner CLI
+
+The deterministic routing and promotion-evidence APIs are exposed by `pytyliki-apsia` for local policy inspection:
+
+```sh
+pytyliki-apsia cpu 2.0 0.1 0.2
+pytyliki-apsia gpu 2.0 0.1 0.0 --gpu
+pytyliki-apsia plugin 1.0 0.0 0.0
+```
+
+Arguments are workload, expected speedup, FFI overhead fraction and the fraction of the optimization opportunity achievable in the host language. Optional flags declare GPU availability, deterministic output, sandbox requirements and requested capabilities. Routing never grants capabilities; the decision reports zero granted capabilities and requires human review.
+
+The `apsia/evolution-lock.schema.json` schema defines evidence metadata for future immutable module artifacts. Parsing the schema does not validate an artifact signature or authorize module execution.
