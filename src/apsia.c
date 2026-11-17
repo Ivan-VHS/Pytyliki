@@ -1,6 +1,7 @@
 #include "apsia.h"
 
 #include <math.h>
+#include <stddef.h>
 
 const char *pl_apsia_language_name(pl_apsia_language language) {
     static const char *const names[] = {
