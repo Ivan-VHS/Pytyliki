@@ -51,6 +51,16 @@ if(BUILD_TESTING)
   add_executable(pytyliki-apsia-tests tests/test_apsia.c)
   target_link_libraries(pytyliki-apsia-tests PRIVATE pytyliki_core)
   add_test(NAME apsia-routing-tests COMMAND pytyliki-apsia-tests)
+  add_test(NAME apsia-cli-plugin COMMAND pytyliki-apsia plugin 1.0 0.0 0.0 --wasm)
+  add_test(NAME apsia-cli-gpu-capabilities-gpu-first COMMAND pytyliki-apsia gpu 2.0 0.05 0.10 --gpu --capabilities shared-memory)
+  set_tests_properties(apsia-cli-gpu-capabilities-gpu-first PROPERTIES PASS_REGULAR_EXPRESSION "Language: CUDA")
+  add_test(NAME apsia-cli-gpu-capabilities-list-first COMMAND pytyliki-apsia gpu 2.0 0.05 0.10 --capabilities shared-memory --gpu)
+  set_tests_properties(apsia-cli-gpu-capabilities-list-first PROPERTIES PASS_REGULAR_EXPRESSION "Language: CUDA")
+  add_test(NAME apsia-cli-plugin-without-wasm COMMAND pytyliki-apsia plugin 1.0 0.0 0.0)
+  set_tests_properties(apsia-cli-plugin-without-wasm PROPERTIES WILL_FAIL TRUE)
+  add_test(NAME apsia-cli-sandbox-without-wasm COMMAND pytyliki-apsia cpu 2.0 0.05 0.10 --sandbox)
+  set_tests_properties(apsia-cli-sandbox-without-wasm PROPERTIES WILL_FAIL TRUE)
+
 endif()
 
 
