@@ -81,7 +81,11 @@ static const pl_cpu_suite_module g_modules[PL_CPU_SUITE_MODULE_COUNT] = {
     { 77u, "Regression Sentinel", PL_CPU_SUITE_BENCHMARK_LAB, "Baseline comparison and statistically cautious regression detector" },
     { 78u, "Benchmark Session Recorder", PL_CPU_SUITE_BENCHMARK_LAB, "Reproducible benchmark metadata and result exporter" }
 };
-size_t pl_cpu_suite_catalog(const pl_cpu_suite_module **items) { if (items) *items = g_modules; return PL_CPU_SUITE_MODULE_COUNT; }
+size_t pl_cpu_suite_catalog(const pl_cpu_suite_module **items) {
+    if (items == NULL) return 0u;
+    *items = g_modules;
+    return PL_CPU_SUITE_MODULE_COUNT;
+}
 int pl_cpu_suite_get(size_t index, pl_cpu_suite_module *out) { if (!out || index >= PL_CPU_SUITE_MODULE_COUNT) return -1; *out = g_modules[index]; return 0; }
 int pl_cpu_suite_find_id(uint16_t id, pl_cpu_suite_module *out) {
     size_t i; if (!out || id == 0u) return -1;
