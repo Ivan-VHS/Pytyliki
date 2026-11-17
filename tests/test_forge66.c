@@ -12,10 +12,20 @@ int main(void) {
     pl_forge66_result result, repeated;
     size_t count = pl_forge66_catalog(&items);
     assert(count == PL_FORGE66_FUNCTION_COUNT && items != NULL);
+    /* Assert all four cross-domain transitions to prevent off-by-one labels. */
+    assert(strcmp(items[20].domain, "Concreo / diagnostics") == 0);
+    assert(strcmp(items[21].domain, "Pyemont / transformation") == 0);
+    assert(strcmp(items[31].domain, "Pyemont / transformation") == 0);
+    assert(strcmp(items[32].domain, "Bollo / DSP") == 0);
+    assert(strcmp(items[42].domain, "Bollo / DSP") == 0);
+    assert(strcmp(items[43].domain, "JJ-HH / validation") == 0);
+    assert(strcmp(items[53].domain, "JJ-HH / validation") == 0);
+    assert(strcmp(items[54].domain, "PenWhite / provenance") == 0);
     for (size_t i = 0u; i < count; ++i) {
         assert(items[i].id == i + 1u);
         assert(items[i].name != NULL && items[i].domain != NULL);
         assert(items[i].purpose != NULL && items[i].function != NULL);
+        assert(strstr(items[i].purpose, "proxy score") != NULL);
         for (size_t j = i + 1u; j < count; ++j)
             assert(strcmp(items[i].name, items[j].name) != 0);
         assert(items[i].function(&input, &result) == 0);
