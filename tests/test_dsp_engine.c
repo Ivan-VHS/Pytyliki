@@ -2,4 +2,58 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-int main(void){pl_dsp_engine e;pl_dsp_biquad b;pl_dsp_fir f;pl_dsp_limiter l;pl_dsp_block_stats s;float in[128],out[128],state[4],c[4]={0.25f,0.25f,0.25f,0.25f};size_t i;assert(pl_dsp_engine_init(&e,48000,128)==0);assert(!strcmp(pl_dsp_backend_name(e.backend),"portable-c11-scalar"));assert(pl_dsp_engine_init(&e,1000,128)!=0);for(i=0;i<128;i++)in[i]=(float)sin(2.0*3.141592653589793*440.0*i/48000.0);assert(pl_dsp_biquad_lowpass_init(&b,48000,5000.0,0.707)==0);assert(pl_dsp_biquad_process(&b,in,out,128)==0);assert(pl_dsp_measure_block(out,128,&s)==0&&s.rms>0.0);pl_dsp_biquad_reset(&b);assert(pl_dsp_fir_init(&f,c,4,state,4)==0);assert(pl_dsp_fir_process(&f,in,out,128)==0);pl_dsp_fir_reset(&f);assert(pl_dsp_limiter_init(&l,48000,-1.0,0.1,80.0)==0);for(i=0;i<128;i++)in[i]=1.5f;assert(pl_dsp_limiter_process(&l,in,out,128)==0);assert(fabs((double)out[127])<=0.9);in[0]=NAN;assert(pl_dsp_measure_block(in,128,&s)==0&&s.non_finite_samples==1);assert(pl_dsp_biquad_process(&b,in,out,128)!=0);return 0;}
+
+int main(void) {
+    pl_dsp_engine engine;
+    pl_dsp_biquad biquad;
+    pl_dsp_fir fir;
+    pl_dsp_limiter limiter;
+    pl_dsp_block_stats stats;
+    float input[128];
+    float output[128];
+    float state[4];
+    const float coefficients[4] = {0.25f, 0.25f, 0.25f, 0.25f};
+    size_t i;
+
+    assert(pl_dsp_engine_init(&engine, 48000u, 128u) == 0);
+    assert(strcmp(pl_dsp_backend_name(engine.backend), "portable-c11-scalar") == 0);
+    assert(pl_dsp_engine_init(&engine, 1000u, 128u) != 0);
+
+    for (i = 0u; i < 128u; ++i) {
+        input[i] = (float)sin(2.0 * 3.141592653589793 * 440.0 * (double)i / 48000.0);
+    }
+    assert(pl_dsp_biquad_lowpass_init(&biquad, 48000u, 5000.0, 0.707) == 0);
+    assert(pl_dsp_biquad_process(&biquad, input, output, 128u) == 0);
+    assert(pl_dsp_measure_block(output, 128u, &stats) == 0 && stats.rms > 0.0);
+    pl_dsp_biquad_reset(&biquad);
+
+    assert(pl_dsp_fir_init(&fir, coefficients, 4u, state, 4u) == 0);
+    assert(pl_dsp_fir_process(&fir, input, output, 128u) == 0);
+    pl_dsp_fir_reset(&fir);
+
+    assert(pl_dsp_limiter_init(&limiter, 48000u, -1.0, 0.1, 80.0) == 0);
+    for (i = 0u; i < 128u; ++i) {
+        input[i] = 1.5f;
+    }
+    assert(pl_dsp_limiter_process(&limiter, input, output, 128u) == 0);
+    assert(fabs((double)output[0]) <= limiter.threshold + 1e-6);
+    assert(fabs((double)output[127]) <= limiter.threshold + 1e-6);
+
+    /* A one-sample transient immediately after reset must never exceed the
+     * configured sample ceiling, even while the smoothed envelope is low. */
+    pl_dsp_limiter_reset(&limiter);
+    for (i = 0u; i < 128u; ++i) {
+        input[i] = 0.0f;
+    }
+    input[0] = 2.0f;
+    assert(pl_dsp_limiter_process(&limiter, input, output, 128u) == 0);
+    assert(fabs((double)output[0]) <= limiter.threshold + 1e-6);
+    for (i = 1u; i < 128u; ++i) {
+        assert(fabs((double)output[i]) <= limiter.threshold + 1e-6);
+    }
+
+    input[0] = NAN;
+    assert(pl_dsp_measure_block(input, 128u, &stats) == 0 && stats.non_finite_samples == 1u);
+    assert(pl_dsp_biquad_process(&biquad, input, output, 128u) != 0);
+    return 0;
+}
