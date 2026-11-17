@@ -118,12 +118,12 @@ static void print_profile(void) {
     printf("Architecture: %s\nCPU: %s\nVendor: %s\nLogical processors: %u\nFamily/model: %u/%u\nPhysical memory: %llu MiB | available: %llu MiB\n",
            p.architecture,p.base.model,p.base.vendor,p.base.logical_cpus,p.base.family,p.base.model_id,
            (unsigned long long)p.physical_memory_mib,(unsigned long long)p.available_memory_mib);
-    printf("ISA: SSE2=%u SSE4.2=%u AVX=%u AVX2=%u AVX-512F=%u AES=%u FMA=%u virtualization=%u\n",
-           p.sse2,p.sse42,p.avx,p.avx2,p.avx512f,p.aes,p.fma,p.virtualization);
-    puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
+    printf("ISA: SSE2=%u SSE4.2=%u AVX-HW=%u OSXSAVE=%u AVX-OS=%u AVX-usable=%u AVX2-usable=%u AVX512F-usable=%u AES=%u FMA-usable=%u virtualization=%u\n",
+           p.sse2,p.sse42,p.avx_hw,p.osxsave,p.avx_os_state,p.avx,p.avx2,p.avx512f,p.aes,p.fma,p.virtualization);
+    puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0; const char *berry_name=NULL,*analyze=NULL,*json=NULL; unsigned berry_core=0u;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u;
