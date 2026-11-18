@@ -8,6 +8,8 @@
 #include "policy.h"
 #include "evolution.h"
 #include "syntax_pie.h"
+#include "ironclad_systems.h"
+#include "berry_core.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -18,7 +20,7 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
-         "           [--improvement-plan] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--improvement-plan] [--systems] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -71,6 +73,17 @@ static void print_improvement_plan(void) {
     puts("The 66,666,666x ambition is not a guaranteed multiplier; progress requires measured evidence.");
     puts("Integration requires human approval. This command displays the plan; it does not rewrite or merge code.");
 }
+static void print_system_enhancements(void) {
+    const pl_system_enhancement *items = NULL;
+    size_t count = pl_system_enhancements(&items);
+    puts("Twenty-system engineering contract catalogue:");
+    for (size_t i = 0u; i < count; ++i) {
+        printf("%02u | %-22s | %-14s | %s\n",
+               items[i].id, items[i].name,
+               pl_system_domain_name(items[i].domain), items[i].objective);
+    }
+    puts("These are acceptance contracts and roadmap tracks, not claims of completed features.");
+}
 static void print_syntax_pie(void) {
     const pl_syntax_pie_layer *items = NULL;
     size_t count = pl_syntax_pie_catalog(&items);
@@ -122,7 +135,7 @@ static void print_profile(void) {
     puts("Note: AVX hardware flags are informational; OS vector-state support is not validated.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,systems=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u;
@@ -134,6 +147,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
+        else if(!strcmp(argv[i],"--systems")) systems=1;
         else if(!strcmp(argv[i],"--syntax-pie")) syntax_pie=1;
         else if(!strcmp(argv[i],"--hw-rules")) hw_rules=1;
         else if(!strcmp(argv[i],"--pipeline")) pipeline=1;
@@ -162,6 +176,7 @@ int main(int argc,char **argv) {
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(improvement_plan) print_improvement_plan();
+    if(systems) print_system_enhancements();
     if(syntax_pie) print_syntax_pie();
     if(hw_rules) print_hw_report();
     if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
