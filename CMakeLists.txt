@@ -48,7 +48,11 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-evolution-tests PRIVATE pytyliki_core)
   add_test(NAME evolution-tests COMMAND pytyliki-evolution-tests)
 
-  add_executable(pytyliki-system-enhancement-tests tests/test_ironclad_systems.c)\n  target_link_libraries(pytyliki-system-enhancement-tests PRIVATE pytyliki_core)\n  add_test(NAME system-enhancement-registry-tests COMMAND pytyliki-system-enhancement-tests)\n\n  add_executable(pytyliki-apsia-tests tests/test_apsia.c)
+  add_executable(pytyliki-system-enhancement-tests tests/test_ironclad_systems.c)
+  target_link_libraries(pytyliki-system-enhancement-tests PRIVATE pytyliki_core)
+  add_test(NAME system-enhancement-registry-tests COMMAND pytyliki-system-enhancement-tests)
+
+  add_executable(pytyliki-apsia-tests tests/test_apsia.c)
   target_link_libraries(pytyliki-apsia-tests PRIVATE pytyliki_core)
   add_test(NAME apsia-routing-tests COMMAND pytyliki-apsia-tests)
 endif()
