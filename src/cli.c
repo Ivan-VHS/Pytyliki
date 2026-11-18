@@ -19,7 +19,7 @@
 static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
-         "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite]\n"
+         "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite] [--e2k-profile]\n"
          "           [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
@@ -131,6 +131,25 @@ static void print_foundations(int pipeline, int catalog, int policy, pl_pipeline
         printf("Authorization: %s (role=%s, action=%s)\n", allowed ? "ALLOW" : "DENY", pl_policy_role_name(role), pl_policy_action_name(action));
     }
 }
+
+static void print_e2k_profile(void) {
+    pl_processor_snapshot p;
+    if (pl_processor_scan(&p) != 0) {
+        fputs("Target profile scan failed.\n", stderr);
+        return;
+    }
+    printf("Build architecture: %s\n", p.architecture);
+    if (p.is_e2k_target && p.mcst_lcc)
+        printf("Toolchain: MCST LCC (major version %u)\n", p.lcc_major);
+    else if (p.is_e2k_target)
+        puts("Toolchain: E2K compiler detected; MCST LCC version macro unavailable");
+    else
+        puts("E2K target: not detected in this build");
+    puts("VLIW scheduling and software pipelining: delegated to the actual target compiler");
+    puts("AETHER-ANAS native backend: not implemented (target profile only)");
+    puts("No fixed issue width, ALU count, register count, or cycle model is assumed.");
+}
+
 static void print_profile(void) {
     pl_processor_snapshot p; if(pl_processor_scan(&p)!=0){fprintf(stderr,"Processor scan failed.\n");return;}
     printf("Architecture: %s\nCPU: %s\nVendor: %s\nLogical processors: %u\nFamily/model: %u/%u\nPhysical memory: %llu MiB | available: %llu MiB\n",
@@ -141,7 +160,7 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
@@ -149,6 +168,7 @@ int main(int argc,char **argv) {
     int use_compressor=0,use_gain=0;
     for(int i=1;i<argc;i++) {
         if(!strcmp(argv[i],"--profile")) profile=1;
+        else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
@@ -187,6 +207,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
+    if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(improvement_plan) print_improvement_plan();
@@ -214,8 +235,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if((improvement_plan || syntax_pie || trimatrix) && (argc==2 || (trimatrix && argc<=3))) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve){profile=1;bench=1;}
+    if((improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();

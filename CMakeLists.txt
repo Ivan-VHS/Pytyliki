@@ -86,6 +86,8 @@ if(BUILD_TESTING)
   add_executable(pytyliki-cpu-suite-tests tests/test_cpu_suite.c)
   target_link_libraries(pytyliki-cpu-suite-tests PRIVATE pytyliki_core)
   add_test(NAME cpu-suite-tests COMMAND pytyliki-cpu-suite-tests)
+  add_test(NAME e2k-profile-cli-smoke COMMAND pytyliki --e2k-profile)
+  set_tests_properties(e2k-profile-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "AETHER-ANAS native backend: not implemented")
 
   add_executable(pytyliki-trimatrix-tests tests/test_trimatrix_autoforge.c)
   target_link_libraries(pytyliki-trimatrix-tests PRIVATE pytyliki_core)
