@@ -22,7 +22,7 @@ CPU Suite Pro adds a deterministic, allocation-free catalogue of 78 specialized 
 
 ## Safety and implementation status
 
-This increment implements the complete 78-entry module registry, stable identifiers, six domain groupings, lookups, advisory planning, and exhaustive catalogue tests. It does **not** claim that all 78 are fully-featured hardware tools. Live sensor backends, vendor-specific controls, GUI panels, OS-specific counters and physical tuning require separate validated adapters and tests.
+This increment implements the complete 78-entry module registry, stable identifiers, seven domain groupings, lookups, advisory planning, and exhaustive catalogue tests. It does **not** claim that all 78 are fully-featured hardware tools. Live sensor backends, vendor-specific controls, GUI panels, OS-specific counters and physical tuning require separate validated adapters and tests.
 
 No voltage, clock, firmware, microcode, fan, interrupt, kernel, or processor-register writes are performed. Tuning-related modules only describe plans until a separately reviewed, vendor-supported backend exists. AVX workloads must be bounded and dispatched only after runtime ISA **and OS vector-state** validation. No macOS, ARM64, x86_64-specific performance guarantee is implied.
 
