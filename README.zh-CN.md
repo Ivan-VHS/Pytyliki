@@ -11,6 +11,8 @@
 
 **文档语言：** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · 简体中文
 
+**架构规范：**[鸭子宪章 — Pytyliki 工程实施配置](docs/ANATIDAE_ENGINEERING_PROFILE.md)。将全部 66 条规则和六项宪章原则映射到现有 C11 工作站，并明确标注未来功能。
+
 ---
 
 ## 功能概览
