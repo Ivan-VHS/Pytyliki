@@ -97,7 +97,7 @@ HyperFusion 的就绪度和协同指标属于启发式规划数据，不代表�
 
 ## 新目录的集成状态
 
-仓库中已经存在 `syntax_pie.c`、`mtte.c`、`berry_core.c` 及其专项测试文件，但当前 `main` 分支的 CMake 配置尚未注册这些模块和测试。CLI 源文件也调用了 Syntax Pie API，而默认构建目标尚未链接 `syntax_pie.c`。因此，这些内容属于待完成的构建系统集成，不能视为默认可执行文件中已经验证的功能。Syntax Pie 集成由 [PR #19](https://github.com/Ivan-VHS/Pytyliki/pull/19) 单独跟踪；只有必需 CI 检查和代码审查通过后才能合并。
+此变更集已将 `syntax_pie.c`、`mtte.c` 和 `berry_core.c` 注册到 `pytyliki_core`，使默认 CLI 链接核心库，并为三个模块分别添加 CTest 测试目标。这些模块是受边界约束的目录与规划原语，并非通用解析器、硬件计时器控制器、IPI/亲和性控制器或物理处理器控制接口。此分支通过 Windows/Linux 构建与测试矩阵以及 Linux ASan/UBSan 作业进行验证。
 
 ## 构建与测试
 
