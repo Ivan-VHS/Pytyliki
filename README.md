@@ -14,6 +14,8 @@
 
 **Languages:** English · [简体中文](README.zh-CN.md) · [Русский](README.ru.md) · [Українська](README.uk.md)
 
+**Architecture contract:** [66-rule autonomy and modularity requirements](docs/ARCHITECTURE_66.md). The contract distinguishes implemented, partial and planned work.
+
 ## What Pytyliki does
 
 - **Processor discovery:** collect CPU, architecture, memory and ISA information. Feature flags are hints; OS-enabled instruction state and runtime eligibility must also be considered.
