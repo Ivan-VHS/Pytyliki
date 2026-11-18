@@ -4,7 +4,7 @@
 
 **语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
 
-**架构规范：** [66 条自主性与模块化规则](docs/ARCHITECTURE_66.md)。文档明确区分已实现、部分实现和计划中的要求。
+**架构规范：** [66 条自主性与模块化规则](docs/ARCHITECTURE_66.md)及[666 条宪章实施纲要](docs/CONSTITUTION_666_PROFILE.md)。明确区分已实现、部分实现、计划中和不适用的要求。
 
 <p align="center">
 
