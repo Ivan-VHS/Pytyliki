@@ -20,6 +20,8 @@ jobs:
         run: ctest --test-dir build -C Release --output-on-failure
       - name: Validate APSIA evolution-lock schema JSON
         run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
+      - name: Verify architecture contract
+        run: python scripts/check_architecture_contract.py
 
   sanitizer-linux:
     runs-on: ubuntu-latest
