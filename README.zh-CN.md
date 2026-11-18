@@ -65,25 +65,6 @@ pytyliki --mtte
 | `src/cli.c`、`src/win_gui.c` | CLI 与 Windows 桌面界面 |
 | `.github/workflows/` | CI 和受控仓库自动化 |
 
-## APSIA 2.0 — 受控多语言路由
-
-APSIA 是一个 C11 建议性工作负载路由器。只有当预期收益超过 FFI 开销、且宿主语言优化不再是更优选择时，它才会选择候选实现。APSIA 不会编译、加载或执行生成的模块，不会授予任何 capability，并始终要求人工审查。
-
-| 工作负载 | 候选方案 | 门控条件 |
-|---|---|---|
-| CPU 密集型 | Rust | 预期加速必须高于 FFI 开销 |
-| GPU 张量 | CUDA | 显式声明 `--gpu` 并请求 GPU capability；确定性任务保留在宿主端 |
-| 并发 I/O | Go | 通过成本与宿主优化门控 |
-| 分析任务 | DuckDB | 通过成本与宿主优化门控 |
-| 嵌入式脚本 | Lua | 通过成本与宿主优化门控 |
-| 不可信插件 / 沙箱 | WebAssembly | 显式声明 `--wasm`；不可用时拒绝路由 |
-
-`pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [options]`
-
-`--gpu` 和 `--wasm` 仅显式声明候选后端可用性，不会探测硬件或运行时。`--capabilities LIST` 会追加能力标志，不会清除先前选项。路由器本身不会授予这些能力。
-
-详见 [APSIA 2.0 架构](docs/APSIA_2.0.md) 和 [evolution-lock 模式](apsia/evolution-lock.schema.json)。
-
 ### 能力目录与实现状态
 
 - **Syntax-pie：** 确定性的 20 层函数与语法抽象映射；这是目录和查询 API，不是通用解析器。

@@ -73,25 +73,6 @@ pytyliki --mtte
 | `src/cli.c`, `src/win_gui.c` | CLI and Windows desktop interface |
 | `.github/workflows/` | CI and guarded repository automation |
 
-## APSIA 2.0 — guarded polyglot routing
-
-APSIA is an advisory C11 workload router. It selects a candidate implementation only when the estimated gain exceeds FFI cost and host-language optimization is not already the better option. It never compiles, loads, or executes generated modules, never grants capabilities, and always requires human review.
-
-| Workload | Candidate | Gate |
-|---|---|---|
-| CPU-bound | Rust | Expected speedup must exceed FFI overhead |
-| GPU tensor | CUDA | Explicit `--gpu` declaration and GPU capability; deterministic workloads stay on host |
-| Concurrent I/O | Go | Cost and host-optimization gates |
-| Analytics | DuckDB | Cost and host-optimization gates |
-| Embedded script | Lua | Cost and host-optimization gates |
-| Untrusted plugin / sandbox | WebAssembly | Explicit `--wasm`; fail closed when unavailable |
-
-`pytyliki-apsia WORKLOAD EXPECTED_SPEEDUP FFI_OVERHEAD_FRACTION HOST_OPTIMIZATION_FRACTION [options]`
-
-`--gpu` and `--wasm` declare candidate backend availability; they do not probe hardware or runtimes. `--capabilities LIST` adds requested capability flags without clearing earlier options. Routing does not grant those capabilities.
-
-See [APSIA 2.0 architecture](docs/APSIA_2.0.md) and [evolution-lock schema](apsia/evolution-lock.schema.json).
-
 ### Capability catalogues
 
 - **Syntax-pie:** deterministic 20-layer mapping from function verbs and room metaphors to syntax abstractions. It is a catalogue and lookup layer, not a general-purpose parser.
