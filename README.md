@@ -11,6 +11,8 @@
 
 **Documentation:** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md)
 
+**Architecture profile:** [Constitution of the Ducks — Pytyliki engineering profile](docs/ANATIDAE_ENGINEERING_PROFILE.md). It maps all 66 source laws and six constitutional articles to the current C11 workstation and marks future features explicitly.
+
 ---
 
 ## At a glance
