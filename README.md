@@ -14,7 +14,7 @@
 
 **Languages:** English · [简体中文](README.zh-CN.md) · [Русский](README.ru.md) · [Українська](README.uk.md)
 
-**Architecture contract:** [66-rule autonomy and modularity requirements](docs/ARCHITECTURE_66.md). The contract distinguishes implemented, partial and planned work.
+**Architecture contract:** [66-rule autonomy and modularity requirements](docs/ARCHITECTURE_66.md) and the [666-rule Constitution implementation profile](docs/CONSTITUTION_666_PROFILE.md). Both distinguish implemented, partial, planned and not-applicable capabilities.
 
 ## What Pytyliki does
 
