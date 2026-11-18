@@ -4,6 +4,8 @@
 
 **语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
 
+**架构规范：** [66 条自主性与模块化规则](docs/ARCHITECTURE_66.md)。文档明确区分已实现、部分实现和计划中的要求。
+
 <p align="center">
 
 **探测 · 分析 · 规划 · 验证**
