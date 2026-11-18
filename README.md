@@ -97,7 +97,7 @@ These catalogues are tracked as staged integration work; they must not be confus
 
 ## Integration status of recent catalogues
 
-The `syntax_pie.c`, `mtte.c` and `berry_core.c` sources and their focused test files are present in the repository, but the current `main` CMake configuration does not yet register these modules or tests. The CLI source also references the Syntax Pie API while the default target does not link `syntax_pie.c`. Treat these as pending build-system integration, not verified features of the default executable. The Syntax Pie integration is tracked separately in [PR #19](https://github.com/Ivan-VHS/Pytyliki/pull/19); merge only after the required CI checks and review pass.
+This change set registers `syntax_pie.c`, `mtte.c`, and `berry_core.c` in `pytyliki_core`, links the default CLI against the core library, and adds focused CTest targets for all three modules. They are bounded catalogues and planning primitives, not a general-purpose parser, hardware timer controller, IPI/affinity controller, or physical processor-control interface. The integration is covered by the Windows/Linux build-and-test matrix and Linux ASan/UBSan job on this branch.
 
 ## Build and test
 
