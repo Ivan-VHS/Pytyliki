@@ -14,7 +14,7 @@
 
 **Languages:** English · [简体中文](README.zh-CN.md) · [Русский](README.ru.md) · [Українська](README.uk.md)
 
-**Architecture contract:** [66-rule autonomy and modularity requirements](docs/ARCHITECTURE_66.md), the [666-rule Constitution implementation profile](docs/CONSTITUTION_666_PROFILE.md), and the [100-proverb engineering crosswalk](docs/CHINESE_PROVERBS_100_ENGINEERING_CROSSWALK.md). The proverb ledger is guidance, not implementation evidence.
+**Architecture contract:** [66-rule autonomy and modularity requirements](docs/ARCHITECTURE_66.md), the [666-rule Constitution implementation profile](docs/CONSTITUTION_666_PROFILE.md), and the [100-proverb engineering crosswalk](docs/CHINESE_PROVERBS_100_ENGINEERING_CROSSWALK.md). The proverb ledger is guidance, not implementation evidence. **AETHER-ANAS:** [staged integration profile](docs/AETHER_ANAS_INTEGRATION.md) for the C11 core, DSP, capabilities and evidence gates.
 
 ## What Pytyliki does
 
