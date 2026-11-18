@@ -140,8 +140,6 @@ The Windows/Linux CMake + CTest matrix and Recursive Evolution Gate are used on 
 - **Data formats:** JSON reports and PCM16 WAV audio.
 - **Not claimed:** macOS, ARM64, x86_64-specific performance guarantees, Protobuf, Parquet, Arrow, or production RTL/FPGA synthesis unless separately validated.
 
-Before adding any compatibility, architecture, or performance claim that is not already validated, follow the [Platform and capability validation policy](docs/PLATFORM_VALIDATION_POLICY.md).
-
 ## Safety boundaries
 
 - Processor discovery is read-only.

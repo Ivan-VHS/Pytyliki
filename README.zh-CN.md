@@ -124,8 +124,6 @@ Pull Request 使用 Windows/Linux CMake/CTest 矩阵和 Recursive Evolution Gate
 - **数据格式：** JSON 报告和 PCM16 WAV 音频。
 - **未作出以下保证：** macOS、ARM64 或 x86_64 专项性能保证、Protobuf、Parquet、Arrow，以及未经单独验证的生产级 RTL/FPGA 综合。
 
-添加未经验证的兼容性、架构或性能声明前，请遵循[平台与能力验证政策](docs/PLATFORM_VALIDATION_POLICY.md)。
-
 ## 安全边界
 
 - 处理器信息发现为只读操作。
