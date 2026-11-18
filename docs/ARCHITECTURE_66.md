@@ -51,7 +51,7 @@ The inspected default branch contains a C11 core, CLI, Windows GUI, CMake/CTest 
 25. Require explicit authorization before any operation that changes source, configuration or repository state.
 26. Keep planning separate from execution; a plan must not acquire execution authority implicitly.
 27. Abort safely when resource limits, validation, policy or evidence checks fail.
-28. Promote a change only after tests and independent review; automation may request Auto-Merge but may not bypass GitHub protections.
+28. Promote a change only after tests and independent review; automation may request Auto-Merge but may not bypass GitHub protections. A human maintainer remains responsible for approval and promotion; CI evidence alone is not authorization.
 
 ### D. Independent modules and integrations
 
