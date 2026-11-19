@@ -17,6 +17,8 @@ This document records how the open Pytyliki work was reconciled against the curr
 | #45 | HMGA v2 governed evolution | Added the read-only repository auditor, tests and policy document |
 | #46 | Engineering standard and PR hygiene | Added the engineering standard and PR template; audit workflow is additive |
 | #47 | HMGA v3 operator matrix | Added the deterministic 20-axiom/400-descriptor catalogue, 64-round cap and CTest coverage |
+| #49 | Shared monotonic millisecond clock for processor and benchmark timing, with a finite/non-decreasing timing contract test |
+| #50 | Readability-only CPU Suite Pro catalog lookup cleanup; existing positive/negative lookup coverage retained |
 | #48 | Native Win32 white-red-blue theme | Added the palette and themed owner-drawn controls |
 
 ## Already represented by current main
