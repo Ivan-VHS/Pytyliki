@@ -6,76 +6,186 @@ on:
     branches: [main]
   pull_request_review:
     types: [submitted, dismissed]
-  workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: verified-auto-merge-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: false
 
 jobs:
+  review-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      approved: ${{ steps.gate.outputs.approved }}
+      head_sha: ${{ steps.gate.outputs.head_sha }}
+      pr_url: ${{ steps.gate.outputs.pr_url }}
+      author: ${{ steps.gate.outputs.author }}
+      draft: ${{ steps.gate.outputs.draft }}
+    steps:
+      - id: gate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const number = context.payload.pull_request?.number;
+            if (!number) throw new Error('Missing pull request context');
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner, repo: context.repo.repo, pull_number: number
+            });
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner: context.repo.owner, repo: context.repo.repo, pull_number: number, per_page: 100
+            });
+            reviews.sort((a, b) => Date.parse(a.submitted_at || '') - Date.parse(b.submitted_at || ''));
+            const latest = new Map();
+            for (const r of reviews) {
+              if (r.user?.login && r.user.login !== pr.user.login) latest.set(r.user.login, r);
+            }
+            const current = [...latest.values()].filter(r => r.commit_id === pr.head.sha);
+            const approved = current.some(r => r.state === 'APPROVED');
+            const changes = current.some(r => r.state === 'CHANGES_REQUESTED');
+            const sameRepo = pr.head.repo?.full_name === `${context.repo.owner}/${context.repo.repo}`;
+            core.setOutput('approved', String(pr.state === 'open' && !pr.draft && sameRepo && approved && !changes));
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('pr_url', pr.html_url);
+            core.setOutput('author', pr.user.login);
+            core.setOutput('draft', String(pr.draft));
+
+  cancel-stale-auto-merge:
+    needs: review-gate
+    if: needs.review-gate.outputs.approved != 'true' && needs.review-gate.outputs.draft != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ needs.review-gate.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+          pending="$(gh pr view "$PR_URL" --json autoMergeRequest --jq '.autoMergeRequest != null')"
+          if [ "$pending" = "true" ]; then gh pr merge "$PR_URL" --disable-auto; fi
+
   validate:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
-    name: Validate (${{ matrix.os }})
+    needs: review-gate
+    if: needs.review-gate.outputs.approved == 'true'
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.review-gate.outputs.head_sha }}
+          persist-credentials: false
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - run: cmake --build build --config Release --parallel
+      - run: ctest --test-dir build -C Release --output-on-failure
+      - if: runner.os == 'Linux'
+        run: |
+          python scripts/check_architecture_contract.py
+          python scripts/check_chinese_proverbs_profile.py
+          python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
+
+  sanitizer:
+    needs: review-gate
+    if: needs.review-gate.outputs.approved == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.review-gate.outputs.head_sha }}
+          persist-credentials: false
+      - run: cmake -S . -B build-sanitized -DBUILD_TESTING=ON -DPYTYLIKI_ENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=Debug
+      - run: cmake --build build-sanitized --parallel
+      - run: ctest --test-dir build-sanitized --output-on-failure
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+
+  wait-for-ci:
+    needs: [review-gate, validate, sanitizer]
+    if: needs.review-gate.outputs.approved == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     permissions:
       contents: read
-    timeout-minutes: 20
+      checks: read
     steps:
-      - name: Checkout pull request
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Configure CMake
-        run: cmake -S . -B build -DBUILD_TESTING=ON
-      - name: Build
-        run: cmake --build build --config Release --parallel
-      - name: Run CTest
-        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Require all current repository checks to pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ needs.review-gate.outputs.head_sha }}
+          EXPECTED_CHECKS: '["build-test (ubuntu-latest)","build-test (windows-latest)","sanitizer-linux","Verify improvement proposal","audit"]'
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 40); do
+            head="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
+            test "$head" = "$PR_HEAD_SHA" || { echo "PR head changed; stopping stale validation."; exit 1; }
+            payload="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/commits/$PR_HEAD_SHA/check-runs?per_page=100")"
+            summary="$(jq -c --arg run "$GITHUB_RUN_ID" --argjson expected "$EXPECTED_CHECKS" '
+              [ .[].check_runs[]?
+                | select(((.details_url // "") | contains("/actions/runs/" + $run + "/")) | not)
+              ]
+              | sort_by(.name, .started_at)
+              | group_by(.name) | map(last) as $checks
+              | {
+                  pending: [$checks[] | select(.status != "completed")] | length,
+                  failed: [$checks[] | select(.status == "completed" and (.conclusion != "success" and .conclusion != "neutral" and .conclusion != "skipped"))] | length,
+                  missing: [$expected[] as $name | select([$checks[] | select(.name == $name and .status == "completed" and (.conclusion == "success" or .conclusion == "neutral" or .conclusion == "skipped"))] | length == 0)] | length
+                }
+            ' <<< "$payload")"
+            pending="$(jq -r '.pending' <<< "$summary")"
+            failed="$(jq -r '.failed' <<< "$summary")"
+            missing="$(jq -r '.missing' <<< "$summary")"
+            echo "Checks: pending=$pending failed=$failed missing=$missing"
+            if [ "$failed" -gt 0 ]; then echo "A repository check failed."; exit 1; fi
+            if [ "$pending" -eq 0 ] && [ "$missing" -eq 0 ]; then echo "All current checks passed."; exit 0; fi
+            sleep 30
+          done
+          echo "Timed out waiting for repository checks."
+          exit 1
 
-  auto-merge:
-    name: Auto-merge approved PR
-    needs: validate
-    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false
+  enable-auto-merge:
+    needs: [review-gate, validate, sanitizer, wait-for-ci]
+    if: needs.review-gate.outputs.approved == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Require independent approval
+      - name: Recheck head and independent review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_URL: ${{ needs.review-gate.outputs.pr_url }}
+          PR_AUTHOR: ${{ needs.review-gate.outputs.author }}
+          PR_HEAD_SHA: ${{ needs.review-gate.outputs.head_sha }}
         run: |
           set -euo pipefail
-          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
-          if [ "${current_head}" != "${PR_HEAD_SHA}" ]; then
-            echo "Auto-merge blocked: PR head changed while this validation run was executing."
-            exit 1
-          fi
-          reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
-          approvals="$(printf '%s' "${reviews}" | jq --arg author "${PR_AUTHOR}" --arg head "${PR_HEAD_SHA}" '
+          head="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
+          test "$head" = "$PR_HEAD_SHA" || { echo "PR head changed; refusing stale merge."; exit 1; }
+          reviews="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews")"
+          decision="$(jq -c --arg author "$PR_AUTHOR" --arg head "$PR_HEAD_SHA" '
             [.[][] | select(.user.login != $author)]
             | sort_by(.user.login, .submitted_at)
-            | group_by(.user.login)
-            | map(last)
-            | map(select(.state == "APPROVED" and .commit_id == $head))
-            | length
-          ')"
-          if ! [[ "${approvals}" =~ ^[0-9]+$ ]] || [ "${approvals}" -lt 1 ]; then
-            echo "Auto-merge blocked: an approval from someone other than the PR author is required."
+            | group_by(.user.login) | map(last) as $latest
+            | {
+                approvals: [$latest[] | select(.state == "APPROVED" and .commit_id == $head)] | length,
+                changes: [$latest[] | select(.state == "CHANGES_REQUESTED" and .commit_id == $head)] | length
+              }
+          ' <<< "$reviews")"
+          approvals="$(jq -r '.approvals' <<< "$decision")"
+          changes="$(jq -r '.changes' <<< "$decision")"
+          if [ "$approvals" -lt 1 ] || [ "$changes" -gt 0 ]; then
+            echo "Independent approval is missing or a change request is active."
             exit 1
           fi
-      - name: Enable GitHub native auto-merge
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge "${PR_URL}" --auto --squash --delete-branch
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
