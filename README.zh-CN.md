@@ -9,142 +9,99 @@
 
 <p align="center"><strong>发现 · 分析 · 处理 · 验证</strong></p>
 
-<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — 处理器诊断、源代码分析与本地 DSP 工作站" width="100%"></p>
+<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki 处理器系统工作站" width="100%"></p>
 
-**一套面向计算机与本地工作负载的实用 C11 工作站。** Pytyliki 将只读处理器信息发现、受限基准测试、源代码诊断、PCM16 WAV/DSP 工具以及原生 Windows 桌面界面整合为一个模块化项目。
-
-它面向需要清晰本地测量、可检查报告和明确安全边界的开发者与工程师，而不是会悄悄修改硬件设置的黑盒工具。
+Pytyliki 是一个模块化 C11 工作站，用于本地处理器检查、有界基准测试、源代码静态诊断和 PCM16 音频处理。项目包含原生 Win32 桌面界面、命令行工具和可测试的工程目录。
 
 **语言：** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · 简体中文
 
-## 工作站功能一览
+## 视觉预览
 
-| 工作区 | 功能 |
+<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="根据 Pytyliki 源码制作的 Win32 界面预览" width="100%"></p>
+<p align="center"><img src="assets/pytyliki-audio-meters-preview.svg" alt="独立立体声音频测量预览" width="100%"></p>
+<p align="center"><img src="assets/pytyliki-architecture.svg" alt="Pytyliki 架构概览" width="100%"></p>
+
+<sub>仓库中的图片是依据源码制作的 SVG 界面预览和架构图，并非真实 Windows 会话中的照片或屏幕截图。真实 Win32 截图需要在 Windows 桌面会话中运行应用后采集。</sub>
+
+## 工作站功能
+
+| 领域 | 当前功能 |
 |---|---|
-| **处理器实验室** | 查看 CPU 信息、逻辑处理器、内存和可用 ISA 能力 |
-| **基准测试套件** | 运行受限的处理器、内存和矩阵工作负载，用于本机比较 |
-| **源代码审查** | 检查受支持的源文件，不执行或改写文件；导出 JSON 报告 |
-| **音频 / DSP** | 读取和写入 PCM16 WAV、生成测试音、处理音频并测量电平 |
-| **Windows 桌面端** | 使用原生 Win32 GUI 执行处理器扫描、源代码审查和音频操作 |
-| **工程目录** | 浏览改进分类、建议性硬件规则和参考方案 |
-| **验证** | 在 Windows 和 Linux 上使用 CMake 构建并运行 CTest |
-
-## 查看界面
-
-<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="依据当前 Pytyliki Win32 控件绘制的示意界面预览" width="100%"></p>
-
-<sub>此界面预览根据仓库中的 Win32 控件与标签重绘，并非从实际运行的 Windows 程序截取的屏幕截图。</sub>
-
-桌面应用包含 CPU 能力扫描、处理器测试、源代码审查、PCM WAV 导入/导出、测试音生成、低通滤波、压缩、饱和、增益、电平测量和 JSON 报告导出。
-
-## 系统架构
-
-<p align="center"><img src="assets/pytyliki-architecture.svg" alt="Pytyliki 架构：发现、分析、处理、验证" width="100%"></p>
+| 处理器信息 | CPU 标识、架构、逻辑处理器、内存和可用 ISA 能力 |
+| 基准测试 | 有界 CPU、内存和矩阵负载，用于本机比较 |
+| 源码检查 | 对支持的文件进行静态诊断；不会执行或改写被检查的源文件 |
+| 音频 / DSP | PCM16 WAV 导入/导出、测试音生成、滤波、压缩、饱和和增益 |
+| 通道测量 | 每个声道独立计算峰值、RMS、DC 偏移、峰值因数和削波次数 |
+| Windows 桌面 | 原生 Win32 工作站，采用统一的白、红、蓝 UI 主题 |
+| 工程目录 | Syntax-pie、CPU Suite Pro、Forge66、TriMatrix、HyperFusion、APSIA 和建议型硬件规则 |
+| 验证 | CMake/CTest、Windows 与 Linux CI、Linux ASan/UBSan 和只读 HMGA 审计 |
 
 ## 快速开始
 
 ### 环境要求
 
 - Windows 或 Linux
-- CMake 3.16 或更新版本
+- CMake 3.16+
 - 支持 C11 的编译器
 - Git
 
 ### 构建与测试
 
-```bash
-git clone https://github.com/Ivan-VHS/Pytyliki.git
-cd Pytyliki
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
-cmake --build build --config Release --parallel
-ctest --test-dir build -C Release --output-on-failure
-```
+    git clone https://github.com/Ivan-VHS/Pytyliki.git
+    cd Pytyliki
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+    cmake --build build --config Release --parallel
+    ctest --test-dir build -C Release --output-on-failure
 
-Windows 构建还会生成 **`pytyliki-gui.exe`**。
+Windows 构建还会生成原生 pytyliki-gui.exe 目标。
 
 ### 常用命令
 
-```bash
-# 只读处理器信息
-./build/pytyliki --profile
+    ./build/pytyliki --profile
+    ./build/pytyliki --suite
+    ./build/pytyliki --improvement-plan
+    ./build/pytyliki --systems
+    ./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
+    ./build/pytyliki --json report.json
 
-# 受限 CPU、内存和矩阵测试
-./build/pytyliki --suite
+Windows 下请使用对应配置的可执行文件路径，例如 build/Release/pytyliki.exe。
 
-# 查看工程改进目录
-./build/pytyliki --improvement-plan
+## 集成更新
 
-# 生成 48 kHz PCM16 WAV 测试音
-./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
+集成分支整合了现有开发中兼容且尚缺失的改动：
 
-# 导出本地 JSON 报告
-./build/pytyliki --json report.json
-```
+- **音频测量：** 每个声道独立计算 peak/RMS/DC/crest/clipping，并通过 CLI/Win32 输出。
+- **WAV 安全：** 处理前检查 RIFF 范围、数据块头、负载和对齐字节边界。
+- **统一计时：** 处理器测量和基准测试共用单调毫秒时钟，并新增独立契约测试。
+- **HMGA v2：** 只读仓库审计器、测试和有界工程策略。
+- **HMGA v3：** 确定性的 C11 目录，包含 20 条公理、400 个描述符，最多 64 轮规划。
+- **Win32 主题：** 集中管理白、红、蓝颜色令牌和自绘控件。
+- **CPU Suite：** 简化按 ID 和名称查找模块的控制流程，不改变查找行为。
 
-在 Windows 上，请使用对应构建配置下的可执行文件路径，例如 `build/Release/pytyliki.exe`。
+历史分支经过逐项审查，而不是整批复制。main 中已有的功能会保留而不重复实现；重叠原型不会形成并行 API。详情请参阅[集成审计](docs/INTEGRATION_AUDIT_2026-11-19.md)。
 
-## 工程能力
+## CI、安全与项目边界
 
-- **处理器清单：** CPU 厂商/型号、架构、逻辑处理器数量、内存和 ISA 标志。AVX 系列可用性检查包含由操作系统管理的向量状态验证。
-- **受限测量：** 处理器、内存和矩阵路径的本地工作负载。结果依赖硬件与平台，不构成认证。
-- **静态源代码诊断：** 检查受支持的源文件，不执行或更改文件内容。
-- **PCM16 音频工具：** WAV 导入/导出、测试音生成、低通滤波、压缩器、软饱和、增益和电平计量。
-- **Syntax-pie：** 确定性的 20 层函数与语法抽象目录；它是查询目录，不是通用解析器。
-- **改进矩阵：** 20 项工程分类、20 项优化分类和 20 项自动化分类，可通过 `--improvement-plan` 查看。
-- **HyperFusion：** 六个受限分析模块，每轮包含 36 个有向配对交互。就绪度和协同值属于规划启发式指标，并非实测性能提升。
-- **APSIA 2.0：** 带目标可用性和 FFI 成本门控的语言路由规划器。它提出路由方案，但不会编译或执行所选语言模块。
-- **硬件规则：** 已实现 12 条建议性规则；其他目录标识符为预留项。分析结果用于工程审查，不构成硬件认证。
-- **参考流水线：** C11/C23 规划模型，并非生产级转译器。
+GitHub Actions 在 Ubuntu 和 Windows 上构建并测试项目。Linux 测试还使用 AddressSanitizer 和 UndefinedBehaviorSanitizer。HMGA 审计检查工程证据和仓库策略，不会改写源代码。
 
-## CI、质量与安全
-
-GitHub Actions 在 **Ubuntu 和 Windows** 上构建并测试项目。独立的 Linux 任务会使用 AddressSanitizer 和 UndefinedBehaviorSanitizer 运行测试。每个提交的当前状态以 CMake/CTest 结果为准。
-
-Pytyliki 遵循明确的本地操作边界：
-
-- 处理器信息发现为只读操作；不会写入固件、BIOS/UEFI、微码、时钟、 电压、功率限制、内核、驱动或设备寄存器。
-- 源代码审查不会执行或改写被扫描文件。
-- 基准测试受到工作量限制，并取决于硬件、操作系统、编译器和工作负载；不保证性能提升。
-- 建议性评分和规划目录不等于硬件认证，也不能证明自动优化已经实现。
-- 本地音频处理使用受限的 PCM16 WAV 缓冲区。
-
-## 兼容性
-
-| 项目 | 当前范围 |
-|---|---|
-| 实现语言 | ISO C11 |
-| CI 验证平台 | Windows 和 Linux |
-| 桌面界面 | Windows 原生 Win32 GUI |
-| 数据格式 | JSON 报告；PCM16 WAV |
-| 构建与测试 | CMake + CTest |
-| 未作出的声明 | macOS 支持、保证的 ARM64/x86_64 性能、生产级 RTL/FPGA 综合或自主源代码转换 |
+- 处理器检查为只读操作，不写入固件、BIOS/UEFI、频率、电压、功率限制、内核、驱动或设备寄存器。
+- 源码检查不会执行或修改被检查文件。
+- 基准结果取决于硬件、编译器、操作系统和负载，不构成认证或加速保证。
+- HMGA v3 只枚举有界规划描述符，不生成或执行源码。
+- 桌面界面仅声明为 Windows 原生 Win32。未声明 macOS 支持或 ARM64/x86_64 的固定性能保证。
 
 ## 文档
 
-- [HMGA v2.0 工程规范](docs/HMGA_V2.0.md)
-- [HMGA v3.0 有界算子矩阵](docs/HMGA_V3.md)
+- [架构](docs/ARCHITECTURE.md)
 - [工程标准](docs/ENGINEERING_STANDARD.md)
-
-
-- [系统架构](docs/ARCHITECTURE.md)
+- [HMGA v2.0 契约](docs/HMGA_V2.0.md)
+- [HMGA v3.0 操作矩阵](docs/HMGA_V3.md)
+- [集成审计](docs/INTEGRATION_AUDIT_2026-11-19.md)
 - [APSIA 2.0 路由设计](docs/APSIA_2.0.md)
 - [硬件规则引擎](docs/HARDWARE_RULE_ENGINE.md)
 - [处理器分类](docs/PROCESSOR_TAXONOMY.md)
 - [平台验证策略](docs/PLATFORM_VALIDATION_POLICY.md)
-- [递归演进模型](docs/RECURSIVE_EVOLUTION.md)
-- [质量审计](docs/QUALITY_AUDIT_0.7.1.md)
-
-## 更新的界面预览
-
-<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="白红蓝主题的 Win32 工作站示意预览" width="100%"></p>
-<p align="center"><img src="assets/pytyliki-audio-meters-preview.svg" alt="显示左右声道独立测量数据的立体声音频表预览" width="100%"></p>
-
-<sub>这些是依据源代码界面制作的矢量示意图，并非正在运行的 Windows 应用截图。真实截图需要在 Windows 上启动 Win32 构建版本后采集。</sub>
-
-## 工程更新
-
-本次集成增加了 PCM16 WAV 输入的 RIFF 容器边界校验、每声道独立 peak/RMS/DC/crest/clipping 测量、20 × 20 的有界 HMGA v3 规划矩阵、只读 HMGA 仓库审计，以及白红蓝 Win32 控件主题。HMGA 矩阵枚举 400 个描述符，最多允许 64 轮规划；它不会生成或执行代码。
 
 ## 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+项目采用 [MIT 许可证](LICENSE)。
