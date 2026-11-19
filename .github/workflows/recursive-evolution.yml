@@ -23,6 +23,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Audit HMGA repository contract
+        run: python tools/hmga_audit.py --strict
+      - name: Test HMGA auditor
+        run: python -m unittest discover -s tests -p "test_hmga_audit.py" -v
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 
