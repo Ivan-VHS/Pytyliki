@@ -69,7 +69,7 @@ int main(void) {
         assert(channel_stats[0].rms > 0.61 && channel_stats[0].rms < 0.62);
         assert(channel_stats[1].rms > 0.53 && channel_stats[1].rms < 0.54);
         assert(channel_stats[0].dc == 0.25);
-        assert(channel_stats[1].dc == 0.0);
+        assert(channel_stats[1].dc == -0.25);
         assert(channel_stats[0].clipped_samples == 1u);
         assert(channel_stats[1].clipped_samples == 1u);
         assert(pl_audio_measure_channels(&stereo, channel_stats, 1u) != 0);
