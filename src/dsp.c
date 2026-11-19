@@ -11,6 +11,15 @@ static uint16_t read_u16(const unsigned char*p){return(uint16_t)(p[0]|((uint16_t
 static uint32_t read_u32(const unsigned char*p){return(uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);}
 static void write_u16(FILE*f,uint16_t v){fputc((int)(v&255u),f);fputc((int)(v>>8),f);}
 static void write_u32(FILE*f,uint32_t v){write_u16(f,(uint16_t)(v&65535u));write_u16(f,(uint16_t)(v>>16));}
+static FILE *open_binary_file(const char *path, const char *mode) {
+#if defined(_MSC_VER)
+    FILE *file = NULL;
+    if (fopen_s(&file, path, mode) != 0) return NULL;
+    return file;
+#else
+    return fopen(path, mode);
+#endif
+}
 void pl_audio_free(pl_audio_buffer*a){if(!a)return;free(a->samples);memset(a,0,sizeof(*a));}
 int pl_audio_generate_tone(pl_audio_buffer*a,unsigned rate,unsigned channels,double hz,double seconds){if(!a||rate<8000||rate>192000||(channels!=1&&channels!=2)||!isfinite(hz)||!isfinite(seconds)||hz<=0.0||hz>=(double)rate*0.5||seconds<=0.0||seconds>30.0)return -1;double frame_count=(double)rate*seconds;if(!isfinite(frame_count)||frame_count<1.0||frame_count>(double)PL_AUDIO_MAX_FRAMES)return -1;size_t frames=(size_t)frame_count;if(frames==0u||frames>PL_AUDIO_MAX_FRAMES)return -1;float*data=(float*)malloc(frames*(size_t)channels*sizeof(float));if(!data)return -2;for(size_t i=0;i<frames;i++){float s=(float)(0.7*sin(2.0*PL_PI*hz*(double)i/(double)rate));for(unsigned c=0;c<channels;c++)data[i*(size_t)channels+c]=s;}pl_audio_free(a);a->samples=data;a->frames=frames;a->sample_rate=rate;a->channels=channels;return 0;}
 int pl_audio_load_wav(const char *path, pl_audio_buffer *audio) {
@@ -25,7 +34,7 @@ int pl_audio_load_wav(const char *path, pl_audio_buffer *audio) {
     int result = -2;
 
     if (path == NULL || audio == NULL) return -1;
-    file = fopen(path, "rb");
+    file = open_binary_file(path, "rb");
     if (file == NULL) return -1;
 
     if (fseek(file, 0L, SEEK_END) != 0 || (file_size = ftell(file)) < 0L ||
@@ -142,7 +151,7 @@ cleanup:
     if (file != NULL) fclose(file);
     return result;
 }
-int pl_audio_write_wav(const char*path,const pl_audio_buffer*a){if(!path||!audio_valid(a))return -1;size_t count=a->frames*a->channels,data_bytes=count*2u;if(data_bytes>UINT32_MAX-36u)return -2;FILE*f=fopen(path,"wb");if(!f)return -1;fwrite("RIFF",1,4,f);write_u32(f,(uint32_t)(36u+data_bytes));fwrite("WAVEfmt ",1,8,f);write_u32(f,16);write_u16(f,1);write_u16(f,(uint16_t)a->channels);write_u32(f,a->sample_rate);write_u32(f,a->sample_rate*a->channels*2u);write_u16(f,(uint16_t)(a->channels*2u));write_u16(f,16);fwrite("data",1,4,f);write_u32(f,(uint32_t)data_bytes);for(size_t i=0;i<count;i++){double x=a->samples[i];if(x>1.0)x=1.0;if(x< -1.0)x=-1.0;long v=(long)lrint(x*32767.0);if(v>32767)v=32767;if(v< -32768)v=-32768;write_u16(f,(uint16_t)(int16_t)v);}int bad=ferror(f);if(fclose(f)!=0)bad=1;return bad?-1:0;}
+int pl_audio_write_wav(const char*path,const pl_audio_buffer*a){if(!path||!audio_valid(a))return -1;size_t count=a->frames*a->channels,data_bytes=count*2u;if(data_bytes>UINT32_MAX-36u)return -2;FILE*f=open_binary_file(path,"wb");if(!f)return -1;fwrite("RIFF",1,4,f);write_u32(f,(uint32_t)(36u+data_bytes));fwrite("WAVEfmt ",1,8,f);write_u32(f,16);write_u16(f,1);write_u16(f,(uint16_t)a->channels);write_u32(f,a->sample_rate);write_u32(f,a->sample_rate*a->channels*2u);write_u16(f,(uint16_t)(a->channels*2u));write_u16(f,16);fwrite("data",1,4,f);write_u32(f,(uint32_t)data_bytes);for(size_t i=0;i<count;i++){double x=a->samples[i];if(x>1.0)x=1.0;if(x< -1.0)x=-1.0;long v=(long)lrint(x*32767.0);if(v>32767)v=32767;if(v< -32768)v=-32768;write_u16(f,(uint16_t)(int16_t)v);}int bad=ferror(f);if(fclose(f)!=0)bad=1;return bad?-1:0;}
 int pl_audio_apply_gain(pl_audio_buffer*a,double db){if(!audio_valid(a)||!isfinite(db)||db< -60.0||db>24.0)return -1;double g=pow(10.0,db/20.0);size_t n=a->frames*a->channels;for(size_t i=0;i<n;i++){double y=(double)a->samples[i]*g;if(!isfinite(y)||fabs(y)>(double)FLT_MAX)return -1;}for(size_t i=0;i<n;i++)a->samples[i]=(float)((double)a->samples[i]*g);return 0;}
 int pl_audio_apply_lowpass(pl_audio_buffer*a,double cutoff){if(!audio_valid(a)||!isfinite(cutoff)||cutoff<10.0||cutoff>=a->sample_rate*0.49)return -1;double alpha=1.0-exp(-2.0*PL_PI*cutoff/(double)a->sample_rate);for(unsigned c=0;c<a->channels;c++){double y=0.0;for(size_t i=0;i<a->frames;i++){size_t k=i*a->channels+c;y+=alpha*((double)a->samples[k]-y);a->samples[k]=(float)y;}}return 0;}
 int pl_audio_apply_compressor(pl_audio_buffer*a,double db,double ratio){if(!audio_valid(a)||!isfinite(db)||!isfinite(ratio)||db< -60.0||db>0.0||ratio<1.0||ratio>20.0)return -1;double threshold=pow(10.0,db/20.0);size_t n=a->frames*a->channels;for(size_t i=0;i<n;i++){double x=a->samples[i],ax=fabs(x);if(ax>threshold){double compressed=threshold*pow(ax/threshold,1.0/ratio);a->samples[i]=(float)copysign(compressed,x);}}return 0;}
