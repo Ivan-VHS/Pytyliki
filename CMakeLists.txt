@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c)
+add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/hmga_v3.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
@@ -94,6 +94,14 @@ if(BUILD_TESTING)
   add_test(NAME cpu-suite-tests COMMAND pytyliki-cpu-suite-tests)
   add_test(NAME e2k-profile-cli-smoke COMMAND pytyliki --e2k-profile)
   set_tests_properties(e2k-profile-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "AETHER-ANAS native backend: not implemented")
+
+  add_executable(pytyliki-wav-boundary-tests tests/test_wav_boundaries.c)
+  target_link_libraries(pytyliki-wav-boundary-tests PRIVATE pytyliki_core)
+  add_test(NAME wav-container-boundary-tests COMMAND pytyliki-wav-boundary-tests)
+
+  add_executable(pytyliki-hmga-v3-tests tests/test_hmga_v3.c)
+  target_link_libraries(pytyliki-hmga-v3-tests PRIVATE pytyliki_core)
+  add_test(NAME hmga-v3-matrix-tests COMMAND pytyliki-hmga-v3-tests)
 
   add_executable(pytyliki-trimatrix-tests tests/test_trimatrix_autoforge.c)
   target_link_libraries(pytyliki-trimatrix-tests PRIVATE pytyliki_core)

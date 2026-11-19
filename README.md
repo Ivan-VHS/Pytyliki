@@ -88,7 +88,7 @@ Use the platform-specific executable path on Windows (for example, `build/Releas
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
 - **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
-- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
+- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain, aggregate metering and independent per-channel peak/RMS/DC/crest/clipping metrics.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
 - **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
 - **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
@@ -121,6 +121,11 @@ Pytyliki follows explicit local-operation boundaries:
 
 ## Documentation
 
+- [HMGA v2.0 engineering contract](docs/HMGA_V2.0.md)
+- [HMGA v3.0 bounded operator matrix](docs/HMGA_V3.md)
+- [Engineering standard](docs/ENGINEERING_STANDARD.md)
+
+
 - [Architecture](docs/ARCHITECTURE.md)
 - [APSIA 2.0 routing design](docs/APSIA_2.0.md)
 - [Hardware rule engine](docs/HARDWARE_RULE_ENGINE.md)
@@ -128,6 +133,17 @@ Pytyliki follows explicit local-operation boundaries:
 - [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
 - [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
 - [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
+
+## Updated interface previews
+
+<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative Win32 workstation preview using the white-red-blue theme" width="100%"></p>
+<p align="center"><img src="assets/pytyliki-audio-meters-preview.svg" alt="Illustrative stereo audio metering preview with independent channel measurements" width="100%"></p>
+
+<sub>These are source-aligned vector previews, not screenshots captured from a running Windows session. A genuine application capture requires running the Win32 build on Windows.</sub>
+
+## Consolidated engineering updates
+
+The current integration adds RIFF-container boundary validation for PCM16 WAV input, independent per-channel peak/RMS/DC/crest/clipping measurements, the bounded 20 × 20 HMGA v3 planning catalogue, a read-only HMGA repository audit, and the white-red-blue Win32 control theme. The HMGA matrix enumerates 400 descriptors with a maximum of 64 planning rounds; it does not generate or execute code.
 
 ## License
 

@@ -14,4 +14,6 @@ int pl_audio_apply_lowpass(pl_audio_buffer *audio,double cutoff_hz);
 int pl_audio_apply_compressor(pl_audio_buffer *audio,double threshold_db,double ratio);
 int pl_audio_apply_saturation(pl_audio_buffer *audio,double drive);
 int pl_audio_measure(const pl_audio_buffer *audio,pl_audio_stats *stats);
+/* Computes independent metrics for each channel; capacity must cover audio->channels. */
+int pl_audio_measure_channels(const pl_audio_buffer *audio, pl_audio_stats *stats, size_t stats_capacity);
 #endif

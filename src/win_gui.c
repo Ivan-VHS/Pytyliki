@@ -9,6 +9,7 @@
 #include "core.h"
 #include "processor.h"
 #include "dsp.h"
+#include "ui_theme.h"
 
 #define ID_PROFILE 1001
 #define ID_SUITE 1002
@@ -61,8 +62,77 @@ static double read_parameter(int id, double fallback) {
     return value;
 }
 static HWND add_button(HWND parent, const char *label, int id) {
-    HWND h=CreateWindowExA(0,"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_PUSHBUTTON,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
+    HWND h=CreateWindowExA(0,"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
     apply_font(h); return h;
+}
+
+static int is_primary_action(UINT id) {
+    return id==ID_PROFILE || id==ID_SUITE || id==ID_REVIEW;
+}
+
+static void draw_button(const DRAWITEMSTRUCT *item) {
+    RECT bounds = item->rcItem;
+    RECT text_bounds = bounds;
+    UINT id = (UINT)item->CtlID;
+    int disabled = (item->itemState & ODS_DISABLED) != 0;
+    int selected = (item->itemState & ODS_SELECTED) != 0;
+    int hot = (item->itemState & ODS_HOTLIGHT) != 0;
+    int primary = is_primary_action(id);
+    int danger = id == ID_CLEAR;
+    COLORREF fill, foreground, border;
+    char caption[160];
+    HBRUSH brush;
+    HPEN pen;
+    HGDIOBJ old_brush, old_pen;
+    int offset = selected ? 1 : 0;
+
+    if (disabled) {
+        fill = PL_UI_DISABLED_BG;
+        foreground = PL_UI_DISABLED_TEXT;
+        border = PL_UI_BORDER;
+    } else if (danger) {
+        fill = selected ? PL_UI_DANGER_DOWN : (hot ? PL_UI_DANGER_HOVER : PL_UI_DANGER);
+        foreground = RGB(255,255,255);
+        border = fill;
+    } else if (primary) {
+        fill = selected ? PL_UI_PRIMARY_DOWN : (hot ? PL_UI_PRIMARY_HOVER : PL_UI_PRIMARY);
+        foreground = RGB(255,255,255);
+        border = fill;
+    } else {
+        fill = selected ? RGB(229,238,249) : (hot ? RGB(241,247,254) : PL_UI_PANEL_BG);
+        foreground = PL_UI_TEXT;
+        border = hot ? PL_UI_PRIMARY : PL_UI_BORDER;
+    }
+
+    brush = CreateSolidBrush(fill);
+    pen = CreatePen(PS_SOLID, 1, border);
+    if (brush == NULL || pen == NULL) {
+        if (brush != NULL) DeleteObject(brush);
+        if (pen != NULL) DeleteObject(pen);
+        return;
+    }
+
+    old_brush = SelectObject(item->hDC, brush);
+    old_pen = SelectObject(item->hDC, pen);
+    RoundRect(item->hDC, bounds.left, bounds.top, bounds.right, bounds.bottom, 8, 8);
+    SelectObject(item->hDC, old_pen);
+    SelectObject(item->hDC, old_brush);
+    DeleteObject(pen);
+    DeleteObject(brush);
+
+    (void)GetWindowTextA(item->hwndItem, caption, (int)sizeof(caption));
+    SetBkMode(item->hDC, TRANSPARENT);
+    SetTextColor(item->hDC, foreground);
+    text_bounds.left += 7 + offset;
+    text_bounds.right -= 7 - offset;
+    text_bounds.top += 1 + offset;
+    text_bounds.bottom -= 1 - offset;
+    (void)DrawTextA(item->hDC, caption, -1, &text_bounds,
+                    DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    if ((item->itemState & ODS_FOCUS) != 0 && !disabled) {
+        InflateRect(&bounds, -5, -5);
+        DrawFocusRect(item->hDC, &bounds);
+    }
 }
 static void show_profile(void) {
     pl_processor_snapshot p;
@@ -134,9 +204,24 @@ static void audio_effect(int id) {
     if(rc==0) log_format("[DSP PROCESS] Applied %s.\r\n",name); else log_format("[DSP PROCESS] %s rejected the current buffer.\r\n",name);
 }
 static void measure_audio(void) {
-    pl_audio_stats s; if(pl_audio_measure(&g_audio,&s)!=0) { log_text("[DSP METER] No valid audio buffer.\r\n"); return; }
+    pl_audio_stats s;
+    pl_audio_stats channel_stats[2];
+    if (pl_audio_measure(&g_audio, &s) != 0) {
+        log_text("[DSP METER] No valid audio buffer.\r\n");
+        return;
+    }
     log_format("\r\n[DSP METER] Peak %.5f | RMS %.5f | DC %.6f | crest %.2f dB | clipped %lu\r\n",
-         s.peak,s.rms,s.dc,s.crest_db,(unsigned long)s.clipped_samples);
+               s.peak, s.rms, s.dc, s.crest_db, (unsigned long)s.clipped_samples);
+    if (pl_audio_measure_channels(&g_audio, channel_stats, 2u) != 0) {
+        log_text("[DSP METER] Per-channel measurement failed.\r\n");
+        return;
+    }
+    for (unsigned channel = 0u; channel < g_audio.channels; ++channel) {
+        const pl_audio_stats *cs = &channel_stats[channel];
+        log_format("  Channel %u: peak %.5f | RMS %.5f | DC %.6f | crest %.2f dB | clipped %lu\r\n",
+                   channel + 1u, cs->peak, cs->rms, cs->dc, cs->crest_db,
+                   (unsigned long)cs->clipped_samples);
+    }
 }
 static void export_wav(void) {
     if(!g_audio.samples) { log_text("[DSP EXPORT] No audio buffer to export.\r\n"); return; }
@@ -178,13 +263,21 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         return 0;
     }
     case WM_SIZE: layout(w); return 0;
+    case WM_DRAWITEM: {
+        const DRAWITEMSTRUCT *item = (const DRAWITEMSTRUCT *)l;
+        if (item != NULL && item->CtlType == ODT_BUTTON) {
+            draw_button(item);
+            return TRUE;
+        }
+        break;
+    }
     case WM_PAINT: {
         PAINTSTRUCT ps; HDC dc=BeginPaint(w,&ps); RECT r; GetClientRect(w,&r);
-        HBRUSH bg=CreateSolidBrush(RGB(244,247,251)); FillRect(dc,&r,bg); DeleteObject(bg);
-        RECT header={0,0,r.right,78}; HBRUSH hb=CreateSolidBrush(RGB(20,34,58)); FillRect(dc,&header,hb); DeleteObject(hb);
+        HBRUSH bg=CreateSolidBrush(PL_UI_WINDOW_BG); FillRect(dc,&r,bg); DeleteObject(bg);
+        RECT header={0,0,r.right,78}; HBRUSH hb=CreateSolidBrush(PL_UI_HEADER_BG); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,12,r.right-20,43}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(185,205,229)); RECT sub={23,43,r.right-20,68}; DrawTextA(dc,"CPU diagnostics | bounded benchmarking | static review | local DSP laboratory",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SetTextColor(dc,RGB(218,231,248)); RECT sub={23,43,r.right-20,68}; DrawTextA(dc,"CPU diagnostics | bounded benchmarking | static review | local DSP laboratory",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(RGB(197,48,63)); RECT line={0,78,r.right,82}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }

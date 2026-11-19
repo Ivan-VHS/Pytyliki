@@ -121,6 +121,11 @@ Pytyliki 遵循明确的本地操作边界：
 
 ## 文档
 
+- [HMGA v2.0 工程规范](docs/HMGA_V2.0.md)
+- [HMGA v3.0 有界算子矩阵](docs/HMGA_V3.md)
+- [工程标准](docs/ENGINEERING_STANDARD.md)
+
+
 - [系统架构](docs/ARCHITECTURE.md)
 - [APSIA 2.0 路由设计](docs/APSIA_2.0.md)
 - [硬件规则引擎](docs/HARDWARE_RULE_ENGINE.md)
@@ -128,6 +133,17 @@ Pytyliki 遵循明确的本地操作边界：
 - [平台验证策略](docs/PLATFORM_VALIDATION_POLICY.md)
 - [递归演进模型](docs/RECURSIVE_EVOLUTION.md)
 - [质量审计](docs/QUALITY_AUDIT_0.7.1.md)
+
+## 更新的界面预览
+
+<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="白红蓝主题的 Win32 工作站示意预览" width="100%"></p>
+<p align="center"><img src="assets/pytyliki-audio-meters-preview.svg" alt="显示左右声道独立测量数据的立体声音频表预览" width="100%"></p>
+
+<sub>这些是依据源代码界面制作的矢量示意图，并非正在运行的 Windows 应用截图。真实截图需要在 Windows 上启动 Win32 构建版本后采集。</sub>
+
+## 工程更新
+
+本次集成增加了 PCM16 WAV 输入的 RIFF 容器边界校验、每声道独立 peak/RMS/DC/crest/clipping 测量、20 × 20 的有界 HMGA v3 规划矩阵、只读 HMGA 仓库审计，以及白红蓝 Win32 控件主题。HMGA 矩阵枚举 400 个描述符，最多允许 64 轮规划；它不会生成或执行代码。
 
 ## 许可证
 
