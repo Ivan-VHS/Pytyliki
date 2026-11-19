@@ -102,6 +102,13 @@ GitHub Actions 在 Ubuntu 和 Windows 上构建并测试项目。Linux 测试还
 - [处理器分类](docs/PROCESSOR_TAXONOMY.md)
 - [平台验证策略](docs/PLATFORM_VALIDATION_POLICY.md)
 
+
+- [AETHER-ANAS 工程配置](docs/AETHER_ANAS_INTEGRATION.md)
+- [Architecture 66 架构契约](docs/ARCHITECTURE_66.md)
+- [666 条规则符合性配置](docs/CONSTITUTION_666_PROFILE.md)
+- [100 条中国谚语工程交叉表](docs/CHINESE_PROVERBS_100_ENGINEERING_CROSSWALK.md)
+- [MCST Elbrus E2K 目标配置](docs/ELBRUS_E2K.md)
+
 ## 许可证
 
 项目采用 [MIT 许可证](LICENSE)。
