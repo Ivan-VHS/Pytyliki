@@ -54,6 +54,30 @@ int main(void) {
     assert(strstr(details, "cache prefetch hint") != NULL);
     remove(source_path);
 
+    {
+        float channel_samples[] = {
+            0.5f, -0.25f,
+            -0.5f, 0.25f,
+            1.0f, -1.0f,
+            0.0f, 0.0f
+        };
+        pl_audio_buffer stereo = {channel_samples, 4u, 48000u, 2u};
+        pl_audio_stats channel_stats[2] = {{0}};
+        assert(pl_audio_measure_channels(&stereo, channel_stats, 2u) == 0);
+        assert(channel_stats[0].peak == 1.0);
+        assert(channel_stats[1].peak == 1.0);
+        assert(channel_stats[0].rms > 0.61 && channel_stats[0].rms < 0.62);
+        assert(channel_stats[1].rms > 0.53 && channel_stats[1].rms < 0.54);
+        assert(channel_stats[0].dc == 0.25);
+        assert(channel_stats[1].dc == 0.0);
+        assert(channel_stats[0].clipped_samples == 1u);
+        assert(channel_stats[1].clipped_samples == 1u);
+        assert(pl_audio_measure_channels(&stereo, channel_stats, 1u) != 0);
+        assert(pl_audio_measure_channels(&stereo, NULL, 2u) != 0);
+        stereo.samples = NULL;
+        assert(pl_audio_measure_channels(&stereo, channel_stats, 2u) != 0);
+    }
+
     pl_audio_buffer audio = {0}, loaded = {0};
     assert(pl_audio_generate_tone(&audio, 48000, 2, 440.0, 0.25) == 0);
     assert(audio.frames == 12000 && audio.channels == 2);
