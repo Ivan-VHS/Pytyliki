@@ -45,7 +45,7 @@ int pl_concat_text(const char *const *parts, size_t count,
     *written = 0u;
     if (out == NULL || capacity == 0u || (count != 0u && parts == NULL)) return -1;
 
-    if (count != 0u) {
+    if (count > SIZE_MAX / sizeof(*lengths) || count > SIZE_MAX / sizeof(*spans)) return -1;\n    if (count != 0u) {
         /* Keep temporary metadata bounded by the caller-provided part count. */
         lengths = (size_t *)malloc(count * sizeof(*lengths));
         spans = (const void **)malloc(count * sizeof(*spans));
