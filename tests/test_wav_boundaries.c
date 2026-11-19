@@ -18,9 +18,19 @@ static void write_u32(FILE *file, uint32_t value) {
     write_u16(file, (uint16_t)(value >> 16));
 }
 
+static FILE *open_fixture(const char *path) {
+#if defined(_MSC_VER)
+    FILE *file = NULL;
+    if (fopen_s(&file, path, "wb") != 0) return NULL;
+    return file;
+#else
+    return fopen(path, "wb");
+#endif
+}
+
 static int write_fixture(const char *path, uint32_t riff_size,
                          uint32_t data_size, size_t actual_data_bytes) {
-    FILE *file = fopen(path, "wb");
+    FILE *file = open_fixture(path);
     if (file == NULL) return -1;
     fwrite("RIFF", 1u, 4u, file);
     write_u32(file, riff_size);
