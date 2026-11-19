@@ -35,7 +35,7 @@ static int write_fixture(const char *path, uint32_t riff_size,
     fwrite("data", 1u, 4u, file);
     write_u32(file, data_size);
     for (size_t i = 0u; i < actual_data_bytes; ++i) fputc(0, file);
-    if (actual_data_bytes & 1u) fputc(0, file);
+    if (actual_data_bytes == data_size && (data_size & 1u)) fputc(0, file);
     if (fclose(file) != 0) return -1;
     return 0;
 }
