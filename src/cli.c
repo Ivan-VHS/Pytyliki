@@ -6,6 +6,7 @@
 #include "processor_catalog.h"
 #include "pipeline.h"
 #include "policy.h"
+#include "resilience.h"
 #include "evolution.h"
 #include "syntax_pie.h"
 #include "berry_core.h"
@@ -24,6 +25,7 @@ static void usage(void) {
          "           [--systems] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
+         "  pytyliki --resilience ERROR CPU_HEADROOM MEMORY_HEADROOM QUEUE_UTILIZATION [--breaker-state STATE] [--cooldown-elapsed SECONDS] [--probe-successes N]\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
@@ -60,6 +62,38 @@ static int dispatch_berry_core(const char *name, unsigned core) {
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
+
+static int parse_unsigned(const char *text, unsigned *value) {
+    char *end=NULL; unsigned long parsed;
+    if(!text||!value||!text[0]) return -1;
+    errno=0; parsed=strtoul(text,&end,10);
+    if(end==text||*end||errno==ERANGE||parsed>UINT32_MAX) return -1;
+    *value=(unsigned)parsed; return 0;
+}
+static int parse_resilience_state(const char *text, pl_resilience_state *state) {
+    if(!text||!state) return -1;
+    if(!strcmp(text,"closed")) *state=PL_RESILIENCE_CLOSED;
+    else if(!strcmp(text,"degraded")) *state=PL_RESILIENCE_DEGRADED;
+    else if(!strcmp(text,"open")) *state=PL_RESILIENCE_OPEN;
+    else if(!strcmp(text,"half-open")) *state=PL_RESILIENCE_HALF_OPEN;
+    else return -1;
+    return 0;
+}
+static int print_resilience_report(const pl_resilience_metrics *metrics) {
+    pl_resilience_decision d;
+    if(pl_resilience_evaluate(metrics,&d)!=0) {
+        fputs("Invalid resilience telemetry: percentages must be finite and within 0..100.\\n",stderr);
+        return 2;
+    }
+    printf("Breaker: %s\\nPrimary work: %s\\nServe stale cache: %s\\n"
+           "Shed optional work: %s\\nConcurrency budget: %u%%\\nProbe budget: %u\\nReason: %s\\n",
+           pl_resilience_state_name(d.next_state),d.allow_primary_work?"allow":"deny",
+           d.serve_stale_cache?"yes":"no",d.shed_optional_work?"yes":"no",
+           d.max_concurrency_percent,d.probe_budget,d.reason);
+    puts("Decision only: no live telemetry collection or service throttling was performed.");
+    return 0;
+}
+
 static void print_trimatrix(unsigned depth) {
     pl_tma_plan plan;
     pl_tma_step step;
@@ -173,7 +207,8 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,resilience=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
+    pl_resilience_metrics resilience_metrics={0}; resilience_metrics.current_state=PL_RESILIENCE_CLOSED;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
@@ -207,6 +242,10 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--evolution-rounds")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_EVOLUTION_MAX_ROUNDS){fprintf(stderr,"Evolution rounds must be 1..%u.\n",PL_EVOLUTION_MAX_ROUNDS);return 2;}evolution_rounds=(unsigned)n;evolve=1;}
         else if(!strcmp(argv[i],"--target")&&i+1<argc){const char *v=argv[++i];if(!strcmp(v,"c11"))pipeline_target=PL_TARGET_C11;else if(!strcmp(v,"c23"))pipeline_target=PL_TARGET_C23;else return 2;}
         else if(!strcmp(argv[i],"--policy-check")&&i+2<argc){policy=1;if(pl_policy_parse_role(argv[++i],&policy_role)!=0||pl_policy_parse_action(argv[++i],&policy_action)!=0)return 2;}
+        else if(!strcmp(argv[i],"--resilience")&&i+4<argc){resilience=1;if(parse_double(argv[++i],&resilience_metrics.error_rate_percent)||parse_double(argv[++i],&resilience_metrics.cpu_headroom_percent)||parse_double(argv[++i],&resilience_metrics.memory_headroom_percent)||parse_double(argv[++i],&resilience_metrics.queue_utilization_percent))return 2;}
+        else if(!strcmp(argv[i],"--breaker-state")&&i+1<argc){if(parse_resilience_state(argv[++i],&resilience_metrics.current_state)!=0)return 2;}
+        else if(!strcmp(argv[i],"--cooldown-elapsed")&&i+1<argc){if(parse_unsigned(argv[++i],&resilience_metrics.cooldown_elapsed_seconds)!=0)return 2;}
+        else if(!strcmp(argv[i],"--probe-successes")&&i+1<argc){if(parse_unsigned(argv[++i],&resilience_metrics.successful_probes)!=0)return 2;}
         else if((!strcmp(argv[i],"--review-processor")||!strcmp(argv[i],"--analyze"))&&i+1<argc) analyze=argv[++i];
         else if(!strcmp(argv[i],"--json")&&i+1<argc) json=argv[++i];
         else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
@@ -221,6 +260,7 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
+    if(resilience) return print_resilience_report(&resilience_metrics);
     if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
