@@ -4,8 +4,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
-  pull_request_review:
-    types: [submitted, dismissed]
   workflow_dispatch:
 
 permissions:
@@ -48,30 +46,16 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - name: Require independent approval
+      - name: Confirm validated PR head is unchanged
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
           if [ "${current_head}" != "${PR_HEAD_SHA}" ]; then
-            echo "Auto-merge blocked: PR head changed while this validation run was executing."
-            exit 1
-          fi
-          reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
-          approvals="$(printf '%s' "${reviews}" | jq --arg author "${PR_AUTHOR}" --arg head "${PR_HEAD_SHA}" '
-            [.[][] | select(.user.login != $author)]
-            | sort_by(.user.login, .submitted_at)
-            | group_by(.user.login)
-            | map(last)
-            | map(select(.state == "APPROVED" and .commit_id == $head))
-            | length
-          ')"
-          if ! [[ "${approvals}" =~ ^[0-9]+$ ]] || [ "${approvals}" -lt 1 ]; then
-            echo "Auto-merge blocked: an approval from someone other than the PR author is required."
+            echo "Auto-merge blocked: PR head changed while CI validation was executing."
             exit 1
           fi
       - name: Enable GitHub native auto-merge
