@@ -108,7 +108,7 @@ int pl_run_benchmark(uint64_t iterations, pl_benchmark *out) {
     for (uint64_t i = 0; i < iterations; ++i) {
         x ^= x >> 12; x ^= x << 25; x ^= x >> 27; x *= UINT64_C(2685821657736338717);
     }
-    double elapsed = now_ms() - start;
+    double elapsed = pl_monotonic_now_ms() - start;
     if (x == 0) fputc(' ', stdout);
     out->iterations = iterations; out->elapsed_ms = elapsed;
     out->score = elapsed > 0.0 ? (double)iterations / elapsed : 0.0;
