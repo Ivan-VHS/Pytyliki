@@ -129,6 +129,10 @@ Pytyliki follows explicit local-operation boundaries:
 - [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
 - [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
 
+## Low-level language ecosystem
+
+The [66-entry low-level language and systems-tooling encyclopedia](docs/LOW_LEVEL_LANGUAGES.ru.md) documents FFI, generated-code, WebAssembly, GPU/FPGA, JIT and formal-verification integration patterns. Its Pytyliki profile keeps C11 as the baseline and APSIA as an advisory router; it does not add optional compilers or execute foreign modules.
+
 ## License
 
 Released under the [MIT License](LICENSE).
