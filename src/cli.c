@@ -11,7 +11,9 @@
 #include "berry_core.h"
 #include "ironclad_systems.h"
 #include "trimatrix_autoforge.h"
+#include "division.h"
 #include <stdio.h>
+#include <inttypes.h>
 #include <math.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -22,10 +24,14 @@ static void usage(void) {
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite] [--e2k-profile]\n"
          "           [--systems] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "  pytyliki --divide INTEGER INTEGER\n"
+         "  pytyliki --partition ITEMS WORKERS [MIN_GRAIN]\n"
+         "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
+         "Euclidean division is checked; partition recommendations are advisory and bounded.\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
 static void print_berry_core_catalog(void) {
@@ -60,6 +66,73 @@ static int dispatch_berry_core(const char *name, unsigned core) {
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
+
+static int parse_i64(const char *s, int64_t *out) {
+    char *end = NULL;
+    long long value;
+    if (s == NULL || s[0] == '\0' || out == NULL) return -1;
+    errno = 0;
+    value = strtoll(s, &end, 10);
+    if (end == s || *end != '\0' || errno == ERANGE) return -1;
+    *out = (int64_t)value;
+    return 0;
+}
+
+static int parse_u64(const char *s, uint64_t *out) {
+    char *end = NULL;
+    unsigned long long value;
+    if (s == NULL || s[0] == '\0' || s[0] == '-' || out == NULL) return -1;
+    errno = 0;
+    value = strtoull(s, &end, 10);
+    if (end == s || *end != '\0' || errno == ERANGE) return -1;
+    *out = (uint64_t)value;
+    return 0;
+}
+
+static int print_division(int64_t dividend, int64_t divisor) {
+    pl_division_result result;
+    if (pl_division_euclidean(dividend, divisor, &result) != 0) {
+        fputs("Division rejected: zero divisor or signed 64-bit overflow.\n", stderr);
+        return 2;
+    }
+    printf("Euclidean division: quotient=%" PRId64 " remainder=%" PRId64
+           " exact=%s\n",
+           result.quotient, result.remainder,
+           result.remainder == 0 ? "yes" : "no");
+    return 0;
+}
+
+static int print_partition(uint64_t items, uint64_t available_workers,
+                           uint64_t minimum_grain) {
+    uint64_t workers = 0u;
+    pl_partition_plan plan;
+    if (pl_division_recommend_workers(items, available_workers,
+                                      minimum_grain, &workers) != 0) {
+        fputs("Partition request rejected: invalid worker count or minimum grain.\n", stderr);
+        return 2;
+    }
+    if (workers == 0u) {
+        puts("No work items: no partitions required.");
+        return 0;
+    }
+    if (pl_partition_plan_create(items, workers, &plan) != 0) {
+        fputs("Partition plan exceeds the configured safety limit.\n", stderr);
+        return 2;
+    }
+    printf("Balanced partition plan: items=%" PRIu64
+           " available-workers=%" PRIu64 " minimum-grain=%" PRIu64
+           " recommended-workers=%" PRIu64 "\n",
+           items, available_workers, minimum_grain, workers);
+    for (uint64_t i = 0u; i < workers; ++i) {
+        uint64_t offset = 0u, count = 0u;
+        if (pl_partition_plan_range(&plan, i, &offset, &count) != 0) return 1;
+        printf("  worker-%" PRIu64 ": offset=%" PRIu64 " count=%" PRIu64 "\n",
+               i, offset, count);
+    }
+    puts("Planning only: no threads are spawned and CPU affinity is unchanged.");
+    return 0;
+}
+
 static void print_trimatrix(unsigned depth) {
     pl_tma_plan plan;
     pl_tma_step step;
@@ -173,6 +246,8 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
+    int division_mode=0,partition_mode=0,partition_auto=0; int64_t dividend=0,divisor=0;
+    uint64_t partition_items=0u,partition_workers=0u,partition_grain=1u;
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
@@ -180,7 +255,25 @@ int main(int argc,char **argv) {
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
     for(int i=1;i<argc;i++) {
-        if(!strcmp(argv[i],"--profile")) profile=1;
+        if(!strcmp(argv[i],"--divide")&&i+2<argc) {
+            if(parse_i64(argv[++i],&dividend)!=0||parse_i64(argv[++i],&divisor)!=0) return 2;
+            division_mode=1;
+        }
+        else if(!strcmp(argv[i],"--partition")&&i+2<argc) {
+            if(parse_u64(argv[++i],&partition_items)!=0||parse_u64(argv[++i],&partition_workers)!=0) return 2;
+            partition_mode=1; partition_auto=0; partition_grain=1u;
+            if(i+1<argc && argv[i+1][0]!='-') {
+                if(parse_u64(argv[++i],&partition_grain)!=0) return 2;
+            }
+        }
+        else if(!strcmp(argv[i],"--partition-auto")&&i+1<argc) {
+            if(parse_u64(argv[++i],&partition_items)!=0) return 2;
+            partition_mode=1; partition_auto=1; partition_grain=256u;
+            if(i+1<argc && argv[i+1][0]!='-') {
+                if(parse_u64(argv[++i],&partition_grain)!=0) return 2;
+            }
+        }
+        else if(!strcmp(argv[i],"--profile")) profile=1;
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
@@ -220,6 +313,23 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--gain")&&i+1<argc){if(parse_double(argv[++i],&gain))return 2;use_gain=1;}
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
+    }
+    if (division_mode && partition_mode) {
+        fputs("Choose either --divide or a partition command, not both.\n", stderr);
+        return 2;
+    }
+    if (division_mode) return print_division(dividend, divisor);
+    if (partition_mode) {
+        uint64_t available = partition_workers;
+        if (partition_auto) {
+            pl_cpu_info cpu;
+            if (pl_cpu_profile(&cpu) != 0) {
+                fputs("Could not determine available logical processors.\n", stderr);
+                return 1;
+            }
+            available = cpu.logical_cpus;
+        }
+        return print_partition(partition_items, available, partition_grain);
     }
     if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }

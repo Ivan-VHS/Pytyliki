@@ -26,6 +26,7 @@ It is built for developers and engineers who want useful local measurements, ins
 | **Source review** | Scan supported source files without executing or rewriting them; export JSON reports |
 | **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
 | **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
+| **Division and workload planner** | Check Euclidean quotient/remainder, apportion integer totals, and produce bounded balanced work partitions |
 | **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
 | **Verification** | Build with CMake and run CTest on Windows and Linux |
 
@@ -74,6 +75,15 @@ On Windows, the build also produces **`pytyliki-gui.exe`**.
 # Inspect the improvement catalogue
 ./build/pytyliki --improvement-plan
 
+# Checked Euclidean division: -17 = (-4 × 5) + 3
+./build/pytyliki --divide -17 5
+
+# Balanced, bounded work partition plan (planning only)
+./build/pytyliki --partition 10000 8 256
+
+# Recommend partitions from the detected logical-processor count
+./build/pytyliki --partition-auto 10000 256
+
 # Generate a local 48 kHz PCM16 WAV test tone
 ./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
 
@@ -121,6 +131,7 @@ Pytyliki follows explicit local-operation boundaries:
 
 ## Documentation
 
+- [Division and partitioning engine](docs/DIVISION_ENGINE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [APSIA 2.0 routing design](docs/APSIA_2.0.md)
 - [Hardware rule engine](docs/HARDWARE_RULE_ENGINE.md)
