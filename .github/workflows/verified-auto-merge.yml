@@ -1,4 +1,4 @@
-name: Verified CI Auto-Merge
+name: Verified PR Auto-Merge
 
 on:
   pull_request:
@@ -38,7 +38,7 @@ jobs:
         run: ctest --test-dir build -C Release --output-on-failure
 
   auto-merge:
-    name: Enable verified auto-merge
+    name: Auto-merge approved PR
     needs: validate
     if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
