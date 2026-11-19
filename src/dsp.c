@@ -20,3 +20,30 @@ int pl_audio_apply_lowpass(pl_audio_buffer*a,double cutoff){if(!audio_valid(a)||
 int pl_audio_apply_compressor(pl_audio_buffer*a,double db,double ratio){if(!audio_valid(a)||!isfinite(db)||!isfinite(ratio)||db< -60.0||db>0.0||ratio<1.0||ratio>20.0)return -1;double threshold=pow(10.0,db/20.0);size_t n=a->frames*a->channels;for(size_t i=0;i<n;i++){double x=a->samples[i],ax=fabs(x);if(ax>threshold){double compressed=threshold*pow(ax/threshold,1.0/ratio);a->samples[i]=(float)copysign(compressed,x);}}return 0;}
 int pl_audio_apply_saturation(pl_audio_buffer*a,double drive){if(!audio_valid(a)||!isfinite(drive)||drive<0.1||drive>12.0)return -1;double norm=tanh(drive);size_t n=a->frames*a->channels;for(size_t i=0;i<n;i++)a->samples[i]=(float)(tanh((double)a->samples[i]*drive)/norm);return 0;}
 int pl_audio_measure(const pl_audio_buffer*a,pl_audio_stats*s){if(!audio_valid(a)||!s)return -1;memset(s,0,sizeof(*s));size_t n=a->frames*a->channels;double sum=0.0,squares=0.0;for(size_t i=0;i<n;i++){double x=a->samples[i],ax=fabs(x);if(ax>s->peak)s->peak=ax;if(ax>=1.0)s->clipped_samples++;sum+=x;squares+=x*x;}s->dc=sum/(double)n;s->rms=sqrt(squares/(double)n);s->crest_db=s->rms>0.0?20.0*log10(s->peak/s->rms):0.0;return 0;}
+
+int pl_audio_measure_channels(const pl_audio_buffer *a, pl_audio_stats *stats,
+                              size_t stats_capacity) {
+    if (!audio_valid(a) || stats == NULL || stats_capacity < a->channels) return -1;
+
+    for (unsigned channel = 0u; channel < a->channels; ++channel) {
+        pl_audio_stats current = {0};
+        double sum = 0.0;
+        double squares = 0.0;
+
+        for (size_t frame = 0u; frame < a->frames; ++frame) {
+            double sample = (double)a->samples[frame * a->channels + channel];
+            double magnitude = fabs(sample);
+            if (magnitude > current.peak) current.peak = magnitude;
+            if (magnitude >= 1.0) ++current.clipped_samples;
+            sum += sample;
+            squares += sample * sample;
+        }
+
+        current.dc = sum / (double)a->frames;
+        current.rms = sqrt(squares / (double)a->frames);
+        current.crest_db = current.rms > 0.0
+            ? 20.0 * log10(current.peak / current.rms) : 0.0;
+        stats[channel] = current;
+    }
+    return 0;
+}
