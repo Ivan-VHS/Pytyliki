@@ -14,7 +14,7 @@ int main(void) {
 
     assert(pl_concat_buffer_init(NULL, 8u) != 0);
     assert(pl_concat_buffer_init(&text, 0u) != 0);
-    assert(pl_concat_buffer_init(&text, 16u) == 0);
+    assert(pl_concat_buffer_init(&text, 15u) == 0);
     assert(pl_concat_buffer_append_text(&text, "Harlem") == 0);
     assert(pl_concat_buffer_append_text(&text, " ") == 0);
     assert(pl_concat_buffer_append_format(&text, "%s-%d", "metal", 42) == 0);
