@@ -11,6 +11,7 @@
 #include "berry_core.h"
 #include "ironclad_systems.h"
 #include "trimatrix_autoforge.h"
+#include "impact.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -21,7 +22,7 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite] [--e2k-profile]\n"
-         "           [--systems] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--systems] [--impact-profiles] [--impact-profile ID] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -103,6 +104,33 @@ static void print_system_enhancements(void) {
     puts("These are acceptance contracts and roadmap tracks, not claims of completed features.");
 }
 
+static void print_impact_profiles(void) {
+    const pl_impact_profile *items = NULL;
+    size_t count = pl_impact_catalog(&items);
+    puts("Impact profile lexicon (20 semantic profiles):");
+    puts("ID | sound | scale | motion | acoustic scale kinetic reach impulse");
+    for (size_t i = 0u; i < count; ++i) {
+        const pl_impact_profile *p = &items[i];
+        printf("%02u | %s | %s | %s | %u %u %u %u %u\\n",
+               p->id, p->sound, p->scale_word, p->motion_word,
+               p->acoustic_rank, p->scale_rank, p->kinetic_rank,
+               p->reach_rank, p->impulse_rank);
+    }
+    puts("Ranks are ordinal lexical weights (1..5), not physical measurements.");
+}
+static int print_impact_profile(unsigned id) {
+    const pl_impact_profile *p = NULL;
+    if (pl_impact_find(id, &p) != 0) {
+        fprintf(stderr, "Unknown impact profile ID: %u (valid range: 1..20)\\n", id);
+        return 2;
+    }
+    printf("%02u | %s | %s | %s\\n", p->id, p->sound, p->scale_word, p->motion_word);
+    printf("acoustic=%u scale=%u kinetic=%u reach=%u impulse=%u (ordinal 1..5)\\n",
+           p->acoustic_rank, p->scale_rank, p->kinetic_rank,
+           p->reach_rank, p->impulse_rank);
+    return 0;
+}
+
 static void print_syntax_pie(void) {
     const pl_syntax_pie_layer *items = NULL;
     size_t count = pl_syntax_pie_catalog(&items);
@@ -173,7 +201,7 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,impact_profiles=0;\n    unsigned impact_profile_id=0u; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
@@ -182,7 +210,7 @@ int main(int argc,char **argv) {
     for(int i=1;i<argc;i++) {
         if(!strcmp(argv[i],"--profile")) profile=1;
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
-        else if(!strcmp(argv[i],"--systems")) systems=1;
+        else if(!strcmp(argv[i],"--systems")) systems=1;\n        else if(!strcmp(argv[i],"--impact-profiles")) impact_profiles=1;\n        else if(!strcmp(argv[i],"--impact-profile")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_IMPACT_PROFILE_COUNT)return 2;impact_profile_id=(unsigned)n;}
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
@@ -224,7 +252,7 @@ int main(int argc,char **argv) {
     if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
-    if(systems) print_system_enhancements();
+    if(systems) print_system_enhancements();\n    if(impact_profiles) print_impact_profiles();\n    if(impact_profile_id && print_impact_profile(impact_profile_id)!=0) return 2;
     if(improvement_plan) print_improvement_plan();
     if(trimatrix) print_trimatrix(trimatrix_depth);
     if(syntax_pie) print_syntax_pie();
@@ -250,8 +278,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if((systems || improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile){profile=1;bench=1;}
+    if((systems || improvement_plan || syntax_pie || trimatrix || e2k_profile || impact_profiles || impact_profile_id) && (argc==2 || (trimatrix && argc<=3) || (impact_profile_id && argc==3))) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile&&!impact_profiles&&!impact_profile_id){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
