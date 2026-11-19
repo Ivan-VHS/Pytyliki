@@ -95,7 +95,11 @@ if(BUILD_TESTING)
   add_test(NAME e2k-profile-cli-smoke COMMAND pytyliki --e2k-profile)
   set_tests_properties(e2k-profile-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "AETHER-ANAS native backend: not implemented")
 
-  add_executable(pytyliki-concat-tests tests/test_concat.c)\n  target_link_libraries(pytyliki-concat-tests PRIVATE pytyliki_core)\n  add_test(NAME concatenation-tests COMMAND pytyliki-concat-tests)\n\n  add_executable(pytyliki-trimatrix-tests tests/test_trimatrix_autoforge.c)
+  add_executable(pytyliki-concat-tests tests/test_concat.c)
+  target_link_libraries(pytyliki-concat-tests PRIVATE pytyliki_core)
+  add_test(NAME concatenation-tests COMMAND pytyliki-concat-tests)
+
+  add_executable(pytyliki-trimatrix-tests tests/test_trimatrix_autoforge.c)
   target_link_libraries(pytyliki-trimatrix-tests PRIVATE pytyliki_core)
   add_test(NAME trimatrix-autoforge-tests COMMAND pytyliki-trimatrix-tests)
   add_test(NAME trimatrix-cli-smoke COMMAND pytyliki --trimatrix 1)
