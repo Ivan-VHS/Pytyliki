@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c)
+add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/division.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
