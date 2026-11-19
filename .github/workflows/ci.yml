@@ -1,17 +1,31 @@
 name: C11 CI
 on:
   push:
-    branches: [main, "feat/**", "integration/**"]
+    branches: [main, "feat/**", "integration/**", "chore/**"]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c11-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Validate engineering contract
+        shell: bash
+        run: |
+          test -s docs/ENGINEERING_STANDARD.md
+          test -s .github/pull_request_template.md
       - name: Configure
         run: cmake -S . -B build -DBUILD_TESTING=ON
       - name: Build
@@ -23,6 +37,7 @@ jobs:
 
   sanitizer-linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Configure with ASan and UBSan
