@@ -212,7 +212,8 @@ int main(int argc,char **argv) {
         if(!strcmp(argv[i],"--profile")) profile=1;
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
-        else if(!strcmp(argv[i],"--impact-profiles")) impact_profiles=1;\n        else if(!strcmp(argv[i],"--impact-profile")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_IMPACT_PROFILE_COUNT)return 2;impact_profile_id=(unsigned)n;}
+        else if(!strcmp(argv[i],"--impact-profiles")) impact_profiles=1;
+        else if(!strcmp(argv[i],"--impact-profile")&&i+1<argc){char *end=NULL;unsigned long n=strtoul(argv[++i],&end,10);if(!end||*end||n<1u||n>PL_IMPACT_PROFILE_COUNT)return 2;impact_profile_id=(unsigned)n;}
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
