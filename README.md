@@ -102,6 +102,13 @@ The GitHub Actions matrix builds and tests on Ubuntu and Windows. Linux sanitize
 - [Processor taxonomy](docs/PROCESSOR_TAXONOMY.md)
 - [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
 
+
+- [AETHER-ANAS engineering profile](docs/AETHER_ANAS_INTEGRATION.md)
+- [Architecture 66 contract](docs/ARCHITECTURE_66.md)
+- [666-rule conformance profile](docs/CONSTITUTION_666_PROFILE.md)
+- [100-proverb engineering crosswalk](docs/CHINESE_PROVERBS_100_ENGINEERING_CROSSWALK.md)
+- [MCST Elbrus E2K target profile](docs/ELBRUS_E2K.md)
+
 ## License
 
 Released under the [MIT License](LICENSE).
