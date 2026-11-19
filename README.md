@@ -119,6 +119,10 @@ Pytyliki follows explicit local-operation boundaries:
 | Build and tests | CMake + CTest |
 | Not claimed | macOS support, guaranteed ARM64/x86_64 performance, production RTL/FPGA synthesis or an autonomous source transformer |
 
+## Resilience policy engine
+
+Pytyliki includes a deterministic circuit-breaker evaluator for caller-supplied telemetry. It reports CLOSED, DEGRADED, OPEN, and HALF_OPEN recommendations, including cache fallback, optional-work shedding, and bounded recovery probes. It is a policy planner, not a live monitor or traffic-control agent. See the resilience engine contract in docs/RESILIENCE_ENGINE.md or run pytyliki --resilience 30 60 55 40.
+
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
