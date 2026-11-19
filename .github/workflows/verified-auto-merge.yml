@@ -154,7 +154,7 @@ jobs:
           exit 1
 
   enable-auto-merge:
-    needs: [review-gate, validate, sanitizer]
+    needs: [review-gate, validate, sanitizer, wait-for-ci]
     if: needs.review-gate.outputs.approved == 'true'
     runs-on: ubuntu-latest
     permissions:
