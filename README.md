@@ -128,6 +128,7 @@ Pytyliki follows explicit local-operation boundaries:
 - [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
 - [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
 - [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
+- [HMGA v3.0 bounded operator matrix](docs/HMGA_V3.md)
 
 ## License
 
