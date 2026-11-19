@@ -1,5 +1,7 @@
 # Pytyliki 0.7.1 — Repository Quality Audit
 
+> Historical snapshot dated 2026-11-16, limited to the PR #1–#15 audit batch. It does not describe the later open integration queue (#23–#32) or its current review state.
+
 **Audit scope:** the complete pull-request history available on 2026-11-16, the consolidated main implementation, CMake/CTest wiring, CI workflow definitions, core C11 modules, Win32 GUI, CLI, DSP path and improvement/evolution APIs.
 
 This is a repository engineering review supported by source inspection and GitHub Actions evidence. It is not a formal security certification, silicon validation, fuzzing campaign or independent third-party code review.

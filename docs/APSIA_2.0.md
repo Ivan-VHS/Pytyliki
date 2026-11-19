@@ -140,6 +140,6 @@ pytyliki-apsia gpu 2.0 0.1 0.0 --gpu
 pytyliki-apsia plugin 1.0 0.0 0.0
 ```
 
-Arguments are workload, expected speedup, FFI overhead fraction and the fraction of the optimization opportunity achievable in the host language. Optional flags declare GPU availability, deterministic output, sandbox requirements and requested capabilities. Routing never grants capabilities; the decision reports zero granted capabilities and requires human review.
+Arguments are workload, expected speedup, FFI overhead fraction and the fraction of the optimization opportunity achievable in the host language. Untrusted-plugin workloads require the explicit `--wasm` sandbox declaration. Optional flags declare GPU availability, deterministic output, sandbox requirements and requested capabilities. Routing never grants capabilities; the decision reports zero granted capabilities and requires human review.
 
 The `apsia/evolution-lock.schema.json` schema defines evidence metadata for future immutable module artifacts. Parsing the schema does not validate an artifact signature or authorize module execution.
