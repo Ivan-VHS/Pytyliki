@@ -25,7 +25,7 @@ This document records how the open Pytyliki work was reconciled against the curr
 
 The current main tree already contains the processor-native DSP foundation, Forge66, CPU Suite Pro, TriMatrix AutoForge, the 20-system registry, their associated tests/docs, the Anatidae engineering profile, four localized READMEs, and three SVG visual assets. Replaying the stale snapshots of PRs #25, #26, #27, #29, #30, #35, #36 or #37 wholesale would overwrite newer integrated code or duplicate existing features. Those changes are therefore treated as already represented, not re-imported.
 
-PR #34 targets an older integration branch rather than current main; its policy material is already represented by the current architecture/constitution documents. Its stale branch is not used as a new source tree.
+Historical PR #34 (the separate 666-rule architecture proposal) targets an older integration branch. Its relevant documents, the optional E2K toolchain profile and the two static contract-check scripts are already present in the current main snapshot and are preserved here; its older CLI/processor/test snapshots were not replayed over the newer mainline.
 
 ## Visual documentation
 
