@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   validate:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.draft == false && github.event.pull_request.base.ref == 'main')
     name: Validate (${{ matrix.os }})
     strategy:
       fail-fast: true
@@ -28,7 +28,7 @@ jobs:
       contents: read
     timeout-minutes: 20
     steps:
-      - name: Checkout pull request
+      - name: Checkout pull request merge result
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -42,23 +42,29 @@ jobs:
   auto-merge:
     name: Auto-merge approved PR
     needs: validate
-    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false
+    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
+    timeout-minutes: 5
     steps:
-      - name: Require independent approval
+      - name: Require stable base/head and independent approval
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           set -euo pipefail
-          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
-          if [ "${current_head}" != "${PR_HEAD_SHA}" ]; then
-            echo "Auto-merge blocked: PR head changed while this validation run was executing."
+          current_pr="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+          current_head="$(printf '%s' "${current_pr}" | jq -r '.head.sha')"
+          current_base="$(printf '%s' "${current_pr}" | jq -r '.base.sha')"
+          current_base_ref="$(printf '%s' "${current_pr}" | jq -r '.base.ref')"
+          if [ "${current_head}" != "${PR_HEAD_SHA}" ] || [ "${current_base}" != "${PR_BASE_SHA}" ] || [ "${current_base_ref}" != "main" ] || [ "${PR_BASE_REF}" != "main" ]; then
+            echo "Auto-merge blocked: PR head/base changed or the target is not main."
             exit 1
           fi
           reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
@@ -71,7 +77,7 @@ jobs:
             | length
           ')"
           if ! [[ "${approvals}" =~ ^[0-9]+$ ]] || [ "${approvals}" -lt 1 ]; then
-            echo "Auto-merge blocked: an approval from someone other than the PR author is required."
+            echo "Auto-merge blocked: an approval from someone other than the PR author is required for this exact head."
             exit 1
           fi
       - name: Enable GitHub native auto-merge
