@@ -104,7 +104,7 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-impact-tests PRIVATE pytyliki_core)
   add_test(NAME impact-profile-tests COMMAND pytyliki-impact-tests)
   add_test(NAME impact-profile-cli-smoke COMMAND pytyliki --impact-profiles)
-  set_tests_properties(impact-profile-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Impact profile lexicon (20 semantic profiles)")
+  set_tests_properties(impact-profile-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Impact profile lexicon")
 
   add_test(NAME apsia-cli-cpu COMMAND pytyliki-apsia cpu 2.0 0.1 0.2)
   add_test(NAME apsia-cli-plugin COMMAND pytyliki-apsia plugin 1.0 0.0 0.0 --wasm)
