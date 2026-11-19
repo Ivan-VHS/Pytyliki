@@ -102,6 +102,13 @@ GitHub Actions собирает и тестирует проект на Ubuntu �
 - [Таксономия процессоров](docs/PROCESSOR_TAXONOMY.md)
 - [Политика проверки платформ](docs/PLATFORM_VALIDATION_POLICY.md)
 
+
+- [Инженерный профиль AETHER-ANAS](docs/AETHER_ANAS_INTEGRATION.md)
+- [Контракт Architecture 66](docs/ARCHITECTURE_66.md)
+- [Профиль соответствия 666 правилам](docs/CONSTITUTION_666_PROFILE.md)
+- [Инженерная сверка 100 китайских пословиц](docs/CHINESE_PROVERBS_100_ENGINEERING_CROSSWALK.md)
+- [Профиль цели MCST Elbrus E2K](docs/ELBRUS_E2K.md)
+
 ## Лицензия
 
 Проект распространяется по [лицензии MIT](LICENSE).
