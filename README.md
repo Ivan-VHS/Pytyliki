@@ -1,56 +1,25 @@
 # Pytyliki — Processor Systems Workstation
 
-<p align="center">
-  <a href="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml"><img alt="Windows and Linux CI" src="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="ISO C11" src="https://img.shields.io/badge/C-ISO%20C11-2563EB?style=flat-square">
-  <img alt="Windows and Linux" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-DC2626?style=flat-square">
-  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-111827?style=flat-square">
-</p>
+[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
-<p align="center"><strong>DISCOVER · ANALYZE · PROCESS · VERIFY</strong></p>
+**A modular C11 workstation for local processor inspection, bounded benchmarks, source diagnostics and PCM16 audio/DSP.** The project includes a native Win32 desktop interface and a CLI.
 
-<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — processor diagnostics, source analysis and local DSP workstation" width="100%"></p>
+## Current capabilities
 
-**A practical C11 workstation for understanding a machine and inspecting local workloads.** Pytyliki combines read-only processor discovery, bounded benchmarks, source-code diagnostics, PCM16 WAV/DSP tools and a native Windows desktop interface in one modular project.
+- **Processor inventory:** CPU identity, logical processors, memory and usable ISA capabilities, including OS vector-state checks.
+- **Benchmarks:** bounded processor, memory and matrix workloads for local comparison; results depend on hardware, compiler and OS.
+- **Source diagnostics:** inspect supported source files without executing or rewriting them; export JSON reports.
+- **Audio/DSP:** PCM16 WAV import/export, tone generation, low-pass filtering, compression, saturation, gain and level metering.
+- **Planning catalogues:** Syntax-pie, improvement matrix, HyperFusion and APSIA routing plans. These are advisory models, not autonomous optimizers or compilers.
+- **Desktop:** native Windows GUI for processor scans, source review and audio controls.
 
-It is built for developers and engineers who want useful local measurements, inspectable reports and explicit safety boundaries — not a black box that silently changes hardware.
+## Screenshots
 
-**Read this in:** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md)
+No verified capture from a running application is currently checked into this repository. The previous illustrative UI mockup is intentionally not presented as a real screenshot. Add captures from the built Win32 application here when available.
 
-## The workstation at a glance
+## Build and test
 
-| Workbench | What you can do |
-|---|---|
-| **Processor lab** | Inspect CPU identity, logical processors, memory and usable ISA capabilities |
-| **Benchmark suite** | Run bounded processor, memory and matrix workloads for local comparison |
-| **Source review** | Scan supported source files without executing or rewriting them; export JSON reports |
-| **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
-| **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
-| **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
-| **Verification** | Build with CMake and run CTest on Windows and Linux |
-
-## See the interface
-
-<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative preview of the current Pytyliki Win32 workstation layout" width="100%"></p>
-
-<sub>Illustrative interface preview reconstructed from the checked-in Win32 controls and labels; it is not a screenshot captured from a live Windows session.</sub>
-
-The desktop application exposes CPU capability scans, processor suites, source review, PCM WAV import/export, tone generation, low-pass filtering, compression, saturation, gain, metering and JSON report export.
-
-## How the pieces fit
-
-<p align="center"><img src="assets/pytyliki-architecture.svg" alt="Pytyliki architecture: inspect, analyze, process, verify" width="100%"></p>
-
-## Quick start
-
-### Requirements
-
-- Windows or Linux
-- CMake 3.16 or newer
-- A C11-capable compiler
-- Git
-
-### Build and test
+Requirements: CMake 3.16+, a C11 compiler, Git, Windows or Linux.
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -60,75 +29,34 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-On Windows, the build also produces **`pytyliki-gui.exe`**.
-
-### Useful commands
+Windows builds also produce `pytyliki-gui.exe`. Example CLI commands:
 
 ```bash
-# Read-only processor profile
 ./build/pytyliki --profile
-
-# Bounded integer, memory and matrix suite
 ./build/pytyliki --suite
-
-# Inspect the improvement catalogue
 ./build/pytyliki --improvement-plan
-
-# Generate a local 48 kHz PCM16 WAV test tone
 ./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
-
-# Write a machine-readable local report
 ./build/pytyliki --json report.json
 ```
 
-Use the platform-specific executable path on Windows (for example, `build/Release/pytyliki.exe`).
+Use `build/Release/pytyliki.exe` on a typical Windows multi-config build.
 
-## Engineering capabilities
+## Architecture and safety
 
-- **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
-- **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
-- **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
-- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
-- **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
-- **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
-- **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
-- **APSIA 2.0:** a language-routing planner with target-availability and FFI-cost gates. It proposes routes; it does not compile or execute the selected language module.
-- **Hardware rules:** 12 implemented advisory rules; other catalogue identifiers are reserved. Findings are prompts for engineering review, not hardware certification.
-- **Reference pipeline:** a C11/C23 planning model, not a production transpiler.
+The project is implemented in ISO C11 and built with CMake/CTest. GitHub Actions validates Windows and Linux builds; a Linux sanitizer job runs AddressSanitizer and UndefinedBehaviorSanitizer.
 
-## CI, quality and safety
-
-The GitHub Actions workflow builds and tests on **Ubuntu and Windows**. A separate Linux job runs the test suite with AddressSanitizer and UndefinedBehaviorSanitizer. CMake/CTest results are the source of truth for a given commit.
-
-Pytyliki follows explicit local-operation boundaries:
-
-- Processor discovery is read-only. No firmware, BIOS/UEFI, microcode, clock, voltage, power-limit, kernel, driver or device-register writes are performed.
-- Source review does not execute or rewrite scanned files.
-- Benchmarks are bounded and depend on hardware, operating system, compiler and workload; no speedup is promised.
-- Advisory scores and planning catalogues are not hardware certification or proof of autonomous optimization.
-- Local audio processing operates on bounded PCM16 WAV buffers.
-
-## Compatibility
-
-| Item | Current scope |
-|---|---|
-| Implementation | ISO C11 |
-| Validated CI platforms | Windows and Linux |
-| Desktop interface | Native Win32 GUI on Windows |
-| Data formats | JSON reports; PCM16 WAV audio |
-| Build and tests | CMake + CTest |
-| Not claimed | macOS support, guaranteed ARM64/x86_64 performance, production RTL/FPGA synthesis or an autonomous source transformer |
+Processor discovery is read-only. The application does not write firmware, BIOS/UEFI, microcode, clocks, voltages, power limits, kernel settings, drivers or device registers. Source review does not execute scanned files. Benchmark scores are not certification or guaranteed speedups. Advisory catalogues and readiness values are planning aids, not proof of optimization.
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
-- [APSIA 2.0 routing design](docs/APSIA_2.0.md)
+- [APSIA routing](docs/APSIA_2.0.md)
 - [Hardware rule engine](docs/HARDWARE_RULE_ENGINE.md)
 - [Processor taxonomy](docs/PROCESSOR_TAXONOMY.md)
-- [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
-- [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
-- [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
+- [Platform validation](docs/PLATFORM_VALIDATION_POLICY.md)
 
 ## License
 
-Released under the [MIT License](LICENSE).
+[MIT](LICENSE).
+
+> 千里之行，始于足下。 — A journey of a thousand miles begins with a single step.
