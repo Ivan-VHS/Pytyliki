@@ -96,7 +96,7 @@ static void print_system_enhancements(void) {
     size_t count = pl_system_enhancements(&items);
     puts("Twenty-system engineering contract catalogue:");
     for (size_t i = 0u; i < count; ++i) {
-        printf("%02u | %-22s | %-14s | %s\\n",
+        printf("%02u | %-22s | %-14s | %s\n",
                items[i].id, items[i].name,
                pl_system_domain_name(items[i].domain), items[i].objective);
     }
