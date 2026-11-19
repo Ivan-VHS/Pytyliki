@@ -1,9 +1,9 @@
 #define _POSIX_C_SOURCE 200809L
 #include "processor.h"
+#include "clock.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif
@@ -13,13 +13,6 @@
 #elif defined(__x86_64__) || defined(__i386__)
 #include <cpuid.h>
 #endif
-static double processor_now_ms(void){
-#if defined(_WIN32)
- LARGE_INTEGER f,t;if(!QueryPerformanceFrequency(&f)||!QueryPerformanceCounter(&t))return 0.0;return 1000.0*(double)t.QuadPart/(double)f.QuadPart;
-#else
- struct timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t)!=0)return 0.0;return 1000.0*(double)t.tv_sec+(double)t.tv_nsec/1000000.0;
-#endif
-}
 int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,sizeof(*out));if(pl_cpu_profile(&out->base)!=0)return -1;
 #if defined(_WIN32)
  MEMORYSTATUSEX m;memset(&m,0,sizeof(m));m.dwLength=sizeof(m);if(GlobalMemoryStatusEx(&m)){out->physical_memory_mib=(uint64_t)(m.ullTotalPhys/(1024u*1024u));out->available_memory_mib=(uint64_t)(m.ullAvailPhys/(1024u*1024u));}
@@ -97,4 +90,4 @@ int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,
  }
 #endif
  return 0;}
-int pl_processor_benchmark_suite(uint64_t iterations,unsigned memory_mib,unsigned passes,pl_suite_result*out){if(!out||iterations==0||iterations>UINT64_C(100000000)||memory_mib==0||memory_mib>64||passes==0||passes>32)return -1;memset(out,0,sizeof(*out));out->iterations=iterations;out->memory_mib=memory_mib;out->passes=passes;volatile uint64_t state=UINT64_C(0x9e3779b97f4a7c15);double start=processor_now_ms();for(uint64_t i=0;i<iterations;i++){state^=state>>12;state^=state<<25;state^=state>>27;state*=UINT64_C(2685821657736338717);}out->integer_ms=processor_now_ms()-start;out->checksum=(uint64_t)state;size_t bytes=(size_t)memory_mib*1024u*1024u;unsigned char*memory=(unsigned char*)malloc(bytes);if(!memory)return -2;for(size_t i=0;i<bytes;i++)memory[i]=(unsigned char)((i*131u+17u)&0xffu);uint64_t sum=0;start=processor_now_ms();for(unsigned p=0;p<passes;p++)for(size_t i=0;i<bytes;i+=64u){memory[i]=(unsigned char)(memory[i]+(unsigned char)(p+1u));sum+=memory[i];}out->memory_ms=processor_now_ms()-start;out->checksum^=sum;free(memory);volatile double matrix[24][24];start=processor_now_ms();for(unsigned r=0;r<24;r++)for(unsigned c=0;c<24;c++)matrix[r][c]=(double)(r+1u)/(double)(c+1u);double msum=0.0;for(unsigned k=0;k<32;k++)for(unsigned r=0;r<24;r++)for(unsigned c=0;c<24;c++)matrix[r][c]=matrix[r][c]*0.999+(double)((r+c+k)%7u)*0.0001;for(unsigned r=0;r<24;r++)for(unsigned c=0;c<24;c++)msum+=matrix[r][c];out->matrix_ms=processor_now_ms()-start;out->checksum^=(uint64_t)(msum*1000000.0);out->integrity_ok=(out->checksum!=0&&msum>0.0);return 0;}
+int pl_processor_benchmark_suite(uint64_t iterations,unsigned memory_mib,unsigned passes,pl_suite_result*out){if(!out||iterations==0||iterations>UINT64_C(100000000)||memory_mib==0||memory_mib>64||passes==0||passes>32)return -1;memset(out,0,sizeof(*out));out->iterations=iterations;out->memory_mib=memory_mib;out->passes=passes;volatile uint64_t state=UINT64_C(0x9e3779b97f4a7c15);double start=pl_monotonic_now_ms();for(uint64_t i=0;i<iterations;i++){state^=state>>12;state^=state<<25;state^=state>>27;state*=UINT64_C(2685821657736338717);}out->integer_ms=pl_monotonic_now_ms()-start;out->checksum=(uint64_t)state;size_t bytes=(size_t)memory_mib*1024u*1024u;unsigned char*memory=(unsigned char*)malloc(bytes);if(!memory)return -2;for(size_t i=0;i<bytes;i++)memory[i]=(unsigned char)((i*131u+17u)&0xffu);uint64_t sum=0;start=pl_monotonic_now_ms();for(unsigned p=0;p<passes;p++)for(size_t i=0;i<bytes;i+=64u){memory[i]=(unsigned char)(memory[i]+(unsigned char)(p+1u));sum+=memory[i];}out->memory_ms=pl_monotonic_now_ms()-start;out->checksum^=sum;free(memory);volatile double matrix[24][24];start=pl_monotonic_now_ms();for(unsigned r=0;r<24;r++)for(unsigned c=0;c<24;c++)matrix[r][c]=(double)(r+1u)/(double)(c+1u);double msum=0.0;for(unsigned k=0;k<32;k++)for(unsigned r=0;r<24;r++)for(unsigned c=0;c<24;c++)matrix[r][c]=matrix[r][c]*0.999+(double)((r+c+k)%7u)*0.0001;for(unsigned r=0;r<24;r++)for(unsigned c=0;c<24;c++)msum+=matrix[r][c];out->matrix_ms=pl_monotonic_now_ms()-start;out->checksum^=(uint64_t)(msum*1000000.0);out->integrity_ok=(out->checksum!=0&&msum>0.0);return 0;}
