@@ -88,7 +88,7 @@ Use the platform-specific executable path on Windows (for example, `build/Releas
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
 - **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
-- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
+- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain, aggregate metering and independent peak/RMS/DC/crest/clipping metrics for each channel.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
 - **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
 - **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
