@@ -82,11 +82,11 @@ static int parse_resilience_state(const char *text, pl_resilience_state *state) 
 static int print_resilience_report(const pl_resilience_metrics *metrics) {
     pl_resilience_decision d;
     if(pl_resilience_evaluate(metrics,&d)!=0) {
-        fputs("Invalid resilience telemetry: percentages must be finite and within 0..100.\\n",stderr);
+        fputs("Invalid resilience telemetry: percentages must be finite and within 0..100.\n",stderr);
         return 2;
     }
-    printf("Breaker: %s\\nPrimary work: %s\\nServe stale cache: %s\\n"
-           "Shed optional work: %s\\nConcurrency budget: %u%%\\nProbe budget: %u\\nReason: %s\\n",
+    printf("Breaker: %s\nPrimary work: %s\nServe stale cache: %s\n"
+           "Shed optional work: %s\nConcurrency budget: %u%%\nProbe budget: %u\nReason: %s\n",
            pl_resilience_state_name(d.next_state),d.allow_primary_work?"allow":"deny",
            d.serve_stale_cache?"yes":"no",d.shed_optional_work?"yes":"no",
            d.max_concurrency_percent,d.probe_budget,d.reason);
