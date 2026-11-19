@@ -129,6 +129,21 @@ Pytyliki follows explicit local-operation boundaries:
 - [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
 - [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
 
+
+## Native desktop application
+
+Pytyliki already contains a native **Win32 workstation GUI**. The Windows x64 package includes:
+- `pytyliki-gui.exe` — desktop interface for processor inventory, source review and PCM16/DSP tools.
+- `pytyliki.exe` — command-line workstation.
+- `pytyliki-apsia.exe` — APSIA routing tool.
+
+- [Windows x64 Releases](https://github.com/Ivan-VHS/Pytyliki/releases)
+- [Desktop build workflow and CI artifacts](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
+- [Latest workflow runs](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml?query=branch%3Amain)
+
+A successful run uploads `Pytyliki-windows-x64.zip`; a `v*` tag publishes the same archive as a GitHub Release. The GUI is Windows-only; Linux CI continues to validate the portable C11 core and CLI.
+
+
 ## License
 
 Released under the [MIT License](LICENSE).

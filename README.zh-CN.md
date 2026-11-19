@@ -129,6 +129,21 @@ Pytyliki 遵循明确的本地操作边界：
 - [递归演进模型](docs/RECURSIVE_EVOLUTION.md)
 - [质量审计](docs/QUALITY_AUDIT_0.7.1.md)
 
+
+## 原生桌面应用
+
+项目已包含原生 **Win32 工作站 GUI**。Windows x64 软件包包含：
+- `pytyliki-gui.exe` — 处理器清单、源码检查和 PCM16/DSP 工具的桌面界面。
+- `pytyliki.exe` — 命令行工作站。
+- `pytyliki-apsia.exe` — APSIA 路由工具。
+
+- [Windows x64 Releases](https://github.com/Ivan-VHS/Pytyliki/releases)
+- [桌面构建工作流与 CI 工件](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
+- [最新构建运行](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml?query=branch%3Amain)
+
+成功运行会上传 `Pytyliki-windows-x64.zip`；`v*` 标签会发布 GitHub Release。GUI 仅支持 Windows；Linux CI 继续验证可移植的 C11 核心和 CLI。
+
+
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。

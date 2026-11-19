@@ -129,6 +129,21 @@ Pytyliki придерживается явных границ локальных
 - [Модель рекурсивной эволюции](docs/RECURSIVE_EVOLUTION.md)
 - [Аудит качества](docs/QUALITY_AUDIT_0.7.1.md)
 
+
+## Нативное desktop-приложение
+
+В проекте уже есть нативный **Win32 GUI**. Пакет Windows x64 включает:
+- `pytyliki-gui.exe` — настольный интерфейс для инвентаризации CPU, анализа исходников и инструментов PCM16/DSP.
+- `pytyliki.exe` — консольная рабочая станция.
+- `pytyliki-apsia.exe` — инструмент маршрутизации APSIA.
+
+- [Релизы Windows x64](https://github.com/Ivan-VHS/Pytyliki/releases)
+- [Сборка приложения и CI-артефакты](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
+- [Последние запуски сборки](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml?query=branch%3Amain)
+
+Успешная сборка публикует `Pytyliki-windows-x64.zip`; тег `v*` создаёт GitHub Release. GUI доступен только в Windows; Linux CI проверяет переносимое ядро C11 и CLI.
+
+
 ## Лицензия
 
 Проект распространяется по лицензии [MIT](LICENSE).
