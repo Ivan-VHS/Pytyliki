@@ -11,10 +11,10 @@ static pl_trace_record sample_record(
 ) {
     pl_trace_record record;
     memset(&record, 0, sizeof(record));
-    strcpy(record.metric_key, "cpu.package-power");
-    strcpy(record.unit, "watt");
-    strcpy(record.context_key, "profile:idle");
-    strcpy(record.source_sha256, source);
+    memcpy(record.metric_key, "cpu.package-power", sizeof("cpu.package-power"));
+    memcpy(record.unit, "watt", sizeof("watt"));
+    memcpy(record.context_key, "profile:idle", sizeof("profile:idle"));
+    memcpy(record.source_sha256, source, PL_TRACE_SHA256_BUFFER_SIZE);
     record.value = value;
     record.absolute_uncertainty = uncertainty;
     record.window_start_epoch = UINT64_C(1794000000);
@@ -66,10 +66,10 @@ int main(void) {
     assert(pl_trace_compare(&left, &right, &result) == 0);
 
     right.quality = PL_TRACE_OBSERVED;
-    strcpy(right.unit, "kilowatt");
+    memcpy(right.unit, "kilowatt", sizeof("kilowatt"));
     assert(pl_trace_compare(&left, &right, &result) == 0);
 
-    strcpy(right.unit, "watt");
+    memcpy(right.unit, "watt", sizeof("watt"));
     right.absolute_uncertainty = -1.0;
     assert(pl_trace_validate(&right) != 0);
     right.absolute_uncertainty = 1.0;
