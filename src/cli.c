@@ -112,7 +112,7 @@ static void print_systems_lab(void) {
     size_t count = pl_systems_lab_catalog(&items);
     puts("33-function blockchain and processor systems lab:");
     for (size_t i = 0u; i < count; ++i)
-        printf("%02u | %-36s | %-16s | %s\\n", items[i].id,
+        printf("%02u | %-36s | %-16s | %s\n", items[i].id,
                items[i].name, pl_systems_mode_name(items[i].mode), items[i].description);
     puts("Blockchain proofs use supplied cryptographic adapters; VM/CPU effects are local simulations or plans.");
     puts("No provider limits are bypassed; no physical clock, voltage, PMU, CAT, firmware or microcode registers are written.");
