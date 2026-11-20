@@ -190,3 +190,12 @@ Win32 界面新增 **EMBEDDED C** 按钮。Cortex-M4 和 RV32IMC 配置属于参
 ## 内存内核的额外优化
 
 固定块池现在按字节扫描位图：跳过已完全占用的字节，并在第一个未满字节中选择第一个空闲块，保持确定性的 first-fit 分配顺序。这样可以避免逐个检查已满的块，同时不改变分配次序。测试覆盖 16 个块的填满、耗尽时拒绝分配、释放后重新使用，以及占用计数的正确性。
+
+
+## 项目生态
+
+本仓库属于由三个独立项目组成的协作体系。Reaper 负责编程语言、运行时与工作流编排；OPlague 负责只读 Windows 设备清单和驱动程序包检查；Pytyliki 负责基于 C11 的处理器、内存与数值计算核心。 See the [3 × 3 项目协作矩阵](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) for the 3 × 3 cross-product, implemented interfaces, data directions and safety boundaries.
+
+- [Reaper — 语言与编排] (https://github.com/Ivan-VHS/Reaper/blob/main/README.zh-CN.md) · [integration contract](https://github.com/Ivan-VHS/Reaper/blob/main/docs/FEDERATED_INTEGRATION.md)
+- [OPlague — 设备与驱动检查] (https://github.com/Ivan-VHS/OPlague/blob/main/README.zh-CN.md) · [integration contract](https://github.com/Ivan-VHS/OPlague/blob/main/docs/FEDERATED_INTEGRATION.md)
+- [Pytyliki — C11 处理器核心] (https://github.com/Ivan-VHS/Pytyliki/blob/main/README.zh-CN.md) · [integration contract](https://github.com/Ivan-VHS/Pytyliki/blob/main/docs/FEDERATED_INTEGRATION.md)
