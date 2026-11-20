@@ -76,6 +76,9 @@ On Windows, the build also produces **`pytyliki-gui.exe`**.
 # Inspect the improvement catalogue
 ./build/pytyliki --improvement-plan
 
+# Inspect the 33-function blockchain and processor systems lab
+./build/pytyliki --systems-lab
+
 # Run the orthogonal metric demo
 ./build/pytyliki-metrics --demo
 
@@ -115,6 +118,8 @@ The probe only resolves candidate executable names on `PATH`; it never runs comp
 - **APSIA 2.0:** a language-routing planner with target-availability and FFI-cost gates. It proposes routes; it does not compile or execute the selected language module.
 - **Hardware rules:** 12 implemented advisory rules; other catalogue identifiers are reserved. Findings are prompts for engineering review, not hardware certification.
 - **Reference pipeline:** a C11/C23 planning model, not a production transpiler.
+
+- **Blockchain and processor systems lab:** 33 C APIs for Merkle proofs, EVM selector extraction, trace analysis, isolated fork simulation, SPSC queues, modular arithmetic and CPU optimization planning. ZK, chain relays, cryptographic verification and FPGA synthesis require explicit adapters; physical CPU/firmware controls remain read-only. See [the systems lab contract](docs/BLOCKCHAIN_CPU_SYSTEMS_LAB.md).
 
 ## CI, quality and safety
 
