@@ -23,6 +23,60 @@ int pl_compute_multiply(double left, double right, double *out) {
     return store_finite((long double)left * (long double)right, out);
 }
 
+int pl_compute_calculate(double left, double right, pl_compute_binary_op operation, double *out) {
+    if (!isfinite(left) || !isfinite(right) || out == NULL) return -1;
+    switch (operation) {
+        case PL_COMPUTE_ADD:
+            return store_finite((long double)left + (long double)right, out);
+        case PL_COMPUTE_SUBTRACT:
+            return store_finite((long double)left - (long double)right, out);
+        case PL_COMPUTE_MULTIPLY:
+            return pl_compute_multiply(left, right, out);
+        case PL_COMPUTE_DIVIDE:
+            if (right == 0.0) return -1;
+            return store_finite((long double)left / (long double)right, out);
+        case PL_COMPUTE_POWER:
+            return pl_compute_exponentiate(left, right, out);
+        default:
+            return -1;
+    }
+}
+
+int pl_compute_iterate(double seed, size_t steps, pl_compute_step_fn step,
+                       void *context, double *out, size_t capacity) {
+    if (!isfinite(seed) || step == NULL || out == NULL ||
+        steps >= PL_COMPUTE_MAX_ITEMS || steps == SIZE_MAX) return -1;
+    size_t required = steps + 1u;
+    if (required > capacity) return -1;
+    out[0] = seed;
+    for (size_t i = 0u; i < steps; ++i) {
+        double next = 0.0;
+        if (step(out[i], i, context, &next) != 0 || !isfinite(next)) return -1;
+        out[i + 1u] = next;
+    }
+    return 0;
+}
+
+int pl_compute_expand(const double *values, size_t count, size_t repetitions,
+                      double *out, size_t capacity, size_t *out_count) {
+    if (!valid_values(values, count) || out == NULL || out_count == NULL ||
+        (repetitions != 0u && count > SIZE_MAX / repetitions)) return -1;
+    size_t required = count * repetitions;
+    if (required > capacity || required > PL_COMPUTE_MAX_ITEMS) return -1;
+    for (size_t i = 0u; i < required; ++i) out[i] = values[i % count];
+    *out_count = required;
+    return 0;
+}
+
+int pl_compute_compound(const double *left, const double *right,
+                        size_t count, double *out) {
+    if (!valid_values(left, count) || !valid_values(right, count) || out == NULL) return -1;
+    for (size_t i = 0u; i < count; ++i) {
+        if (store_finite((long double)left[i] * (long double)right[i], &out[i]) != 0) return -1;
+    }
+    return 0;
+}
+
 int pl_compute_exponentiate(double base, double exponent, double *out) {
     if (!isfinite(base) || !isfinite(exponent) || out == NULL) return -1;
     if (base == 0.0 && exponent < 0.0) return -1;
