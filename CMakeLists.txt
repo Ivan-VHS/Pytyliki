@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/embedded.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -54,6 +54,12 @@ if(BUILD_TESTING)
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
   add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
+
+  add_executable(pytyliki-embedded-tests tests/test_embedded.c)
+  target_link_libraries(pytyliki-embedded-tests PRIVATE pytyliki_core)
+  add_test(NAME embedded-c-profile-and-inspection-tests COMMAND pytyliki-embedded-tests)
+  add_test(NAME embedded-c-catalog-cli-smoke COMMAND pytyliki --embedded-c)
+  set_tests_properties(embedded-c-catalog-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "arm-cortex-m0")
 
   add_executable(pytyliki-architecture-atlas-tests tests/test_architecture_atlas.c)
   target_link_libraries(pytyliki-architecture-atlas-tests PRIVATE pytyliki_core)
