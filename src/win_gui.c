@@ -275,7 +275,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
         rebuild_brushes();
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"THEME: LIGHT",ID_THEME);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
         add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
         add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
@@ -317,10 +317,11 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         if(item && item->CtlType==ODT_BUTTON) {
             UINT id=(UINT)item->CtlID;
             int selected=(item->itemState & ODS_SELECTED)!=0;
+            int hot=(item->itemState & ODS_HOTLIGHT)!=0;
             int danger=(id==ID_CLEAR), primary=primary_button(id);
-            COLORREF fill=danger?(selected?red_hover_color():red_color()):
-                primary?(selected?blue_hover_color():blue_color()):
-                (selected?(g_dark_mode?RGB(36,79,130):RGB(217,232,255)):input_color());
+            COLORREF fill=danger?((selected||hot)?red_hover_color():red_color()):
+                primary?((selected||hot)?blue_hover_color():blue_color()):
+                (selected||hot?(g_dark_mode?RGB(36,79,130):RGB(217,232,255)):input_color());
             COLORREF ink=button_ink(primary,danger);
             HBRUSH brush=CreateSolidBrush(fill);
             HPEN pen=CreatePen(PS_SOLID,1,danger?red_color():primary?blue_color():border_color());
