@@ -87,8 +87,8 @@ int pl_policy_authorize(pl_role role, pl_action action) {
 
 static int pl_bounded_text(const char *value, size_t maximum) {
     const char *end;
-    if (value == NULL || value[0] == '\\0') return 0;
-    end = (const char *)memchr(value, '\\0', maximum);
+    if (value == NULL || value[0] == '\0') return 0;
+    end = (const char *)memchr(value, '\0', maximum);
     return end != NULL;
 }
 
