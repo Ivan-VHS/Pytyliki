@@ -66,3 +66,24 @@ ctest --test-dir build -C Release --output-on-failure
 
 The \`embedded-c-core-tests\` target exercises profile lookup, memory budget
 boundaries, integer overflow rejection and simulated register permissions.
+
+
+## Public C ABI v1 bridge
+
+The existing `pytyliki_ffi` shared library also exports the native Embedded C
+catalogue and the same overflow-checked memory-budget calculation used by the
+CLI. Reaper and other explicit FFI consumers can call:
+
+- `pytyliki_v1_embedded_profile_count(uint64_t *out)`
+- `pytyliki_v1_embedded_profile_at(uint64_t index, pytyliki_embedded_profile_v1 *out)`
+- `pytyliki_v1_embedded_budget_evaluate(const char *profile_id, const pytyliki_embedded_sections_v1 *sections, pytyliki_embedded_budget_v1 *out)`
+
+The structs use fixed-width fields and fixed-size text arrays. They expose
+profile metadata, compiler flags, clock hints and FLASH/SRAM regions. Budget
+evaluation is host-side arithmetic; it never maps physical MMIO or writes a
+device register. Profile addresses are reference metadata and must be verified
+against the exact MCU and board.
+
+Consumers should compile against the installed `include/pytyliki/interop.h`.
+The ABI version remains 1; these functions are additive and do not change the
+existing vector API.
