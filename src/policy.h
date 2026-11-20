@@ -1,5 +1,6 @@
 #ifndef PYTYLIKI_POLICY_H
 #define PYTYLIKI_POLICY_H
+#include <stdint.h>
 
 typedef enum {
     PL_ROLE_VIEWER = 0,
