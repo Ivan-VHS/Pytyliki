@@ -78,9 +78,11 @@ int main(void) {
         PL_ROLE_ADMIN, PL_ACTION_ENABLE_TELEMETRY, &grant,
         "local-operator", "diagnostic-export", "summary-json", 1001,
         verifier_accepts, &signature_ok));
+    strcpy(grant.purpose, "telemetry-enable");
+    strcpy(grant.scope, "metrics");
     assert(pl_policy_authorize_with_consent(
         PL_ROLE_ADMIN, PL_ACTION_ENABLE_TELEMETRY, &grant,
-        "local-operator", "diagnostic-export", "summary-json", 1001,
+        "local-operator", "telemetry-enable", "metrics", 1001,
         verifier_accepts, &(int){1}));
 
     assert(strcmp(pl_policy_action_name(PL_ACTION_EXPORT_REPORT), "export-report") == 0);
