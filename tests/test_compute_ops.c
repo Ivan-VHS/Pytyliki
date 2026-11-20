@@ -4,10 +4,19 @@
 #include <float.h>
 #include <stdint.h>
 
+static int incremental_step(double current, size_t iteration, void *context, double *next) {
+    const double increment = context != 0 ? *(const double *)context : 1.0;
+    *next = current + increment * (double)(iteration + 1u);
+    return 0;
+}
+
 int main(void) {
     double scalar = 0.0;
     assert(pl_compute_multiply(6.0, 7.0, &scalar) == 0 && scalar == 42.0);
     assert(pl_compute_multiply(DBL_MAX, 2.0, &scalar) == -1);
+    assert(pl_compute_calculate(10.0, 5.0, PL_COMPUTE_ADD, &scalar) == 0 && scalar == 15.0);
+    assert(pl_compute_calculate(10.0, 5.0, PL_COMPUTE_DIVIDE, &scalar) == 0 && scalar == 2.0);
+    assert(pl_compute_calculate(10.0, 0.0, PL_COMPUTE_DIVIDE, &scalar) == -1);
     assert(pl_compute_exponentiate(2.0, 10.0, &scalar) == 0 && scalar == 1024.0);
     assert(pl_compute_exponentiate(0.0, -1.0, &scalar) == -1);
 
@@ -18,6 +27,14 @@ int main(void) {
     assert(pl_compute_accumulate(values, 3u, output) == 0);
     assert(output[0] == 1.0 && output[1] == 3.0 && output[2] == 6.0);
     assert(pl_compute_combine(values, values, 3u, output) == 0 && output[2] == 6.0);
+    assert(pl_compute_compound(values, values, 3u, output) == 0);
+    assert(output[0] == 1.0 && output[1] == 4.0 && output[2] == 9.0);
+    size_t expanded_count = 0u;
+    assert(pl_compute_expand(values, 3u, 2u, output, 16u, &expanded_count) == 0);
+    assert(expanded_count == 6u && output[0] == 1.0 && output[3] == 1.0);
+    const double increment = 1.0;
+    assert(pl_compute_iterate(2.0, 3u, incremental_step, (void *)&increment, output, 16u) == 0);
+    assert(output[0] == 2.0 && output[1] == 3.0 && output[2] == 5.0 && output[3] == 8.0);
 
     const double right[] = {4.0, 5.0};
     assert(pl_compute_outer_product(values, 3u, right, 2u, output, 16u) == 0);
