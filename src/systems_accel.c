@@ -734,19 +734,21 @@ int pl_tune_branch_predictor_hints(uint64_t taken_count, uint64_t not_taken_coun
 int pl_defragment_heap_and_slab_pools(void *slab, size_t slab_size,
                                       pl_slab_object *objects, size_t object_count,
                                       size_t *bytes_reclaimed) {
-    size_t order[PL_SYSTEMS_MAX_LAYOUT_FIELDS], cursor = 0u, live_bytes = 0u;
+    size_t order[PL_SYSTEMS_MAX_LAYOUT_FIELDS];
+    size_t destinations[PL_SYSTEMS_MAX_LAYOUT_FIELDS] = {0u};
+    size_t cursor = 0u;
     if (slab == NULL || slab_size == 0u || objects == NULL ||
-        bytes_reclaimed == NULL || object_count > PL_SYSTEMS_MAX_LAYOUT_FIELDS) return -1;
+        bytes_reclaimed == NULL || object_count == 0u ||
+        object_count > PL_SYSTEMS_MAX_LAYOUT_FIELDS) return -1;
     for (size_t i = 0u; i < object_count; ++i) {
         if (!is_power_of_two(objects[i].alignment) ||
             objects[i].alignment > PL_SYSTEMS_MAX_ARENA_ALIGNMENT ||
             objects[i].offset > slab_size || objects[i].size > slab_size - objects[i].offset)
             return -1;
+        if (objects[i].live &&
+            (objects[i].size == 0u || objects[i].offset % objects[i].alignment != 0u))
+            return -1;
         order[i] = i;
-        if (objects[i].live) {
-            if (objects[i].size == 0u || live_bytes > SIZE_MAX - objects[i].size) return -1;
-            live_bytes += objects[i].size;
-        }
     }
     for (size_t i = 1u; i < object_count; ++i) {
         size_t item = order[i], j = i;
@@ -759,25 +761,34 @@ int pl_defragment_heap_and_slab_pools(void *slab, size_t slab_size,
     size_t previous_end = 0u;
     int have_previous = 0;
     for (size_t k = 0u; k < object_count; ++k) {
-        pl_slab_object *o = &objects[order[k]];
+        const pl_slab_object *o = &objects[order[k]];
         if (!o->live) continue;
         if (have_previous && o->offset < previous_end) return -2;
         previous_end = o->offset + o->size;
         have_previous = 1;
     }
+    /* Preflight every destination before moving bytes or changing descriptors. */
     for (size_t k = 0u; k < object_count; ++k) {
-        pl_slab_object *o = &objects[order[k]];
+        const pl_slab_object *o = &objects[order[k]];
         if (!o->live) continue;
         size_t destination;
-        if (align_up_size(cursor, o->alignment, &destination) != 0 ||
-            destination > o->offset || o->size > slab_size - destination) return -2;
-        if (destination != o->offset)
-            memmove((uint8_t *)slab + destination, (uint8_t *)slab + o->offset, o->size);
-        o->offset = destination;
+        if (align_up_size(cursor, o->alignment, &destination) != 0) return -2;
+        /* Never move an object forward just to improve packing. */
+        if (destination > o->offset) destination = o->offset;
+        if (destination > slab_size || o->size > slab_size - destination) return -2;
+        destinations[order[k]] = destination;
         cursor = destination + o->size;
     }
-    *bytes_reclaimed = slab_size >= cursor ? slab_size - cursor : 0u;
-    (void)live_bytes;
+    for (size_t k = 0u; k < object_count; ++k) {
+        size_t index = order[k];
+        pl_slab_object *o = &objects[index];
+        if (!o->live) continue;
+        if (destinations[index] != o->offset)
+            memmove((uint8_t *)slab + destinations[index],
+                    (uint8_t *)slab + o->offset, o->size);
+        o->offset = destinations[index];
+    }
+    *bytes_reclaimed = slab_size - cursor;
     return 0;
 }
 
