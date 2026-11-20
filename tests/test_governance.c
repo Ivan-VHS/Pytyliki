@@ -15,6 +15,10 @@ int main(void) {
         "local-operator", "diagnostic-export", "summary-json",
         UINT64_C(1000), UINT64_C(1900), 1, 0
     };
+    pl_consent_grant telemetry_grant = {
+        "local-operator", "telemetry-enable", "metrics",
+        UINT64_C(1000), UINT64_C(1900), 1, 0
+    };
     int signature_ok = 1;
     assert(pl_policy_action_requires_consent(PL_ACTION_EXPORT_REPORT));
     assert(pl_policy_action_requires_consent(PL_ACTION_SHARE_REPORT));
@@ -78,10 +82,8 @@ int main(void) {
         PL_ROLE_ADMIN, PL_ACTION_ENABLE_TELEMETRY, &grant,
         "local-operator", "diagnostic-export", "summary-json", 1001,
         verifier_accepts, &signature_ok));
-    strcpy(grant.purpose, "telemetry-enable");
-    strcpy(grant.scope, "metrics");
     assert(pl_policy_authorize_with_consent(
-        PL_ROLE_ADMIN, PL_ACTION_ENABLE_TELEMETRY, &grant,
+        PL_ROLE_ADMIN, PL_ACTION_ENABLE_TELEMETRY, &telemetry_grant,
         "local-operator", "telemetry-enable", "metrics", 1001,
         verifier_accepts, &(int){1}));
 
