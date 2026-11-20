@@ -25,6 +25,8 @@ int main(void) {
     }
     assert(pl_architecture_atlas_find("AARCH64", &found) == 0);
     assert(strcmp(found.name, "aarch64") == 0);
+    assert(pl_architecture_atlas_find("x86", &found) == 0);
+    assert(strcmp(found.name, "x86") == 0);
     assert(pl_architecture_atlas_find("Power ISA", &found) == 0);
     assert(strcmp(found.name, "ppc64le") == 0);
     assert(pl_architecture_atlas_find("imaginary-isa", &found) == -2);
