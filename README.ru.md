@@ -196,3 +196,12 @@ Pytyliki придерживается явных границ локальных
 ## Дополнительное улучшение ядра памяти
 
 Пул фиксированных блоков теперь просматривает bitmap по байтам: полностью занятые байты пропускаются, а первый свободный блок в первом неполном байте сохраняет детерминированный first-fit. Это сокращает ненужные проверки уже заполненных блоков без изменения порядка выдачи. Тест проверяет заполнение 16 блоков, отказ при исчерпании, повторное использование освобождённого блока и корректность счётчика занятости.
+
+
+## Экосистема проектов
+
+Этот репозиторий входит в федерацию трёх самостоятельных проектов. Reaper отвечает за язык, среду выполнения и оркестрацию; OPlague — за инвентаризацию устройств Windows и анализ пакетов драйверов без изменений; Pytyliki — за ядро процессорных, memory- и математических операций на C11. See the [Матрица взаимосвязей 3 × 3](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) for the 3 × 3 cross-product, implemented interfaces, data directions and safety boundaries.
+
+- [Reaper — язык и оркестрация] (https://github.com/Ivan-VHS/Reaper/blob/main/README.ru.md) · [integration contract](https://github.com/Ivan-VHS/Reaper/blob/main/docs/FEDERATED_INTEGRATION.md)
+- [OPlague — анализ устройств и драйверов] (https://github.com/Ivan-VHS/OPlague/blob/main/README.ru.md) · [integration contract](https://github.com/Ivan-VHS/OPlague/blob/main/docs/FEDERATED_INTEGRATION.md)
+- [Pytyliki — процессорное ядро C11] (https://github.com/Ivan-VHS/Pytyliki/blob/main/README.ru.md) · [integration contract](https://github.com/Ivan-VHS/Pytyliki/blob/main/docs/FEDERATED_INTEGRATION.md)
