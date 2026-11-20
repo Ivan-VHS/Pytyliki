@@ -119,6 +119,24 @@ Pytyliki 遵循明确的本地操作边界：
 | 构建与测试 | CMake + CTest |
 | 未作出的声明 | macOS 支持、保证的 ARM64/x86_64 性能、生产级 RTL/FPGA 综合或自主源代码转换 |
 
+## Embedded C 与微控制器配置
+
+原生 C11 核心现已包含 Cortex-M4、RV32IMC 和 ATmega328P 配置目录、
+带溢出检查的 FLASH/SRAM 预算计算、带可写位掩码的 MMIO 寄存器模拟器，
+以及最小 C 源文件模板生成器。
+
+~~~sh
+./build/pytyliki --embedded profiles
+./build/pytyliki --embedded profile cortex-m4-reference
+./build/pytyliki --embedded budget cortex-m4-reference 8192 1024 128 512 2048
+./build/pytyliki --embedded template ./main.c
+~~~
+
+Win32 界面新增 **EMBEDDED C** 按钮。Cortex-M4 和 RV32IMC 配置属于参考配置，
+并非特定开发板定义。模拟器不会访问物理 MMIO 地址；模板也不会替代厂商启动代码、
+中断向量表、时钟配置或引脚复用检查。Reaper 提供交叉编译编排和 ELF/MAP 分析。
+参见 [Embedded C 指南](docs/EMBEDDED_C.md)。
+
 ## 文档
 
 - [系统架构](docs/ARCHITECTURE.md)
