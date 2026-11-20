@@ -119,7 +119,7 @@ int main(void) {
     assert(pl_rpc_governor_init(&rpc, 2u, 1.0, 2.0) == 0);
     assert(pl_bypass_rpc_rate_throttling(&rpc, 100u, 2u, &endpoint) == 0);
     assert(endpoint == 0u);
-    assert(pl_bypass_rpc_rate_throttling(&rpc, 100u, 1u, &endpoint) == 0);
+    assert(pl_bypass_rpc_rate_throttling(&rpc, 100u, 2u, &endpoint) == 0);
     assert(endpoint == 1u);
     assert(pl_bypass_rpc_rate_throttling(&rpc, 100u, 1u, &endpoint) == -2);
 
