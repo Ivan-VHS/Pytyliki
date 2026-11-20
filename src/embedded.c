@@ -147,8 +147,15 @@ int pl_embedded_template_write(const char *path) {
     FILE *file;
     size_t length = sizeof(template_text) - 1u;
     if (!path || !path[0]) return -1;
+#if defined(_MSC_VER)
+    {
+        errno_t open_error = fopen_s(&file, path, "wb");
+        if (open_error != 0 || !file) return -1;
+    }
+#else
     file = fopen(path, "wb");
     if (!file) return -1;
+#endif
     if (fwrite(template_text, 1u, length, file) != length) {
         fclose(file);
         return -1;
