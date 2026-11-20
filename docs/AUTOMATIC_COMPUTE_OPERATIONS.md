@@ -7,10 +7,10 @@ concrete, testable primitives rather than implicit or background execution.
 | Requested capability | Implementation |
 |---|---|
 | Automatic Multiply / Product | Checked scalar multiplication and aggregate product |
-| Compute / Calculate | Finite-checked scalar and vector calculations |
+| Compute / Calculate | Checked add, subtract, multiply, divide and power dispatch |
 | Scale / Amplify | Vector scaling by a finite factor |
-| Compound / Expand | Element-wise combination and bounded vector products |
-| Accumulate / Iterate | Prefix accumulation over a numeric sequence |
+| Compound / Expand | Element-wise product and bounded sequence repetition |
+| Accumulate / Iterate | Prefix sums and caller-supplied bounded callback iteration |
 | Cross-multiply | Outer product of two vectors |
 | Exponentiate | Checked real power operation |
 | Factor | Bounded prime factorization (inputs up to 10^12) |
