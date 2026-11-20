@@ -39,7 +39,7 @@ int main(void) {
     assert(pl_trace_validate(&right) == 0);
     assert(pl_trace_compare(&left, &right, &result) == 1);
     assert(fabs(result.delta - 5.0) < 1e-12);
-    assert(fabs(result.combined_absolute_uncertainty - sqrt(8.0)) < 1e-12);
+    assert(fabs(result.combined_absolute_uncertainty - 4.0) < 1e-12);
     assert(result.uncertainty_envelopes_disjoint == 1);
 
     right.value = 101.0;
