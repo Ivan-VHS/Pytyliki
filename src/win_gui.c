@@ -76,13 +76,13 @@ static void show_metric_lab(void) {
         pl_metric_l1_norm(profile, 3u, &l1) != 0 ||
         pl_metric_weighted_l2_norm(profile, weights, 3u, &weighted) != 0 ||
         pl_metric_mean_variance(sample, 4u, 0, &mean, &variance) != 0) {
-        log_text("[METRIC LAB] Numerical operation failed validation.\\r\\n");
+        log_text("[METRIC LAB] Numerical operation failed validation.\r\n");
         return;
     }
-    log_format("\\r\\n[METRIC LAB] L2=%.6g | L1=%.6g | weighted L2=%.6g\\r\\n", l2, l1, weighted);
-    log_format("[METRIC LAB] population mean=%.6g | variance=%.6g | registered operations=%lu\\r\\n",
+    log_format("\r\n[METRIC LAB] L2=%.6g | L1=%.6g | weighted L2=%.6g\r\n", l2, l1, weighted);
+    log_format("[METRIC LAB] population mean=%.6g | variance=%.6g | registered operations=%lu\r\n",
         mean, variance, (unsigned long)pl_metric_registry_count());
-    log_text("Metric Lab calls the shared C11 kernel; it does not duplicate formulas in the GUI.\\r\\n");
+    log_text("Metric Lab calls the shared C11 kernel; it does not duplicate formulas in the GUI.\r\n");
 }
 static void show_profile(void) {
     pl_processor_snapshot p;
