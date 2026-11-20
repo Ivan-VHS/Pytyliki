@@ -60,6 +60,8 @@ if(BUILD_TESTING)
   add_test(NAME embedded-c-profile-and-inspection-tests COMMAND pytyliki-embedded-tests)
   add_test(NAME embedded-c-catalog-cli-smoke COMMAND pytyliki --embedded-c)
   set_tests_properties(embedded-c-catalog-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "arm-cortex-m0")
+  add_test(NAME embedded-c-inspection-cli-smoke COMMAND pytyliki --embedded-inspect ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_embedded.c)
+  set_tests_properties(embedded-c-inspection-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Embedded C lexical review")
 
   add_executable(pytyliki-architecture-atlas-tests tests/test_architecture_atlas.c)
   target_link_libraries(pytyliki-architecture-atlas-tests PRIVATE pytyliki_core)
