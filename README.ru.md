@@ -71,3 +71,5 @@ ctest --test-dir build -C Release --output-on-failure
 ## Лицензия
 
 [MIT](LICENSE)
+
+UI motion and accessibility: [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md).
