@@ -96,6 +96,10 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-hw-rule-tests PRIVATE pytyliki_core)
   add_test(NAME hardware-rule-tests COMMAND pytyliki-hw-rule-tests)
 
+  add_executable(pytyliki-governance-tests tests/test_governance.c)
+  target_link_libraries(pytyliki-governance-tests PRIVATE pytyliki_core)
+  add_test(NAME consent-governance-tests COMMAND pytyliki-governance-tests)
+
   add_executable(pytyliki-foundation-tests tests/test_engineering_foundations.c)
   target_link_libraries(pytyliki-foundation-tests PRIVATE pytyliki_core)
   add_test(NAME engineering-foundation-tests COMMAND pytyliki-foundation-tests)
