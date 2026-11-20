@@ -2,11 +2,33 @@
 
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 #include <stdint.h>
 
 static int incremental_step(double current, size_t iteration, void *context, double *next) {
     const double increment = context != 0 ? *(const double *)context : 1.0;
     *next = current + increment * (double)(iteration + 1u);
+    pl_compute_statistics_result statistics;
+    assert(pl_compute_statistics(values, 3u, &statistics) == 0);
+    assert(statistics.count == 3u && fabs(statistics.mean - 2.0) < 1e-12);
+    assert(fabs(statistics.population_variance - (2.0 / 3.0)) < 1e-12);
+    assert(fabs(statistics.sample_variance - 1.0) < 1e-12);
+    assert(fabs(statistics.standard_deviation - sqrt(2.0 / 3.0)) < 1e-12);
+    assert(statistics.minimum == 1.0 && statistics.maximum == 3.0);
+    assert(statistics.sample_variance_defined == 1u);
+
+    const double singleton[] = {9.0};
+    assert(pl_compute_statistics(singleton, 1u, &statistics) == 0);
+    assert(statistics.mean == 9.0 && statistics.population_variance == 0.0);
+    assert(statistics.sample_variance == 0.0 && statistics.sample_variance_defined == 0u);
+
+    const double invalid_statistics[] = {1.0, NAN};
+    statistics.mean = 123.0;
+    assert(pl_compute_statistics(invalid_statistics, 2u, &statistics) == -1);
+    assert(statistics.mean == 123.0);
+    const double overflowing_statistics[] = {-DBL_MAX, DBL_MAX};
+    assert(pl_compute_statistics(overflowing_statistics, 2u, &statistics) == -1);
+
     return 0;
 }
 
