@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/embedded.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -156,5 +156,9 @@ if(BUILD_TESTING)
   set_tests_properties(apsia-cli-plugin-without-wasm PROPERTIES WILL_FAIL TRUE)
   add_test(NAME apsia-cli-sandbox-without-wasm COMMAND pytyliki-apsia cpu 2.0 0.05 0.10 --sandbox)
   set_tests_properties(apsia-cli-sandbox-without-wasm PROPERTIES WILL_FAIL TRUE)
+
+  add_executable(pytyliki-embedded-tests tests/test_embedded.c)
+  target_link_libraries(pytyliki-embedded-tests PRIVATE pytyliki_core)
+  add_test(NAME embedded-c-core-tests COMMAND pytyliki-embedded-tests)
 
 endif()
