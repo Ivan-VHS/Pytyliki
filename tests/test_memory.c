@@ -46,7 +46,7 @@ int main(void) {
     assert(block != NULL);
     for (size_t i = 0u; i < 8u; ++i) assert(block[i] == 0u);
     pl_arena_destroy(&arena);
-    assert(external[0] == 0u);
+    assert(block[0] == 0u); /* Destroy never frees or mutates caller-owned storage. */
 
     assert(pl_arena_init_buffer(&arena, external, sizeof(external)) == 0);
     assert(pl_arena_calloc(&arena, SIZE_MAX, 2u, 1u) == NULL);
