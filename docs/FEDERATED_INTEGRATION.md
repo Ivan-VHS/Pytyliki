@@ -55,3 +55,11 @@ ctest --test-dir build -C Release --output-on-failure
 
 The interop-abi-tests target checks versioning, numeric results, invalid
 arguments and vector limits.
+
+
+## Cross-repository references
+
+- **Shared 3 × 3 map:** [Project federation matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md).
+- **Reaper:** [repository](https://github.com/Ivan-VHS/Reaper), [federation contract](https://github.com/Ivan-VHS/Reaper/blob/main/docs/FEDERATED_INTEGRATION.md), [native FFI consumer](https://github.com/Ivan-VHS/Reaper/blob/main/reaper/ffi.py), [project manifest](https://github.com/Ivan-VHS/Reaper/blob/main/project-contract.json).
+- **OPlague:** [repository](https://github.com/Ivan-VHS/OPlague), [federation contract](https://github.com/Ivan-VHS/OPlague/blob/main/docs/FEDERATED_INTEGRATION.md), [native metric adapter](https://github.com/Ivan-VHS/OPlague/blob/main/tools/pytyliki_ffi.py), [project manifest](https://github.com/Ivan-VHS/OPlague/blob/main/project-contract.json).
+- **Pytyliki evidence:** [public ABI header](../src/interop.h), [ABI implementation](../src/interop.c), [project manifest](../project-contract.json).
