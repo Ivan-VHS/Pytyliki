@@ -171,13 +171,15 @@ int pl_qcs_lex(const char *source, pl_qcs_tokens *out, pl_qcs_error *error) {
             while (isalpha((unsigned char)*p)) { ++p; ++column; }
             suffix_len = (size_t)(p - suffix);
             if (suffix_len != 0u) {
+                int valid_suffix = 0;
                 is_duration = 1;
-                if (!((suffix_len == 1u && memcmp(suffix, "s", 1u) == 0) ||
-                      (suffix_len == 2u && (memcmp(suffix, "ns", 2u) == 0 ||
-                       memcmp(suffix, "us", 2u) == 0 || memcmp(suffix, "ms", 2u) == 0 ||
-                       memcmp(suffix, "mv", 2u) == 0 || memcmp(suffix, "hz", 2u) == 0)) ||
-                      (suffix_len == 3u && (memcmp(suffix, "khz", 3u) == 0 ||
-                       memcmp(suffix, "ghz", 3u) == 0))) {
+                if (suffix_len == 1u && memcmp(suffix, "s", 1u) == 0) valid_suffix = 1;
+                if (suffix_len == 2u && (memcmp(suffix, "ns", 2u) == 0 ||
+                    memcmp(suffix, "us", 2u) == 0 || memcmp(suffix, "ms", 2u) == 0 ||
+                    memcmp(suffix, "mv", 2u) == 0 || memcmp(suffix, "hz", 2u) == 0)) valid_suffix = 1;
+                if (suffix_len == 3u && (memcmp(suffix, "khz", 3u) == 0 ||
+                    memcmp(suffix, "ghz", 3u) == 0)) valid_suffix = 1;
+                if (!valid_suffix) {
                     pl_qcs_tokens_free(out);
                     return set_error(error, line, start_column, "unsupported numeric suffix");
                 }
