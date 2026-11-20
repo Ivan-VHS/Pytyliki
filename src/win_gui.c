@@ -238,7 +238,7 @@ static void show_embedded_profiles(void) {
 static void layout(HWND w) {
     RECT r; GetClientRect(w,&r);
     int width=r.right-r.left, height=r.bottom-r.top;
-    int margin=width<900?16:22, gap=8, button_height=42, y=98;
+    int margin=width<900?16:22, gap=8, button_height=44, y=98;
     int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED,ID_THEME};
     int top_columns=width>=1480?6:3;
     int top_rows=(6+top_columns-1)/top_columns;
@@ -271,9 +271,9 @@ static void layout(HWND w) {
         MoveWindow(GetDlgItem(w,edits[i]),x,py+20,group-4,30,TRUE);
     }
     y+=parameter_rows*60+6;
-    MoveWindow(GetDlgItem(w,ID_SAVE_REPORT),width-margin-244,y,124,40,TRUE);
-    MoveWindow(GetDlgItem(w,ID_CLEAR),width-margin-112,y,112,40,TRUE);
-    y+=48;
+    MoveWindow(GetDlgItem(w,ID_SAVE_REPORT),width-margin-244,y,124,44,TRUE);
+    MoveWindow(GetDlgItem(w,ID_CLEAR),width-margin-112,y,112,44,TRUE);
+    y+=52;
     int log_height=height-y-margin;
     if(log_height<80) log_height=80;
     MoveWindow(g_log,margin,y,width-2*margin,log_height,TRUE);
