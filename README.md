@@ -127,6 +127,7 @@ Pytyliki follows explicit local-operation boundaries:
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [14-target systems architecture atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md)
 - [APSIA 2.0 routing design](docs/APSIA_2.0.md)
 - [Hardware rule engine](docs/HARDWARE_RULE_ENGINE.md)
 - [Processor taxonomy](docs/PROCESSOR_TAXONOMY.md)
