@@ -38,15 +38,26 @@ size_t pl_architecture_atlas_catalog(const pl_architecture_profile **out) {
 }
 
 int pl_architecture_atlas_find(const char *name, pl_architecture_profile *out) {
-    size_t i;
+    size_t i, matches = 0u, match_index = 0u;
     if (!name || !out || !name[0]) return -1;
+    /* Exact target names always win over potentially ambiguous family names. */
     for (i = 0u; i < PL_ARCH_ATLAS_COUNT; ++i) {
-        if (equal_folded(name, profiles[i].name) || equal_folded(name, profiles[i].family)) {
+        if (equal_folded(name, profiles[i].name)) {
             *out = profiles[i];
             return 0;
         }
     }
-    return -2;
+    for (i = 0u; i < PL_ARCH_ATLAS_COUNT; ++i) {
+        if (equal_folded(name, profiles[i].family)) {
+            ++matches;
+            match_index = i;
+        }
+    }
+    if (matches == 1u) {
+        *out = profiles[match_index];
+        return 0;
+    }
+    return matches > 1u ? -3 : -2;
 }
 
 int pl_architecture_atlas_current(char *out, size_t capacity) {
@@ -58,7 +69,7 @@ int pl_architecture_atlas_current(char *out, size_t capacity) {
     name = "x86";
 #elif defined(__aarch64__) || defined(_M_ARM64)
     name = "aarch64";
-#elif defined(__arm__) || defined(_M_ARM)
+#elif defined(__arm__) && defined(__ARM_ARCH_PROFILE) && (__ARM_ARCH_PROFILE == 'M')
     name = "armv7-m";
 #elif defined(__riscv) && (__riscv_xlen == 64)
     name = "riscv64";
