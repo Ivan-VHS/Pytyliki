@@ -45,7 +45,7 @@ int main(void){
  unsigned char bitmap[4];pl_pool_t pool;
  unsigned char *pool_storage=(unsigned char *)pl_aligned_alloc(16u,512u);
  assert(pool_storage!=NULL);
- assert(pl_pool_init(&pool,pool_storage,256u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
+ assert(pl_pool_init(&pool,pool_storage,512u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
  void *p1=pl_pool_alloc(&pool),*p2=pl_pool_alloc(&pool);
  assert(p1!=NULL&&p2!=NULL&&p1!=p2&&pool.in_use==2);
  assert(pl_pool_free(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
