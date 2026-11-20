@@ -71,3 +71,5 @@ CPU 发现为只读。基准任务有明确上限且依赖硬件环境。源码�
 ## 许可证
 
 [MIT](LICENSE)
+
+UI motion and accessibility: [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md).

@@ -73,3 +73,5 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 ## License
 
 [MIT](LICENSE)
+
+UI motion and accessibility: [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md).
