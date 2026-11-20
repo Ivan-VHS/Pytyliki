@@ -23,6 +23,7 @@
 - **源码静态检查：** 检查受支持的源码并导出发现，不编译、不执行、不改写输入文件。
 - **音频 / DSP：** PCM16 WAV 导入导出、测试音生成、低通滤波、压缩、饱和、增益与电平测量。
 - **内存内核：** 类型化视图、溢出检查切片、有界 arena、回退检查点、遥测和固定块内存池。
+- **TRACE 测量溯源：** 有界 C11 记录保留指标、单位、上下文、来源摘要、精确采样窗口、样本数及声明的不确定度；不兼容的上下文不会被混合比较（[设计说明](docs/TRACE_MEASUREMENT_PROVENANCE.md)）。
 - **度量引擎：** 向量范数与距离、正交性、加权二次型、几何和方差运算。
 - **Embedded C：** MCU 参考配置、FLASH/SRAM 预算、带掩码的模拟 MMIO 和模板生成；并非真实寄存器映射器或固件烧录器。
 - **工程目录：** 66 项系统语言能力目录、14 个 CPU/MCU/虚拟 ISA 配置、APSIA 路由器及 33 项处理器/区块链系统实验室接口。
@@ -63,6 +64,8 @@ Windows 多配置构建中，示例路径为 `build/Release/pytyliki.exe`。
 CPU 发现为只读。基准任务有明确上限且依赖硬件环境。源码检查不会执行被检查程序。DSP 仅处理本地缓冲区。硬件规则评分和 APSIA 路由仅供参考。不会写入 BIOS/UEFI、固件、微码、电压、频率、电源限制、驱动或设备寄存器。工具链发现只检查 `PATH` 中的可执行文件名，不安装或运行编译器。
 
 ## 文档
+
+[TRACE 测量溯源](docs/TRACE_MEASUREMENT_PROVENANCE.md)
 
 [架构](docs/ARCHITECTURE.md) · [内存内核](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [系统语言与架构目录](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [统一工程标准](docs/UNIFIED_ENGINEERING_STANDARD.md)
 

@@ -23,6 +23,7 @@
 - **Static source review:** inspect supported source files and export findings without compiling, executing or rewriting them. Report export, sharing and telemetry actions have separate consent-aware role gates.
 - **Audio / DSP:** PCM16 WAV import/export, test-tone generation, low-pass filtering, compression, saturation, gain and metering.
 - **Memory kernel:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints, telemetry and fixed-block pools.
+- **TRACE measurement provenance:** bounded C11 records preserve metric, unit, context, source digest, exact sampling window, sample count and declared uncertainty. Comparisons reject incompatible contexts instead of blending them ([design](docs/TRACE_MEASUREMENT_PROVENANCE.md)).
 - **Metric engine:** vector norms, distances, orthogonality, weighted quadratic forms, geometry and variance operations.
 - **Embedded C workbench:** reference MCU profiles, FLASH/SRAM budgeting, masked simulated MMIO and starter generation. It is not a physical register mapper or firmware flasher.
 - **Engineering catalogue:** 66 systems-language capability entries, 14 CPU/MCU/virtual-ISA profiles, APSIA routing and a 33-function processor/blockchain systems lab.
@@ -65,6 +66,8 @@ The 0.5.0 workstation baseline (16 Nov 2026) centered on processor profiling, so
 CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Source review never runs the inspected program. DSP processes local buffers only. Hardware-rule scores and APSIA routes are advisory. No BIOS/UEFI, firmware, microcode, voltage, clock, power-limit, driver or device-register writes are performed. Toolchain discovery checks names on `PATH`; it does not install or run discovered compilers.
 
 ## Documentation
+
+[TRACE measurement provenance](docs/TRACE_MEASUREMENT_PROVENANCE.md)
 
 [Human-first governance](docs/HUMAN_FIRST_GOVERNANCE.md) · [UI/UX system](docs/UI_UX_SYSTEM.md) · [Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
