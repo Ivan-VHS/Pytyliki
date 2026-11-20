@@ -25,7 +25,7 @@ The record contains no person name, account identifier, raw device serial or unb
 
 Comparison requires identical metric key, unit, context, exact sampling window and quality class. Source digests must differ so that a duplicated record is not mistaken for independent evidence. Unknown and disputed quality tags cannot be compared as if they were measurements.
 
-Combined absolute uncertainty is computed as `hypot(u_left, u_right)`. The `uncertainty_envelopes_disjoint` flag is true when `abs(value_right - value_left)` exceeds that combined value. This is a declared-envelope check, not a statistical significance test and not a choice of which source is correct.
+For absolute uncertainty bounds, the comparison uses `u_left + u_right`: the two intervals are disjoint only when `abs(value_right - value_left) > u_left + u_right`. This is a declared-envelope check, not a statistical significance test and not a choice of which source is correct.
 
 ## Example
 
