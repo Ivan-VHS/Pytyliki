@@ -27,6 +27,7 @@ It is built for developers and engineers who want useful local measurements, ins
 | **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
 | **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
 | **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
+| **Metric Lab** | Compare n-dimensional vectors, orthogonality, quadratic forms and geometric models from a dedicated CLI |
 | **Verification** | Build with CMake and run CTest on Windows and Linux |
 
 ## See the interface
@@ -74,6 +75,9 @@ On Windows, the build also produces **`pytyliki-gui.exe`**.
 # Inspect the improvement catalogue
 ./build/pytyliki --improvement-plan
 
+# Run the orthogonal metric demo
+./build/pytyliki-metrics --demo
+
 # Generate a local 48 kHz PCM16 WAV test tone
 ./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
 
@@ -87,6 +91,7 @@ Use the platform-specific executable path on Windows (for example, `build/Releas
 
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
 - **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
+- **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
 - **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
@@ -128,6 +133,7 @@ Pytyliki follows explicit local-operation boundaries:
 - [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
 - [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
 - [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
+- [Orthogonal metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md)
 
 
 ## Native desktop application
