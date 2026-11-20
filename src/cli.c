@@ -200,7 +200,7 @@ static void print_embedded_catalog(void) {
     for (i = 0u; i < pl_embedded_target_count(); ++i) {
         const pl_embedded_target *target = NULL;
         if (pl_embedded_target_at(i, &target) == 0)
-            printf("%-20s | %-16s | %2u-bit | %-24s | %s\\n",
+            printf("%-20s | %-16s | %2u-bit | %-24s | %s\n",
                    target->id, target->architecture, target->word_bits,
                    target->compiler, target->description);
     }
@@ -212,24 +212,24 @@ static int inspect_embedded_file(const char *path) {
     char *source;
     size_t read_count;
     pl_embedded_source_report report;
-    if (file == NULL) { fprintf(stderr, "Cannot open Embedded C source: %s\\n", path); return 1; }
+    if (file == NULL) { fprintf(stderr, "Cannot open Embedded C source: %s\n", path); return 1; }
     if (fseek(file, 0L, SEEK_END) != 0 || (length = ftell(file)) < 0L ||
         (unsigned long)length > (unsigned long)PL_EMBEDDED_MAX_SOURCE_BYTES ||
         fseek(file, 0L, SEEK_SET) != 0) {
-        fclose(file); fputs("Embedded C source must be readable and no larger than 1 MiB.\\n", stderr); return 2;
+        fclose(file); fputs("Embedded C source must be readable and no larger than 1 MiB.\n", stderr); return 2;
     }
     source = (char *)malloc((size_t)length + 1u);
-    if (source == NULL) { fclose(file); fputs("Out of memory while reading Embedded C source.\\n", stderr); return 1; }
+    if (source == NULL) { fclose(file); fputs("Out of memory while reading Embedded C source.\n", stderr); return 1; }
     read_count = fread(source, 1u, (size_t)length, file);
     fclose(file);
-    if (read_count != (size_t)length) { free(source); fputs("Could not read complete Embedded C source.\\n", stderr); return 1; }
+    if (read_count != (size_t)length) { free(source); fputs("Could not read complete Embedded C source.\n", stderr); return 1; }
     source[read_count] = '\0';
     if (pl_embedded_inspect_source(source, read_count, &report) != 0) { free(source); return 2; }
     free(source);
-    printf("Embedded C lexical review: %lu bytes, %lu lines, %lu include(s)\\n",
+    printf("Embedded C lexical review: %lu bytes, %lu lines, %lu include(s)\n",
            (unsigned long)report.source_bytes, (unsigned long)report.line_count,
            (unsigned long)report.include_count);
-    printf("Heap calls: %lu | blocking calls: %lu | register markers: %lu | host-I/O calls: %lu\\n",
+    printf("Heap calls: %lu | blocking calls: %lu | register markers: %lu | host-I/O calls: %lu\n",
            (unsigned long)report.heap_calls, (unsigned long)report.blocking_calls,
            (unsigned long)report.register_markers, (unsigned long)report.host_io_calls);
     if (report.warnings & PL_EMBEDDED_WARN_DYNAMIC_ALLOCATION) puts("Review: dynamic allocation detected.");
@@ -249,6 +249,7 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
+    int embedded_list=0; const char *embedded_source=NULL;
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
@@ -256,7 +257,9 @@ int main(int argc,char **argv) {
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
     for(int i=1;i<argc;i++) {
-        if(!strcmp(argv[i],"--profile")) profile=1;\n        else if(!strcmp(argv[i],"--embedded-c")) embedded_list=1;\n        else if(!strcmp(argv[i],"--embedded-inspect")&&i+1<argc) embedded_source=argv[++i];
+        if(!strcmp(argv[i],"--profile")) profile=1;
+        else if(!strcmp(argv[i],"--embedded-c")) embedded_list=1;
+        else if(!strcmp(argv[i],"--embedded-inspect")&&i+1<argc) embedded_source=argv[++i];
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
         else if(!strcmp(argv[i],"--architectures")) architectures=1;
