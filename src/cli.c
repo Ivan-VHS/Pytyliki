@@ -279,7 +279,24 @@ int main(int argc,char **argv) {
         if(use_compressor && pl_audio_apply_compressor(&a,threshold,ratio)!=0){fprintf(stderr,"Invalid compressor settings.\n");pl_audio_free(&a);return 2;}
         if(saturation>0.0 && pl_audio_apply_saturation(&a,saturation)!=0){fprintf(stderr,"Invalid saturation drive.\n");pl_audio_free(&a);return 2;}
         if(use_gain && pl_audio_apply_gain(&a,gain)!=0){fprintf(stderr,"Invalid gain.\n");pl_audio_free(&a);return 2;}
-        pl_audio_stats st; if(pl_audio_measure(&a,&st)==0) printf("%u Hz | %u channel(s) | %lu frames | peak %.5f | RMS %.5f | crest %.2f dB | clipped %lu\n",a.sample_rate,a.channels,(unsigned long)a.frames,st.peak,st.rms,st.crest_db,(unsigned long)st.clipped_samples);
+        pl_audio_stats st;
+        if(pl_audio_measure(&a,&st)==0) {
+            printf("%u Hz | %u channel(s) | %lu frames | peak %.5f | RMS %.5f | crest %.2f dB | clipped %lu\n",
+                a.sample_rate,a.channels,(unsigned long)a.frames,st.peak,st.rms,st.crest_db,
+                (unsigned long)st.clipped_samples);
+            pl_audio_stats channel_stats[2];
+            if(pl_audio_measure_channels(&a,channel_stats,2u)!=0) {
+                fprintf(stderr,"Could not calculate per-channel audio metrics.\n");
+                pl_audio_free(&a);
+                return 1;
+            }
+            for(unsigned channel=0u;channel<a.channels;channel++) {
+                const pl_audio_stats *cs=&channel_stats[channel];
+                printf("Channel %u: peak %.5f | RMS %.5f | DC %.5f | crest %.2f dB | clipped %lu\n",
+                    channel+1u,cs->peak,cs->rms,cs->dc,cs->crest_db,
+                    (unsigned long)cs->clipped_samples);
+            }
+        }
         if(process_in && pl_audio_write_wav(process_out,&a)!=0){fprintf(stderr,"Could not write processed WAV: %s\n",process_out);pl_audio_free(&a);return 1;}
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;

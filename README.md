@@ -108,7 +108,7 @@ The probe only resolves candidate executable names on `PATH`; it never runs comp
 - **Memory kernel:** typed strided views, overflow-checked slices, bounded arena allocation with actual-address alignment, mark/rewind, high-water telemetry, custom allocator callbacks and caller-owned fixed-block pools. See [the memory contract](docs/MEMORY_ARENA.md).
 - **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
-- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
+- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain, aggregate metering and independent peak/RMS/DC/crest/clipping metrics for each channel.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
 - **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
 - **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
