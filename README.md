@@ -168,6 +168,22 @@ Pytyliki already contains a native **Win32 workstation GUI**. The Windows x64 pa
 A successful run uploads `Pytyliki-windows-x64.zip`; a `v*` tag publishes the same archive as a GitHub Release. The GUI is Windows-only; Linux CI continues to validate the portable C11 core and CLI.
 
 
+## Versioned memory and native C interfaces
+
+The memory kernel exposes **memory ABI v2** (PL_MEMORY_ABI_VERSION = 2): typed zero-copy views, bounded arenas, actual-address alignment, mark/rewind checkpoints, optional rewind clearing, high-water and allocation telemetry, custom allocator callbacks, and caller-owned fixed-block pools. Because the arena descriptor includes telemetry, consumers that embed pl_arena_t across a binary boundary must rebuild against the matching header and ABI.
+
+The optional native metric boundary exposes **Pytyliki C ABI v1** (PYTYLIKI_ABI_VERSION = 1), with version discovery and float64 dot-product, norm, distance, and orthogonality functions. Calls are synchronous, use contiguous caller-owned buffers, and do not retain those pointers. ABI v1 is a narrow interoperability surface, not a promise that every Pytyliki module is callable from other languages.
+
+The architecture atlas is available from the CLI:
+
+~~~bash
+./build/pytyliki --systems
+./build/pytyliki --architectures
+./build/pytyliki --architecture x86_64
+~~~
+
+See [Memory Kernel ABI v2](docs/MEMORY_ARENA.md), [Architecture 66 contract](docs/ARCHITECTURE_66.md), and the public [C ABI header](src/interop.h).
+
 ## License
 
 Released under the [MIT License](LICENSE).
