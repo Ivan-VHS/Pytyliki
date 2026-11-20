@@ -41,6 +41,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Validate localized README links
+        if: runner.os == 'Linux'
+        run: python .github/scripts/check_readme_links.py
       - name: Validate APSIA evolution-lock schema
         if: runner.os == 'Linux'
         run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"

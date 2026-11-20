@@ -144,6 +144,22 @@ Pytyliki 遵循明确的本地操作边界：
 成功运行会上传 `Pytyliki-windows-x64.zip`；`v*` 标签会发布 GitHub Release。GUI 仅支持 Windows；Linux CI 继续验证可移植的 C11 核心和 CLI。
 
 
+## 版本化内存与原生 C 接口
+
+内存内核提供 **memory ABI v2**（PL_MEMORY_ABI_VERSION = 2）：类型化零拷贝视图、有界 arena、基于实际地址的对齐、mark/rewind 检查点、可选的回退区域清零、高水位与分配次数统计、自定义分配器回调，以及由调用方持有存储的固定块池。由于 arena 描述符加入了遥测字段，跨二进制边界嵌入 pl_arena_t 的调用方必须使用匹配的头文件和 ABI 重新构建。
+
+可选的原生指标接口提供 **Pytyliki C ABI v1**（PYTYLIKI_ABI_VERSION = 1），包含版本查询以及针对连续 float64 缓冲区的点积、范数、距离和正交性函数。调用是同步的，使用调用方拥有的缓冲区，返回后不会保留这些指针。ABI v1 是范围有限的互操作接口，并不表示所有 Pytyliki 模块都可从其他语言调用。
+
+可通过 CLI 使用架构图谱：
+
+~~~bash
+./build/pytyliki --systems
+./build/pytyliki --architectures
+./build/pytyliki --architecture x86_64
+~~~
+
+参见 [Memory Kernel ABI v2](docs/MEMORY_ARENA.md)、[Architecture 66 契约](docs/ARCHITECTURE_66.md) 和公开的 [C ABI 头文件](src/interop.h)。
+
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。
