@@ -52,6 +52,15 @@ The APSIA router and promotion-evidence gate are advisory C11 policy primitives.
 - `avx`, `avx2`, and `fma` are exposed as usable capabilities only when the required OS vector state is enabled. `avx512f` additionally requires XCR0 opmask, ZMM-hi256, and hi16-ZMM state.
 - Capability reporting is not instruction dispatch. A future SIMD backend must still use a safe dispatcher, preserve a scalar fallback, and test the exact runtime environment.
 
+## Blockchain and processor systems lab
+
+The optional systems acceleration module exposes 33 C11 APIs in `systems_accel.h`. It groups native bounded algorithms, caller-owned VM/simulation facilities, planning helpers and callback-backed integrations. The complete per-function contract and execution mode are recorded in [BLOCKCHAIN_CPU_SYSTEMS_LAB.md](BLOCKCHAIN_CPU_SYSTEMS_LAB.md).
+
+- Blockchain support is a proof/trace/simulation toolkit, not a full node, consensus client, EVM or wallet. Hashing, relay-proof verification and ZK aggregation are supplied by protocol-specific callbacks.
+- CPU support computes profiles and local models. Clock scaling, governor output, affinity, prefetch, vector width, PMU summaries and CAT masks do not change host settings or execute unsupported ISA instructions.
+- The lock-free queue is SPSC. The slab compactor owns only the buffer and descriptors supplied by its caller. Transaction atomicity depends on the caller's executor callbacks.
+- FPGA synthesis and firmware overlay sealing require external, explicitly supplied vendor/cryptographic adapters. The core does not write microcode, firmware, MSRs, voltage or frequency controls.
+
 ## Build and verification profiles
 
 - Default builds use C11 and compiler warnings; MSVC additionally enables SDL checks.

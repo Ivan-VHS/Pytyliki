@@ -8,7 +8,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(PYTYLIKI_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer (GCC/Clang)" OFF)
 
 if(MSVC)
-  add_compile_options(/W4 /sdl)
+  add_compile_options(/W4 /sdl /experimental:c11atomics)
 else()
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/embedded.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/embedded.c src/systems_accel.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -160,5 +160,11 @@ if(BUILD_TESTING)
   add_executable(pytyliki-embedded-tests tests/test_embedded.c)
   target_link_libraries(pytyliki-embedded-tests PRIVATE pytyliki_core)
   add_test(NAME embedded-c-core-tests COMMAND pytyliki-embedded-tests)
+
+  add_executable(pytyliki-systems-accel-tests tests/test_systems_accel.c)
+  target_link_libraries(pytyliki-systems-accel-tests PRIVATE pytyliki_core)
+  add_test(NAME systems-accel-tests COMMAND pytyliki-systems-accel-tests)
+  add_test(NAME systems-lab-cli-smoke COMMAND pytyliki --systems-lab)
+  set_tests_properties(systems-lab-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "33-function blockchain and processor systems lab")
 
 endif()

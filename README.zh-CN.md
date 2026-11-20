@@ -74,6 +74,9 @@ Windows 构建还会生成 **`pytyliki-gui.exe`**。
 # 查看工程改进目录
 ./build/pytyliki --improvement-plan
 
+# 查看 33 项区块链与处理器系统实验室功能
+./build/pytyliki --systems-lab
+
 # 生成 48 kHz PCM16 WAV 测试音
 ./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
 
@@ -95,6 +98,8 @@ Windows 构建还会生成 **`pytyliki-gui.exe`**。
 - **APSIA 2.0：** 带目标可用性和 FFI 成本门控的语言路由规划器。它提出路由方案，但不会编译或执行所选语言模块。
 - **硬件规则：** 已实现 12 条建议性规则；其他目录标识符为预留项。分析结果用于工程审查，不构成硬件认证。
 - **参考流水线：** C11/C23 规划模型，并非生产级转译器。
+
+- **区块链与处理器系统实验室：** 提供 33 个 C API，涵盖 Merkle 证明、EVM 选择器提取、执行轨迹分析、隔离状态分叉模拟、SPSC 队列、模运算和 CPU 优化规划。ZK、跨链中继、密码学验证和 FPGA 综合需要显式适配器；不会修改物理 CPU 或固件设置。参见[实验室接口契约](docs/BLOCKCHAIN_CPU_SYSTEMS_LAB.md)。
 
 ## CI、质量与安全
 
