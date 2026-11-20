@@ -1,60 +1,37 @@
 # Pytyliki — Processor Systems Workstation
 
 <p align="center">
-  <a href="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml"><img alt="Windows and Linux CI" src="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="ISO C11" src="https://img.shields.io/badge/C-ISO%20C11-2563EB?style=flat-square">
+  <a href="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="C11" src="https://img.shields.io/badge/core-ISO%20C11-2563EB?style=flat-square">
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-DC2626?style=flat-square">
-  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-111827?style=flat-square">
+  <img alt="MIT" src="https://img.shields.io/badge/license-MIT-334155?style=flat-square">
 </p>
 
-<p align="center"><strong>DISCOVER · ANALYZE · PROCESS · VERIFY</strong></p>
+**A modular C11 workstation for processor discovery, bounded measurements, source diagnostics and local DSP.** Pytyliki provides a native Windows desktop interface and a portable command-line core. Its default posture is inspect, measure and report — never silently modify hardware.
 
-<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — processor diagnostics, source analysis and local DSP workstation" width="100%"></p>
+[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
-**A practical C11 workstation for understanding a machine and inspecting local workloads.** Pytyliki combines read-only processor discovery, bounded benchmarks, source-code diagnostics, PCM16 WAV/DSP tools and a native Windows desktop interface in one modular project.
+## Interface preview
 
-It is built for developers and engineers who want useful local measurements, inspectable reports and explicit safety boundaries — not a black box that silently changes hardware.
+<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative Pytyliki Win32 workstation layout" width="100%"></p>
+<sub>Illustrative reconstruction based on the checked-in Win32 controls, not a screenshot captured from a live Windows session. A live capture is not yet committed.</sub>
 
-**Engineering standard:** [Unified Engineering Standard](docs/UNIFIED_ENGINEERING_STANDARD.md) — shared rules for portability, modularity, stable interfaces, evidence and safe integration.
+## Workbenches
 
-**Read this in:** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md)
+- **Processor inventory:** CPU identity, architecture, logical topology, memory and ISA capabilities. AVX-family usability includes OS-managed XCR0 state checks.
+- **Bounded benchmark suite:** processor, memory and matrix workloads with timing and integrity checks. Results are local comparisons, not hardware certification.
+- **Static source review:** inspect supported source files and export findings without compiling, executing or rewriting them.
+- **Audio / DSP:** PCM16 WAV import/export, test-tone generation, low-pass filtering, compression, saturation, gain and metering.
+- **Memory kernel:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints, telemetry and fixed-block pools.
+- **Metric engine:** vector norms, distances, orthogonality, weighted quadratic forms, geometry and variance operations.
+- **Embedded C workbench:** reference MCU profiles, FLASH/SRAM budgeting, masked simulated MMIO and starter generation. It is not a physical register mapper or firmware flasher.
+- **Engineering catalogue:** 66 systems-language capability entries, 14 CPU/MCU/virtual-ISA profiles, APSIA routing and a 33-function processor/blockchain systems lab.
+- **Interop:** versioned Pytyliki C ABI v1 for native consumers.
+- **QCS frontend:** native C11 lexer, frame-aware parser, compact AST and CLI for domain/frame validation; syntax inspection only, not compilation or hardware control ([spec](docs/QCS_NATIVE.md)).
 
-## The workstation at a glance
+## Build and test
 
-| Workbench | What you can do |
-|---|---|
-| **Processor lab** | Inspect CPU identity, logical processors, memory and usable ISA capabilities |
-| **Benchmark suite** | Run bounded processor, memory and matrix workloads for local comparison |
-| **Source review** | Scan supported source files without executing or rewriting them; export JSON reports |
-| **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
-| **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
-| **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
-| **Metric Lab** | Compare n-dimensional vectors, orthogonality, quadratic forms and geometric models from a dedicated CLI |
-| **Memory kernel** | Typed zero-copy views, bounded arenas with rewind checkpoints and fixed-block pools |
-| **Verification** | Build with CMake and run CTest on Windows and Linux |
-
-## See the interface
-
-<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative preview of the current Pytyliki Win32 workstation layout" width="100%"></p>
-
-<sub>Illustrative interface preview reconstructed from the checked-in Win32 controls and labels; it is not a screenshot captured from a live Windows session.</sub>
-
-The desktop application exposes CPU capability scans, processor suites, source review, PCM WAV import/export, tone generation, low-pass filtering, compression, saturation, gain, metering and JSON report export.
-
-## How the pieces fit
-
-<p align="center"><img src="assets/pytyliki-architecture.svg" alt="Pytyliki architecture: inspect, analyze, process, verify" width="100%"></p>
-
-## Quick start
-
-### Requirements
-
-- Windows or Linux
-- CMake 3.16 or newer
-- A C11-capable compiler
-- Git
-
-### Build and test
+Requirements: CMake 3.16+, a C11 compiler and Git. Windows and Linux are covered by CI; the Win32 GUI is Windows-only.
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -64,175 +41,35 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-On Windows, the build also produces **`pytyliki-gui.exe`**.
+On Windows, the build also produces `pytyliki-gui.exe`.
 
-### Useful commands
+Useful commands:
 
 ```bash
-# Read-only processor profile
 ./build/pytyliki --profile
-
-# Bounded integer, memory and matrix suite
 ./build/pytyliki --suite
-
-# Inspect the improvement catalogue
-./build/pytyliki --improvement-plan
-
-# Inspect the 33-function blockchain and processor systems lab
-./build/pytyliki --systems-lab
-
-# Run the orthogonal metric demo
+./build/pytyliki --systems
+./build/pytyliki --embedded profiles
 ./build/pytyliki-metrics --demo
-
-# Generate a local 48 kHz PCM16 WAV test tone
-./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
-
-# Write a machine-readable local report
 ./build/pytyliki --json report.json
 ```
 
-Use the platform-specific executable path on Windows (for example, `build/Release/pytyliki.exe`).
+Use `build/Release/pytyliki.exe` on a typical Windows multi-config build.
 
-## Systems-language toolchain matrix
+## Evolution and project scope
 
-Pytyliki now includes a 66-slot capability catalogue spanning modern native languages, formally verified languages, embedded targets, historical systems languages and experimental compiler tracks. The repeated Clay and Nimrod/early-Nim positions are retained as explicit aliases. This is a discovery and routing aid, not a claim that Pytyliki is transpiled into all 66 languages.
+The 0.5.0 workstation baseline (16 Nov 2026) centered on processor profiling, source inspection and DSP. Subsequent mainline work expanded the C11 modules and tests, added the memory and metric kernels, native ABI, Embedded C reference tools, architecture and language catalogues, the systems lab, and a versioned project contract. The current source and tests are authoritative for what is implemented.
 
-```bash
-python tools/systems_languages.py --verify
-python tools/systems_languages.py --profile pytyliki
-python tools/systems_languages.py --profile pytyliki --available-only
-python tools/systems_languages.py --tag formal-verification,embedded --json
-```
+## Safety and limits
 
-The probe only resolves candidate executable names on `PATH`; it never runs compilers, installs packages, loads native code or changes the machine.
-
-## Quantum Contour Syntax (QCS)
-
-Pytyliki includes a native C11 QCS lexer, frame-aware parser, compact parent-index AST and inspection CLI. It is designed to validate the shared hardware-domain notation used by Reaper.
-
-```bash
-./build/pytyliki-qcs check examples/qcs_irq.qcs
-./build/pytyliki-qcs tokens examples/qcs_irq.qcs
-./build/pytyliki-qcs ast examples/qcs_irq.qcs
-```
-
-The current native layer validates frame boundaries, registered domains, state markers, nested delimiters and flow-token placement. It is a syntax/inspection frontend, not a full Swift-like compiler, formal verifier or physical hardware controller. See [QCS native frontend](docs/QCS_NATIVE.md).
-
-## Engineering capabilities
-
-- **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
-- **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
-- **Memory kernel:** typed strided views, overflow-checked slices, bounded arena allocation with actual-address alignment, mark/rewind, high-water telemetry, custom allocator callbacks and caller-owned fixed-block pools. The pool allocator skips fully occupied bitmap bytes and preserves deterministic first-fit allocation. See [the memory contract](docs/MEMORY_ARENA.md).
-- **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
-- **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
-- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
-- **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
-- **QCS frontend:** native frame-aware lexer/parser, AST inspection CLI and a registered 65-domain hardware vocabulary shared with Reaper.
-- **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
-- **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
-- **APSIA 2.0:** a language-routing planner with target-availability and FFI-cost gates. It proposes routes; it does not compile or execute the selected language module.
-- **Hardware rules:** 12 implemented advisory rules; other catalogue identifiers are reserved. Findings are prompts for engineering review, not hardware certification.
-- **Reference pipeline:** a C11/C23 planning model, not a production transpiler.
-
-- **Blockchain and processor systems lab:** 33 C APIs for Merkle proofs, EVM selector extraction, trace analysis, isolated fork simulation, SPSC queues, modular arithmetic and CPU optimization planning. ZK, chain relays, cryptographic verification and FPGA synthesis require explicit adapters; physical CPU/firmware controls remain read-only. See [the systems lab contract](docs/BLOCKCHAIN_CPU_SYSTEMS_LAB.md).
-
-## CI, quality and safety
-
-The GitHub Actions workflow builds and tests on **Ubuntu and Windows**. A separate Linux job runs the test suite with AddressSanitizer and UndefinedBehaviorSanitizer. CMake/CTest results are the source of truth for a given commit.
-
-Pytyliki follows explicit local-operation boundaries:
-
-- Processor discovery is read-only. No firmware, BIOS/UEFI, microcode, clock, voltage, power-limit, kernel, driver or device-register writes are performed.
-- Source review does not execute or rewrite scanned files.
-- Benchmarks are bounded and depend on hardware, operating system, compiler and workload; no speedup is promised.
-- Advisory scores and planning catalogues are not hardware certification or proof of autonomous optimization.
-- Local audio processing operates on bounded PCM16 WAV buffers.
-
-## Compatibility
-
-| Item | Current scope |
-|---|---|
-| Implementation | ISO C11 |
-| Validated CI platforms | Windows and Linux |
-| Desktop interface | Native Win32 GUI on Windows |
-| Data formats | JSON reports; PCM16 WAV audio |
-| Build and tests | CMake + CTest |
-| Not claimed | macOS support, guaranteed ARM64/x86_64 performance, production RTL/FPGA synthesis or an autonomous source transformer |
-
-## Embedded C and MCU tooling
-
-The native C11 core includes a small Embedded C API for three target profiles
-(Cortex-M4 and RV32IMC reference budgets plus ATmega328P), overflow-checked
-FLASH/SRAM accounting, a simulated MMIO register bank with writable masks, and
-a hardware-neutral C starter generator. The CLI exposes:
-
-~~~sh
-./build/pytyliki --embedded profiles
-./build/pytyliki --embedded profile cortex-m4-reference
-./build/pytyliki --embedded budget cortex-m4-reference 8192 1024 128 512 2048
-./build/pytyliki --embedded template ./main.c
-~~~
-
-The native Win32 workstation has an **EMBEDDED C** inspector button. These C11
-primitives are not a physical MMIO mapper or firmware flasher; reference
-addresses and memory capacities must be checked against the selected chip.
-Reaper provides the project scaffold and installed-toolchain build orchestration.
-See [Embedded C workbench](docs/EMBEDDED_C.md).
+CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Source review never runs the inspected program. DSP processes local buffers only. Hardware-rule scores and APSIA routes are advisory. No BIOS/UEFI, firmware, microcode, voltage, clock, power-limit, driver or device-register writes are performed. Toolchain discovery checks names on `PATH`; it does not install or run discovered compilers.
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [14-target systems architecture atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md)
-- [C11 compute kernel: memory, metrics and operation registry](docs/COMPUTE_KERNEL.md)
-- [Memory views, arenas and pools](docs/MEMORY_ARENA.md)
-- [APSIA 2.0 routing design](docs/APSIA_2.0.md)
-- [Hardware rule engine](docs/HARDWARE_RULE_ENGINE.md)
-- [Processor taxonomy](docs/PROCESSOR_TAXONOMY.md)
-- [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
-- [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
-- [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
-- [Orthogonal metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md)
+[Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
-
-## Native desktop application
-
-Pytyliki already contains a native **Win32 workstation GUI**. The Windows x64 package includes:
-- `pytyliki-gui.exe` — desktop interface for processor inventory, source review and PCM16/DSP tools.
-- `pytyliki.exe` — command-line workstation.
-- `pytyliki-apsia.exe` — APSIA routing tool.
-
-- [Windows x64 Releases](https://github.com/Ivan-VHS/Pytyliki/releases)
-- [Desktop build workflow and CI artifacts](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
-- [Latest workflow runs](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml?query=branch%3Amain)
-
-A successful run uploads `Pytyliki-windows-x64.zip`; a `v*` tag publishes the same archive as a GitHub Release. The GUI is Windows-only; Linux CI continues to validate the portable C11 core and CLI.
-
-
-## Versioned memory and native C interfaces
-
-The memory kernel exposes **memory ABI v2** (PL_MEMORY_ABI_VERSION = 2): typed zero-copy views, bounded arenas, actual-address alignment, mark/rewind checkpoints, optional rewind clearing, high-water and allocation telemetry, custom allocator callbacks, and caller-owned fixed-block pools. Because the arena descriptor includes telemetry, consumers that embed pl_arena_t across a binary boundary must rebuild against the matching header and ABI.
-
-The optional native metric boundary exposes **Pytyliki C ABI v1** (PYTYLIKI_ABI_VERSION = 1), with version discovery and float64 dot-product, norm, distance, and orthogonality functions. Calls are synchronous, use contiguous caller-owned buffers, and do not retain those pointers. ABI v1 is a narrow interoperability surface, not a promise that every Pytyliki module is callable from other languages.
-
-The architecture atlas is available from the CLI:
-
-~~~bash
-./build/pytyliki --systems
-./build/pytyliki --architectures
-./build/pytyliki --architecture x86_64
-~~~
-
-See [Memory Kernel ABI v2](docs/MEMORY_ARENA.md), [Architecture 66 contract](docs/ARCHITECTURE_66.md), and the public [C ABI header](src/interop.h).
+[Windows releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [Desktop build workflow](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
 
 ## License
 
-Released under the [MIT License](LICENSE).
-
-
-## Project ecosystem
-
-This repository is part of a federation of three independent projects. Reaper owns the language, runtime and orchestration; OPlague owns read-only Windows device inventory and driver-package inspection; Pytyliki owns the C11 processor, memory and numerical core. See the [3 × 3 federation matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) for the 3 × 3 cross-product, implemented interfaces, data directions and safety boundaries.
-
-- [Reaper — language and orchestration] (https://github.com/Ivan-VHS/Reaper/blob/main/README.md) · [integration contract](https://github.com/Ivan-VHS/Reaper/blob/main/docs/FEDERATED_INTEGRATION.md)
-- [OPlague — device and driver inspection] (https://github.com/Ivan-VHS/OPlague/blob/main/README.md) · [integration contract](https://github.com/Ivan-VHS/OPlague/blob/main/docs/FEDERATED_INTEGRATION.md)
-- [Pytyliki — C11 processor core] (https://github.com/Ivan-VHS/Pytyliki/blob/main/README.md) · [integration contract](https://github.com/Ivan-VHS/Pytyliki/blob/main/docs/FEDERATED_INTEGRATION.md)
+[MIT](LICENSE)
