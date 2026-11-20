@@ -106,6 +106,18 @@ python tools/systems_languages.py --tag formal-verification,embedded --json
 
 The probe only resolves candidate executable names on `PATH`; it never runs compilers, installs packages, loads native code or changes the machine.
 
+## Quantum Contour Syntax (QCS)
+
+Pytyliki includes a native C11 QCS lexer, frame-aware parser, compact parent-index AST and inspection CLI. It is designed to validate the shared hardware-domain notation used by Reaper.
+
+```bash
+./build/pytyliki-qcs check examples/qcs_irq.qcs
+./build/pytyliki-qcs tokens examples/qcs_irq.qcs
+./build/pytyliki-qcs ast examples/qcs_irq.qcs
+```
+
+The current native layer validates frame boundaries, registered domains, state markers, nested delimiters and flow-token placement. It is a syntax/inspection frontend, not a full Swift-like compiler, formal verifier or physical hardware controller. See [QCS native frontend](docs/QCS_NATIVE.md).
+
 ## Engineering capabilities
 
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
@@ -115,6 +127,7 @@ The probe only resolves candidate executable names on `PATH`; it never runs comp
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
 - **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
+- **QCS frontend:** native frame-aware lexer/parser, AST inspection CLI and a registered 65-domain hardware vocabulary shared with Reaper.
 - **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
 - **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
 - **APSIA 2.0:** a language-routing planner with target-availability and FFI-cost gates. It proposes routes; it does not compile or execute the selected language module.
