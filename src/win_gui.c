@@ -28,6 +28,7 @@
 #define ID_SAVE_REPORT 1013
 #define ID_METRIC_LAB 1014
 #define ID_EMBEDDED 1015
+#define ID_THEME 1016
 #define ID_CUTOFF 1101
 #define ID_THRESHOLD 1102
 #define ID_RATIO 1103
@@ -37,6 +38,23 @@
 static HWND g_log;
 static HWND g_main;
 static HFONT g_font;
+static HFONT g_log_font;
+static HBRUSH g_page_brush, g_input_brush, g_log_brush;
+static int g_dark_mode = 0;
+
+static COLORREF page_color(void) { return g_dark_mode ? RGB(16,24,39) : RGB(243,246,250); }
+static COLORREF header_color(void) { return g_dark_mode ? RGB(10,17,30) : RGB(20,34,58); }
+static COLORREF text_color(void) { return g_dark_mode ? RGB(226,232,240) : RGB(47,62,82); }
+static COLORREF input_color(void) { return g_dark_mode ? RGB(32,47,69) : RGB(255,255,255); }
+static COLORREF log_color(void) { return g_dark_mode ? RGB(11,20,34) : RGB(17,28,46); }
+static void rebuild_brushes(void) {
+    if (g_page_brush) DeleteObject(g_page_brush);
+    if (g_input_brush) DeleteObject(g_input_brush);
+    if (g_log_brush) DeleteObject(g_log_brush);
+    g_page_brush = CreateSolidBrush(page_color());
+    g_input_brush = CreateSolidBrush(input_color());
+    g_log_brush = CreateSolidBrush(log_color());
+}
 static pl_audio_buffer g_audio = {0};
 
 static void log_text(const char *text) {
@@ -185,10 +203,10 @@ static void show_embedded_profiles(void) {
 }
 static void layout(HWND w) {
     RECT r; GetClientRect(w,&r); int width=r.right-r.left; int margin=22; int gap=10;
-    int col=(width-2*margin-2*gap)/3; int y=96; int bh=34;
-    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED};
-    col=(width-2*margin-4*gap)/5;
-    for(int i=0;i<5;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
+    int col; int y=96; int bh=34;
+    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED,ID_THEME};
+    col=(width-2*margin-5*gap)/6;
+    for(int i=0;i<6;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
     y+=bh+12; int audio_col=(width-2*margin-3*gap)/4;
     int audio_ids[]={ID_LOAD_WAV,ID_TONE,ID_LOWPASS,ID_COMPRESS,ID_SATURATE,ID_GAIN,ID_MEASURE,ID_EXPORT};
     for(int i=0;i<8;i++) { int row=i/4, c=i%4; MoveWindow(GetDlgItem(w,audio_ids[i]),margin+c*(audio_col+gap),y+row*(bh+gap),audio_col,bh,TRUE); }
@@ -206,21 +224,42 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CREATE: {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED);
+        rebuild_brushes();
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"THEME: LIGHT",ID_THEME);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
         add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
         add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
         add_edit(w,"5000",ID_CUTOFF); add_edit(w,"-12",ID_THRESHOLD); add_edit(w,"4",ID_RATIO); add_edit(w,"1.8",ID_DRIVE); add_edit(w,"-3",ID_GAIN_VALUE);
         add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
         g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nCPU operations are read-only and bounded. DSP actions process a local in-memory audio buffer.\r\n",
-            WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL); apply_font(g_log);
+            WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL);
+        g_log_font=CreateFontA(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,"Consolas");
+        if (g_log_font) SendMessageA(g_log,WM_SETFONT,(WPARAM)g_log_font,TRUE); else apply_font(g_log);
+        return 0;
+    }
+    case WM_GETMINMAXINFO: {
+        MINMAXINFO *limits=(MINMAXINFO *)l;
+        limits->ptMinTrackSize.x=980; limits->ptMinTrackSize.y=680;
         return 0;
     }
     case WM_SIZE: layout(w); return 0;
+    case WM_CTLCOLORSTATIC: {
+        HDC dc=(HDC)p; SetBkMode(dc,TRANSPARENT); SetTextColor(dc,text_color());
+        return (LRESULT)g_page_brush;
+    }
+    case WM_CTLCOLOREDIT: {
+        HDC dc=(HDC)p; HWND control=(HWND)l;
+        if (control==g_log) {
+            SetTextColor(dc,RGB(229,237,247));
+            SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
+        }
+        SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
+        return (LRESULT)g_input_brush;
+    }
     case WM_PAINT: {
         PAINTSTRUCT ps; HDC dc=BeginPaint(w,&ps); RECT r; GetClientRect(w,&r);
-        HBRUSH bg=CreateSolidBrush(RGB(244,247,251)); FillRect(dc,&r,bg); DeleteObject(bg);
-        RECT header={0,0,r.right,78}; HBRUSH hb=CreateSolidBrush(RGB(20,34,58)); FillRect(dc,&header,hb); DeleteObject(hb);
+        HBRUSH bg=CreateSolidBrush(page_color()); FillRect(dc,&r,bg); DeleteObject(bg);
+        RECT header={0,0,r.right,78}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,12,r.right-20,43}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SetTextColor(dc,RGB(185,205,229)); RECT sub={23,43,r.right-20,68}; DrawTextA(dc,"CPU diagnostics | metric kernel | static review | local DSP laboratory",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
@@ -241,14 +280,30 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_EXPORT: export_wav(); break;
             case ID_SAVE_REPORT: save_report(); break;
             case ID_CLEAR: SetWindowTextA(g_log,"Session log cleared.\r\n"); break;
+            case ID_THEME:
+                g_dark_mode = !g_dark_mode;
+                rebuild_brushes();
+                SetWindowTextA(GetDlgItem(w,ID_THEME),g_dark_mode?"THEME: DARK":"THEME: LIGHT");
+                InvalidateRect(w,NULL,TRUE);
+                RedrawWindow(w,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN);
+                break;
         }
         return 0;
-    case WM_DESTROY: pl_audio_free(&g_audio); if(g_font)DeleteObject(g_font); PostQuitMessage(0); return 0;
+    case WM_DESTROY:
+        pl_audio_free(&g_audio);
+        if (g_font) DeleteObject(g_font);
+        if (g_log_font) DeleteObject(g_log_font);
+        if (g_page_brush) DeleteObject(g_page_brush);
+        if (g_input_brush) DeleteObject(g_input_brush);
+        if (g_log_brush) DeleteObject(g_log_brush);
+        PostQuitMessage(0); return 0;
     }
     return DefWindowProcA(w,m,p,l);
 }
 int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
-    (void)prev; (void)cmd; WNDCLASSA wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
+    (void)prev; (void)cmd;
+    SetProcessDPIAware();
+    WNDCLASSA wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
     wc.lpszClassName="PytylikiProcessorWorkstation"; wc.hCursor=LoadCursor(NULL,IDC_ARROW); wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     if(!RegisterClassA(&wc)) return 1;
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
