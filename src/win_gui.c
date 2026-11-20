@@ -11,6 +11,7 @@
 #include "dsp.h"
 #include "metric_geometry.h"
 #include "metric_registry.h"
+#include "embedded.h"
 
 #define ID_PROFILE 1001
 #define ID_SUITE 1002
@@ -26,6 +27,7 @@
 #define ID_CLEAR 1012
 #define ID_SAVE_REPORT 1013
 #define ID_METRIC_LAB 1014
+#define ID_EMBEDDED 1015
 #define ID_CUTOFF 1101
 #define ID_THRESHOLD 1102
 #define ID_RATIO 1103
@@ -165,12 +167,28 @@ static void export_wav(void) {
     else log_format("[DSP EXPORT] Write failed: %s\r\n",path);
 }
 
+static void show_embedded_profiles(void) {
+    size_t i;
+    log_text("\r\n[EMBEDDED C] Native MCU profile catalogue\r\n");
+    for (i = 0u; i < pl_embedded_profile_count(); ++i) {
+        const pl_embedded_profile *p = pl_embedded_profile_at(i);
+        if (!p) continue;
+        log_format("%s | %s | %s | %llu Hz | FLASH %llu B | SRAM %llu B | stack %llu B%s\r\n",
+            p->id, p->architecture, p->compiler,
+            (unsigned long long)p->clock_hz,
+            (unsigned long long)p->flash.size_bytes,
+            (unsigned long long)p->sram.size_bytes,
+            (unsigned long long)p->stack_reserve_bytes,
+            p->is_reference_profile ? " | reference" : "");
+    }
+    log_text("Profile catalogue is advisory. Verify exact MCU memory, startup and pin mapping before flashing.\r\n");
+}
 static void layout(HWND w) {
     RECT r; GetClientRect(w,&r); int width=r.right-r.left; int margin=22; int gap=10;
     int col=(width-2*margin-2*gap)/3; int y=96; int bh=34;
-    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB};
-    col=(width-2*margin-3*gap)/4;
-    for(int i=0;i<4;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
+    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED};
+    col=(width-2*margin-4*gap)/5;
+    for(int i=0;i<5;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
     y+=bh+12; int audio_col=(width-2*margin-3*gap)/4;
     int audio_ids[]={ID_LOAD_WAV,ID_TONE,ID_LOWPASS,ID_COMPRESS,ID_SATURATE,ID_GAIN,ID_MEASURE,ID_EXPORT};
     for(int i=0;i<8;i++) { int row=i/4, c=i%4; MoveWindow(GetDlgItem(w,audio_ids[i]),margin+c*(audio_col+gap),y+row*(bh+gap),audio_col,bh,TRUE); }
@@ -188,7 +206,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CREATE: {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
         add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
         add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
@@ -215,6 +233,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_SUITE: run_suite(); break;
             case ID_REVIEW: review_source(); break;
             case ID_METRIC_LAB: show_metric_lab(); break;
+            case ID_EMBEDDED: show_embedded_profiles(); break;
             case ID_LOAD_WAV: load_wav(); break;
             case ID_TONE: generate_tone(); break;
             case ID_LOWPASS: case ID_COMPRESS: case ID_SATURATE: case ID_GAIN: audio_effect(LOWORD(p)); break;

@@ -124,6 +124,25 @@ Pytyliki дотримується чітких меж локальних опе�
 | Збирання й тестування | CMake + CTest |
 | Не заявляється | Підтримка macOS, гарантована продуктивність ARM64/x86_64, промисловий RTL/FPGA-синтез або автономний трансформер коду |
 
+## Embedded C і профілі мікроконтролерів
+
+Нативне ядро C11 містить каталог профілів Cortex-M4, RV32IMC та ATmega328P,
+перевірку бюджету FLASH/SRAM із контролем переповнення, симулятор MMIO-регістрів
+із масками дозволених бітів і генератор мінімального шаблону C.
+
+~~~sh
+./build/pytyliki --embedded profiles
+./build/pytyliki --embedded profile cortex-m4-reference
+./build/pytyliki --embedded budget cortex-m4-reference 8192 1024 128 512 2048
+./build/pytyliki --embedded template ./main.c
+~~~
+
+У Win32-інтерфейсі додано кнопку **EMBEDDED C**. Профілі Cortex-M4 та RV32IMC
+є довідковими, а не конфігураціями конкретної плати. Симулятор не звертається до
+фізичних MMIO-адрес; генератор не замінює vendor startup, таблицю векторів,
+налаштування тактування або перевірку розпіновки. Оркестрація збірки й аналіз
+ELF/MAP доступні в Reaper. Див. [посібник Embedded C](docs/EMBEDDED_C.md).
+
 ## Документація
 
 - [Архітектура](docs/ARCHITECTURE.md)

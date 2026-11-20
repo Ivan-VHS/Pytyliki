@@ -144,6 +144,26 @@ Pytyliki follows explicit local-operation boundaries:
 | Build and tests | CMake + CTest |
 | Not claimed | macOS support, guaranteed ARM64/x86_64 performance, production RTL/FPGA synthesis or an autonomous source transformer |
 
+## Embedded C and MCU tooling
+
+The native C11 core includes a small Embedded C API for three target profiles
+(Cortex-M4 and RV32IMC reference budgets plus ATmega328P), overflow-checked
+FLASH/SRAM accounting, a simulated MMIO register bank with writable masks, and
+a hardware-neutral C starter generator. The CLI exposes:
+
+~~~sh
+./build/pytyliki --embedded profiles
+./build/pytyliki --embedded profile cortex-m4-reference
+./build/pytyliki --embedded budget cortex-m4-reference 8192 1024 128 512 2048
+./build/pytyliki --embedded template ./main.c
+~~~
+
+The native Win32 workstation has an **EMBEDDED C** inspector button. These C11
+primitives are not a physical MMIO mapper or firmware flasher; reference
+addresses and memory capacities must be checked against the selected chip.
+Reaper provides the project scaffold and installed-toolchain build orchestration.
+See [Embedded C workbench](docs/EMBEDDED_C.md).
+
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
