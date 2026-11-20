@@ -27,7 +27,7 @@ It is built for developers and engineers who want useful local measurements, ins
 | **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
 | **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
 | **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
-| **Verification** | Build with CMake and run CTest on Windows and Linux |
+| **Metric Lab** | Compare n-dimensional vectors, orthogonality, quadratic forms and geometric models from a dedicated CLI |\n| **Verification** | Build with CMake and run CTest on Windows and Linux |
 
 ## See the interface
 
@@ -86,7 +86,7 @@ Use the platform-specific executable path on Windows (for example, `build/Releas
 ## Engineering capabilities
 
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
-- **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
+- **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.\n- **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
 - **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
