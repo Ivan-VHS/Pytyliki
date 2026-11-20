@@ -73,7 +73,7 @@ int pl_trace_compare(
         return 0;
 
     delta = right->value - left->value;
-    combined = hypot(left->absolute_uncertainty, right->absolute_uncertainty);
+    combined = left->absolute_uncertainty + right->absolute_uncertainty;
     if (!isfinite(delta) || !isfinite(combined)) return -1;
 
     out->delta = delta;
