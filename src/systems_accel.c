@@ -321,7 +321,11 @@ int pl_unlock_deterministic_replay_snapshot(uint64_t first_block,
         (event_count != 0u && events == NULL) ||
         event_count > PL_SYSTEMS_MAX_REPLAY_EVENTS ||
         state_size > 16u * 1024u * 1024u) return -1;
-    if (hash32(initial_state, state_size, state_digest, hash_context) != 0) return -2;
+    {
+        const uint8_t empty_state = 0u;
+        const uint8_t *state_data = initial_state != NULL ? initial_state : &empty_state;
+        if (hash32(state_data, state_size, state_digest, hash_context) != 0) return -2;
+    }
     store_le64(buffer, first_block);
     store_le64(buffer + 8u, last_block);
     store_le64(buffer + 16u, seed);
@@ -698,7 +702,6 @@ int pl_fuse_compute_kernels(const pl_kernel_node *nodes, size_t node_count,
     out->group_count = 1u;
     out->group_for_node[0] = 0u;
     for (size_t i = 0u; i < node_count; ++i) {
-        if (nodes[i].has_side_effect_barrier && nodes[i].fusible) return -1;
         if (i == 0u) continue;
         int connected = (nodes[i - 1u].output_resources & nodes[i].input_resources) != 0u;
         int merge = connected && nodes[i - 1u].fusible && nodes[i].fusible &&
@@ -849,6 +852,7 @@ int pl_define_custom_isa_extension(pl_isa_extension_registry *registry,
     uint32_t width_mask, operand_mask;
     if (registry == NULL || extension == NULL ||
         extension->name[0] == '\0' ||
+        memchr(extension->name, '\0', sizeof(extension->name)) == NULL ||
         extension->instruction_bits < 8u || extension->instruction_bits > 32u ||
         extension->operand_bits == 0u ||
         extension->operand_bits >= extension->instruction_bits ||
@@ -862,8 +866,8 @@ int pl_define_custom_isa_extension(pl_isa_extension_registry *registry,
         (extension->opcode_mask & operand_mask) != 0u) return -1;
     for (size_t i = 0u; i < registry->count; ++i) {
         if (strcmp(registry->entries[i].name, extension->name) == 0 ||
-            (registry->entries[i].opcode_mask == extension->opcode_mask &&
-             registry->entries[i].opcode_value == extension->opcode_value))
+            (((registry->entries[i].opcode_value ^ extension->opcode_value) &
+              (registry->entries[i].opcode_mask & extension->opcode_mask)) == 0u))
             return -2;
     }
     registry->entries[registry->count++] = *extension;
@@ -882,6 +886,7 @@ int pl_isa_extension_encode(const pl_isa_extension *extension,
     operand_mask = (UINT32_C(1) << extension->operand_bits) - 1u;
     if ((operand_value & ~operand_mask) != 0u ||
         (extension->opcode_value & ~width_mask) != 0u ||
+        (extension->opcode_value & ~extension->opcode_mask) != 0u ||
         (extension->opcode_mask & operand_mask) != 0u) return -1;
     *instruction_word = (extension->opcode_value | operand_value) & width_mask;
     return 0;
