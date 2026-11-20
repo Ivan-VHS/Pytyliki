@@ -9,6 +9,8 @@
 #include "core.h"
 #include "processor.h"
 #include "dsp.h"
+#include "metric_geometry.h"
+#include "metric_registry.h"
 
 #define ID_PROFILE 1001
 #define ID_SUITE 1002
@@ -23,6 +25,7 @@
 #define ID_GAIN 1011
 #define ID_CLEAR 1012
 #define ID_SAVE_REPORT 1013
+#define ID_METRIC_LAB 1014
 #define ID_CUTOFF 1101
 #define ID_THRESHOLD 1102
 #define ID_RATIO 1103
@@ -63,6 +66,23 @@ static double read_parameter(int id, double fallback) {
 static HWND add_button(HWND parent, const char *label, int id) {
     HWND h=CreateWindowExA(0,"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_PUSHBUTTON,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
     apply_font(h); return h;
+}
+static void show_metric_lab(void) {
+    const double profile[] = {3.0, 4.0, 12.0};
+    const double weights[] = {1.0, 2.0, 0.5};
+    const double sample[] = {2.0, 4.0, 6.0, 8.0};
+    double l2 = 0.0, l1 = 0.0, weighted = 0.0, mean = 0.0, variance = 0.0;
+    if (pl_metric_norm(profile, 3u, &l2) != 0 ||
+        pl_metric_l1_norm(profile, 3u, &l1) != 0 ||
+        pl_metric_weighted_l2_norm(profile, weights, 3u, &weighted) != 0 ||
+        pl_metric_mean_variance(sample, 4u, 0, &mean, &variance) != 0) {
+        log_text("[METRIC LAB] Numerical operation failed validation.\\r\\n");
+        return;
+    }
+    log_format("\\r\\n[METRIC LAB] L2=%.6g | L1=%.6g | weighted L2=%.6g\\r\\n", l2, l1, weighted);
+    log_format("[METRIC LAB] population mean=%.6g | variance=%.6g | registered operations=%lu\\r\\n",
+        mean, variance, (unsigned long)pl_metric_registry_count());
+    log_text("Metric Lab calls the shared C11 kernel; it does not duplicate formulas in the GUI.\\r\\n");
 }
 static void show_profile(void) {
     pl_processor_snapshot p;
@@ -148,8 +168,9 @@ static void export_wav(void) {
 static void layout(HWND w) {
     RECT r; GetClientRect(w,&r); int width=r.right-r.left; int margin=22; int gap=10;
     int col=(width-2*margin-2*gap)/3; int y=96; int bh=34;
-    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW};
-    for(int i=0;i<3;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
+    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB};
+    col=(width-2*margin-3*gap)/4;
+    for(int i=0;i<4;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
     y+=bh+12; int audio_col=(width-2*margin-3*gap)/4;
     int audio_ids[]={ID_LOAD_WAV,ID_TONE,ID_LOWPASS,ID_COMPRESS,ID_SATURATE,ID_GAIN,ID_MEASURE,ID_EXPORT};
     for(int i=0;i<8;i++) { int row=i/4, c=i%4; MoveWindow(GetDlgItem(w,audio_ids[i]),margin+c*(audio_col+gap),y+row*(bh+gap),audio_col,bh,TRUE); }
@@ -167,7 +188,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CREATE: {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
         add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
         add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
@@ -184,7 +205,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         RECT header={0,0,r.right,78}; HBRUSH hb=CreateSolidBrush(RGB(20,34,58)); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,12,r.right-20,43}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(185,205,229)); RECT sub={23,43,r.right-20,68}; DrawTextA(dc,"CPU diagnostics | bounded benchmarking | static review | local DSP laboratory",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SetTextColor(dc,RGB(185,205,229)); RECT sub={23,43,r.right-20,68}; DrawTextA(dc,"CPU diagnostics | metric kernel | static review | local DSP laboratory",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(RGB(197,48,63)); RECT line={0,78,r.right,82}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
@@ -193,6 +214,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_PROFILE: show_profile(); break;
             case ID_SUITE: run_suite(); break;
             case ID_REVIEW: review_source(); break;
+            case ID_METRIC_LAB: show_metric_lab(); break;
             case ID_LOAD_WAV: load_wav(); break;
             case ID_TONE: generate_tone(); break;
             case ID_LOWPASS: case ID_COMPRESS: case ID_SATURATE: case ID_GAIN: audio_effect(LOWORD(p)); break;
