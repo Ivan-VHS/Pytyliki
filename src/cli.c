@@ -12,6 +12,7 @@
 #include "ironclad_systems.h"
 #include "architecture_atlas.h"
 #include "trimatrix_autoforge.h"
+#include "embedded.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -22,7 +23,7 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite] [--e2k-profile]\n"
-         "           [--systems] [--architectures] [--architecture NAME] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--embedded-c] [--embedded-inspect FILE] [--systems] [--architectures] [--architecture NAME] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
@@ -193,6 +194,51 @@ static void print_e2k_profile(void) {
     puts("No fixed issue width, ALU count, register count, or cycle model is assumed.");
 }
 
+static void print_embedded_catalog(void) {
+    size_t i;
+    puts("Embedded C target profiles (metadata only):");
+    for (i = 0u; i < pl_embedded_target_count(); ++i) {
+        const pl_embedded_target *target = NULL;
+        if (pl_embedded_target_at(i, &target) == 0)
+            printf("%-20s | %-16s | %2u-bit | %-24s | %s\\n",
+                   target->id, target->architecture, target->word_bits,
+                   target->compiler, target->description);
+    }
+    puts("Profiles do not imply an installed toolchain; no code is compiled, run, flashed or injected.");
+}
+static int inspect_embedded_file(const char *path) {
+    FILE *file = fopen(path, "rb");
+    long length;
+    char *source;
+    size_t read_count;
+    pl_embedded_source_report report;
+    if (file == NULL) { fprintf(stderr, "Cannot open Embedded C source: %s\\n", path); return 1; }
+    if (fseek(file, 0L, SEEK_END) != 0 || (length = ftell(file)) < 0L ||
+        (unsigned long)length > (unsigned long)PL_EMBEDDED_MAX_SOURCE_BYTES ||
+        fseek(file, 0L, SEEK_SET) != 0) {
+        fclose(file); fputs("Embedded C source must be readable and no larger than 1 MiB.\\n", stderr); return 2;
+    }
+    source = (char *)malloc((size_t)length + 1u);
+    if (source == NULL) { fclose(file); fputs("Out of memory while reading Embedded C source.\\n", stderr); return 1; }
+    read_count = fread(source, 1u, (size_t)length, file);
+    fclose(file);
+    if (read_count != (size_t)length) { free(source); fputs("Could not read complete Embedded C source.\\n", stderr); return 1; }
+    source[read_count] = '\0';
+    if (pl_embedded_inspect_source(source, read_count, &report) != 0) { free(source); return 2; }
+    free(source);
+    printf("Embedded C lexical review: %lu bytes, %lu lines, %lu include(s)\\n",
+           (unsigned long)report.source_bytes, (unsigned long)report.line_count,
+           (unsigned long)report.include_count);
+    printf("Heap calls: %lu | blocking calls: %lu | register markers: %lu | host-I/O calls: %lu\\n",
+           (unsigned long)report.heap_calls, (unsigned long)report.blocking_calls,
+           (unsigned long)report.register_markers, (unsigned long)report.host_io_calls);
+    if (report.warnings & PL_EMBEDDED_WARN_DYNAMIC_ALLOCATION) puts("Review: dynamic allocation detected.");
+    if (report.warnings & PL_EMBEDDED_WARN_BLOCKING_CALLS) puts("Review: blocking delay calls detected.");
+    if (report.warnings & PL_EMBEDDED_WARN_REGISTER_ACCESS) puts("Review: register-oriented code markers detected.");
+    if (report.warnings & PL_EMBEDDED_WARN_HOST_IO) puts("Review: host file or console I/O detected.");
+    puts("Advisory lexical scan only; comments and strings may affect counts. No execution or device access occurred.");
+    return 0;
+}
 static void print_profile(void) {
     pl_processor_snapshot p; if(pl_processor_scan(&p)!=0){fprintf(stderr,"Processor scan failed.\n");return;}
     printf("Architecture: %s\nCPU: %s\nVendor: %s\nLogical processors: %u\nFamily/model: %u/%u\nPhysical memory: %llu MiB | available: %llu MiB\n",
@@ -210,7 +256,7 @@ int main(int argc,char **argv) {
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
     for(int i=1;i<argc;i++) {
-        if(!strcmp(argv[i],"--profile")) profile=1;
+        if(!strcmp(argv[i],"--profile")) profile=1;\n        else if(!strcmp(argv[i],"--embedded-c")) embedded_list=1;\n        else if(!strcmp(argv[i],"--embedded-inspect")&&i+1<argc) embedded_source=argv[++i];
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
         else if(!strcmp(argv[i],"--architectures")) architectures=1;
@@ -253,6 +299,9 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
+    if(embedded_list) print_embedded_catalog();
+    if(embedded_source) return inspect_embedded_file(embedded_source);
+    if(embedded_list && argc==2) return 0;
     if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
@@ -284,8 +333,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if((systems || architectures || architecture_name || improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!architectures&&!architecture_name&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile){profile=1;bench=1;}
+    if((systems || architectures || architecture_name || improvement_plan || syntax_pie || trimatrix || e2k_profile || embedded_list) && (argc==2 || (trimatrix && argc<=3))) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!architectures&&!architecture_name&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile&&!embedded_list&&!embedded_source){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
