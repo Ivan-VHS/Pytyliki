@@ -301,7 +301,7 @@ int main(int argc,char **argv) {
     }
     if(embedded_list) print_embedded_catalog();
     if(embedded_source) return inspect_embedded_file(embedded_source);
-    if(embedded_list && argc==2) return 0;
+    if(embedded_list) return 0;
     if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
