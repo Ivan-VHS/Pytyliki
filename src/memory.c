@@ -158,10 +158,23 @@ pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *b
  p->block_size=block_size;p->stride_bytes=stride;p->block_count=blocks;return PL_STATUS_OK;
 }
 void *pl_pool_alloc(pl_pool_t *p){
+ size_t bitmap_bytes;
  if(p==NULL||p->storage==NULL||p->bitmap==NULL)return NULL;
- for(size_t i=0u;i<p->block_count;i++){
-  unsigned char mask=(unsigned char)(1u<<(i&7u));
-  if((p->bitmap[i>>3u]&mask)==0u){p->bitmap[i>>3u]=(unsigned char)(p->bitmap[i>>3u]|mask);++p->in_use;return p->storage+i*p->stride_bytes;}
+ bitmap_bytes=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
+ for(size_t byte=0u;byte<bitmap_bytes;byte++){
+  unsigned char occupied=p->bitmap[byte];
+  size_t first=byte*8u,remaining=p->block_count-first;
+  size_t bits=remaining<8u?remaining:8u;
+  if(occupied==0xFFu)continue;
+  for(size_t bit=0u;bit<bits;bit++){
+   unsigned char mask=(unsigned char)(1u<<bit);
+   if((occupied&mask)==0u){
+    size_t index=first+bit;
+    p->bitmap[byte]=(unsigned char)(occupied|mask);
+    ++p->in_use;
+    return p->storage+index*p->stride_bytes;
+   }
+  }
  }
  return NULL;
 }
