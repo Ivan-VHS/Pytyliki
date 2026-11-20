@@ -122,6 +122,7 @@ Pytyliki придерживается явных границ локальных
 ## Документация
 
 - [Архитектура](docs/ARCHITECTURE.md)
+- [Атлас 14 системных архитектур](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md)
 - [Маршрутизация APSIA 2.0](docs/APSIA_2.0.md)
 - [Механизм аппаратных правил](docs/HARDWARE_RULE_ENGINE.md)
 - [Таксономия процессоров](docs/PROCESSOR_TAXONOMY.md)
