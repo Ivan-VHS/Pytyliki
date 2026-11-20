@@ -27,7 +27,7 @@ It is built for developers and engineers who want useful local measurements, ins
 | **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
 | **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
 | **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
-| **Metric Lab** | Compare n-dimensional vectors, orthogonality, quadratic forms and geometric models from a dedicated CLI |
+| **Metric Lab** | Compare n-dimensional vectors, orthogonality, quadratic forms and geometric models from a dedicated CLI |\n| **Embedded C** | Inspect seven host, MCU and virtual-ISA profiles; run bounded advisory source checks through C11 and C ABI APIs |
 | **Memory kernel** | Typed zero-copy views, bounded arenas with rewind checkpoints and fixed-block pools |
 | **Verification** | Build with CMake and run CTest on Windows and Linux |
 
@@ -106,7 +106,7 @@ The probe only resolves candidate executable names on `PATH`; it never runs comp
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
 - **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
 - **Memory kernel:** typed strided views, overflow-checked slices, bounded arena allocation with actual-address alignment, mark/rewind, high-water telemetry, custom allocator callbacks and caller-owned fixed-block pools. The pool allocator skips fully occupied bitmap bytes and preserves deterministic first-fit allocation. See [the memory contract](docs/MEMORY_ARENA.md).
-- **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
+- **Embedded C profiles:** host C11, AVR ATmega328P, ARM Cortex-M0, RISC-V32 IMAC, MSP430G2553, Xtensa ESP32 and WASI metadata; a 1 MiB-bounded lexical source review highlights heap, blocking, register-oriented and host-I/O patterns. This does not compile, execute, flash or modify hardware. See [Embedded C integration](docs/EMBEDDED_C.md).\n- **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
 - **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
@@ -141,7 +141,7 @@ Pytyliki follows explicit local-operation boundaries:
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md)
+- [Embedded C integration](docs/EMBEDDED_C.md)\n- [Architecture](docs/ARCHITECTURE.md)
 - [14-target systems architecture atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md)
 - [C11 compute kernel: memory, metrics and operation registry](docs/COMPUTE_KERNEL.md)
 - [Memory views, arenas and pools](docs/MEMORY_ARENA.md)
