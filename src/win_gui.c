@@ -390,5 +390,20 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     if(!RegisterClassA(&wc)) return 1;
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
-    ShowWindow(w,show); UpdateWindow(w); MSG msg; while(GetMessageA(&msg,NULL,0,0)>0){TranslateMessage(&msg);DispatchMessageA(&msg);} return (int)msg.wParam;
+    BOOL animations_enabled=TRUE;
+    char reduced_motion[8]={0};
+    if(GetEnvironmentVariableA("UI_REDUCED_MOTION",reduced_motion,(DWORD)sizeof(reduced_motion))>0 &&
+       (reduced_motion[0]=='1' || reduced_motion[0]=='t' || reduced_motion[0]=='T' ||
+        reduced_motion[0]=='y' || reduced_motion[0]=='Y')) animations_enabled=FALSE;
+#ifndef SPI_GETCLIENTAREAANIMATION
+#define SPI_GETCLIENTAREAANIMATION 0x1042
+#endif
+    if(animations_enabled &&
+       SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION,0,&animations_enabled,0) &&
+       animations_enabled) {
+        if(!AnimateWindow(w,140,AW_BLEND|AW_ACTIVATE)) ShowWindow(w,show);
+    } else {
+        ShowWindow(w,show);
+    }
+    UpdateWindow(w); MSG msg; while(GetMessageA(&msg,NULL,0,0)>0){TranslateMessage(&msg);DispatchMessageA(&msg);} return (int)msg.wParam;
 }
