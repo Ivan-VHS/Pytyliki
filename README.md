@@ -87,6 +87,19 @@ On Windows, the build also produces **`pytyliki-gui.exe`**.
 
 Use the platform-specific executable path on Windows (for example, `build/Release/pytyliki.exe`).
 
+## Systems-language toolchain matrix
+
+Pytyliki now includes a 66-slot capability catalogue spanning modern native languages, formally verified languages, embedded targets, historical systems languages and experimental compiler tracks. The repeated Clay and Nimrod/early-Nim positions are retained as explicit aliases. This is a discovery and routing aid, not a claim that Pytyliki is transpiled into all 66 languages.
+
+```bash
+python tools/systems_languages.py --verify
+python tools/systems_languages.py --profile pytyliki
+python tools/systems_languages.py --profile pytyliki --available-only
+python tools/systems_languages.py --tag formal-verification,embedded --json
+```
+
+The probe only resolves candidate executable names on `PATH`; it never runs compilers, installs packages, loads native code or changes the machine.
+
 ## Engineering capabilities
 
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
