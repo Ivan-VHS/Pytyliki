@@ -20,7 +20,7 @@
 
 - **Processor inventory:** CPU identity, architecture, logical topology, memory and ISA capabilities. AVX-family usability includes OS-managed XCR0 state checks.
 - **Bounded benchmark suite:** processor, memory and matrix workloads with timing and integrity checks. Results are local comparisons, not hardware certification.
-- **Static source review:** inspect supported source files and export findings without compiling, executing or rewriting them.
+- **Static source review:** inspect supported source files and export findings without compiling, executing or rewriting them. Report export, sharing and telemetry actions have separate consent-aware role gates.
 - **Audio / DSP:** PCM16 WAV import/export, test-tone generation, low-pass filtering, compression, saturation, gain and metering.
 - **Memory kernel:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints, telemetry and fixed-block pools.
 - **Metric engine:** vector norms, distances, orthogonality, weighted quadratic forms, geometry and variance operations.
@@ -66,7 +66,7 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 
 ## Documentation
 
-[UI/UX system](docs/UI_UX_SYSTEM.md) · [Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
+[Human-first governance](docs/HUMAN_FIRST_GOVERNANCE.md) · [UI/UX system](docs/UI_UX_SYSTEM.md) · [Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
 [Windows releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [Desktop build workflow](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
 
