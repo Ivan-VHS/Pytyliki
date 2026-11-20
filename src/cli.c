@@ -213,7 +213,8 @@ int main(int argc,char **argv) {
         if(!strcmp(argv[i],"--profile")) profile=1;
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
-        else if(!strcmp(argv[i],"--architectures")) architectures=1;\n        else if(!strcmp(argv[i],"--architecture")&&i+1<argc) architecture_name=argv[++i];
+        else if(!strcmp(argv[i],"--architectures")) architectures=1;
+        else if(!strcmp(argv[i],"--architecture")&&i+1<argc) architecture_name=argv[++i];
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
@@ -256,7 +257,8 @@ int main(int argc,char **argv) {
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(systems) print_system_enhancements();
-    if(architectures) print_architecture_atlas();\n    if(architecture_name) return print_architecture_profile(architecture_name);
+    if(architectures) print_architecture_atlas();
+    if(architecture_name) return print_architecture_profile(architecture_name);
     if(improvement_plan) print_improvement_plan();
     if(trimatrix) print_trimatrix(trimatrix_depth);
     if(syntax_pie) print_syntax_pie();
