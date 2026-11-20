@@ -38,7 +38,7 @@ header and ABI version.
 `pl_pool_t` uses caller-owned storage and bitmap memory. The pool computes an
 aligned stride, allocates fixed-size blocks without hidden heap activity and
 rejects foreign pointers, misaligned pointers and double frees. The current
-free-block search is a deterministic linear scan.
+bitmap-byte scan skips fully occupied bytes, then selects the first available block in the first non-full byte. Allocation remains deterministic first-fit while avoiding a per-block scan across already-full bitmap bytes.
 
 ## Safety and lifetime rules
 
