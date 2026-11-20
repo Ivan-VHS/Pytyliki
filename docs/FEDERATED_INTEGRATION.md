@@ -31,10 +31,13 @@ The shared library is opt-in: consumers explicitly name a trusted library path.
 
 ## Data ownership and safety
 
-OPlague publishes the oplage.device-snapshot.v1 JSON contract. Device IDs are
-SHA-256 fingerprints of PnP instance IDs; raw instance IDs are not exported.
-Metric profiles use [0, 1], where higher is healthier/better. Missing telemetry
-is never fabricated.
+OPlague publishes the oplage.device-snapshot.v1 JSON contract. Device IDs
+are HMAC-SHA-256 pseudonyms over PnP instance IDs with domain separation; raw
+instance IDs are not exported. Each default snapshot uses an ephemeral key, so
+identities cannot be correlated across exports by default. A caller-managed
+protected key deliberately enables pseudonymous cross-snapshot matching.
+Pseudonymization is not anonymization. Metric profiles use [0, 1], where higher
+is healthier/better. Missing telemetry is never fabricated.
 
 Reaper reads snapshots and writes analysis reports. It may load Pytyliki ABI v1
 only when a script explicitly supplies a library path. Native loading executes
