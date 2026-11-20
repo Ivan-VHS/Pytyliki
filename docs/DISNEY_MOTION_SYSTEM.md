@@ -28,15 +28,15 @@ Use ease-out for entry, ease-in for exit, ease-in-out for repositioning, and lin
 1. **Squash and stretch:** restrained pressed-state feedback; never distort labels, values, or charts.
 2. **Anticipation:** focus and hover states preview available actions without delaying clicks.
 3. **Staging:** one visual focus at a time; keep the diagnostic log and controls readable.
-4. **Follow-through and overlap:** related controls may transition in a short bounded sequence; parent surfaces lead.
-5. **Slow in / slow out:** consistent easing for entry, exit, and repositioning.
-6. **Arcs:** optional for spatial navigation only; keep dense workstation layouts direct and predictable.
-7. **Secondary action:** supporting icon/status feedback reinforces the real result without competing with it.
-8. **Timing:** use the shared duration tokens; never block the message loop.
-9. **Exaggeration:** reserve stronger emphasis for important validation errors and confirmed success.
-10. **Solid drawing:** preserve geometry, clipping, z-order, contrast, and focus indicators at every frame.
-11. **Appeal:** motion should feel precise and technical, matching the workstation's visual language.
-12. **Scene continuity:** transitions across the complete workflow must share the same motion vocabulary.
+4. **Straight-ahead action and pose-to-pose:** use explicit state transitions for predictable workflows; reserve continuous frame-by-frame motion for genuinely continuous interactions such as dragging or meters.
+5. **Follow-through and overlap:** related controls may transition in a short bounded sequence; parent surfaces lead.
+6. **Slow in / slow out:** consistent easing for entry, exit, and repositioning.
+7. **Arcs:** optional for spatial navigation only; keep dense workstation layouts direct and predictable.
+8. **Secondary action:** supporting icon/status feedback reinforces the real result without competing with it.
+9. **Timing:** use the shared duration tokens; never block the message loop.
+10. **Exaggeration:** reserve stronger emphasis for important validation errors and confirmed success.
+11. **Solid drawing:** preserve geometry, clipping, z-order, contrast, and focus indicators at every frame.
+12. **Appeal:** motion should feel precise and technical, matching the workstation's visual language.
 
 ## Component mapping
 
