@@ -78,7 +78,7 @@ int32_t pytyliki_v1_embedded_budget_evaluate(
     const pl_embedded_profile *profile;
     pl_embedded_sections native_sections;
     pl_embedded_memory_budget budget;
-    if (profile_id == NULL || profile_id[0] == '\\0' || sections == NULL || out == NULL)
+    if (profile_id == NULL || profile_id[0] == '\0' || sections == NULL || out == NULL)
         return PYTYLIKI_ABI_INVALID_ARGUMENT;
     profile = pl_embedded_profile_find(profile_id);
     if (profile == NULL) return PYTYLIKI_ABI_INVALID_ARGUMENT;
