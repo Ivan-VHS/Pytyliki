@@ -9,7 +9,7 @@ This document records the first implementation increment for the compute-kernel 
 - Views never free their backing storage. PL_VIEW_OWNS_DATA is descriptive metadata for the caller's lifecycle policy; callers remain responsible for releasing owned allocations with their matching allocator.
 - extent_bytes is the accessible byte extent beginning at data. For a non-empty view, the implementation checks (count - 1) * stride_bytes + elem_size <= extent_bytes with overflow checks.
 - A zero stride is rejected. Empty views are allowed but must have a zero extent.
-- Arena allocations are monotonic and reset as a unit. pl_arena_create accepts caller-supplied allocate/deallocate callbacks; pl_arena_init uses caller-owned storage.
+- Arena allocations are monotonic and reset as a unit. `pl_arena_init` uses caller-owned storage; `pl_arena_create` accepts caller-supplied allocate/deallocate callbacks. Allocations align the absolute returned address, not merely an offset, and reject invalid alignment or exhausted capacity. ABI v2 adds checkpoints (`pl_arena_mark` / `pl_arena_rewind`) and usage telemetry (`pl_arena_get_stats`, including high-water bytes and allocation count). Rewind can clear the released range and restores the allocation count captured by the checkpoint.
 - Pool storage and the allocation bitmap are caller-owned. Pool operations do not allocate internally. Free rejects foreign pointers and double frees.
 
 ### Metric and statistical kernel

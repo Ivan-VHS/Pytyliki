@@ -109,11 +109,38 @@ pl_status_t pl_arena_create(pl_arena_t *a,size_t capacity,const pl_allocator_t *
  return PL_STATUS_OK;
 }
 void *pl_arena_alloc(pl_arena_t *a,size_t size,size_t alignment){
- size_t aligned,end;if(a==NULL||a->memory==NULL||size==0u||!align_up_size(a->used,alignment,&aligned)||
- add_overflow_size(aligned,size,&end)||end>a->capacity)return NULL;
- a->used=end;return a->memory+aligned;
+ uintptr_t base,current,mask;size_t padding,remaining,aligned,end;
+ if(a==NULL||a->memory==NULL||size==0u||!power_of_two(alignment)||a->used>a->capacity)return NULL;
+ if(alignment-1u>(size_t)UINTPTR_MAX)return NULL;
+ base=(uintptr_t)a->memory;
+ if(a->used>(size_t)(UINTPTR_MAX-base))return NULL;
+ current=base+(uintptr_t)a->used;mask=(uintptr_t)(alignment-1u);
+ padding=(size_t)(((uintptr_t)0u-current)&mask);
+ remaining=a->capacity-a->used;
+ if(padding>remaining)return NULL;
+ if(size>remaining-padding)return NULL;
+ aligned=a->used+padding;end=aligned+size;
+ a->used=end;
+ if(a->used>a->peak_used)a->peak_used=a->used;
+ if(a->allocation_count<SIZE_MAX)++a->allocation_count;
+ return a->memory+aligned;
 }
-void pl_arena_reset(pl_arena_t *a){if(a!=NULL)a->used=0u;}
+pl_status_t pl_arena_mark(const pl_arena_t *a,pl_arena_mark_t *out){
+ if(a==NULL||out==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ out->used=a->used;out->allocation_count=a->allocation_count;return PL_STATUS_OK;
+}
+pl_status_t pl_arena_rewind(pl_arena_t *a,pl_arena_mark_t mark,int clear_released){
+ if(a==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ if(mark.used>a->used||mark.allocation_count>a->allocation_count)return PL_STATUS_OUT_OF_RANGE;
+ if(clear_released&&mark.used<a->used)memset(a->memory+mark.used,0,a->used-mark.used);
+ a->used=mark.used;a->allocation_count=mark.allocation_count;return PL_STATUS_OK;
+}
+pl_status_t pl_arena_get_stats(const pl_arena_t *a,pl_arena_stats_t *out){
+ if(a==NULL||out==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ out->capacity=a->capacity;out->used=a->used;out->available=a->capacity-a->used;
+ out->peak_used=a->peak_used;out->allocation_count=a->allocation_count;return PL_STATUS_OK;
+}
+void pl_arena_reset(pl_arena_t *a){if(a!=NULL){a->used=0u;a->allocation_count=0u;}}
 void pl_arena_destroy(pl_arena_t *a){
  if(a==NULL)return;if(a->owns_memory&&a->allocator.deallocate!=NULL)a->allocator.deallocate(a->allocator.user_data,a->memory);
  memset(a,0,sizeof(*a));
@@ -131,10 +158,23 @@ pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *b
  p->block_size=block_size;p->stride_bytes=stride;p->block_count=blocks;return PL_STATUS_OK;
 }
 void *pl_pool_alloc(pl_pool_t *p){
+ size_t bitmap_bytes;
  if(p==NULL||p->storage==NULL||p->bitmap==NULL)return NULL;
- for(size_t i=0u;i<p->block_count;i++){
-  unsigned char mask=(unsigned char)(1u<<(i&7u));
-  if((p->bitmap[i>>3u]&mask)==0u){p->bitmap[i>>3u]=(unsigned char)(p->bitmap[i>>3u]|mask);++p->in_use;return p->storage+i*p->stride_bytes;}
+ bitmap_bytes=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
+ for(size_t byte=0u;byte<bitmap_bytes;byte++){
+  unsigned char occupied=p->bitmap[byte];
+  size_t first=byte*8u,remaining=p->block_count-first;
+  size_t bits=remaining<8u?remaining:8u;
+  if(occupied==0xFFu)continue;
+  for(size_t bit=0u;bit<bits;bit++){
+   unsigned char mask=(unsigned char)(1u<<bit);
+   if((occupied&mask)==0u){
+    size_t index=first+bit;
+    p->bitmap[byte]=(unsigned char)(occupied|mask);
+    ++p->in_use;
+    return p->storage+index*p->stride_bytes;
+   }
+  }
  }
  return NULL;
 }
