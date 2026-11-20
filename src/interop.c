@@ -37,7 +37,7 @@ static void copy_embedded_text(char *out, size_t capacity, const char *value) {
     length = strlen(value);
     if (length >= capacity) length = capacity - 1u;
     memcpy(out, value, length);
-    out[length] = '\\0';
+    out[length] = '\0';
 }
 
 int32_t pytyliki_v1_embedded_profile_count(uint64_t *out_count) {
