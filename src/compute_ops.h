@@ -27,6 +27,19 @@ typedef struct {
     double maximum;
 } pl_compute_summary;
 
+/* Stable one-pass descriptive statistics. sample_variance_defined is zero
+ * when count is one; all output fields remain unchanged on failure. */
+typedef struct {
+    size_t count;
+    double mean;
+    double population_variance;
+    double sample_variance;
+    double standard_deviation;
+    double minimum;
+    double maximum;
+    uint32_t sample_variance_defined;
+} pl_compute_statistics_result;
+
 /* All functions return 0 on success and -1 for invalid input, capacity or overflow. */
 int pl_compute_multiply(double left, double right, double *out);
 int pl_compute_calculate(double left, double right, pl_compute_binary_op operation, double *out);
@@ -51,6 +64,7 @@ int pl_compute_convolve(const double *signal, size_t signal_count,
                         const double *kernel, size_t kernel_count,
                         double *out, size_t capacity, size_t *out_count);
 int pl_compute_summarize(const double *values, size_t count, pl_compute_summary *out);
+int pl_compute_statistics(const double *values, size_t count, pl_compute_statistics_result *out);
 /* Prime factors are returned with multiplicity, in ascending order. Input is bounded. */
 int pl_compute_factorize(uint64_t value, uint64_t *factors,
                          size_t capacity, size_t *factor_count);
