@@ -15,6 +15,8 @@
 
 It is built for developers and engineers who want useful local measurements, inspectable reports and explicit safety boundaries — not a black box that silently changes hardware.
 
+**Engineering standard:** [Unified Engineering Standard](docs/UNIFIED_ENGINEERING_STANDARD.md) — shared rules for portability, modularity, stable interfaces, evidence and safe integration.
+
 **Read this in:** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md)
 
 ## The workstation at a glance
