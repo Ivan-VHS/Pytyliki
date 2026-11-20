@@ -25,6 +25,8 @@ jobs:
         run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
       - name: Verify architecture contract
         run: python scripts/check_architecture_contract.py
+      - name: Validate 66-language systems matrix
+        run: python tools/systems_languages.py --verify
       - name: Verify 100-proverb engineering crosswalk
         run: python scripts/check_chinese_proverbs_profile.py
 
