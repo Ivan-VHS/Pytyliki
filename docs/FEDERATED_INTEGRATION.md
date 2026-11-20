@@ -66,3 +66,8 @@ arguments and vector limits.
 - **Reaper:** [repository](https://github.com/Ivan-VHS/Reaper), [federation contract](https://github.com/Ivan-VHS/Reaper/blob/main/docs/FEDERATED_INTEGRATION.md), [native FFI consumer](https://github.com/Ivan-VHS/Reaper/blob/main/reaper/ffi.py), [project manifest](https://github.com/Ivan-VHS/Reaper/blob/main/project-contract.json).
 - **OPlague:** [repository](https://github.com/Ivan-VHS/OPlague), [federation contract](https://github.com/Ivan-VHS/OPlague/blob/main/docs/FEDERATED_INTEGRATION.md), [native metric adapter](https://github.com/Ivan-VHS/OPlague/blob/main/tools/pytyliki_ffi.py), [project manifest](https://github.com/Ivan-VHS/OPlague/blob/main/project-contract.json).
 - **Pytyliki evidence:** [public ABI header](../src/interop.h), [ABI implementation](../src/interop.c), [project manifest](../project-contract.json).
+
+
+## OCTA-8 horizontal peer product and octagonal pyramid
+
+The shared [OCTA-8 topology contract](OCTA_PYRAMID_FEDERATION.md) defines the directed Reaper↔Pytyliki↔OPlague peer product: six directed links, three local self-loops and eight protocol facets. Pytyliki remains the portable C11 numerical provider. Calls are synchronous and return results over the same explicitly selected ABI; Pytyliki does not launch peer runtimes or load peer code.
