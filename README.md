@@ -66,6 +66,8 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 
 ## Documentation
 
+[Clinical Systems Reliability CSR-120](docs/CLINICAL_SYSTEMS_CSR120.md) · 
+
 [UI/UX system](docs/UI_UX_SYSTEM.md) · [Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
 [Windows releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [Desktop build workflow](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
