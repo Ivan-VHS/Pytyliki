@@ -13,6 +13,10 @@
 #include "metric_registry.h"
 #include "embedded.h"
 
+#ifndef WM_DPICHANGED
+#define WM_DPICHANGED 0x02E0
+#endif
+
 #define ID_PROFILE 1001
 #define ID_SUITE 1002
 #define ID_REVIEW 1003
@@ -59,18 +63,6 @@ static COLORREF button_ink(int primary, int danger) {
 }
 static int primary_button(UINT id) {
     return id==ID_PROFILE || id==ID_SUITE || id==ID_REVIEW || id==ID_SAVE_REPORT;
-}
-static void request_dpi_awareness(void) {
-    HMODULE user32=GetModuleHandleA("user32.dll");
-    if (user32) {
-        typedef BOOL (WINAPI *dpi_context_fn)(HANDLE);
-        dpi_context_fn set_context=(dpi_context_fn)GetProcAddress(user32,"SetProcessDpiAwarenessContext");
-        if (set_context) { (void)set_context((HANDLE)(LONG_PTR)-4); return; }
-    }
-    request_dpi_awareness();
-}
-static BOOL CALLBACK repaint_child(HWND child, LPARAM unused) {
-    (void)unused; InvalidateRect(child,NULL,TRUE); return TRUE;
 }
 static void request_dpi_awareness(void) {
     HMODULE user32=GetModuleHandleA("user32.dll");
@@ -302,12 +294,6 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         return 0;
     }
     case WM_SIZE: layout(w); return 0;
-    case WM_DPICHANGED: {
-        RECT *suggested=(RECT*)l;
-        SetWindowPos(w,NULL,suggested->left,suggested->top,suggested->right-suggested->left,
-            suggested->bottom-suggested->top,SWP_NOZORDER|SWP_NOACTIVATE);
-        layout(w); InvalidateRect(w,NULL,TRUE); return 0;
-    }
     case WM_CTLCOLORSTATIC: {
         HDC dc=(HDC)p; SetBkMode(dc,TRANSPARENT); SetTextColor(dc,text_color());
         return (LRESULT)g_page_brush;
