@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define PL_MEMORY_ABI_VERSION 1u
+#define PL_MEMORY_ABI_VERSION 2u
 typedef enum {
  PL_STATUS_OK=0, PL_STATUS_INVALID_ARGUMENT=1, PL_STATUS_OUT_OF_RANGE=2,
  PL_STATUS_OVERFLOW=3, PL_STATUS_OUT_OF_MEMORY=4, PL_STATUS_TYPE_MISMATCH=5,
@@ -27,8 +27,14 @@ typedef struct {
 } pl_allocator_t;
 typedef struct {
  unsigned char *memory; size_t capacity; size_t used;
+ size_t peak_used; size_t allocation_count;
  pl_allocator_t allocator; uint32_t owns_memory;
 } pl_arena_t;
+typedef struct { size_t used; size_t allocation_count; } pl_arena_mark_t;
+typedef struct {
+ size_t capacity; size_t used; size_t available;
+ size_t peak_used; size_t allocation_count;
+} pl_arena_stats_t;
 typedef struct {
  unsigned char *storage; unsigned char *bitmap;
  size_t storage_bytes; size_t bitmap_bytes; size_t block_size;
@@ -50,6 +56,9 @@ pl_status_t pl_chunk_init(pl_chunk_t *out,const pl_view_t *view,uint64_t source_
 pl_status_t pl_arena_init(pl_arena_t *arena,void *storage,size_t capacity);
 pl_status_t pl_arena_create(pl_arena_t *arena,size_t capacity,const pl_allocator_t *allocator);
 void *pl_arena_alloc(pl_arena_t *arena,size_t size,size_t alignment);
+pl_status_t pl_arena_mark(const pl_arena_t *arena,pl_arena_mark_t *out);
+pl_status_t pl_arena_rewind(pl_arena_t *arena,pl_arena_mark_t mark,int clear_released);
+pl_status_t pl_arena_get_stats(const pl_arena_t *arena,pl_arena_stats_t *out);
 void pl_arena_reset(pl_arena_t *arena);
 void pl_arena_destroy(pl_arena_t *arena);
 pl_status_t pl_pool_init(pl_pool_t *pool,void *storage,size_t storage_bytes,void *bitmap,
