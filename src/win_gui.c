@@ -203,7 +203,7 @@ static void show_embedded_profiles(void) {
 }
 static void layout(HWND w) {
     RECT r; GetClientRect(w,&r); int width=r.right-r.left; int margin=22; int gap=10;
-    int col=(width-2*margin-2*gap)/3; int y=96; int bh=34;
+    int col; int y=96; int bh=34;
     int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED,ID_THEME};
     col=(width-2*margin-5*gap)/6;
     for(int i=0;i<6;i++) MoveWindow(GetDlgItem(w,top_ids[i]),margin+i*(col+gap),y,col,bh,TRUE);
@@ -250,7 +250,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CTLCOLOREDIT: {
         HDC dc=(HDC)p; HWND control=(HWND)l;
         if (control==g_log) {
-            SetTextColor(dc,g_dark_mode?RGB(229,237,247):RGB(229,237,247));
+            SetTextColor(dc,RGB(229,237,247));
             SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
         }
         SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
@@ -291,8 +291,11 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         return 0;
     case WM_DESTROY:
         pl_audio_free(&g_audio);
-        if(g_font)DeleteObject(g_font); if(g_log_font)DeleteObject(g_log_font);
-        if(g_page_brush)DeleteObject(g_page_brush); if(g_input_brush)DeleteObject(g_input_brush); if(g_log_brush)DeleteObject(g_log_brush);
+        if (g_font) DeleteObject(g_font);
+        if (g_log_font) DeleteObject(g_log_font);
+        if (g_page_brush) DeleteObject(g_page_brush);
+        if (g_input_brush) DeleteObject(g_input_brush);
+        if (g_log_brush) DeleteObject(g_log_brush);
         PostQuitMessage(0); return 0;
     }
     return DefWindowProcA(w,m,p,l);
