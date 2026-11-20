@@ -66,7 +66,19 @@ CPU 发现为只读。基准任务有明确上限且依赖硬件环境。源码�
 
 [架构](docs/ARCHITECTURE.md) · [内存内核](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [系统语言与架构目录](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [统一工程标准](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
+
+[治理准则](docs/HUMAN_FIRST_GOVERNANCE.md) · [Anatidae 设计系统](docs/ANATIDAE_DESKTOP_DESIGN_SYSTEM.md) · [UI/UX 架构](docs/UI_UX_ARCHITECTURE.md) · [12 项动效原则](docs/DISNEY_MOTION_SYSTEM.md) · [临床安全架构](docs/clinical-safety-architecture.md) · [项目契约](docs/UNIFIED_PROJECT_CONTRACT.md)
 [Windows 发布版](https://github.com/Ivan-VHS/Pytyliki/releases) · [桌面构建工作流](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
+
+## Anatidae 工程准则
+
+- **以人为本并尊重明确授权：** 硬件发现、分析和导出保持分离；报告导出、共享和遥测分别受知情同意及角色权限控制。
+- **有界且安全默认：** 校验输入、溢出、切片边界和工作负载上限。处理器发现和源码审查均为只读；不会写入 BIOS/UEFI、固件、微码、驱动或设备寄存器；模拟操作必须明确标注。
+- **无障碍工作台体验：** 采用一致的设计系统和清晰层级，支持键盘操作、可见焦点、足够对比度、本地化及减少动态效果。
+- **有目的的动效：** 动画用于表达状态和反馈，不替代可读状态，也不应成为完成任务的前提。
+- **以证据为准：** 明确区分已实现模块、参考配置、模拟功能和建议性评分；实际能力以源码和测试为准。
+
+本节定义项目设计基线，并不表示所有建议中的功能都已实现。
 
 ## 许可证
 

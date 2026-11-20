@@ -68,7 +68,19 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 
 [Human-first governance](docs/HUMAN_FIRST_GOVERNANCE.md) · [UI/UX system](docs/UI_UX_SYSTEM.md) · [Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
+
+[Doctrine references](docs/HUMAN_FIRST_GOVERNANCE.md) · [Anatidae design system](docs/ANATIDAE_DESKTOP_DESIGN_SYSTEM.md) · [UI/UX architecture](docs/UI_UX_ARCHITECTURE.md) · [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md) · [Clinical safety architecture](docs/clinical-safety-architecture.md) · [Project contract](docs/UNIFIED_PROJECT_CONTRACT.md)
 [Windows releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [Desktop build workflow](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
+
+## Anatidae engineering doctrine
+
+- **Human-first and consent-aware:** discovery, analysis and export stay distinct; report export, sharing and telemetry use separate consent-aware role gates.
+- **Bounded and safe by default:** validate inputs, overflow, slice bounds and workload limits. Processor discovery and source review remain read-only; no BIOS/UEFI, firmware, microcode, driver or device-register writes are performed. Simulation is labelled.
+- **Accessible workstation UX:** coherent design tokens, clear hierarchy, keyboard operation, visible focus, sufficient contrast, localization and reduced-motion accommodation.
+- **Purposeful motion:** animation supports state and feedback; it never replaces readable status or becomes a requirement for completing a task.
+- **Evidence-led claims:** distinguish implemented modules from reference profiles, simulations and advisory scores. Source and tests define the actual capability boundary.
+
+This is the project's design baseline, not a claim that every proposed doctrine item is already implemented.
 
 ## License
 
