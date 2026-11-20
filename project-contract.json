@@ -103,6 +103,17 @@
         "tools/systems_languages.py",
         "tools/systems_languages.json"
       ]
+    },
+    {
+      "id": "architecture.vertical-matrix-self-product",
+      "status": "implemented",
+      "summary": "Repeatedly squares a bounded caller-supplied architecture matrix with deterministic saturating uint64 arithmetic.",
+      "evidence": [
+        "src/self_product.h",
+        "src/self_product.c",
+        "tests/test_self_product.c",
+        "docs/SELF_PRODUCT_COMPOSITION.md"
+      ]
     }
   ],
   "interfaces": [
@@ -146,6 +157,7 @@
     "Versioned public C ABI and caller-owned buffer interfaces.",
     "CMake library boundaries for adding independently tested C11 modules.",
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
-    "Explicit adapter layer for trusted external native consumers."
+    "Explicit adapter layer for trusted external native consumers.",
+    "Bounded saturating matrix self-product for repeated vertical architecture analysis."
   ]
 }

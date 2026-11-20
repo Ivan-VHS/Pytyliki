@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/embedded.c src/systems_accel.c src/qcs.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -33,7 +33,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/qcs.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/qcs.h src/self_product.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -56,6 +56,10 @@ if(BUILD_TESTING)
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
   add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
+
+  add_executable(pytyliki-self-product-tests tests/test_self_product.c)
+  target_link_libraries(pytyliki-self-product-tests PRIVATE pytyliki_core)
+  add_test(NAME self-product-matrix-tests COMMAND pytyliki-self-product-tests)
 
   add_executable(pytyliki-architecture-atlas-tests tests/test_architecture_atlas.c)
   target_link_libraries(pytyliki-architecture-atlas-tests PRIVATE pytyliki_core)
