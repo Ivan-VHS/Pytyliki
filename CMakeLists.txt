@@ -177,7 +177,11 @@ if(BUILD_TESTING)
   add_test(NAME systems-lab-cli-smoke COMMAND pytyliki --systems-lab)
   set_tests_properties(systems-lab-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "33-function blockchain and processor systems lab")
 
-  add_executable(pytyliki-trace-tests tests/test_trace.c)\n  target_link_libraries(pytyliki-trace-tests PRIVATE pytyliki_core)\n  add_test(NAME measurement-trace-tests COMMAND pytyliki-trace-tests)\n\n  add_executable(pytyliki-qcs-tests tests/test_qcs.c)
+  add_executable(pytyliki-trace-tests tests/test_trace.c)
+  target_link_libraries(pytyliki-trace-tests PRIVATE pytyliki_core)
+  add_test(NAME measurement-trace-tests COMMAND pytyliki-trace-tests)
+
+  add_executable(pytyliki-qcs-tests tests/test_qcs.c)
   target_link_libraries(pytyliki-qcs-tests PRIVATE pytyliki_core)
   add_test(NAME qcs-native-frontend-tests COMMAND pytyliki-qcs-tests)
   add_test(NAME qcs-cli-smoke COMMAND pytyliki-qcs check ${CMAKE_CURRENT_SOURCE_DIR}/examples/qcs_irq.qcs)
