@@ -24,6 +24,16 @@ endif()
 
 add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/memory.c src/metric_registry.c src/architecture_atlas.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# Stable C11 ABI for explicitly configured FFI consumers.
+set_target_properties(pytyliki_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_library(pytyliki_ffi SHARED src/interop.c)
+target_link_libraries(pytyliki_ffi PRIVATE pytyliki_core)
+target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
+set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
+install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(FILES src/interop.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -41,6 +51,10 @@ target_link_libraries(pytyliki-metrics PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
+  add_executable(pytyliki-interop-tests tests/test_interop.c)
+  target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
+  add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
+
   add_executable(pytyliki-architecture-atlas-tests tests/test_architecture_atlas.c)
   target_link_libraries(pytyliki-architecture-atlas-tests PRIVATE pytyliki_core)
   add_test(NAME architecture-atlas-tests COMMAND pytyliki-architecture-atlas-tests)
