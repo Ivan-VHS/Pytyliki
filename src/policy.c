@@ -86,10 +86,12 @@ int pl_policy_authorize(pl_role role, pl_action action) {
 }
 
 static int pl_bounded_text(const char *value, size_t maximum) {
-    const char *end;
-    if (value == NULL || value[0] == '\0') return 0;
-    end = (const char *)memchr(value, '\0', maximum);
-    return end != NULL;
+    size_t i;
+    if (value == NULL || maximum == 0u) return 0;
+    for (i = 0u; i < maximum; ++i) {
+        if (value[i] == '\0') return i > 0u;
+    }
+    return 0;
 }
 
 int pl_consent_grant_validate(const pl_consent_grant *grant,
