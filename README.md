@@ -28,6 +28,7 @@ It is built for developers and engineers who want useful local measurements, ins
 | **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
 | **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
 | **Metric Lab** | Compare n-dimensional vectors, orthogonality, quadratic forms and geometric models from a dedicated CLI |
+| **Memory arena** | Use bounded C11 bump allocation with alignment, checkpoints, reset and usage statistics |
 | **Verification** | Build with CMake and run CTest on Windows and Linux |
 
 ## See the interface
@@ -105,6 +106,7 @@ The probe only resolves candidate executable names on `PATH`; it never runs comp
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
 - **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
 - **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
+- **C11 arena allocator:** bounded bump allocation, owned or external buffers, power-of-two alignment, overflow-checked zero-allocation, marks/rewind, reset and usage statistics. The arena is single-owner and not thread-safe; see [the memory contract](docs/MEMORY_ARENA.md).
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
 - **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
 - **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
@@ -147,6 +149,7 @@ Pytyliki follows explicit local-operation boundaries:
 - [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
 - [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
 - [Orthogonal metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md)
+- [C11 memory arena](docs/MEMORY_ARENA.md)
 
 
 ## Native desktop application
