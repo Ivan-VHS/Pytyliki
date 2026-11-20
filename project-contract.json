@@ -1,0 +1,151 @@
+{
+  "schema": "unified.project-contract.v1",
+  "project": {
+    "id": "pytyliki",
+    "name": "Pytyliki",
+    "repository": "Ivan-VHS/Pytyliki",
+    "summary": "C11 processor-systems workstation for read-only discovery, bounded analysis, memory and DSP operations, source diagnostics, and versioned native interoperability.",
+    "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
+  },
+  "implementation": {
+    "languages": [
+      "C11",
+      "CMake",
+      "Python 3 tooling"
+    ],
+    "runtime_platforms": [
+      "Windows",
+      "Linux"
+    ],
+    "desktop_platforms": [
+      "Windows"
+    ]
+  },
+  "capabilities": [
+    {
+      "id": "processor.inventory",
+      "status": "implemented",
+      "summary": "Read-only CPU, memory and usable ISA discovery with operating-system vector-state checks.",
+      "evidence": [
+        "src/processor.c",
+        "src/cli.c"
+      ]
+    },
+    {
+      "id": "benchmark.bounded-suite",
+      "status": "implemented",
+      "summary": "Bounded processor, memory and matrix workloads for local, hardware-dependent comparison.",
+      "evidence": [
+        "src/cpu_suite.c",
+        "src/cli.c"
+      ]
+    },
+    {
+      "id": "source.static-review",
+      "status": "implemented",
+      "summary": "Static source diagnostics that inspect supported files without executing or rewriting them.",
+      "evidence": [
+        "src/core.c",
+        "src/cli.c"
+      ]
+    },
+    {
+      "id": "audio.pcm16-dsp",
+      "status": "implemented",
+      "summary": "PCM16 WAV processing, test-tone generation, metering and bounded DSP operations.",
+      "evidence": [
+        "src/dsp.c",
+        "src/dsp_engine.c"
+      ]
+    },
+    {
+      "id": "memory.arena-pool-kernel",
+      "status": "implemented",
+      "summary": "Typed views, overflow-checked slices, bounded arenas, rewind checkpoints and fixed-block pools.",
+      "evidence": [
+        "src/memory.c",
+        "docs/MEMORY_ARENA.md"
+      ]
+    },
+    {
+      "id": "metrics.orthogonal-engine",
+      "status": "implemented",
+      "summary": "C11 vector, distance, geometry and quadratic-form metrics with a stable native API.",
+      "evidence": [
+        "src/metric_geometry.c",
+        "src/metric_registry.c"
+      ]
+    },
+    {
+      "id": "interop.c-abi-v1",
+      "status": "implemented",
+      "summary": "Versioned C ABI v1 for explicitly configured native consumers; calls use caller-owned buffers.",
+      "evidence": [
+        "src/interop.h",
+        "src/interop.c",
+        "tests/test_interop.c"
+      ]
+    },
+    {
+      "id": "embedded.reference-workbench",
+      "status": "partial",
+      "summary": "Reference MCU profiles, bounded memory accounting, simulated MMIO masks and starter generation; not a physical mapper or firmware flasher.",
+      "evidence": [
+        "src/embedded.c",
+        "docs/EMBEDDED_C.md"
+      ]
+    },
+    {
+      "id": "toolchains.systems-language-catalog",
+      "status": "implemented",
+      "summary": "Read-only capability and PATH discovery catalogue; detected tools are not executed or installed.",
+      "evidence": [
+        "tools/systems_languages.py",
+        "tools/systems_languages.json"
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "pytyliki.c-abi.v1",
+      "format": "Versioned native C shared-library ABI",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "src/interop.h",
+        "src/interop.c",
+        "tests/test_interop.c"
+      ]
+    }
+  ],
+  "integrations": [
+    {
+      "project": "reaper",
+      "interface": "pytyliki.c-abi.v1",
+      "mode": "native-ffi",
+      "status": "optional",
+      "opt_in": true,
+      "summary": "Reaper can call the metric ABI only when native FFI is explicitly enabled and a trusted library path is supplied."
+    },
+    {
+      "project": "oplague",
+      "interface": "pytyliki.c-abi.v1",
+      "mode": "native-ffi",
+      "status": "optional",
+      "opt_in": true,
+      "summary": "OPlague can request a native metric cross-check using an explicitly supplied trusted library path."
+    }
+  ],
+  "safety_boundaries": [
+    "Processor and hardware inspection is read-only; no firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.",
+    "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
+    "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
+    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable."
+  ],
+  "extension_points": [
+    "Versioned public C ABI and caller-owned buffer interfaces.",
+    "CMake library boundaries for adding independently tested C11 modules.",
+    "Evidence-backed architecture, MCU and toolchain profile catalogues.",
+    "Explicit adapter layer for trusted external native consumers."
+  ]
+}
