@@ -105,7 +105,7 @@ The probe only resolves candidate executable names on `PATH`; it never runs comp
 
 - **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
 - **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
-- **Memory kernel:** typed strided views, overflow-checked slices, bounded arena allocation with actual-address alignment, mark/rewind, high-water telemetry, custom allocator callbacks and caller-owned fixed-block pools. See [the memory contract](docs/MEMORY_ARENA.md).
+- **Memory kernel:** typed strided views, overflow-checked slices, bounded arena allocation with actual-address alignment, mark/rewind, high-water telemetry, custom allocator callbacks and caller-owned fixed-block pools. The pool allocator skips fully occupied bitmap bytes and preserves deterministic first-fit allocation. See [the memory contract](docs/MEMORY_ARENA.md).
 - **Orthogonal Metric Engine:** C11 APIs for n-dimensional norms/distances, dot products, orthogonality, quadratic forms, law of cosines, Parseval energy, spherical/hyperbolic right triangles, Minkowski intervals, de Gua areas and uncorrelated variance composition. See [the metric engine](docs/ORTHOGONAL_METRIC_ENGINE.md).
 - **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
 - **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.

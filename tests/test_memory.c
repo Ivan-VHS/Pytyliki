@@ -43,15 +43,22 @@ int main(void){
  pl_arena_t owned;assert(pl_arena_create(&owned,256,NULL)==PL_STATUS_OK);
  assert(pl_arena_alloc(&owned,32,16)!=NULL);pl_arena_destroy(&owned);assert(owned.memory==NULL);
  unsigned char bitmap[4];pl_pool_t pool;
- unsigned char *pool_storage=(unsigned char *)pl_aligned_alloc(16u,256u);
+ unsigned char *pool_storage=(unsigned char *)pl_aligned_alloc(16u,512u);
  assert(pool_storage!=NULL);
- assert(pl_pool_init(&pool,pool_storage,256u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
+ assert(pl_pool_init(&pool,pool_storage,512u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
  void *p1=pl_pool_alloc(&pool),*p2=pl_pool_alloc(&pool);
  assert(p1!=NULL&&p2!=NULL&&p1!=p2&&pool.in_use==2);
  assert(pl_pool_free(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
  assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_pool_free(&pool,(unsigned char *)p2+1)==PL_STATUS_OUT_OF_RANGE);
  assert(pl_pool_free(&pool,p2)==PL_STATUS_OK&&pool.in_use==0);
+ void *blocks[16];
+ for(size_t i=0u;i<16u;i++){blocks[i]=pl_pool_alloc(&pool);assert(blocks[i]!=NULL);}
+ assert(pl_pool_alloc(&pool)==NULL&&pool.in_use==16u);
+ assert(pl_pool_free(&pool,blocks[8])==PL_STATUS_OK);
+ assert(pl_pool_alloc(&pool)==blocks[8]&&pool.in_use==16u);
+ for(size_t i=0u;i<16u;i++)assert(pl_pool_free(&pool,blocks[i])==PL_STATUS_OK);
+ assert(pool.in_use==0u);
  pl_aligned_free(pool_storage);
  pl_chunk_t chunk;assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(values),0)==PL_STATUS_OK);
  assert(pl_chunk_init(&chunk,&view,4096,7)==PL_STATUS_OK&&chunk.source_offset==4096&&chunk.sequence==7);
