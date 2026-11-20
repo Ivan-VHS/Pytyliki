@@ -109,11 +109,38 @@ pl_status_t pl_arena_create(pl_arena_t *a,size_t capacity,const pl_allocator_t *
  return PL_STATUS_OK;
 }
 void *pl_arena_alloc(pl_arena_t *a,size_t size,size_t alignment){
- size_t aligned,end;if(a==NULL||a->memory==NULL||size==0u||!align_up_size(a->used,alignment,&aligned)||
- add_overflow_size(aligned,size,&end)||end>a->capacity)return NULL;
- a->used=end;return a->memory+aligned;
+ uintptr_t base,current,mask;size_t padding,remaining,aligned,end;
+ if(a==NULL||a->memory==NULL||size==0u||!power_of_two(alignment)||a->used>a->capacity)return NULL;
+ if(alignment-1u>(size_t)UINTPTR_MAX)return NULL;
+ base=(uintptr_t)a->memory;
+ if(a->used>(size_t)(UINTPTR_MAX-base))return NULL;
+ current=base+(uintptr_t)a->used;mask=(uintptr_t)(alignment-1u);
+ padding=(size_t)(((uintptr_t)0u-current)&mask);
+ remaining=a->capacity-a->used;
+ if(padding>remaining)return NULL;
+ if(size>remaining-padding)return NULL;
+ aligned=a->used+padding;end=aligned+size;
+ a->used=end;
+ if(a->used>a->peak_used)a->peak_used=a->used;
+ if(a->allocation_count<SIZE_MAX)++a->allocation_count;
+ return a->memory+aligned;
 }
-void pl_arena_reset(pl_arena_t *a){if(a!=NULL)a->used=0u;}
+pl_status_t pl_arena_mark(const pl_arena_t *a,pl_arena_mark_t *out){
+ if(a==NULL||out==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ out->used=a->used;out->allocation_count=a->allocation_count;return PL_STATUS_OK;
+}
+pl_status_t pl_arena_rewind(pl_arena_t *a,pl_arena_mark_t mark,int clear_released){
+ if(a==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ if(mark.used>a->used||mark.allocation_count>a->allocation_count)return PL_STATUS_OUT_OF_RANGE;
+ if(clear_released&&mark.used<a->used)memset(a->memory+mark.used,0,a->used-mark.used);
+ a->used=mark.used;a->allocation_count=mark.allocation_count;return PL_STATUS_OK;
+}
+pl_status_t pl_arena_get_stats(const pl_arena_t *a,pl_arena_stats_t *out){
+ if(a==NULL||out==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ out->capacity=a->capacity;out->used=a->used;out->available=a->capacity-a->used;
+ out->peak_used=a->peak_used;out->allocation_count=a->allocation_count;return PL_STATUS_OK;
+}
+void pl_arena_reset(pl_arena_t *a){if(a!=NULL){a->used=0u;a->allocation_count=0u;}}
 void pl_arena_destroy(pl_arena_t *a){
  if(a==NULL)return;if(a->owns_memory&&a->allocator.deallocate!=NULL)a->allocator.deallocate(a->allocator.user_data,a->memory);
  memset(a,0,sizeof(*a));
