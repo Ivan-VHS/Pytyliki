@@ -4,6 +4,9 @@
 #endif
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 int main(void){
  double values[]={1,2,3,4,5},value=0;pl_view_t view,slice,ro;
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(values),0)==PL_STATUS_OK);
@@ -16,10 +19,27 @@ int main(void){
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,0,sizeof(values),0)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(double),0)==PL_STATUS_OUT_OF_RANGE);
  assert(pl_view_init(&view,NULL,1,PL_TYPE_F64,sizeof(double),sizeof(double),0)==PL_STATUS_INVALID_ARGUMENT);
- unsigned char scratch[128];pl_arena_t arena;assert(pl_arena_init(&arena,scratch,sizeof(scratch))==PL_STATUS_OK);
+
+ unsigned char scratch[160];pl_arena_t arena;
+ assert(pl_arena_init(&arena,scratch+1,sizeof(scratch)-1)==PL_STATUS_OK);
  void *a=pl_arena_alloc(&arena,13,8),*b=pl_arena_alloc(&arena,16,16);
- assert(a!=NULL&&b!=NULL&&pl_memory_is_aligned(b,16));assert(pl_arena_alloc(&arena,256,8)==NULL);
- pl_arena_reset(&arena);assert(arena.used==0);pl_arena_destroy(&arena);
+ assert(a!=NULL&&b!=NULL&&pl_memory_is_aligned(a,8)&&pl_memory_is_aligned(b,16));
+ pl_arena_mark_t mark;assert(pl_arena_mark(&arena,&mark)==PL_STATUS_OK);
+ void *c=pl_arena_alloc(&arena,24,32);assert(c!=NULL&&pl_memory_is_aligned(c,32));
+ pl_arena_stats_t stats;assert(pl_arena_get_stats(&arena,&stats)==PL_STATUS_OK);
+ assert(stats.capacity==sizeof(scratch)-1&&stats.used>mark.used);
+ assert(stats.peak_used==stats.used&&stats.allocation_count==3);
+ assert(pl_arena_rewind(&arena,mark,1)==PL_STATUS_OK);
+ assert(arena.used==mark.used&&arena.allocation_count==mark.allocation_count);
+ assert(((unsigned char *)c)[0]==0);
+ pl_arena_mark_t invalid_mark={SIZE_MAX,0};
+ assert(pl_arena_rewind(&arena,invalid_mark,0)==PL_STATUS_OUT_OF_RANGE);
+ assert(pl_arena_alloc(&arena,256,8)==NULL);
+ pl_arena_reset(&arena);
+ assert(arena.used==0&&arena.allocation_count==0);
+ assert(pl_arena_get_stats(&arena,&stats)==PL_STATUS_OK&&stats.peak_used>0);
+ pl_arena_destroy(&arena);
+
  pl_arena_t owned;assert(pl_arena_create(&owned,256,NULL)==PL_STATUS_OK);
  assert(pl_arena_alloc(&owned,32,16)!=NULL);pl_arena_destroy(&owned);assert(owned.memory==NULL);
  unsigned char bitmap[4];pl_pool_t pool;
