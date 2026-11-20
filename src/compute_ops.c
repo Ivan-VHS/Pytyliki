@@ -189,6 +189,52 @@ int pl_compute_summarize(const double *values, size_t count, pl_compute_summary 
     return 0;
 }
 
+int pl_compute_statistics(const double *values, size_t count,
+                           pl_compute_statistics_result *out) {
+    if (!valid_values(values, count) || out == NULL) return -1;
+
+    /* Welford's recurrence avoids the catastrophic cancellation of
+     * E[x*x] - E[x]*E[x] and uses no heap allocation. */
+    long double mean = 0.0L;
+    long double m2 = 0.0L;
+    double minimum = values[0];
+    double maximum = values[0];
+
+    for (size_t i = 0u; i < count; ++i) {
+        const long double sample = (long double)values[i];
+        const long double delta = sample - mean;
+        mean += delta / (long double)(i + 1u);
+        const long double delta_after = sample - mean;
+        m2 += delta * delta_after;
+        if (!isfinite(mean) || !isfinite(m2) || m2 < 0.0L) return -1;
+        if (values[i] < minimum) minimum = values[i];
+        if (values[i] > maximum) maximum = values[i];
+    }
+
+    const long double population = m2 / (long double)count;
+    const long double sample_variance = count > 1u
+        ? m2 / (long double)(count - 1u) : 0.0L;
+    const long double deviation = sqrtl(population);
+    if (!isfinite(population) || !isfinite(sample_variance) || !isfinite(deviation) ||
+        fabsl(mean) > (long double)DBL_MAX ||
+        population > (long double)DBL_MAX ||
+        sample_variance > (long double)DBL_MAX ||
+        deviation > (long double)DBL_MAX) return -1;
+
+    const pl_compute_statistics_result result = {
+        count,
+        (double)mean,
+        (double)population,
+        (double)sample_variance,
+        (double)deviation,
+        minimum,
+        maximum,
+        count > 1u ? 1u : 0u
+    };
+    *out = result;
+    return 0;
+}
+
 int pl_compute_factorize(uint64_t value, uint64_t *factors,
                          size_t capacity, size_t *factor_count) {
     if (value == 0u || value > PL_COMPUTE_MAX_FACTOR_INPUT ||
