@@ -151,18 +151,33 @@ int pl_qcs_lex(const char *source, pl_qcs_tokens *out, pl_qcs_error *error) {
             continue;
         }
         if (isdigit(c)) {
+            const char *suffix;
+            size_t suffix_len;
             int is_duration = 0;
-            while (isalnum((unsigned char)*p) || *p == '_') { if (isalpha((unsigned char)*p)) is_duration = 1; ++p; ++column; }
-            if (*p == '.' && isdigit((unsigned char)p[1])) {
-                ++p; ++column;
+            if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) {
+                p += 2; column += 2u;
+                while (isxdigit((unsigned char)*p) || *p == '_') { ++p; ++column; }
+            } else if (p[0] == '0' && (p[1] == 'b' || p[1] == 'B')) {
+                p += 2; column += 2u;
+                while (*p == '0' || *p == '1' || *p == '_') { ++p; ++column; }
+            } else {
                 while (isdigit((unsigned char)*p) || *p == '_') { ++p; ++column; }
+                if (*p == '.' && isdigit((unsigned char)p[1])) {
+                    ++p; ++column;
+                    while (isdigit((unsigned char)*p) || *p == '_') { ++p; ++column; }
+                }
             }
-            if (is_duration) {
-                size_t n = (size_t)(p - start);
-                if (!(n >= 2u && (strcmp(p - 2, "ns") == 0 || strcmp(p - 2, "us") == 0 ||
-                     strcmp(p - 2, "ms") == 0 || strcmp(p - 2, "mv") == 0 ||
-                     strcmp(p - 2, "hz") == 0 || strcmp(p - 2, "s") == 0 ||
-                     strcmp(p - 3, "khz") == 0 || strcmp(p - 3, "ghz") == 0))) {
+            suffix = p;
+            while (isalpha((unsigned char)*p)) { ++p; ++column; }
+            suffix_len = (size_t)(p - suffix);
+            if (suffix_len != 0u) {
+                is_duration = 1;
+                if (!((suffix_len == 1u && memcmp(suffix, "s", 1u) == 0) ||
+                      (suffix_len == 2u && (memcmp(suffix, "ns", 2u) == 0 ||
+                       memcmp(suffix, "us", 2u) == 0 || memcmp(suffix, "ms", 2u) == 0 ||
+                       memcmp(suffix, "mv", 2u) == 0 || memcmp(suffix, "hz", 2u) == 0)) ||
+                      (suffix_len == 3u && (memcmp(suffix, "khz", 3u) == 0 ||
+                       memcmp(suffix, "ghz", 3u) == 0))) {
                     pl_qcs_tokens_free(out);
                     return set_error(error, line, start_column, "unsupported numeric suffix");
                 }
@@ -398,9 +413,10 @@ int pl_qcs_parse(const pl_qcs_tokens *tokens, pl_qcs_ast *out, pl_qcs_error *err
         if (token->kind == PL_QCS_EOF) break;
     }
     if (frame_depth != 0u) {
-        const pl_qcs_node *n = &out->items[frame_stack[frame_depth - 1u]];
+        size_t error_line = out->items[frame_stack[frame_depth - 1u]].line;
+        size_t error_column = out->items[frame_stack[frame_depth - 1u]].column;
         pl_qcs_ast_free(out);
-        return set_error(error, n->line, n->column, "unterminated frame; expected [@ end @]");
+        return set_error(error, error_line, error_column, "unterminated frame; expected [@ end @]");
     }
     if (bracket_depth != 0u) {
         pl_qcs_ast_free(out);
