@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/memory.c src/metric_registry.c src/architecture_atlas.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -64,6 +64,10 @@ if(BUILD_TESTING)
   add_executable(pytyliki-metric-tests tests/test_metric_geometry.c)
   target_link_libraries(pytyliki-metric-tests PRIVATE pytyliki_core)
   add_test(NAME metric-geometry-tests COMMAND pytyliki-metric-tests)
+
+  add_executable(pytyliki-compute-ops-tests tests/test_compute_ops.c)
+  target_link_libraries(pytyliki-compute-ops-tests PRIVATE pytyliki_core)
+  add_test(NAME compute-ops-tests COMMAND pytyliki-compute-ops-tests)
   add_test(NAME metric-lab-cli-smoke COMMAND pytyliki-metrics --demo)
   add_test(NAME metric-registry-list-smoke COMMAND pytyliki-metrics --list)
   set_tests_properties(metric-registry-list-smoke PROPERTIES PASS_REGULAR_EXPRESSION "vector.dot")
