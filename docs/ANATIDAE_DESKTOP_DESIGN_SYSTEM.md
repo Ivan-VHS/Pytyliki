@@ -73,3 +73,11 @@ The release review should capture: primary/secondary/danger button states; the f
 - [ ] CPU discovery remains read-only; benchmarks stay bounded; source review never executes inspected source.
 - [ ] DSP remains local-buffer processing; numerical kernels remain in the C11 core.
 - [ ] Real-device 8K screenshots are captured before claiming certification.
+
+## 9. Anatidae naming and companion layer
+
+The shared vocabulary and guardrails are defined in [the federation naming canon](../federation/ANATIDAE_NAMING_CANON.md). For Pytyliki, **Утёнок** is reserved for optional first-run help, **Прудовая** may be used as a secondary metaphor for an existing overview/workspace, and **Пёрышко** may mark a compact provenance summary only while the full TRACE record remains directly accessible. These are labels for presentation, not new workbenches or measurement types.
+
+Do not rename Processor Inventory, Benchmark Suite, Static Source Review, TRACE, Metric Engine, Embedded C or QCS. CPU discovery remains read-only, benchmark workloads remain bounded, source review remains non-executing, and DSP remains local-buffer processing. Never use playful copy in safety notices, benchmark results or exported reports.
+
+A small feather/wing outline may be used as a quiet visual accent with the existing white-blue-red tokens. It must not introduce a new status color, reduce focus visibility or compete with primary actions. Optional Anatidae decoration must not be required to understand or operate the workstation.
