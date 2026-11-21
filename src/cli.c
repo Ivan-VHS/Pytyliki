@@ -282,7 +282,17 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
-    if(budget) {\n        pl_budget_plan plan;\n        if(pl_budget_init(&plan,budget_limit)!=0 || pl_budget_apply_scenario(&plan,budget_scenario)!=0) {\n            fprintf(stderr,"Invalid budget amount or scenario.\\n");return 2;\n        }\n        for(size_t bi=0;bi<PL_BUDGET_CATEGORY_COUNT;bi++) if(budget_set[bi] && pl_budget_set_allocation(&plan,bi,budget_values[bi])!=0) return 2;\n        pl_budget_print(stdout,&plan);\n        return 0;\n    }\n    if(e2k_profile) print_e2k_profile();
+    if(budget) {
+        pl_budget_plan plan;
+        if(pl_budget_init(&plan,budget_limit)!=0 || pl_budget_apply_scenario(&plan,budget_scenario)!=0) {
+            fprintf(stderr,"Invalid budget amount or scenario.\
+");return 2;
+        }
+        for(size_t bi=0;bi<PL_BUDGET_CATEGORY_COUNT;bi++) if(budget_set[bi] && pl_budget_set_allocation(&plan,bi,budget_values[bi])!=0) return 2;
+        pl_budget_print(stdout,&plan);
+        return 0;
+    }
+    if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(systems) print_system_enhancements();
