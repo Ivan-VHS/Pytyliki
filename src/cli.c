@@ -1,4 +1,5 @@
 #include "core.h"
+#include "budget.h"
 #include "division.h"
 #include "processor.h"
 #include "dsp.h"
@@ -28,6 +29,8 @@ static void usage(void) {
          "           [--systems] [--systems-lab] [--architectures] [--architecture NAME] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
+         "  pytyliki --budget [--budget-amount UAH] [--budget-scenario weekly|groceries|transport|coffee|household|learning|reserve]\n"
+         "           [--budget-set food|transport|household|digital|leisure|reserve UAH]\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
@@ -64,6 +67,8 @@ static int dispatch_berry_core(const char *name, unsigned core) {
            result.command_name, result.target_logical_core, result.operation);
     return 0;
 }
+static int parse_i64(const char *s, int64_t *out) { char *end=NULL; errno=0; long long v=strtoll(s,&end,10); if(!s[0]||!end||end==s||*end||errno==ERANGE) return -1; *out=(int64_t)v; return 0; }
+static int budget_category_index(const char *name) { const char *names[] = {"food","transport","household","digital","leisure","reserve"}; for (int i=0;i<6;i++) if(strcmp(name,names[i])==0) return i; return -1; }
 static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
@@ -232,8 +237,29 @@ int main(int argc,char **argv) {
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
     int use_compressor=0,use_gain=0;
+    int budget=0, budget_set[PL_BUDGET_CATEGORY_COUNT]={0};
+    int64_t budget_limit=500, budget_values[PL_BUDGET_CATEGORY_COUNT]={0};
+    const char *budget_scenario="weekly";
     for(int i=1;i<argc;i++) {
-        if(!strcmp(argv[i],"--profile")) profile=1;
+        if(!strcmp(argv[i],"--budget")) budget=1;
+        else if(!strcmp(argv[i],"--budget-amount")&&i+1<argc) {
+            if(parse_i64(argv[++i],&budget_limit)!=0) {
+                fprintf(stderr,"Invalid budget amount.\n"); return 2;
+            }
+            budget=1;
+        }
+        else if(!strcmp(argv[i],"--budget-scenario")&&i+1<argc) {
+            budget_scenario=argv[++i]; budget=1;
+        }
+        else if(!strcmp(argv[i],"--budget-set")&&i+2<argc) {
+            const int index=budget_category_index(argv[++i]);
+            int64_t value;
+            if(index<0 || parse_i64(argv[++i],&value)!=0 || value<0 || value>PL_BUDGET_MAX_UAH) {
+                fprintf(stderr,"Invalid budget category or amount.\n"); return 2;
+            }
+            budget_set[index]=1; budget_values[index]=value; budget=1;
+        }
+        else if(!strcmp(argv[i],"--profile")) profile=1;
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
         else if(!strcmp(argv[i],"--systems-lab")) systems_lab=1;
@@ -276,6 +302,15 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--gain")&&i+1<argc){if(parse_double(argv[++i],&gain))return 2;use_gain=1;}
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
+    }
+    if(budget) {
+        pl_budget_plan plan;
+        if(pl_budget_init(&plan,budget_limit)!=0 || pl_budget_apply_scenario(&plan,budget_scenario)!=0) {
+            fprintf(stderr,"Invalid budget amount or scenario.\n");return 2;
+        }
+        for(size_t bi=0;bi<PL_BUDGET_CATEGORY_COUNT;bi++) if(budget_set[bi] && pl_budget_set_allocation(&plan,bi,budget_values[bi])!=0) return 2;
+        pl_budget_print(stdout,&plan);
+        return 0;
     }
     if(e2k_profile) print_e2k_profile();
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
