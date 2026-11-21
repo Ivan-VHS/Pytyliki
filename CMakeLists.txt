@@ -79,7 +79,13 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-metric-tests PRIVATE pytyliki_core)
   add_test(NAME metric-geometry-tests COMMAND pytyliki-metric-tests)
 
-  add_executable(pytyliki-budget-tests tests/test_budget.c)\n  target_link_libraries(pytyliki-budget-tests PRIVATE pytyliki_core)\n  add_test(NAME budget-planner-tests COMMAND pytyliki-budget-tests)\n  add_test(NAME budget-planner-cli-smoke COMMAND pytyliki --budget --budget-scenario coffee)\n  set_tests_properties(budget-planner-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "460 грн")\n\n  add_executable(pytyliki-atomic-quantum-tests tests/test_atomic_quantum.c)
+  add_executable(pytyliki-budget-tests tests/test_budget.c)
+  target_link_libraries(pytyliki-budget-tests PRIVATE pytyliki_core)
+  add_test(NAME budget-planner-tests COMMAND pytyliki-budget-tests)
+  add_test(NAME budget-planner-cli-smoke COMMAND pytyliki --budget --budget-scenario coffee)
+  set_tests_properties(budget-planner-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "460 грн")
+
+  add_executable(pytyliki-atomic-quantum-tests tests/test_atomic_quantum.c)
   target_link_libraries(pytyliki-atomic-quantum-tests PRIVATE pytyliki_core)
   add_test(NAME atomic-quantum-133-tests COMMAND pytyliki-atomic-quantum-tests)
 
