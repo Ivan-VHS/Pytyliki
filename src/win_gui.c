@@ -53,6 +53,7 @@ static HFONT g_font;
 static HFONT g_log_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
+static int g_atmosphere = 0; /* 0 Dawn, 1 Sunset, 2 Night */
 static int g_reduce_motion = 0;
 static int g_eco_visuals = 0;
 static int g_motion_mode = 0; /* 0 Normal, 1 Expressive, 2 Reduced Motion */
@@ -60,19 +61,43 @@ static HWND g_motion_dialog = NULL;
 static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
-static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
-static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
-static COLORREF text_color(void) { return g_dark_mode ? RGB(232,237,242) : RGB(18,44,69); }
-static COLORREF input_color(void) { return g_dark_mode ? RGB(15,42,69) : RGB(255,255,255); }
-static COLORREF log_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(15,42,69); }
-static COLORREF blue_color(void) { return g_dark_mode ? RGB(112,165,255) : RGB(0,78,152); }
-static COLORREF blue_hover_color(void) { return g_dark_mode ? RGB(138,182,255) : RGB(26,95,219); }
-static COLORREF red_color(void) { return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45); }
-static COLORREF red_hover_color(void) { return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38); }
-static COLORREF border_color(void) { return g_dark_mode ? RGB(49,81,111) : RGB(202,216,232); }
+static COLORREF page_color(void) {
+    if (g_atmosphere == 2) return RGB(8,21,34);
+    if (g_atmosphere == 1) return RGB(245,239,232);
+    return RGB(243,246,250);
+}
+static COLORREF header_color(void) {
+    if (g_atmosphere == 2) return RGB(5,16,28);
+    if (g_atmosphere == 1) return RGB(45,53,70);
+    return RGB(0,51,102);
+}
+static COLORREF text_color(void) {
+    if (g_atmosphere == 2) return RGB(237,244,250);
+    if (g_atmosphere == 1) return RGB(50,43,42);
+    return RGB(16,36,58);
+}
+static COLORREF input_color(void) {
+    if (g_atmosphere == 2) return RGB(16,38,59);
+    if (g_atmosphere == 1) return RGB(255,249,242);
+    return RGB(255,255,255);
+}
+static COLORREF log_color(void) {
+    if (g_atmosphere == 2) return RGB(6,16,27);
+    if (g_atmosphere == 1) return RGB(41,38,58);
+    return RGB(12,31,51);
+}
+static COLORREF blue_color(void) { return g_atmosphere == 2 ? RGB(115,183,255) : RGB(0,57,166); }
+static COLORREF blue_hover_color(void) { return g_atmosphere == 2 ? RGB(154,203,255) : RGB(10,30,70); }
+static COLORREF red_color(void) { return g_atmosphere == 2 ? RGB(255,125,120) : RGB(181,26,16); }
+static COLORREF red_hover_color(void) { return g_atmosphere == 2 ? RGB(255,163,155) : RGB(213,43,30); }
+static COLORREF border_color(void) {
+    if (g_atmosphere == 2) return RGB(49,83,107);
+    if (g_atmosphere == 1) return RGB(216,197,181);
+    return RGB(203,214,228);
+}
 static COLORREF button_ink(int primary, int danger) {
-    if (primary) return g_dark_mode ? RGB(6,26,48) : RGB(255,255,255);
-    if (danger) return g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
+    if (primary) return g_atmosphere == 2 ? RGB(8,21,34) : RGB(255,255,255);
+    if (danger) return g_atmosphere == 2 ? RGB(25,11,11) : RGB(255,255,255);
     return blue_color();
 }
 static int primary_button(UINT id) {
@@ -115,6 +140,10 @@ static void load_motion_settings(void) {
     if (RegQueryValueExA(key, "MotionMode", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
         g_motion_mode = value > 2 ? 0 : (int)value;
     if (g_reduce_motion) g_motion_mode = 2;
+    value = 0; size = sizeof(value); type = REG_DWORD;
+    if (RegQueryValueExA(key, "Atmosphere", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
+        g_atmosphere = value > 2 ? 0 : (int)value;
+    g_dark_mode = (g_atmosphere == 2);
     RegCloseKey(key);
 }
 
@@ -131,6 +160,8 @@ static void save_motion_settings(void) {
     RegSetValueExA(key, "ReduceMotion", 0, REG_DWORD, (const BYTE*)&reduce, sizeof(reduce));
     RegSetValueExA(key, "EcoVisuals", 0, REG_DWORD, (const BYTE*)&eco, sizeof(eco));
     RegSetValueExA(key, "MotionMode", 0, REG_DWORD, (const BYTE*)&mode, sizeof(mode));
+    DWORD atmosphere = (DWORD)g_atmosphere;
+    RegSetValueExA(key, "Atmosphere", 0, REG_DWORD, (const BYTE*)&atmosphere, sizeof(atmosphere));
     RegCloseKey(key);
 }
 
@@ -416,7 +447,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
         rebuild_brushes();
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"ATMOSPHERE: DAWN",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
         add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
         add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
@@ -505,9 +536,13 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_SAVE_REPORT: save_report(); break;
             case ID_CLEAR: SetWindowTextA(g_log,"Session log cleared.\r\n"); break;
             case ID_THEME:
-                g_dark_mode = !g_dark_mode;
+                g_atmosphere = (g_atmosphere + 1) % 3;
+                g_dark_mode = (g_atmosphere == 2);
+                save_motion_settings();
                 rebuild_brushes();
-                SetWindowTextA(GetDlgItem(w,ID_THEME),g_dark_mode?"LIGHT THEME":"DARK THEME");
+                SetWindowTextA(GetDlgItem(w,ID_THEME),
+                    g_atmosphere == 0 ? "ATMOSPHERE: DAWN" :
+                    g_atmosphere == 1 ? "ATMOSPHERE: SUNSET" : "ATMOSPHERE: NIGHT");
                 RedrawWindow(w,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN|RDW_ERASE);
                 break;
         }
@@ -537,6 +572,9 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
     load_motion_settings();
+    SetWindowTextA(GetDlgItem(w,ID_THEME),
+        g_atmosphere == 0 ? "ATMOSPHERE: DAWN" :
+        g_atmosphere == 1 ? "ATMOSPHERE: SUNSET" : "ATMOSPHERE: NIGHT");
     BOOL animations_enabled=(g_motion_mode == 2 || g_eco_visuals) ? FALSE : TRUE;
     char reduced_motion[8]={0};
     if(GetEnvironmentVariableA("UI_REDUCED_MOTION",reduced_motion,(DWORD)sizeof(reduced_motion))>0 &&
