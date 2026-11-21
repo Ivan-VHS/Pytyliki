@@ -2,7 +2,7 @@
 
 | File | Scope |
 |---|---|
-| [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
+| [CODE_MENTAL_HEALTH.md](CODE_MENTAL_HEALTH.md) | Code Mental Health / Codebase Wellbeing charter and scanner boundaries |\n| [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
 | [ENGINEERING.md](ENGINEERING.md) | quality and safety gates |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | runtime and data flow |
 | [DIVISION_ENGINE.md](DIVISION_ENGINE.md) | checked division, balanced partitioning and weighted allocation |
