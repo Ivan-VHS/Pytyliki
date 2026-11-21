@@ -63,6 +63,10 @@ Useful commands:
 
 Use `build/Release/pytyliki.exe` on a typical Windows multi-config build.
 
+## Division and workload planning
+
+The division module is available through `--divide`, `--partition` and `--partition-auto`. Euclidean division rejects zero divisors and signed overflow. Partition planning validates worker counts, caps the number of partitions, and preserves every item exactly once. `MIN_GRAIN` is an advisory minimum work size; the planner does not create threads or modify CPU affinity. Weighted allocation preserves the requested integer total and rejects inputs outside its arithmetic bounds.
+
 ## Evolution and project scope
 
 The 0.5.0 workstation baseline (16 Nov 2026) centered on processor profiling, source inspection and DSP. Subsequent mainline work expanded the C11 modules and tests, added the memory and metric kernels, native ABI, Embedded C reference tools, architecture and language catalogues, the systems lab, and a versioned project contract. The current source and tests are authoritative for what is implemented.
