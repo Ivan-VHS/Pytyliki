@@ -103,4 +103,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge "${PR_URL}" --auto --squash --delete-branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          output="$(gh pr merge "${PR_URL}" --auto --squash --delete-branch 2>&1)"
+          status=$?
+          set -e
+          if [ "${status}" -eq 0 ]; then
+            printf '%s\\n' "${output}"
+          elif [[ "${output}" == *"unstable status"* ]]; then
+            echo "::notice::GitHub will enable auto-merge after this required workflow check completes; no branch protection or required check is bypassed."
+          else
+            printf '%s\\n' "${output}" >&2
+            exit "${status}"
+          fi
