@@ -61,7 +61,7 @@ int pl_gift_percent(uint32_t total, uint32_t percent, uint32_t *amount) {
 }
 
 int pl_gift_count_combinations(uint32_t n, uint32_t k, uint64_t *out) {
-    if (out == NULL || k > n) return -1;
+    if (out == NULL || k > n || n > 1000000u) return -1;
     if (k > n - k) k = n - k;
     uint64_t result = 1u;
     for (uint32_t i = 1u; i <= k; ++i) {
