@@ -100,3 +100,67 @@ int32_t pytyliki_v1_embedded_budget_evaluate(
     out->sram_fits = budget.sram_fits ? 1 : 0;
     return PYTYLIKI_ABI_OK;
 }
+
+
+#ifdef PYTYLIKI_HAS_REAPER
+#include "reaper/ffi.h"
+#endif
+
+int32_t pytyliki_v1_reaper_available(int32_t *out_available) {
+    if (out_available == NULL) return PYTYLIKI_ABI_INVALID_ARGUMENT;
+#ifdef PYTYLIKI_HAS_REAPER
+    *out_available = 1;
+#else
+    *out_available = 0;
+#endif
+    return PYTYLIKI_ABI_OK;
+}
+
+int32_t pytyliki_v1_reaper_eval_i64(
+    const char *source, uint64_t source_length, int64_t *out,
+    char *error, uint64_t error_capacity
+) {
+    if (source == NULL || out == NULL || (error != NULL && error_capacity == 0u))
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+#ifdef PYTYLIKI_HAS_REAPER
+    {
+        char native_error[256] = {0};
+        int32_t status = reaper_v1_eval_i64(
+            source, source_length, out, native_error, (uint64_t)sizeof native_error);
+        if (status != REAPER_ABI_OK) {
+            if (error != NULL && error_capacity > 0u) {
+                size_t limit = error_capacity > (uint64_t)SIZE_MAX
+                    ? SIZE_MAX : (size_t)error_capacity;
+                (void)snprintf(error, limit, "Reaper ABI v1: %s", native_error);
+            }
+            return PYTYLIKI_ABI_REAPER_ERROR;
+        }
+        if (error != NULL && error_capacity > 0u) error[0] = '\0';
+        return PYTYLIKI_ABI_OK;
+    }
+#else
+    (void)source_length;
+    if (error != NULL && error_capacity > 0u) {
+        size_t limit = error_capacity > (uint64_t)SIZE_MAX
+            ? SIZE_MAX : (size_t)error_capacity;
+        (void)snprintf(error, limit, "%s",
+                       "Reaper runtime unavailable; configure REAPER_SOURCE_DIR");
+    }
+    return PYTYLIKI_ABI_BACKEND_UNAVAILABLE;
+#endif
+}
+
+int32_t pytyliki_v1_reaper_selfhood_lookup(
+    const char *identity, uint64_t *ordinal
+) {
+    if (identity == NULL || ordinal == NULL) return PYTYLIKI_ABI_INVALID_ARGUMENT;
+#ifdef PYTYLIKI_HAS_REAPER
+    {
+        int32_t status = reaper_v1_selfhood_lookup(identity, ordinal);
+        if (status == REAPER_ABI_NOT_FOUND) return PYTYLIKI_ABI_NOT_FOUND;
+        return status == REAPER_ABI_OK ? PYTYLIKI_ABI_OK : PYTYLIKI_ABI_REAPER_ERROR;
+    }
+#else
+    return PYTYLIKI_ABI_BACKEND_UNAVAILABLE;
+#endif
+}
