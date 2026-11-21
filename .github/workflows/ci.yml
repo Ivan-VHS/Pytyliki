@@ -1,15 +1,40 @@
 name: C11 CI
+
 on:
   push:
     branches: [main, "feat/**", "integration/**"]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
-  build-test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  ubuntu:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate localized README links
+        run: python .github/scripts/check_readme_links.py
+      - name: Configure
+        run: cmake -S . -B build -DBUILD_TESTING=ON
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Validate APSIA evolution-lock schema JSON
+        run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
+      - name: Verify architecture contract
+        run: python scripts/check_architecture_contract.py
+      - name: Validate 66-language systems matrix
+        run: python tools/systems_languages.py --verify
+      - name: Verify 100-proverb engineering crosswalk
+        run: python scripts/check_chinese_proverbs_profile.py
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Configure
@@ -26,6 +51,7 @@ jobs:
         run: python scripts/check_chinese_proverbs_profile.py
 
   sanitizer-linux:
+    name: Linux Sanitizer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

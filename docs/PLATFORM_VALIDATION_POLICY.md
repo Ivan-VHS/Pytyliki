@@ -23,6 +23,18 @@ This policy prevents documentation, release notes, badges, examples and product 
 
 Mentioning a technology in a roadmap, issue, example, dependency proposal or design document is not evidence that the capability exists.
 
+## Blockchain and processor systems lab claims
+
+The 33-function systems lab is an implemented C API catalogue, not a claim that Pytyliki operates every named external platform or protocol. The following wording rules apply:
+
+- Merkle, ZK, cross-chain proof and firmware-signature operations are callback contracts. Production use requires protocol-specific algorithms, trusted roots, key management, external vectors, adversarial tests and independent review.
+- RPC scheduling is a local quota-respecting token bucket; never describe it as bypassing or defeating provider limits.
+- VM opcode hooks and micro-op tables target caller-owned simulators only. ISA extensions are encoded for a simulator/compiler integration and do not add instructions to a physical CPU.
+- FPGA synthesis is available only through a supplied vendor adapter and validated target flow. A callback smoke test is not evidence of production RTL synthesis, place-and-route, timing closure or a deployable bitstream.
+- Virtual clock/governor, scheduler affinity, cache partitioning, prefetch, vectorization and PMU APIs are local models or plans. They do not write device registers or guarantee performance gains.
+
+Promotion of an adapter to a production integration requires named protocol/device/toolchain versions, known-answer and negative tests, documented trust assumptions, and reproducible CI or vendor-flow evidence for the exact target.
+
 ## Evidence required to change the scope
 
 A claim may be promoted only through a reviewed pull request that supplies the relevant evidence:

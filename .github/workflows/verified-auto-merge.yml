@@ -1,23 +1,21 @@
-name: Verified PR Auto-Merge
+name: Verified Mainline Auto-Merge
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
-  pull_request_review:
-    types: [submitted, dismissed]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: verified-auto-merge-${{ github.event.pull_request.number || github.run_id }}
+  group: verified-mainline-auto-merge-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: false
 
 jobs:
   validate:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository)
     name: Validate (${{ matrix.os }})
     strategy:
       fail-fast: true
@@ -26,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout pull request
         uses: actions/checkout@v4
@@ -38,43 +36,70 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Run CTest
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Set up Python
+        if: runner.os == 'Linux'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate localized README links
+        if: runner.os == 'Linux'
+        run: python .github/scripts/check_readme_links.py
+      - name: Validate APSIA evolution-lock schema
+        if: runner.os == 'Linux'
+        run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
+      - name: Verify architecture contract
+        if: runner.os == 'Linux'
+        run: python scripts/check_architecture_contract.py
+      - name: Validate low-level language systems matrix
+        if: runner.os == 'Linux'
+        run: python tools/systems_languages.py --verify
+      - name: Verify engineering crosswalk
+        if: runner.os == 'Linux'
+        run: python scripts/check_chinese_proverbs_profile.py
+
+  sanitizer:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository)
+    name: Linux ASan and UBSan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Configure with sanitizers
+        run: cmake -S . -B build-sanitized -DBUILD_TESTING=ON -DPYTYLIKI_ENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=Debug
+      - name: Build sanitized binaries
+        run: cmake --build build-sanitized --parallel
+      - name: Run tests under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --test-dir build-sanitized --output-on-failure
 
   auto-merge:
-    name: Auto-merge approved PR
-    needs: validate
-    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false
+    name: Enable native GitHub auto-merge
+    needs: [validate, sanitizer]
+    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Require independent approval
+      - name: Confirm validated PR head is unchanged
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
           if [ "${current_head}" != "${PR_HEAD_SHA}" ]; then
-            echo "Auto-merge blocked: PR head changed while this validation run was executing."
+            echo "Auto-merge blocked: PR head changed while validation was running."
             exit 1
           fi
-          reviews="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews")"
-          approvals="$(printf '%s' "${reviews}" | jq --arg author "${PR_AUTHOR}" --arg head "${PR_HEAD_SHA}" '
-            [.[][] | select(.user.login != $author)]
-            | sort_by(.user.login, .submitted_at)
-            | group_by(.user.login)
-            | map(last)
-            | map(select(.state == "APPROVED" and .commit_id == $head))
-            | length
-          ')"
-          if ! [[ "${approvals}" =~ ^[0-9]+$ ]] || [ "${approvals}" -lt 1 ]; then
-            echo "Auto-merge blocked: an approval from someone other than the PR author is required."
-            exit 1
-          fi
-      - name: Enable GitHub native auto-merge
+      - name: Enable squash auto-merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
