@@ -29,3 +29,18 @@ See the [shared Anatidae motion constitution](ANATIDAE_MOTION_CONSTITUTION.md).
 ## Shared 2026 contract
 
 The shared semantic and accessibility contract is documented in [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md). Win32-specific motion remains deliberately restrained; no animation is added to precision or processor paths.
+
+
+## Motion Constitution v2026 mapping
+
+The shared token, accessibility and documentation source is [Motion Constitution v2026](MOTION_CONSTITUTION_V2026.md). This native contract remains the authority for what this application actually ships.
+
+- Canonical easing names: `--ease-spring` (bounded paddle response) and `--ease-snappy` (predictable state transitions); native curves are mapped in this document.
+- Canonical scale envelope: `--motion-scale` = 0.4×–2.2× and spring stiffness multiplier 0.7–1.4. These are shared design tokens; they are not exposed as user controls unless the application UI and runtime explicitly implement them.
+- Reduced Motion: OS preference and `UI_REDUCED_MOTION` take precedence; spatial/ambient motion is removed, state changes remain immediate, and only essential feedback may retain a fade of up to 80 ms.
+- Theme/layout parity: light/dark themes, keyboard focus and high-DPI layouts remain required. 2×2 overview and focus-scene are showcase layout targets, not a claim that this native product already provides those views.
+- Telemetry graphics: SVG/Canvas/native-paint charts must bind to sourced model values, show units and an accessible textual equivalent, and expose stale/error/unknown states. Demo data must be labelled.
+
+### Product-specific maturity
+
+Pytyliki currently has native Win32 Motion Settings, persisted Normal/Expressive/Reduced/Eco preferences, OS/registry overrides and a restrained startup transition. Its processor discovery and benchmark data may be graphed only when the actual measured value and timestamp are available. CPU V/F writes, live thermal control, and overclocking curves are not part of the current product. No animation enters C11 processing, benchmarks, FFI or DSP.

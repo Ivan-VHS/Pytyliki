@@ -48,3 +48,12 @@ Duck bob, tail waggle, waves, ripples, voice particles, floating feathers and pa
 - **VentuSample / Qt:** bounded Qt spring and project-BPM indicator; no motion in DSP or generator workers.
 
 Product-specific `docs/UI_MOTION.md` contracts remain authoritative for enabled features.
+
+
+## Motion Constitution v2026 precedence
+
+The normative shared motion, layout and telemetry contract is [Motion Constitution v2026](MOTION_CONSTITUTION_V2026.md). This design document supplies visual-language guidance; it does not override the canonical token ranges or product-specific implementation status.
+
+Shared tokens: `--ease-spring`, `--ease-snappy`, `--motion-scale` (0.4–2.2) and normalized `--spring-stiffness` (0.7–1.4). Operating-system reduced-motion and `UI_REDUCED_MOTION` take precedence; nonessential spatial/ambient motion is removed and the underlying state change is retained. Light/dark parity, keyboard focus and high-DPI readability apply to every supported visual state.
+
+The 2×2 overview and focus scene are showcase layout targets. SVG/Canvas or native-paint graphics must be driven by real model values, expose units and textual equivalents, and distinguish unknown, stale and error states. Product-specific `docs/UI_MOTION.md` remains authoritative for shipped native behavior and safety boundaries.
