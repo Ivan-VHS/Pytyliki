@@ -246,7 +246,7 @@ static void print_report(int json, const char *project) {
         printf("{\n"
             "  \"schema_version\": 1,\n"
             "  \"concept\": \"Code Mental Health / Codebase Wellbeing v1\",\n"
-            "  \"project\": \"%s\",\n"
+            "  \"project\": \"selected\",\n"
             "  \"scan\": {\"read_only\": true, \"truncated\": %s, \"file_limit\": %lu, \"depth_limit\": %d},\n"
             "  \"inventory\": {"
             "\"total_files\": %lu, \"source_files\": %lu, \"test_files\": %lu, "
