@@ -9,7 +9,7 @@ int main(void) {
     char restored[64];
     size_t written = 0u;
     pl_clife_checkpoint checkpoint;
-    pl_clife_runtime_state state = {0.80, 0.90, 0.90, 5u, 0};
+    pl_clife_runtime_state state = {"pytyliki-test", 0.80, 0.90, 0.90, 5u, 0};
     pl_clife_fault_event fault = {PL_CLIFE_FAULT_ARTIFACT_INTEGRITY, 0.10, 0};
 
     assert(pl_clife_checkpoint_capture(&checkpoint, "pytyliki-test", 4u,
