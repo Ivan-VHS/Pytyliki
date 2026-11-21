@@ -42,4 +42,7 @@ int pl_division_recommend_workers(uint64_t work_items,
 int pl_division_weighted_split(uint64_t total, const uint32_t *weights,
                                size_t weight_count, uint64_t *allocations);
 
+/* Returns -1 when argv[1] is not a division command. */
+int pl_division_cli(int argc, char **argv);
+
 #endif
