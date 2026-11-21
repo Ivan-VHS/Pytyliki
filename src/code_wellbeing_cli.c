@@ -283,7 +283,7 @@ static void print_report(int json, const char *project) {
             "  \"reporting_note\": \"No aggregate mental-health or code-quality score is computed.\",\n"
             "  \"privacy_note\": \"No contributor, commit-time, hardware, audio or device telemetry is inspected.\"\n"
             "}\n",
-            REPORT.truncated ? "true" : "false", FILE_LIMIT, DEPTH_LIMIT,
+            REPORT.truncated ? "true" : "false", FILE_LIMIT, DEPTH_LIMIT, MAX_SOURCE_BYTES, MAX_TOTAL_SOURCE_BYTES,
             REPORT.total_files, REPORT.source_files, REPORT.test_files, REPORT.documentation_files,
             REPORT.readme_files, REPORT.workflow_files, REPORT.ownership_files, REPORT.dependency_files,
             REPORT.recovery_files, REPORT.incident_records, REPORT.source_scanned,
@@ -305,7 +305,7 @@ static void print_report(int json, const char *project) {
     printf("- incident-learning: %s — record presence does not prove lessons were applied\n", learning);
     printf("Review cues only: TODO=%lu FIXME=%lu HACK=%lu XXX=%lu large-source-units=%lu\n",
            REPORT.todo, REPORT.fixme, REPORT.hack, REPORT.xxx, REPORT.large_source_units);
-    if (REPORT.truncated) puts("Scan was capped at 5000 files.");
+    if (REPORT.truncated) puts("Inventory was capped by the 5000-file or 16-level directory limit.");
     puts("No aggregate score. No contributor ranking. No automatic source changes.");
     puts("This inventory does not prove correctness, security or maintainability.");
 }
