@@ -88,6 +88,9 @@ if(BUILD_TESTING)
 
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
+  if(REAPER_SOURCE_DIR)
+    target_compile_definitions(pytyliki-interop-tests PRIVATE PYTYLIKI_HAS_REAPER=1)
+  endif()
   add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
 
   add_executable(pytyliki-self-product-tests tests/test_self_product.c)
