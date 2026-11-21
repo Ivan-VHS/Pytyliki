@@ -13,6 +13,8 @@ int main(void) {
     assert(plan.planned_uah == 500);
     assert(plan.allocations_uah[4] == 460);
     assert(plan.allocations_uah[5] == 40);
+    assert(pl_budget_set_allocation(&plan, 4, 0) == 0);
+    assert(pl_budget_set_allocation(&plan, 5, 0) == 0);
     assert(pl_budget_set_allocation(&plan, 0, 550) == 0);
     assert(plan.over_budget);
     assert(plan.remaining_uah == -50);
