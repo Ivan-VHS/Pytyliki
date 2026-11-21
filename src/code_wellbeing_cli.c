@@ -268,6 +268,7 @@ static void print_report(int json, const char *project) {
             "\"documentation_files\": %lu, \"readme_files\": %lu, \"ci_workflow_files\": %lu, "
             "\"ownership_files\": %lu, \"dependency_manifest_files\": %lu, \"recovery_guides\": %lu, "
             "\"incident_or_decision_records\": %lu, \"source_files_text_scanned\": %lu, "
+            "\"source_bytes_scanned\": %lu, \"source_text_scan_truncated\": %s, "
             "\"large_source_units_over_1000_lines\": %lu, "
             "\"maintenance_markers\": {\"TODO\": %lu, \"FIXME\": %lu, \"HACK\": %lu, \"XXX\": %lu}},\n"
             "  \"signals\": ["
