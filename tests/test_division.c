@@ -1,16 +1,23 @@
 #include "division.h"
 
-#include <assert.h>
+#include <stdlib.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
 
+#define CHECK(condition) do { \\
+    if (!(condition)) { \\
+        fprintf(stderr, "CHECK failed at %s:%d: %s\\n", __FILE__, __LINE__, #condition); \\
+        exit(EXIT_FAILURE); \\
+    } \\
+} while (0)
+
 static void expect_division(int64_t a, int64_t b,
                             int64_t quotient, int64_t remainder) {
     pl_division_result result;
-    assert(pl_division_euclidean(a, b, &result) == 0);
-    assert(result.quotient == quotient);
-    assert(result.remainder == remainder);
+    CHECK(pl_division_euclidean(a, b, &result) == 0);
+    CHECK(result.quotient == quotient);
+    CHECK(result.remainder == remainder);
 }
 
 int main(void) {
@@ -25,42 +32,42 @@ int main(void) {
     expect_division(-17, 5, -4, 3);
     expect_division(17, -5, -3, 2);
     expect_division(-17, -5, 4, 3);
-    assert(pl_division_euclidean(9, 0, &result) != 0);
-    assert(pl_division_euclidean(INT64_MIN, -1, &result) != 0);
-    assert(pl_division_is_exact(42, 7, &exact) == 0 && exact == 1);
-    assert(pl_division_is_exact(43, 7, &exact) == 0 && exact == 0);
-    assert(pl_division_is_exact(1, 0, &exact) != 0);
+    CHECK(pl_division_euclidean(9, 0, &result) != 0);
+    CHECK(pl_division_euclidean(INT64_MIN, -1, &result) != 0);
+    CHECK(pl_division_is_exact(42, 7, &exact) == 0 && exact == 1);
+    CHECK(pl_division_is_exact(43, 7, &exact) == 0 && exact == 0);
+    CHECK(pl_division_is_exact(1, 0, &exact) != 0);
 
-    assert(pl_partition_plan_create(10u, 3u, &plan) == 0);
+    CHECK(pl_partition_plan_create(10u, 3u, &plan) == 0);
     for (uint64_t i = 0u; i < plan.partition_count; ++i) {
-        assert(pl_partition_plan_range(&plan, i, &offset, &count) == 0);
-        assert(offset == cursor);
+        CHECK(pl_partition_plan_range(&plan, i, &offset, &count) == 0);
+        CHECK(offset == cursor);
         cursor += count;
         allocated += count;
     }
-    assert(cursor == 10u && allocated == 10u);
-    assert(pl_partition_plan_create(2u, 5u, &plan) == 0);
-    assert(pl_partition_plan_range(&plan, 4u, &offset, &count) == 0);
-    assert(offset == 2u && count == 0u);
-    assert(pl_partition_plan_create(1u, 0u, &plan) != 0);
-    assert(pl_partition_plan_create(1u, PL_DIVISION_MAX_PARTITIONS + 1u, &plan) != 0);
+    CHECK(cursor == 10u && allocated == 10u);
+    CHECK(pl_partition_plan_create(2u, 5u, &plan) == 0);
+    CHECK(pl_partition_plan_range(&plan, 4u, &offset, &count) == 0);
+    CHECK(offset == 2u && count == 0u);
+    CHECK(pl_partition_plan_create(1u, 0u, &plan) != 0);
+    CHECK(pl_partition_plan_create(1u, PL_DIVISION_MAX_PARTITIONS + 1u, &plan) != 0);
 
-    assert(pl_division_recommend_workers(10000u, 16u, 256u, &workers) == 0);
-    assert(workers == 16u);
-    assert(pl_division_recommend_workers(100u, 16u, 256u, &workers) == 0);
-    assert(workers == 1u);
-    assert(pl_division_recommend_workers(0u, 16u, 256u, &workers) == 0);
-    assert(workers == 0u);
-    assert(pl_division_recommend_workers(10u, 0u, 1u, &workers) != 0);
+    CHECK(pl_division_recommend_workers(10000u, 16u, 256u, &workers) == 0);
+    CHECK(workers == 16u);
+    CHECK(pl_division_recommend_workers(100u, 16u, 256u, &workers) == 0);
+    CHECK(workers == 1u);
+    CHECK(pl_division_recommend_workers(0u, 16u, 256u, &workers) == 0);
+    CHECK(workers == 0u);
+    CHECK(pl_division_recommend_workers(10u, 0u, 1u, &workers) != 0);
 
-    assert(pl_division_weighted_split(10u, weights, 3u, shares) == 0);
-    assert(shares[0] == 2u && shares[1] == 3u && shares[2] == 5u);
-    assert(shares[0] + shares[1] + shares[2] == 10u);
-    assert(pl_division_weighted_split(1u, weights, 0u, shares) != 0);
-    assert(pl_division_weighted_split((uint64_t)UINT32_MAX + 1u, weights, 3u, shares) != 0);
+    CHECK(pl_division_weighted_split(10u, weights, 3u, shares) == 0);
+    CHECK(shares[0] == 2u && shares[1] == 3u && shares[2] == 5u);
+    CHECK(shares[0] + shares[1] + shares[2] == 10u);
+    CHECK(pl_division_weighted_split(1u, weights, 0u, shares) != 0);
+    CHECK(pl_division_weighted_split((uint64_t)UINT32_MAX + 1u, weights, 3u, shares) != 0);
     {
         const uint32_t zero_weights[2] = {0u, 0u};
-        assert(pl_division_weighted_split(5u, zero_weights, 2u, shares) != 0);
+        CHECK(pl_division_weighted_split(5u, zero_weights, 2u, shares) != 0);
     }
 
     puts("Pytyliki division, allocation and partition tests passed.");
