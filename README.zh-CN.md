@@ -8,7 +8,38 @@ Pytyliki 是一个模块化原生工作站，用于处理器信息发现、有�
 ## Windows 实际运行截图
 
 <p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Windows 中运行的 Pytyliki 工作站" width="100%"></p>
-<sub>由 desktop-build 工作流捕获的真实桌面画面，1920×1080。</sub>
+
+## 功能数据流
+
+该图概述项目输入来源、处理阶段和生成结果之间已经实现的数据流转。
+
+```mermaid
+flowchart TD
+    A[主机处理器] --> B[只读清单]
+    B --> C[处理器配置]
+    C --> D[有界任务规划器]
+    D --> E[确定性区间计划]
+    F[源代码文本] --> G[静态诊断]
+    G --> H[结构化报告]
+    I[PCM16 WAV] --> J[本地 DSP]
+    J --> K[处理后的音频与测量结果]
+```
+
+## 执行路径与输出
+
+第二张图将当前可执行路径和受支持输出与仅登记在目录中或尚不可用的行为区分开。
+
+```mermaid
+flowchart LR
+    A[CLI 参数] --> B[验证与边界检查]
+    B --> C[数值操作]
+    C --> D[结果或报告]
+    E[CPU / MCU 配置] --> F[参考估算]
+    G[QCS 源代码] --> H[词法分析与解析]
+    H --> I[AST 与诊断]
+```
+
+<sub>应用实际截屏 · 原始图像为 1920×1080 · 保留原始像素，不进行人为放大。</sub>
 
 ## 功能范围
 
@@ -23,10 +54,6 @@ Pytyliki 是一个模块化原生工作站，用于处理器信息发现、有�
 | Rules / APSIA / TRACE | 负载建议、任务规划和测量溯源 | 证据记录，不是认证 |
 | QCS | lexer、parser、AST 和诊断 | 仅语法分析 |
 | Interop | 版本化 C ABI v1 | 显式选择可信库 |
-
-## 界面动效与无障碍
-
-Windows 工作台提供 **Motion Settings**。**Reduce Motion** 会关闭启动窗口过渡；**Eco / Low-CPU Visuals** 会抑制非必要视觉效果。由于 Pytyliki 没有项目传输或主 BPM 来源，**Sync to Transport / BPM** 暂不可用。设置按当前用户保存，并遵循 Windows 客户区动画偏好及 `UI_REDUCED_MOTION` 环境变量。详见 [界面动效规范](docs/UI_MOTION.md)。
 
 ## 构建与测试
 
@@ -67,32 +94,3 @@ pytyliki --partition-auto 10000 256
 [功能](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [架构](docs/ARCHITECTURE.md) · [除法与分区](docs/DIVISION_ENGINE.md) · [TRACE 溯源](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [文档索引](docs/README.md)
 
 [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
-
-## DUCK CORE // README 与 Motion Suite
-
-交互式演示和 UI 文档采用统一视觉参考，包含三套配色：**Pond Noir**（默认深色画布）、**Golden Reed**（暖色高对比强调色）和 **Arctic Glacier**（冷色青蓝强调色）。应使用画布、表面、边框、文本、强调色和焦点等语义令牌，避免组件随意硬编码互相冲突的颜色。
-
-动效遵循明确层级：有目的的进入和反馈使用克制的 spring 缓动，常规过渡使用平滑缓动；Zen / Hyper 强度预设仅在应用确实提供时启用。视差、漂浮图形和 ripple 波纹属于非必要装饰，不得承载关键信息或阻挡输入。`reduced-motion` 优先于所有动效模式，并关闭装饰性运动。
-
-**无障碍与响应式：**保持清晰的文本对比度、可见的键盘焦点、适合触控的控件尺寸、明确的 active/disabled 状态，并确保窄屏布局自然折叠。动效不得造成布局跳动或妨碍操作。
-
-本节是 DUCK CORE 视觉参考，**不代表**每个应用都已实现所有主题、动画或控件。实际发布的实现和项目专属规范才是最终依据：[界面动效规范](docs/UI_MOTION.md)。
-
-<!-- VISUAL-DOCS:BEGIN -->
-## 架构可视化图
-
-![Pytyliki 架构图：共享 C11 核心、工作站模块、命令行工具和 Windows GUI](assets/visual-documentation-map.svg)
-
-此图为架构示意图，并非应用运行截图。上方真实 Windows 截图仍是已交付界面的视觉依据。SVG、截图、排版、Markdown、图表和渲染规范见[视觉文档](docs/VISUAL_DOCUMENTATION.md)。
-<!-- VISUAL-DOCS:END -->
-
-
-## Motion Constitution v2026
-
-统一界面规范见 [Motion Constitution v2026](docs/MOTION_CONSTITUTION_V2026.md)。该规范定义弹簧/快速缓动词汇、0.4×–2.2× 动效缩放范围、系统 Reduce Motion 优先级、主题、2×2/焦点场景展示，以及真实 SVG/Canvas 遥测的规则。已交付的 Win32 行为以[界面动效规范](docs/UI_MOTION.md)为准。Pytyliki 当前提供可持久化的动效偏好和克制的启动过渡；图表必须来自真实处理器测量值。本产品不提供超频或电压写入控制。
-
-## 统一动效架构图
-
-<p align="center"><img src="assets/motion-constitution-v2026.svg" alt="Motion Constitution v2026 四领域架构图" width="100%"></p>
-
-这是共享的 2×2 架构示意图，并非应用运行截图。图中明确区分各产品已交付的功能与不可用/规划中的能力。
