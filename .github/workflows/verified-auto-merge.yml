@@ -41,6 +41,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Validate automation roadmap contract
+        if: runner.os == 'Linux'
+        run: python scripts/validate_automation_roadmap.py --strict
       - name: Validate localized README links
         if: runner.os == 'Linux'
         run: python .github/scripts/check_readme_links.py
