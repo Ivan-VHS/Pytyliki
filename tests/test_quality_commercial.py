@@ -27,6 +27,7 @@ class QualityCommercialTests(unittest.TestCase):
         report = assess_profile(profile, root=ROOT)
         self.assertTrue(report["issues"])
         self.assertEqual(report["evidence"]["files_missing"], 1)
+        self.assertTrue(any("missing/evidence.txt" in issue for issue in report["issues"]))
 
     def test_path_traversal_is_rejected(self):
         profile = json.loads(PROFILE.read_text(encoding="utf-8"))
