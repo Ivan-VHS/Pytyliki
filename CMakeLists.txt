@@ -54,6 +54,13 @@ target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
+  add_executable(pytyliki-ui-ux-40026-tests tests/test_ui_ux_40026.c)
+  target_include_directories(pytyliki-ui-ux-40026-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  if(UNIX)
+    target_link_libraries(pytyliki-ui-ux-40026-tests PRIVATE m)
+  endif()
+  add_test(NAME ui-ux-codex-40026 COMMAND pytyliki-ui-ux-40026-tests)
+
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
   add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
