@@ -31,6 +31,10 @@ jobs:
         run: python tools/systems_languages.py --verify
       - name: Verify 100-proverb engineering crosswalk
         run: python scripts/check_chinese_proverbs_profile.py
+      - name: Validate engineering evolution contract
+        run: python tools/validate_engineering_evolution.py
+      - name: Test engineering evolution contract
+        run: python -m unittest discover -s tests -p "test_engineering_evolution.py" -v
 
   windows:
     name: Windows
