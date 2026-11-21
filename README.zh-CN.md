@@ -104,3 +104,7 @@ pytyliki --partition-auto 10000 256
 这是一个 500 UAH 预算模型示例，包含 JSON 契约和离线模拟器。它属于文档示例，并非宿主应用运行时功能。
 
 [多语言指南](docs/RESOURCE_ALLOCATION_500_UAH.md) · [交互式模拟器](docs/resource-allocation-500-uah.html) · [JSON 示例](examples/resource-allocation-500-uah.json) · [JSON Schema](schemas/resource-allocation.v1.schema.json)
+
+## Elbrus E2K 支持
+
+C11 原生构建、处理器识别、交叉编译与验证状态见 [Elbrus E2K 指南](docs/ELBRUS_E2K.md)。
