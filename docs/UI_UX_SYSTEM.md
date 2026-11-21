@@ -34,17 +34,9 @@ Pytyliki is a processor and systems workstation, not a marketing dashboard. Its 
 
 ## Shared visual contract
 
-| Token | Light | Dark |
-|---|---|---|
-| Page | #F3F6FA | #101827 |
-| Surface | #FFFFFF | #172337 |
-| Text | #172337 | #EEF3FA |
-| Muted | #5C6B80 | #A7B4C7 |
-| Accent | #2563EB | #6EA8FE |
-| Alert | #DC2626 | #F87171 |
-| Diagnostic log | #111C2E | #0B1422 |
+The authoritative light/dark semantic values are defined once in [ANATIDAE_DESKTOP_DESIGN_SYSTEM.md](ANATIDAE_DESKTOP_DESIGN_SYSTEM.md). Do not maintain a second palette here or introduce independent page, alert or editor colors. All controls, logs, selection, focus and dialogs consume that shared white-blue-red token contract.
 
-Red remains a small brand accent; blue is reserved for primary actions and focus. Status colors are supplementary, never the only signal.
+The Anatidae vocabulary informs calm containment, progressive disclosure, fluid reflow and restrained feather/waterline geometry. It does not authorize mascot artwork, novelty labels or decoration behind diagnostics. See the design system's lexical matrix and Pytyliki application profile.
 
 ## Related repositories
 
