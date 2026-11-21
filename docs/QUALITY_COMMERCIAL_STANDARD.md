@@ -49,3 +49,7 @@ Maturity is explicitly declared per control: **implemented** = linked implementa
 Processor discovery and source review remain read-only; benchmark results are bounded local comparisons, not hardware certification. DSP runs on local buffers. Hardware-rule scores and routes remain advisory. Export, sharing and telemetry retain consent-aware controls. No firmware, microcode, voltage, clock, driver or device-register write path is added by this framework.
 
 A control may move to **implemented** only when linked artifacts exist and a regression test covers the behavior. Commercial states advance only when independently reviewable customer, financial, licensing or support evidence is available.
+
+## Market-development alignment
+
+The dedicated [market-development standard](MARKET_DEVELOPMENT_STANDARD.md) and root [versioned profile](../market-development.v1.json) make the marketing, customer, promotion, distribution and monetization dimensions actionable. The profile complements the 20 × 3 quality/execution/commercial matrix; it does not replace evidence checks. Market validation, pricing and unit economics remain unassessed or unset until supported by observed user workflows, rights review and measured costs.
