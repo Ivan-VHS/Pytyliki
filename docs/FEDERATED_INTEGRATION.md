@@ -62,7 +62,7 @@ arguments and vector limits.
 
 ## Cross-repository references
 
-- **Shared 3 × 3 map:** [Project federation matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md).
+- **Shared 4 × 4 map:** [Project federation matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md).
 - **Reaper:** [repository](https://github.com/Ivan-VHS/Reaper), [federation contract](https://github.com/Ivan-VHS/Reaper/blob/main/docs/FEDERATED_INTEGRATION.md), [native FFI consumer](https://github.com/Ivan-VHS/Reaper/blob/main/reaper/ffi.py), [project manifest](https://github.com/Ivan-VHS/Reaper/blob/main/project-contract.json).
 - **OPlague:** [repository](https://github.com/Ivan-VHS/OPlague), [federation contract](https://github.com/Ivan-VHS/OPlague/blob/main/docs/FEDERATED_INTEGRATION.md), [native metric adapter](https://github.com/Ivan-VHS/OPlague/blob/main/tools/pytyliki_ffi.py), [project manifest](https://github.com/Ivan-VHS/OPlague/blob/main/project-contract.json).
 - **Pytyliki evidence:** [public ABI header](../src/interop.h), [ABI implementation](../src/interop.c), [project manifest](../project-contract.json).
@@ -70,4 +70,4 @@ arguments and vector limits.
 
 ## OCTA-8 horizontal peer product and octagonal pyramid
 
-The shared [OCTA-8 topology contract](OCTA_PYRAMID_FEDERATION.md) defines the directed Reaper↔Pytyliki↔OPlague peer product: six directed links, three local self-loops and eight protocol facets. Pytyliki remains the portable C11 numerical provider. Calls are synchronous and return results over the same explicitly selected ABI; Pytyliki does not launch peer runtimes or load peer code.
+The shared [four-project OCTA-8 topology contract](OCTA_PYRAMID_FEDERATION.md) defines twelve directed peer links, four local self-loops and eight protocol facets across Reaper, Pytyliki, OPlague and VentuSample. Pytyliki remains the portable C11 numerical provider. Reaper can optionally use the Pytyliki distance ABI while comparing normalized VentuSample pack descriptors. A direct VentuSample-to-Pytyliki native adapter remains planned; the current ABI is not claimed to be a streaming audio renderer. Calls are synchronous and use an explicitly selected trusted library; Pytyliki does not launch peer runtimes or load peer code.
