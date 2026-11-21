@@ -61,9 +61,11 @@ static int skipped_directory(const char *name) {
         ".git", "build", "dist", "target", "vendor", "node_modules",
         ".venv", "venv", "__pycache__", ".pytest_cache"
     };
+    char lowered[256];
     size_t i;
+    lower_copy(lowered, sizeof(lowered), name);
     for (i = 0U; i < sizeof(names) / sizeof(names[0]); ++i)
-        if (strcmp(name, names[i]) == 0) return 1;
+        if (strcmp(lowered, names[i]) == 0) return 1;
     return 0;
 }
 
@@ -296,6 +298,7 @@ int main(int argc, char **argv) {
     const char *root = ".";
     int json = 0;
     int i;
+    int path_set = 0;
     char absolute[PATH_CAP];
     for (i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--json") == 0) json = 1;
