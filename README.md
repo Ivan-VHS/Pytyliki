@@ -22,6 +22,7 @@
 - **Bounded benchmark suite:** processor, memory and matrix workloads with timing and integrity checks. Results are local comparisons, not hardware certification.
 - **Static source review:** inspect supported source files and export findings without compiling, executing or rewriting them. Report export, sharing and telemetry actions have separate consent-aware role gates.
 - **Audio / DSP:** PCM16 WAV import/export, test-tone generation, low-pass filtering, compression, saturation, gain and metering.
+- **Division and workload planning:** checked Euclidean arithmetic, exact-divisibility queries, bounded balanced partitions, worker recommendations and exact weighted allocation.
 - **Memory kernel:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints, telemetry and fixed-block pools.
 - **TRACE measurement provenance:** bounded C11 records preserve metric, unit, context, source digest, exact sampling window, sample count and declared uncertainty. Comparisons reject incompatible contexts instead of blending them ([design](docs/TRACE_MEASUREMENT_PROVENANCE.md)).
 - **Metric engine:** vector norms, distances, orthogonality, weighted quadratic forms, geometry and variance operations.
@@ -53,9 +54,18 @@ Useful commands:
 ./build/pytyliki --embedded profiles
 ./build/pytyliki-metrics --demo
 ./build/pytyliki --json report.json
+
+# Checked Euclidean division and bounded workload planning
+./build/pytyliki --divide -17 5
+./build/pytyliki --partition 10000 8 256
+./build/pytyliki --partition-auto 10000 256
 ```
 
 Use `build/Release/pytyliki.exe` on a typical Windows multi-config build.
+
+## Division and workload planning
+
+The division module is available through `--divide`, `--partition` and `--partition-auto`. Euclidean division rejects zero divisors and signed overflow. Partition planning validates worker counts, caps the number of partitions, and preserves every item exactly once. `MIN_GRAIN` is an advisory minimum work size; the planner does not create threads or modify CPU affinity. Weighted allocation preserves the requested integer total and rejects inputs outside its arithmetic bounds.
 
 ## Evolution and project scope
 
@@ -68,6 +78,7 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 ## Documentation
 
 [TRACE measurement provenance](docs/TRACE_MEASUREMENT_PROVENANCE.md)
+[Division and partitioning engine](docs/DIVISION_ENGINE.md)
 
 [Human-first governance](docs/HUMAN_FIRST_GOVERNANCE.md) · [UI/UX system](docs/UI_UX_SYSTEM.md) · [Architecture](docs/ARCHITECTURE.md) · [Memory kernel](docs/MEMORY_ARENA.md) · [Embedded C](docs/EMBEDDED_C.md) · [Systems-language atlas](docs/SYSTEMS_LANGUAGE_ARCHITECTURE_ATLAS.md) · [Unified engineering standard](docs/UNIFIED_ENGINEERING_STANDARD.md)
 
