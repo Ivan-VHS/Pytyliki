@@ -75,6 +75,12 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 [Doctrine references](docs/HUMAN_FIRST_GOVERNANCE.md) · [Anatidae design system](docs/ANATIDAE_DESKTOP_DESIGN_SYSTEM.md) · [UI/UX architecture](docs/UI_UX_ARCHITECTURE.md) · [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md) · [Clinical safety architecture](docs/clinical-safety-architecture.md) · [Project contract](docs/UNIFIED_PROJECT_CONTRACT.md)
 [Windows releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [Desktop build workflow](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)
 
+## Desktop design: Duck Sovereign Canon
+
+The Win32/GDI workstation follows a strict vertical hierarchy: system and processor actions first, task-specific controls next, then measurements, report and journal. The approved white/blue/red palette is paired with a local serif heading face and a readable local sans-serif. Panels use compact rectangular geometry; keyboard focus, DPI awareness and reduced-motion behavior remain explicit.
+
+The complete standard, including exact tokens, contrast rules, accessibility and offline/security requirements, is in [docs/DUCK_SOVEREIGN_CANON.md](docs/DUCK_SOVEREIGN_CANON.md). Static palette verification is part of CI.
+
 ## Anatidae engineering doctrine
 
 - **Human-first and consent-aware:** discovery, analysis and export stay distinct; report export, sharing and telemetry use separate consent-aware role gates.

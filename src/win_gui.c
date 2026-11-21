@@ -42,24 +42,24 @@
 static HWND g_log;
 static HWND g_main;
 static HFONT g_font;
+static HFONT g_heading_font;
 static HFONT g_log_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
 
-static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
-static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
-static COLORREF text_color(void) { return g_dark_mode ? RGB(232,237,242) : RGB(18,44,69); }
-static COLORREF input_color(void) { return g_dark_mode ? RGB(15,42,69) : RGB(255,255,255); }
-static COLORREF log_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(15,42,69); }
-static COLORREF blue_color(void) { return g_dark_mode ? RGB(112,165,255) : RGB(0,78,152); }
-static COLORREF blue_hover_color(void) { return g_dark_mode ? RGB(138,182,255) : RGB(26,95,219); }
-static COLORREF red_color(void) { return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45); }
-static COLORREF red_hover_color(void) { return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38); }
-static COLORREF border_color(void) { return g_dark_mode ? RGB(49,81,111) : RGB(202,216,232); }
-static COLORREF button_ink(int primary, int danger) {
-    if (primary) return g_dark_mode ? RGB(6,26,48) : RGB(255,255,255);
-    if (danger) return g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
-    return blue_color();
+static COLORREF page_color(void) { return g_dark_mode ? RGB(10,30,70) : RGB(244,246,250); }
+static COLORREF header_color(void) { return RGB(0,57,166); }
+static COLORREF text_color(void) { return g_dark_mode ? RGB(255,255,255) : RGB(10,30,70); }
+static COLORREF input_color(void) { return g_dark_mode ? RGB(0,57,166) : RGB(255,255,255); }
+static COLORREF log_color(void) { return RGB(10,30,70); }
+static COLORREF blue_color(void) { return RGB(0,57,166); }
+static COLORREF blue_hover_color(void) { return RGB(10,30,70); }
+static COLORREF red_color(void) { return RGB(181,26,16); }
+static COLORREF red_hover_color(void) { return RGB(213,43,30); }
+static COLORREF border_color(void) { return g_dark_mode ? RGB(255,255,255) : RGB(0,57,166); }
+static COLORREF button_ink(int primary) {
+    if (primary) return RGB(255,255,255);
+    return text_color();
 }
 static int primary_button(UINT id) {
     return id==ID_PROFILE || id==ID_SUITE || id==ID_REVIEW || id==ID_SAVE_REPORT;
@@ -94,9 +94,24 @@ static void log_format(const char *fmt, ...) {
     (void)_vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, fmt, args); buffer[sizeof(buffer)-1] = '\0';
     va_end(args); log_text(buffer);
 }
-static void apply_font(HWND control) { if (g_font) SendMessageA(control, WM_SETFONT, (WPARAM)g_font, TRUE); }
+static void apply_font(HWND control) { if (g_font) SendMessageW(control, WM_SETFONT, (WPARAM)g_font, TRUE); }
+static wchar_t *utf8_to_wide(const char *value) {
+    if (!value) return NULL;
+    int count = MultiByteToWideChar(CP_UTF8, 0, value, -1, NULL, 0);
+    if (count <= 0) return NULL;
+    wchar_t *wide = (wchar_t *)calloc((size_t)count, sizeof(wchar_t));
+    if (!wide) return NULL;
+    if (MultiByteToWideChar(CP_UTF8, 0, value, -1, wide, count) <= 0) {
+        free(wide);
+        return NULL;
+    }
+    return wide;
+}
 static HWND add_label(HWND parent, const char *label, int id) {
-    HWND h=CreateWindowExA(0,"STATIC",label,WS_CHILD|WS_VISIBLE|SS_LEFT,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
+    wchar_t *wide = utf8_to_wide(label);
+    if (!wide) return NULL;
+    HWND h=CreateWindowExW(0,L"STATIC",wide,WS_CHILD|WS_VISIBLE|SS_LEFT,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleW(NULL),NULL);
+    free(wide);
     apply_font(h); return h;
 }
 static HWND add_edit(HWND parent, const char *value, int id) {
@@ -110,7 +125,10 @@ static double read_parameter(int id, double fallback) {
     return value;
 }
 static HWND add_button(HWND parent, const char *label, int id) {
-    HWND h=CreateWindowExA(0,"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW|BS_NOTIFY,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
+    wchar_t *wide = utf8_to_wide(label);
+    if (!wide) return NULL;
+    HWND h=CreateWindowExW(0,L"BUTTON",wide,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW|BS_NOTIFY,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleW(NULL),NULL);
+    free(wide);
     apply_font(h); return h;
 }
 static void show_metric_lab(void) {
@@ -274,17 +292,18 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     switch(m) {
     case WM_CREATE: {
         g_main=w;
-        g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
+        g_font=CreateFontW(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,L"Segoe UI");
+        g_heading_font=CreateFontW(-23,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,L"Georgia");
         rebuild_brushes();
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME);
-        add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
-        add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
-        add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
+        add_button(w,"СКАНИРОВАТЬ ВОЗМОЖНОСТИ ЦП",ID_PROFILE); add_button(w,"ЗАПУСТИТЬ НАБОР ТЕСТОВ",ID_SUITE); add_button(w,"ПРОВЕРИТЬ ИСХОДНЫЙ ФАЙЛ",ID_REVIEW); add_button(w,"ЛАБОРАТОРИЯ МЕТРИК",ID_METRIC_LAB); add_button(w,"ВСТРОЕННАЯ C",ID_EMBEDDED); add_button(w,"ТЁМНАЯ ТЕМА",ID_THEME);
+        add_button(w,"ЗАГРУЗИТЬ PCM WAV",ID_LOAD_WAV); add_button(w,"СОЗДАТЬ ТЕСТОВЫЙ ТОН",ID_TONE); add_button(w,"НИЖНИЙ ФИЛЬТР 5 кГц",ID_LOWPASS); add_button(w,"СЖАТИЕ 4:1",ID_COMPRESS);
+        add_button(w,"МЯГКАЯ САТУРАЦИЯ",ID_SATURATE); add_button(w,"УСИЛЕНИЕ",ID_GAIN); add_button(w,"ИЗМЕРИТЬ АУДИО",ID_MEASURE); add_button(w,"ЭКСПОРТИРОВАТЬ PCM WAV",ID_EXPORT);
+        add_label(w,"Частота среза, Гц",1201); add_label(w,"Порог компрессии, дБ",1202); add_label(w,"Коэффициент сжатия",1203); add_label(w,"Уровень сатурации",1204); add_label(w,"Усиление, дБ",1205);
         add_edit(w,"5000",ID_CUTOFF); add_edit(w,"-12",ID_THRESHOLD); add_edit(w,"4",ID_RATIO); add_edit(w,"1.8",ID_DRIVE); add_edit(w,"-3",ID_GAIN_VALUE);
-        add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
+        add_button(w,"СОХРАНИТЬ ОТЧЁТ JSON",ID_SAVE_REPORT); add_button(w,"ОЧИСТИТЬ ЖУРНАЛ",ID_CLEAR);
         g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nCPU operations are read-only and bounded. DSP actions process a local in-memory audio buffer.\r\n",
             WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL);
-        g_log_font=CreateFontA(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,"Consolas");
+        g_log_font=CreateFontW(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,L"Consolas");
         if (g_log_font) SendMessageA(g_log,WM_SETFONT,(WPARAM)g_log_font,TRUE); else apply_font(g_log);
         return 0;
     }
@@ -301,7 +320,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CTLCOLOREDIT: {
         HDC dc=(HDC)p; HWND control=(HWND)l;
         if (control==g_log) {
-            SetTextColor(dc,RGB(229,237,247));
+            SetTextColor(dc,RGB(255,255,255));
             SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
         }
         SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
@@ -320,19 +339,18 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             int selected=(item->itemState & ODS_SELECTED)!=0;
             int hot=(item->itemState & ODS_HOTLIGHT)!=0;
             int danger=(id==ID_CLEAR), primary=primary_button(id);
-            COLORREF fill=danger?((selected||hot)?red_hover_color():red_color()):
-                primary?((selected||hot)?blue_hover_color():blue_color()):
-                (selected||hot?(g_dark_mode?RGB(36,79,130):RGB(217,232,255)):input_color());
-            COLORREF ink=button_ink(primary,danger);
+            COLORREF fill=primary?((selected||hot)?blue_hover_color():blue_color()):
+                (selected||hot?(g_dark_mode?RGB(10,30,70):RGB(244,246,250)):input_color());
+            COLORREF ink=button_ink(primary);
             HBRUSH brush=CreateSolidBrush(fill);
-            HPEN pen=CreatePen(PS_SOLID,1,danger?red_color():primary?blue_color():border_color());
+            HPEN pen=CreatePen(PS_SOLID,danger && (selected||hot)?2:1,danger?((selected||hot)?red_hover_color():red_color()):primary?blue_color():border_color());
             HGDIOBJ old_brush=SelectObject(item->hDC,brush), old_pen=SelectObject(item->hDC,pen);
             RECT rc=item->rcItem;
-            RoundRect(item->hDC,rc.left+1,rc.top+1,rc.right-1,rc.bottom-1,16,16);
+            RoundRect(item->hDC,rc.left+1,rc.top+1,rc.right-1,rc.bottom-1,4,4);
             SetBkMode(item->hDC,TRANSPARENT); SetTextColor(item->hDC,ink);
-            char label[256]={0}; GetWindowTextA(item->hwndItem,label,(int)sizeof(label));
+            wchar_t label[256]={0}; GetWindowTextW(item->hwndItem,label,(int)(sizeof(label)/sizeof(label[0])));
             InflateRect(&rc,-7,-3);
-            DrawTextA(item->hDC,label,-1,&rc,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS);
+            DrawTextW(item->hDC,label,-1,&rc,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS);
             if(item->itemState & ODS_FOCUS) { InflateRect(&rc,-3,-3); DrawFocusRect(item->hDC,&rc); }
             SelectObject(item->hDC,old_brush); SelectObject(item->hDC,old_pen);
             DeleteObject(brush); DeleteObject(pen); return TRUE;
@@ -344,8 +362,8 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         FillRect(dc,&r,g_page_brush);
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
-        HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | local DSP",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        HFONT old=(HFONT)SelectObject(dc,g_heading_font ? g_heading_font : g_font); RECT title={22,10,r.right-20,42}; DrawTextW(dc,L"PYTYLIKI  /  РАБОЧАЯ СТАНЦИЯ ПРОЦЕССОРНЫХ СИСТЕМ",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SelectObject(dc,g_font); SetTextColor(dc,RGB(255,255,255)); RECT sub={23,43,r.right-20,70}; DrawTextW(dc,L"АППАРАТНАЯ ДИАГНОСТИКА  |  МЕТРИКИ  |  ПРОВЕРКА КОДА  |  ЛОКАЛЬНАЯ DSP-ОБРАБОТКА",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
@@ -366,7 +384,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_THEME:
                 g_dark_mode = !g_dark_mode;
                 rebuild_brushes();
-                SetWindowTextA(GetDlgItem(w,ID_THEME),g_dark_mode?"LIGHT THEME":"DARK THEME");
+                SetWindowTextW(GetDlgItem(w,ID_THEME),g_dark_mode?L"СВЕТЛАЯ ТЕМА":L"ТЁМНАЯ ТЕМА");
                 RedrawWindow(w,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN|RDW_ERASE);
                 break;
         }
@@ -374,21 +392,22 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_DESTROY:
         pl_audio_free(&g_audio);
         if (g_font) DeleteObject(g_font);
+        if (g_heading_font) DeleteObject(g_heading_font);
         if (g_log_font) DeleteObject(g_log_font);
         if (g_page_brush) DeleteObject(g_page_brush);
         if (g_input_brush) DeleteObject(g_input_brush);
         if (g_log_brush) DeleteObject(g_log_brush);
         PostQuitMessage(0); return 0;
     }
-    return DefWindowProcA(w,m,p,l);
+    return DefWindowProcW(w,m,p,l);
 }
 int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     (void)prev; (void)cmd;
     request_dpi_awareness();
-    WNDCLASSA wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
-    wc.lpszClassName="PytylikiProcessorWorkstation"; wc.hCursor=LoadCursor(NULL,IDC_ARROW); wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
-    if(!RegisterClassA(&wc)) return 1;
-    HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
+    WNDCLASSW wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
+    wc.lpszClassName=L"PytylikiProcessorWorkstation"; wc.hCursor=LoadCursorW(NULL,IDC_ARROW); wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
+    if(!RegisterClassW(&wc)) return 1;
+    HWND w=CreateWindowW(wc.lpszClassName,L"Pytyliki — рабочая станция процессорных систем",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
     BOOL animations_enabled=TRUE;
     char reduced_motion[8]={0};
@@ -405,5 +424,5 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     } else {
         ShowWindow(w,show);
     }
-    UpdateWindow(w); MSG msg; while(GetMessageA(&msg,NULL,0,0)>0){TranslateMessage(&msg);DispatchMessageA(&msg);} return (int)msg.wParam;
+    UpdateWindow(w); MSG msg; while(GetMessageW(&msg,NULL,0,0)>0){TranslateMessage(&msg);DispatchMessageW(&msg);} return (int)msg.wParam;
 }

@@ -8,7 +8,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(PYTYLIKI_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer (GCC/Clang)" OFF)
 
 if(MSVC)
-  add_compile_options(/W4 /sdl /experimental:c11atomics)
+  add_compile_options(/W4 /sdl /utf-8 /experimental:c11atomics)
 else()
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
