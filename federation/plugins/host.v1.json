@@ -1,0 +1,127 @@
+{
+  "schema": "ivan-vhs.plugin-host.v1",
+  "api_version": 1,
+  "host_id": "pytyliki",
+  "runtime": "C11",
+  "adapter": "pytyliki_ffi ABI v1",
+  "execution": "metadata-catalogue-only",
+  "catalog": "federation/plugins/catalog.v1.json",
+  "status": "catalogued",
+  "plugins": [
+    {
+      "id": "operandu",
+      "name": "Operandu",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "dropaul",
+      "name": "Dropaul",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "zdoro",
+      "name": "Zdoro",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "pyemont",
+      "name": "Pyemont",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "dilly",
+      "name": "Dilly",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "baplap",
+      "name": "Baplap",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "sretuo",
+      "name": "Sretuo",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "kali",
+      "name": "Kali",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "zalam",
+      "name": "Zalam",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "liur",
+      "name": "Liur",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "keel-koh",
+      "name": "Keel Koh",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "vorof",
+      "name": "Vorof",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "vprof",
+      "name": "Vprof",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "profe",
+      "name": "Profe",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "prossee",
+      "name": "Prossee",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "vprossee",
+      "name": "Vprossee",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "professiya",
+      "name": "Professiya",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    },
+    {
+      "id": "profevo",
+      "name": "Profevo",
+      "status": "catalogued",
+      "operation": "descriptor-query"
+    }
+  ],
+  "safety": {
+    "metadata_is_not_execution_authority": true,
+    "external_plugins_disabled_by_default": true,
+    "automatic_network_access": false,
+    "requires_explicit_adapter": true
+  },
+  "notes": "ABI supports descriptor enumeration and lookup only; no handler dispatch or dynamic code loading."
+}
