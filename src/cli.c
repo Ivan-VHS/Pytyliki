@@ -67,7 +67,9 @@ static int dispatch_berry_core(const char *name, unsigned core) {
            result.command_name, result.target_logical_core, result.operation);
     return 0;
 }
-static int parse_i64(const char *s, int64_t *out) { char *end=NULL; errno=0; long long v=strtoll(s,&end,10); if(!s[0]||!end||end==s||*end||errno==ERANGE) return -1; *out=(int64_t)v; return 0; }\nstatic int budget_category_index(const char *name) { const char *names[] = {"food","transport","household","digital","leisure","reserve"}; for (int i=0;i<6;i++) if(strcmp(name,names[i])==0) return i; return -1; }\nstatic int parse_double(const char *s,double *out) {
+static int parse_i64(const char *s, int64_t *out) { char *end=NULL; errno=0; long long v=strtoll(s,&end,10); if(!s[0]||!end||end==s||*end||errno==ERANGE) return -1; *out=(int64_t)v; return 0; }
+static int budget_category_index(const char *name) { const char *names[] = {"food","transport","household","digital","leisure","reserve"}; for (int i=0;i<6;i++) if(strcmp(name,names[i])==0) return i; return -1; }
+static int parse_double(const char *s,double *out) {
     char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
 }
 static void print_trimatrix(unsigned depth) {
