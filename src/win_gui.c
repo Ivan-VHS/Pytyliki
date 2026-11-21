@@ -572,6 +572,9 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
     load_motion_settings();
+    SetWindowTextA(GetDlgItem(w,ID_THEME),
+        g_atmosphere == 0 ? "ATMOSPHERE: DAWN" :
+        g_atmosphere == 1 ? "ATMOSPHERE: SUNSET" : "ATMOSPHERE: NIGHT");
     BOOL animations_enabled=(g_motion_mode == 2 || g_eco_visuals) ? FALSE : TRUE;
     char reduced_motion[8]={0};
     if(GetEnvironmentVariableA("UI_REDUCED_MOTION",reduced_motion,(DWORD)sizeof(reduced_motion))>0 &&
