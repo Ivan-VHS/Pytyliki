@@ -25,6 +25,26 @@ endif()
 add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# Reaper's native frontend is integrated as an isolated C11 library.
+# It currently provides tokenization and single-expression AST parsing only.
+add_library(pytyliki_reaper_frontend STATIC
+    vendor/reaper_frontend/src/lexer.c
+    vendor/reaper_frontend/src/parser.c
+    vendor/reaper_frontend/src/token_catalog.c
+)
+target_include_directories(pytyliki_reaper_frontend PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/reaper_frontend/include
+)
+if(MSVC)
+  target_compile_options(pytyliki_reaper_frontend PRIVATE /W4)
+else()
+  target_compile_options(pytyliki_reaper_frontend PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
+endif()
+
+add_executable(pytyliki-reaper src/reaper_frontend_cli.c)
+target_link_libraries(pytyliki-reaper PRIVATE pytyliki_reaper_frontend)
+
+
 # Stable C11 ABI for explicitly configured FFI consumers.
 set_target_properties(pytyliki_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_library(pytyliki_ffi SHARED src/interop.c)
@@ -54,6 +74,11 @@ target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
+  add_executable(pytyliki-reaper-tests tests/test_reaper_frontend.c)
+  target_link_libraries(pytyliki-reaper-tests PRIVATE pytyliki_reaper_frontend)
+  add_test(NAME reaper-native-frontend COMMAND pytyliki-reaper-tests)
+  add_test(NAME reaper-native-frontend-version COMMAND pytyliki-reaper --version)
+  set_tests_properties(reaper-native-frontend-version PROPERTIES PASS_REGULAR_EXPRESSION "native C17 core")
   add_executable(pytyliki-ui-ux-40026-tests tests/test_ui_ux_40026.c)
   target_include_directories(pytyliki-ui-ux-40026-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
   if(UNIX)
