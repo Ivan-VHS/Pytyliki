@@ -46,7 +46,7 @@ int pl_audio_load_wav(const char *path, pl_audio_buffer *audio) {
     {
         vee_guard guard;
         vee_guard_init(&guard, PL_WAV_MAX_BYTES, 4096u, 128u, 1024u, NULL, NULL);
-        if (vee_guard_check_payload(&guard, 192u, "A-11", "wav-input",
+        if (vee_guard_check_payload(&guard, 192u, "A-09", "wav-input",
                                     (size_t)file_size) != VEEELZEVUL_ALLOW) {
             fclose(file);
             return -3;
