@@ -94,14 +94,16 @@ pl_clife_recovery_branch pl_clife_branch_awakening(
     double external_threat) {
     double viability;
     int snapshot_valid = 0;
-    if (state == NULL || !valid_unit(state->artifact_integrity) ||
+    if (state == NULL || bounded_length(state->project_id, PL_CLIFE_PROJECT_ID_CAPACITY) == 0u ||
+        bounded_length(state->project_id, PL_CLIFE_PROJECT_ID_CAPACITY) >= PL_CLIFE_PROJECT_ID_CAPACITY ||
+        !valid_unit(state->artifact_integrity) ||
         !valid_unit(state->resource_health) || !valid_unit(state->execution_health) ||
         !valid_unit(external_threat)) return PL_CLIFE_INVALID_STATE;
     viability = 0.50 * state->artifact_integrity +
                 0.25 * state->resource_health +
                 0.25 * state->execution_health;
     if (checkpoint != NULL && pl_clife_checkpoint_verify(checkpoint) &&
-        strcmp(checkpoint->project_id, "") != 0 &&
+        strcmp(checkpoint->project_id, state->project_id) == 0 &&
         checkpoint->generation <= state->generation) snapshot_valid = 1;
     if (external_threat > 0.85 && viability < 0.70) {
         state->recovery_locked = 1;
