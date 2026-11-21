@@ -1,6 +1,5 @@
 """Validate the repository's 20-control improvement/conflict governance profile."""
 from __future__ import annotations
-
 import argparse
 import json
 import sys
@@ -36,38 +35,23 @@ def _safe_evidence_path(raw: Any) -> PurePosixPath:
     return path
 
 
-def validate_profile(
-    source: str | Path | Mapping[str, Any], *, root: str | Path | None = None
-) -> dict[str, Any]:
+def validate_profile(source: str | Path | Mapping[str, Any], *, root: str | Path | None = None) -> dict[str, Any]:
     """Validate the complete 20-control profile and any evidence it declares."""
     profile = _load(source)
     if profile.get("schema") != SCHEMA:
         raise ImprovementConflictProfileError(f"schema must be {SCHEMA}")
     if profile.get("version") != "1.0.0":
         raise ImprovementConflictProfileError("version must be 1.0.0")
-
     project = profile.get("project")
     required_project = ("id", "name", "scope", "safety_boundary")
-    if not isinstance(project, dict) or any(
-        not isinstance(project.get(key), str) or not project[key].strip()
-        for key in required_project
-    ):
-        raise ImprovementConflictProfileError(
-            "project must declare non-empty id, name, scope, and safety_boundary"
-        )
-
+    if not isinstance(project, dict) or any(not isinstance(project.get(k), str) or not project[k].strip() for k in required_project):
+        raise ImprovementConflictProfileError("project must declare non-empty id, name, scope, and safety_boundary")
     status_model = profile.get("status_model")
-    if not isinstance(status_model, dict):
-        raise ImprovementConflictProfileError("status_model must be an object")
-    if status_model.get("initial") != "not_assessed":
-        raise ImprovementConflictProfileError("initial state must be not_assessed")
-    if status_model.get("allowed") != list(ALLOWED_STATES):
-        raise ImprovementConflictProfileError("status_model.allowed differs from the governed lifecycle")
-
+    if not isinstance(status_model, dict) or status_model.get("initial") != "not_assessed" or status_model.get("allowed") != list(ALLOWED_STATES):
+        raise ImprovementConflictProfileError("status_model differs from the governed lifecycle")
     controls = profile.get("controls")
     if not isinstance(controls, list) or len(controls) != 20:
         raise ImprovementConflictProfileError("exactly 20 controls are required")
-
     root_path = Path(root).resolve() if root is not None else None
     counts = {state: 0 for state in ALLOWED_STATES}
     for index, control in enumerate(controls):
@@ -75,39 +59,24 @@ def validate_profile(
             raise ImprovementConflictProfileError(f"control {index + 1} must be an object")
         expected_id = f"IC-{index + 1:02d}"
         if control.get("id") != expected_id:
-            raise ImprovementConflictProfileError(
-                f"control {index + 1} must have identifier {expected_id}"
-            )
-        expected = EXPECTED_TERMS[index]
-        actual = (
-            control.get("improvement_term"),
-            control.get("dissonance_term"),
-            control.get("conflict_term"),
-        )
-        if actual != expected:
-            raise ImprovementConflictProfileError(
-                f"{expected_id} vocabulary does not match the canonical 20-triplet register"
-            )
+            raise ImprovementConflictProfileError(f"control {index + 1} must have identifier {expected_id}")
+        actual = (control.get("improvement_term"), control.get("dissonance_term"), control.get("conflict_term"))
+        if actual != tuple(EXPECTED_TERMS[index]):
+            raise ImprovementConflictProfileError(f"{expected_id} vocabulary does not match the canonical 20-triplet register")
         for field in ("intent", "remediation", "verification"):
-            value = control.get(field)
-            if not isinstance(value, str) or not value.strip():
+            if not isinstance(control.get(field), str) or not control[field].strip():
                 raise ImprovementConflictProfileError(f"{expected_id}.{field} must be non-empty")
-
         state = control.get("state")
         if state not in ALLOWED_STATES:
             raise ImprovementConflictProfileError(f"{expected_id} has unsupported state {state!r}")
         counts[state] += 1
-
         evidence = control.get("evidence")
         if not isinstance(evidence, list) or any(not isinstance(item, str) for item in evidence):
             raise ImprovementConflictProfileError(f"{expected_id}.evidence must be an array of paths")
         if state in {"detected", "root_cause_confirmed", "remediated", "verified"} and not evidence:
             raise ImprovementConflictProfileError(f"{expected_id} state {state!r} requires evidence")
-        if state == "deferred" and not (
-            isinstance(control.get("note"), str) and control["note"].strip()
-        ):
+        if state == "deferred" and not (isinstance(control.get("note"), str) and control["note"].strip()):
             raise ImprovementConflictProfileError(f"{expected_id} deferred state requires a note")
-
         for raw_path in evidence:
             relative = _safe_evidence_path(raw_path)
             if root_path is not None:
@@ -115,22 +84,10 @@ def validate_profile(
                 try:
                     resolved.relative_to(root_path)
                 except ValueError as error:
-                    raise ImprovementConflictProfileError(
-                        f"{expected_id} evidence escapes repository root: {raw_path!r}"
-                    ) from error
+                    raise ImprovementConflictProfileError(f"{expected_id} evidence escapes repository root: {raw_path!r}") from error
                 if not resolved.is_file():
-                    raise ImprovementConflictProfileError(
-                        f"{expected_id} evidence file does not exist: {raw_path!r}"
-                    )
-
-    return {
-        "schema": SCHEMA,
-        "project": project["name"],
-        "controls": len(controls),
-        "states": counts,
-        "assessed": len(controls) - counts["not_assessed"],
-        "verified": counts["verified"],
-    }
+                    raise ImprovementConflictProfileError(f"{expected_id} evidence file does not exist: {raw_path!r}")
+    return {"schema": SCHEMA, "project": project["name"], "controls": len(controls), "states": counts, "assessed": len(controls) - counts["not_assessed"], "verified": counts["verified"]}
 
 
 def main(argv: list[str] | None = None) -> int:
