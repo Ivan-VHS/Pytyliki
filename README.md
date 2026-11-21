@@ -79,3 +79,14 @@ Motion follows a clear hierarchy: restrained spring easing for intentional entra
 **Accessibility and responsive behavior:** preserve readable contrast, visible keyboard focus, touch-sized controls, predictable active/disabled states and layouts that collapse cleanly on narrow screens. Motion must not cause layout shifts or make controls harder to operate.
 
 This is a DUCK CORE visual reference, **not a claim** that every theme, animation or control ships in every application. The implementation and project-specific contract are authoritative: [UI motion contract](docs/UI_MOTION.md).
+
+
+## Motion Constitution v2026
+
+The shared interface contract is [Motion Constitution v2026](docs/MOTION_CONSTITUTION_V2026.md). It defines the common spring/snappy easing vocabulary, the 0.4×–2.2× motion-scale envelope, theme and reduced-motion precedence, the 2×2/focus-scene showcase, and rules for truthful SVG/Canvas telemetry. The [native UI motion contract](docs/UI_MOTION.md) remains authoritative for shipped Win32 behavior. Pytyliki currently provides persisted motion preferences and a restrained startup transition; graphs must use measured processor values. It does not provide overclocking or voltage-write controls.
+
+## Shared motion architecture map
+
+<p align="center"><img src="assets/motion-constitution-v2026.svg" alt="Motion Constitution v2026: four-domain architecture map" width="100%"></p>
+
+This is the shared 2×2 architecture reference, not a live application screenshot. It distinguishes each product's shipped scope from unavailable or planned capabilities.

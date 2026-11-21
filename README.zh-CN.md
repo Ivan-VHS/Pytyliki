@@ -77,3 +77,14 @@ pytyliki --partition-auto 10000 256
 **无障碍与响应式：**保持清晰的文本对比度、可见的键盘焦点、适合触控的控件尺寸、明确的 active/disabled 状态，并确保窄屏布局自然折叠。动效不得造成布局跳动或妨碍操作。
 
 本节是 DUCK CORE 视觉参考，**不代表**每个应用都已实现所有主题、动画或控件。实际发布的实现和项目专属规范才是最终依据：[界面动效规范](docs/UI_MOTION.md)。
+
+
+## Motion Constitution v2026
+
+统一界面规范见 [Motion Constitution v2026](docs/MOTION_CONSTITUTION_V2026.md)。该规范定义弹簧/快速缓动词汇、0.4×–2.2× 动效缩放范围、系统 Reduce Motion 优先级、主题、2×2/焦点场景展示，以及真实 SVG/Canvas 遥测的规则。已交付的 Win32 行为以[界面动效规范](docs/UI_MOTION.md)为准。Pytyliki 当前提供可持久化的动效偏好和克制的启动过渡；图表必须来自真实处理器测量值。本产品不提供超频或电压写入控制。
+
+## 统一动效架构图
+
+<p align="center"><img src="assets/motion-constitution-v2026.svg" alt="Motion Constitution v2026 四领域架构图" width="100%"></p>
+
+这是共享的 2×2 架构示意图，并非应用运行截图。图中明确区分各产品已交付的功能与不可用/规划中的能力。
