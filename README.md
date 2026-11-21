@@ -71,7 +71,7 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-The Windows desktop workflow builds the GUI and CLI tools, runs CTest, and publishes a Windows x64 archive. The current archive contains `pytyliki-gui.exe`, `pytyliki.exe`, `pytyliki-apsia.exe` and `pytyliki-metrics.exe`.
+The Windows desktop workflow builds the GUI and CLI tools, runs CTest, and publishes a Windows x64 archive. The current archive contains `pytyliki-gui.exe`, `pytyliki.exe`, `pytyliki-apsia.exe`, `pytyliki-metrics.exe` and `pytyliki-code-wellbeing.exe`.
 
 ## Command-line examples
 
