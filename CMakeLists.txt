@@ -137,6 +137,10 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-mtte-tests PRIVATE pytyliki_core)
   add_test(NAME mtte-tests COMMAND pytyliki-mtte-tests)
 
+  add_executable(pytyliki-wav-boundary-tests tests/test_wav_boundaries.c)
+  target_link_libraries(pytyliki-wav-boundary-tests PRIVATE pytyliki_core)
+  add_test(NAME wav-container-boundary-tests COMMAND pytyliki-wav-boundary-tests)
+
   add_executable(pytyliki-system-enhancement-tests tests/test_ironclad_systems.c)
   target_link_libraries(pytyliki-system-enhancement-tests PRIVATE pytyliki_core)
   add_test(NAME system-enhancement-registry-tests COMMAND pytyliki-system-enhancement-tests)

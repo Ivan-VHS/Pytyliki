@@ -96,6 +96,10 @@ This is the project's design baseline, not a claim that every proposed doctrine 
 
 [Documentation control](docs/DOCUMENTATION_CONTROL.md) defines the normative rules for public claims, evidence, privacy and integrations.
 
+## Low-level language ecosystem
+
+The [66-entry low-level language and systems-tooling encyclopedia](docs/LOW_LEVEL_LANGUAGES.ru.md) documents FFI, generated-code, WebAssembly, GPU/FPGA, JIT and formal-verification integration patterns. Its Pytyliki profile keeps C11 as the baseline and APSIA as an advisory router; it does not add optional compilers or execute foreign modules.
+
 ## License
 
 [MIT](LICENSE)
