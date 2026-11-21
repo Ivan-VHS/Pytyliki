@@ -25,6 +25,7 @@ Pytyliki is a modular native workstation for processor discovery, bounded worklo
 | Embedded C | MCU profiles, FLASH/SRAM estimates and MMIO model | simulation/reference data only |
 | Rules / APSIA / TRACE | advisory routing, workload plans and measurement provenance | evidence, not certification |
 | QCS | lexer, parser, AST and diagnostics | syntax analysis only |
+| Atomic quantum | 133 stable IDs and bounded C11 state-vector kernels: normalization, gates, measurement and noise | classical simulation only; no hardware access |
 | Interop | versioned C ABI v1 | explicit trusted library selection |
 
 ## UI motion and accessibility
@@ -67,6 +68,6 @@ Partition plans are deterministic, bounded and advisory. They describe contiguou
 | CPU / MCU / virtual-ISA profiles | 14 |
 | Systems-lab functions | 33 |
 
-[Features](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [Architecture](docs/ARCHITECTURE.md) · [Division and partitioning](docs/DIVISION_ENGINE.md) · [TRACE provenance](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Documentation index](docs/README.md)
+[Atomic-Quantum 133](docs/ATOMIC_QUANTUM_133.md) · [Features](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [Architecture](docs/ARCHITECTURE.md) · [Division and partitioning](docs/DIVISION_ENGINE.md) · [TRACE provenance](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Documentation index](docs/README.md)
 
 [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
