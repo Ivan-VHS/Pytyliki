@@ -30,7 +30,8 @@ static void usage(void) {
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
-         "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"\n         "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
+         "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
+         "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
