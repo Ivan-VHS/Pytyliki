@@ -11,6 +11,8 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+See [four-project OCTA-8 federation](docs/OCTA_PYRAMID_FEDERATION.md) and [consolidated project-thread ledger](docs/THREADS_AND_FEDERATION.md).
+
 ## Interface preview
 
 <p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative Pytyliki Win32 workstation layout" width="100%"></p>
@@ -84,6 +86,10 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 - **Evidence-led claims:** distinguish implemented modules from reference profiles, simulations and advisory scores. Source and tests define the actual capability boundary.
 
 This is the project's design baseline, not a claim that every proposed doctrine item is already implemented.
+
+## Documentation governance
+
+[Documentation control](docs/DOCUMENTATION_CONTROL.md) defines the normative rules for public claims, evidence, privacy and integrations.
 
 ## License
 

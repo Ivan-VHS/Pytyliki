@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded analysis, memory and DSP operations, source diagnostics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation for read-only discovery, bounded analysis, memory and DSP operations, source diagnostics and optional ABI integrations in a four-project federation.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -118,7 +118,7 @@
     {
       "id": "federation.octa-8-horizontal-peer-mesh",
       "status": "implemented",
-      "summary": "Validates the complete three-project directed peer product, eight octagonal pyramid facets and local self-loops without a central runtime dependency.",
+      "summary": "Validates the complete four-project directed peer product, twelve status-labelled links, eight facets and four independent self-loops without a central runtime dependency.",
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "tools/validate_octa_pyramid.py",
@@ -182,6 +182,22 @@
       "status": "implemented",
       "opt_in": false,
       "summary": "Participates in the direct OCTA-8 peer mesh through explicit OPlague/Pytyliki native metric requests and responses."
+    },
+    {
+      "project": "ventusample",
+      "interface": "pytyliki.c-abi.v1",
+      "mode": "native-ffi",
+      "status": "planned",
+      "opt_in": true,
+      "summary": "VentuSample has not adopted the Pytyliki ABI; future use must be explicit and point to a trusted native library."
+    },
+    {
+      "project": "ventusample",
+      "interface": "octa.pyramid.peer-mesh.v1",
+      "mode": "shared-contract",
+      "status": "implemented",
+      "opt_in": false,
+      "summary": "Records membership in the four-project OCTA-8 topology without coupling runtime lifecycles."
     }
   ],
   "safety_boundaries": [
