@@ -68,6 +68,8 @@ arguments and vector limits.
 - **Pytyliki evidence:** [public ABI header](../src/interop.h), [ABI implementation](../src/interop.c), [project manifest](../project-contract.json).
 
 
-## OCTA-8 horizontal peer product and octagonal pyramid
+## OCTA-8 four-project topology
 
-The shared [OCTA-8 topology contract](OCTA_PYRAMID_FEDERATION.md) defines the directed Reaper↔Pytyliki↔OPlague peer product: six directed links, three local self-loops and eight protocol facets. Pytyliki remains the portable C11 numerical provider. Calls are synchronous and return results over the same explicitly selected ABI; Pytyliki does not launch peer runtimes or load peer code.
+The shared [OCTA-8 peer map](OCTA_PYRAMID_FEDERATION.md) contains twelve status-labelled directed links and four independent self-loops. Pytyliki provides synchronous C ABI v1 operations to Reaper and OPlague through explicit trusted-library selection. VentuSample has not adopted ABI v1; that link remains planned. VentuSample's pack export does not automatically create a Reaper-side consumer. OPlague and VentuSample have no direct domain operation.
+
+The apex is non-executable metadata, not a runtime gateway.

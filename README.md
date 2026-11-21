@@ -11,6 +11,8 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+See [four-project OCTA-8 federation](docs/OCTA_PYRAMID_FEDERATION.md) and [consolidated project-thread ledger](docs/THREADS_AND_FEDERATION.md).
+
 ## Interface preview
 
 <p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative Pytyliki Win32 workstation layout" width="100%"></p>

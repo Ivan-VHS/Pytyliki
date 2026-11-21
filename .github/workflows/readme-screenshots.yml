@@ -1,0 +1,32 @@
+name: README live desktop screenshot
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/readme-screenshots.yml"
+      - ".github/scripts/capture_desktop_screenshot.ps1"
+      - "src/**"
+      - "CMakeLists.txt"
+      - "README*"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture-live-workstation:
+    name: Pytyliki native Win32 live capture
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Configure C11 workstation
+        run: cmake -S . -B build -DBUILD_TESTING=OFF
+      - name: Build native Win32 GUI
+        run: cmake --build build --config Release --target pytyliki-gui --parallel 2
+      - name: Capture running Pytyliki workstation
+        shell: pwsh
+        run: .github/scripts/capture_desktop_screenshot.ps1 -FilePath "build/Release/pytyliki-gui.exe" -OutputPath "assets/screenshots/pytyliki-workstation.png" -StartupSeconds 12
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: readme-screenshot-pytyliki
+          path: assets/screenshots/pytyliki-workstation.png
+          if-no-files-found: error
+          retention-days: 30
