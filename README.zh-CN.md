@@ -1,6 +1,7 @@
 # Pytyliki — 处理器系统工作站
 
 C11 · Windows/Linux · MIT · [CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)
+**开发者：** [Ivan-VHS](https://github.com/Ivan-VHS)
 
 用于 CPU 检测、有界工作负载、静态源码诊断、数值工具和本地 DSP 的模块化原生工作站。Windows GUI 与 CLI 共用 C11 核心。
 
