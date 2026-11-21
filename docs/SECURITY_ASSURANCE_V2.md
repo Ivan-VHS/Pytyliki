@@ -8,7 +8,7 @@ The federated assurance workflow audits tracked source and configuration files o
 
 - **Source audit:** high-confidence private-key and token patterns, hard-coded credential assignments, developer-machine paths, sensitive-value logging and selected risky native/Python APIs.
 - **CodeQL:** C/C++ and GitHub Actions source analysis using the extended query suite.
-- **Dependency review:** GitHub dependency-review gate on pull requests, Dependabot updates for GitHub Actions and an offline inventory of CMake/Python/package manifests, lockfiles and exact version pins.
+- **Dependency vulnerabilities:** OSV-Scanner compares dependency advisories on Pull Requests and performs a scheduled full scan; GitHub Dependency Review gates pull-request dependency changes, while Dependabot updates for GitHub Actions and an offline inventory of CMake/Python/package manifests, lockfiles and exact version pins.
 - **Fuzz smoke:** the production pl_audio_load_wav routine receives a deterministic corpus of malformed and RIFF-shaped byte streams; each result buffer is released after parsing.
 - **Privacy regression:** synthetic-token detection, placeholder handling, no-secret-output assertions and policy prohibitions are tested.
 - **Federation:** all four checkouts are inspected, common policy/tool checksums are compared, and each repository's actual tracked sources and dependency declarations are scanned.
@@ -29,15 +29,16 @@ Every repository uses the same 100-point weights:
 
 | Category | Weight |
 |---|---:|
-| Secret hygiene | 25 |
+| Secret hygiene | 20 |
 | Privacy leak prevention | 15 |
 | Source-risk review | 15 |
 | Fuzz robustness | 15 |
-| Dependency pin hygiene | 10 |
+| Dependency pin hygiene | 5 |
+| Known dependency vulnerabilities (OSV) | 10 |
 | Privacy regressions | 10 |
 | Federation consistency | 10 |
 
-The federated report also calculates a cross-repository score from policy/tooling parity, aggregate source findings and dependency pin hygiene. Scores are engineering trend indicators, not certifications. A critical credential finding, failed fuzz/privacy/federation gate or score below 70 fails the assurance gate.
+The federated report also calculates a cross-repository score from policy/tooling parity, aggregate source findings and dependency pin hygiene. Scores are engineering trend indicators, not certifications. A critical credential finding, an OSV scan failure or known vulnerable dependency, failed fuzz/privacy/federation gate or score below 70 fails the assurance gate.
 
 ## Boundaries
 
