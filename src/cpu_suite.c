@@ -88,12 +88,27 @@ size_t pl_cpu_suite_catalog(const pl_cpu_suite_module **items) {
 }
 int pl_cpu_suite_get(size_t index, pl_cpu_suite_module *out) { if (!out || index >= PL_CPU_SUITE_MODULE_COUNT) return -1; *out = g_modules[index]; return 0; }
 int pl_cpu_suite_find_id(uint16_t id, pl_cpu_suite_module *out) {
-    size_t i; if (!out || id == 0u) return -1;
-    for (i=0u;i<PL_CPU_SUITE_MODULE_COUNT;++i) if(g_modules[i].id==id){*out=g_modules[i];return 0;} return -1;
+    if (out == NULL || id == 0u) return -1;
+
+    for (size_t i = 0u; i < PL_CPU_SUITE_MODULE_COUNT; ++i) {
+        if (g_modules[i].id == id) {
+            *out = g_modules[i];
+            return 0;
+        }
+    }
+    return -1;
 }
+
 int pl_cpu_suite_find_name(const char *name, pl_cpu_suite_module *out) {
-    size_t i; if(!name||!name[0]||!out)return -1;
-    for(i=0u;i<PL_CPU_SUITE_MODULE_COUNT;++i)if(strcmp(g_modules[i].name,name)==0){*out=g_modules[i];return 0;}return -1;
+    if (name == NULL || name[0] == '\\0' || out == NULL) return -1;
+
+    for (size_t i = 0u; i < PL_CPU_SUITE_MODULE_COUNT; ++i) {
+        if (strcmp(g_modules[i].name, name) == 0) {
+            *out = g_modules[i];
+            return 0;
+        }
+    }
+    return -1;
 }
 const char *pl_cpu_suite_domain_name(pl_cpu_suite_domain domain) {
     switch(domain){case PL_CPU_SUITE_HUB:return "Hub";case PL_CPU_SUITE_ARCHITECTURE:return "Architecture";case PL_CPU_SUITE_THERMAL_POWER:return "Thermal & Power";case PL_CPU_SUITE_MEMORY_CACHE:return "Memory & Cache";case PL_CPU_SUITE_SCHEDULER:return "Scheduler";case PL_CPU_SUITE_DIAGNOSTICS_SECURITY:return "Diagnostics & Security";case PL_CPU_SUITE_BENCHMARK_LAB:return "Benchmark Lab";default:return "Unknown";}
