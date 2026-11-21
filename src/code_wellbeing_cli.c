@@ -190,7 +190,8 @@ static void scan_directory(const char *root, const char *relative, int depth) {
     char directory[PATH_CAP], pattern[PATH_CAP];
     WIN32_FIND_DATAA data;
     HANDLE handle;
-    if (REPORT.truncated || depth > DEPTH_LIMIT) return;
+    if (REPORT.truncated) return;
+    if (depth > DEPTH_LIMIT) { REPORT.truncated = 1; return; }
     make_path(directory, sizeof(directory), root, relative);
     (void)snprintf(pattern, sizeof(pattern), "%s\\*", directory);
     handle = FindFirstFileA(pattern, &data);
