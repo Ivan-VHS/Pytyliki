@@ -24,12 +24,15 @@
 #define FILE_LIMIT 5000UL
 #define DEPTH_LIMIT 16
 #define MAX_SOURCE_BYTES (1024UL * 1024UL)
+#define MAX_TOTAL_SOURCE_BYTES (32UL * 1024UL * 1024UL)
 
 typedef struct {
     unsigned long total_files, source_files, test_files, documentation_files;
     unsigned long readme_files, workflow_files, ownership_files, dependency_files;
     unsigned long recovery_files, incident_records, source_scanned, large_source_units;
     unsigned long todo, fixme, hack, xxx;
+    unsigned long source_bytes_scanned;
+    int source_scan_truncated;
     int truncated;
 } report_state;
 
@@ -113,20 +116,30 @@ static int is_dependency_manifest(const char *lower_path) {
 }
 
 static void scan_source_text(const char *absolute_path) {
-    FILE *input = fopen(absolute_path, "rb");
+    FILE *input;
     char line[8192];
     unsigned long lines = 0UL;
     unsigned long bytes = 0UL;
+    if (REPORT.source_bytes_scanned >= MAX_TOTAL_SOURCE_BYTES) {
+        REPORT.source_scan_truncated = 1;
+        return;
+    }
+    input = fopen(absolute_path, "rb");
     if (input == NULL) return;
     while (fgets(line, (int)sizeof(line), input) != NULL) {
         size_t length = strlen(line);
+        if (bytes + (unsigned long)length > MAX_SOURCE_BYTES
+            || REPORT.source_bytes_scanned + (unsigned long)length > MAX_TOTAL_SOURCE_BYTES) {
+            REPORT.source_scan_truncated = 1;
+            break;
+        }
         ++lines;
         bytes += (unsigned long)length;
+        REPORT.source_bytes_scanned += (unsigned long)length;
         if (strstr(line, "TODO") != NULL) ++REPORT.todo;
         if (strstr(line, "FIXME") != NULL) ++REPORT.fixme;
         if (strstr(line, "HACK") != NULL) ++REPORT.hack;
         if (strstr(line, "XXX") != NULL) ++REPORT.xxx;
-        if (bytes > MAX_SOURCE_BYTES) break;
     }
     if (ferror(input) == 0) {
         ++REPORT.source_scanned;
@@ -271,7 +284,8 @@ static void print_report(int json, const char *project) {
             REPORT.truncated ? "true" : "false", FILE_LIMIT, DEPTH_LIMIT,
             REPORT.total_files, REPORT.source_files, REPORT.test_files, REPORT.documentation_files,
             REPORT.readme_files, REPORT.workflow_files, REPORT.ownership_files, REPORT.dependency_files,
-            REPORT.recovery_files, REPORT.incident_records, REPORT.source_scanned, REPORT.large_source_units,
+            REPORT.recovery_files, REPORT.incident_records, REPORT.source_scanned,
+            REPORT.source_bytes_scanned, REPORT.source_scan_truncated ? "true" : "false", REPORT.large_source_units,
             REPORT.todo, REPORT.fixme, REPORT.hack, REPORT.xxx,
             verification, documentation, ownership, dependencies, recovery, learning);
         return;
