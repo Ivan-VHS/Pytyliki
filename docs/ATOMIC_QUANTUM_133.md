@@ -22,3 +22,15 @@ The shared catalogue registers 133 stable operation IDs across six families. Pyt
 - No implicit device access, hardware control, calibration, or quantum-hardware certification is performed.
 
 See also [Pytyliki architecture](ARCHITECTURE.md) and [TRACE measurement provenance](TRACE_MEASUREMENT_PROVENANCE.md).
+
+## Implemented numerical subset
+
+The currently tested C11 state-vector kernel provides:
+
+- state initialization, basis preparation, normalization and finite-value checks;
+- Hadamard, phase rotation, Pauli-X/Pauli-Z, CNOT and SWAP;
+- deterministic projective Z measurement and state collapse;
+- seeded dephasing and amplitude-damping trajectories;
+- basis probabilities, pure-state fidelity and a 133-ID registry lookup.
+
+The remaining IDs are stable catalogue contracts, not a claim of finished scientific solvers. In particular, density-matrix entanglement measures, POVM/tomography, surface-code decoding, Hubbard/Rydberg atom models, QAOA/VQE/QPE/HHL and physical transport remain future kernels. This implementation is a bounded classical state-vector simulator, not a physical quantum-computing backend.
