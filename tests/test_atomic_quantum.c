@@ -31,7 +31,7 @@ int main(void) {
     assert(fabs(overlap - 1.0) < 1e-12);
 
     pl_aq_measurement measurement = {0u, 0.0};
-    assert(pl_aq_measure_z(&state, 0u, 0.8, &measurement) == 0);
+    assert(pl_aq_measure_z(&state, 0u, 0.2, &measurement) == 0);
     assert(measurement.outcome == 1u);
     assert(pl_aq_state_valid(&state));
 
