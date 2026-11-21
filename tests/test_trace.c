@@ -24,6 +24,31 @@ static pl_trace_record sample_record(
     return record;
 }
 
+static void test_cadence_analysis(void) {
+    const double stable[] = {0.5, 0.5, 0.5, 0.5};
+    const double drifting[] = {1.0, 1.0, 1.04, 1.04};
+    const double invalid[] = {1.0, NAN};
+    pl_trace_cadence report;
+
+    assert(pl_trace_analyze_cadence(stable, 4u, 0.5, 0.05, &report) == 0);
+    assert(report.sample_count == 4u);
+    assert(fabs(report.mean_interval - 0.5) < 1e-12);
+    assert(fabs(report.sample_standard_deviation) < 1e-12);
+    assert(fabs(report.cadence_score - 100.0) < 1e-12);
+    assert(fabs(report.relative_drift) < 1e-12);
+
+    assert(pl_trace_analyze_cadence(drifting, 4u, 1.0, 0.05, &report) == 0);
+    assert(report.relative_drift > 0.0);
+    assert(report.cadence_score < 100.0);
+
+    assert(pl_trace_analyze_cadence(invalid, 2u, 1.0, 0.05, &report) != 0);
+    assert(pl_trace_analyze_cadence(stable, 1u, 0.5, 0.05, &report) != 0);
+    assert(pl_trace_analyze_cadence(stable, 4u, 0.0, 0.05, &report) != 0);
+    assert(pl_trace_analyze_cadence(stable, 4u, 0.5, 0.0, &report) != 0);
+    assert(pl_trace_analyze_cadence(NULL, 4u, 0.5, 0.05, &report) != 0);
+    assert(pl_trace_analyze_cadence(stable, 4u, 0.5, 0.05, NULL) != 0);
+}
+
 int main(void) {
     pl_trace_record left = sample_record(
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -35,6 +60,7 @@ int main(void) {
     );
     pl_trace_comparison result;
 
+    test_cadence_analysis();
     assert(pl_trace_validate(&left) == 0);
     assert(pl_trace_validate(&right) == 0);
     assert(pl_trace_compare(&left, &right, &result) == 1);
