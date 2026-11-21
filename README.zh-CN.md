@@ -59,6 +59,23 @@ flowchart LR
 | QCS | lexer、parser、AST 和诊断 | 仅语法分析 |
 | Interop | 版本化 C ABI v1 | 显式选择可信库 |
 
+## Reaper 原生前端
+
+Pytyliki 将固定版本的 Reaper 原生源码构建为独立的 C11 库。命令 `pytyliki-reaper` 可对 UTF-8 Reaper 源码进行词法分析、输出单个表达式的 AST JSON，或验证一个表达式，无需启动 Python：
+
+```sh
+pytyliki-reaper --version
+pytyliki-reaper --tokens expression.rpr
+pytyliki-reaper --ast-json expression.rpr
+pytyliki-reaper --check-expression expression.rpr
+```
+
+集成来源固定为 Reaper [commit `34a5970`](https://github.com/Ivan-VHS/Reaper/commit/34a5970bbdf0a2bc186233aee6631acdeaeb9904)，并在 `vendor/reaper_frontend/` 中保留 Apache-2.0 许可证和来源说明。
+
+**功能边界：** 当前仅提供原生 lexer 和单表达式 Pratt parser，并非 Reaper 解释器。尚不支持完整 `.rpr` 程序执行、声明/代码块解析、名称解析或 Reaper VM。Pytyliki 现有 C11 核心和 ABI v1 保持不变。
+
+详见：[Reaper 原生前端集成](docs/REAPER_FRONTEND.md)。
+
 ## 构建与测试
 
 需要 CMake 3.16+、C11 编译器和 Git。
