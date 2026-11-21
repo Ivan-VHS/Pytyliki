@@ -10,3 +10,7 @@
 | Platform | native Win32 GUI; portable C11 core/CLI |
 
 No color-only status signals. GUI claims remain Windows-only unless a separate platform adapter is implemented and tested.
+
+## UI/UX 2026 convergence
+
+See [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md) for shared semantic tokens, accessibility, responsive behavior and motion budgets. Native Win32 and product-specific constraints above remain authoritative.

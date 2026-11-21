@@ -25,3 +25,7 @@ All visual transitions remain separate from processor workers, FFI, benchmarks a
 The shared profile maps the duck's short paddle response to one bounded Win32 startup glide. It does not add a perpetual parallax loop, particles, blur or animated backgrounds to the processor workbench. The target paddle response is `cubic-bezier(0.22, 1.18, 0.36, 1)`; the symmetric water curve `cubic-bezier(0.37, 0, 0.63, 1)` is reserved for optional showcase artwork. Reduce Motion, Eco and the Windows client-area animation preference continue to suppress the startup transition entirely.
 
 See the [shared Anatidae motion constitution](ANATIDAE_MOTION_CONSTITUTION.md).
+
+## Shared 2026 contract
+
+The shared semantic and accessibility contract is documented in [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md). Win32-specific motion remains deliberately restrained; no animation is added to precision or processor paths.
