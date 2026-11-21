@@ -1,0 +1,628 @@
+{
+  "schema": "anatidae.quality-commercial.v1",
+  "project": {
+    "id": "pytyliki",
+    "name": "Pytyliki",
+    "scope": "Read-only processor discovery, bounded measurements, source diagnostics, memory and local DSP."
+  },
+  "scoring": {
+    "implemented": 1,
+    "planned": 0.25,
+    "not_assessed": 0,
+    "not_applicable": null
+  },
+  "commercial_operations": {
+    "market_validation": "not_assessed",
+    "pricing": "not_set",
+    "unit_economics": "not_assessed",
+    "license_review": "manual_required",
+    "support_model": "planned",
+    "distribution": "implemented",
+    "boundary": "Release and documentation artifacts exist; user demand, sales, costs and profitability are not measured."
+  },
+  "criteria": [
+    {
+      "id": "acceptance-evidence",
+      "terms": {
+        "quality": "Качественность",
+        "execution": "Качество",
+        "commercial": "Коммерческий"
+      },
+      "intent": "Приёмка каждой возможности опирается на критерии и проверяемые результаты.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/trace.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_trace.c",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "README.md",
+            "LICENSE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "durable-delivery",
+      "terms": {
+        "quality": "Добротность",
+        "execution": "Добротность",
+        "commercial": "Торговый"
+      },
+      "intent": "Долговечность обеспечивается ограничениями, обработкой ошибок и сохранностью данных.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/memory.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_memory.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/HUMAN_FIRST_GOVERNANCE.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "defect-prevention",
+      "terms": {
+        "quality": "Безупречность",
+        "execution": "Безупречность",
+        "commercial": "Предпринимательский"
+      },
+      "intent": "Опасные и неоднозначные действия исключаются или явно ограничиваются.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/policy.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_governance.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/clinical-safety-architecture.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "release-excellence",
+      "terms": {
+        "quality": "Совершенство",
+        "execution": "Совершенство",
+        "commercial": "Рыночный"
+      },
+      "intent": "Изменения воспроизводимы, регрессионно проверяемы и пригодны к выпуску.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/evolution.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_evolution.c",
+            ".github/workflows/desktop-build.yml"
+          ]
+        },
+        "commercial": {
+          "status": "implemented",
+          "evidence": [
+            "docs/RECURSIVE_EVOLUTION.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "product-cohesion",
+      "terms": {
+        "quality": "Цельность",
+        "execution": "Мастерство",
+        "commercial": "Деловой"
+      },
+      "intent": "Модули, интерфейсы и назначение образуют цельный продукт.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/core.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_core.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/ARCHITECTURE.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "trust-governance",
+      "terms": {
+        "quality": "Целостность",
+        "execution": "Профессионализм",
+        "commercial": "Финансовый"
+      },
+      "intent": "Доверие обеспечивают происхождение данных, контроль доступа и границы ответственности.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/interop.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_engineering_foundations.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "operational-reliability",
+      "terms": {
+        "quality": "Монолитность",
+        "execution": "Надёжность",
+        "commercial": "Прибыльный"
+      },
+      "intent": "Ключевые операции предсказуемы в поддерживаемых нагрузках.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/hw_rules.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_hw_rules.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "docs/PLATFORM_VALIDATION_POLICY.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "decision-foundation",
+      "terms": {
+        "quality": "Согласованность",
+        "execution": "Основательность",
+        "commercial": "Доходный"
+      },
+      "intent": "Выводы обоснованы измерениями и прослеживаемыми источниками.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/trace.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_trace.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "docs/QUALITY_AUDIT_0.7.1.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "repeatable-efficiency",
+      "terms": {
+        "quality": "Последовательность",
+        "execution": "Гармоничность",
+        "commercial": "Экономический"
+      },
+      "intent": "Повторяемые операции имеют единый порядок и контролируемые затраты.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/pipeline.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_improvement.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "docs/RECURSIVE_EVOLUTION.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "system-control",
+      "terms": {
+        "quality": "Системность",
+        "execution": "Согласованность",
+        "commercial": "Хозяйственный"
+      },
+      "intent": "Политики, конфигурация и системные зависимости согласованы.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/policy.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_governance.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "project-contract.json"
+          ]
+        }
+      }
+    },
+    {
+      "id": "product-structure",
+      "terms": {
+        "quality": "Структурированность",
+        "execution": "Цельность",
+        "commercial": "Бизнесовый"
+      },
+      "intent": "Структура продукта и контрактов понятна для интеграции.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/architecture_atlas.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_architecture_atlas.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/ARCHITECTURE.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "market-presentation",
+      "terms": {
+        "quality": "Упорядоченность",
+        "execution": "Целостность",
+        "commercial": "Маркетинговый"
+      },
+      "intent": "Пользовательское представление объясняет ценность, ограничения и сценарии применения.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "assets/pytyliki-workstation-preview.svg"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            ".github/scripts/check_readme_links.py"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "README.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "contract-consistency",
+      "terms": {
+        "quality": "Непротиворечивость",
+        "execution": "Монолитность",
+        "commercial": "Клиентский"
+      },
+      "intent": "Документация, API, тесты и поведение не противоречат друг другу.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "scripts/check_architecture_contract.py"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_engineering_foundations.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/UNIFIED_PROJECT_CONTRACT.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "customer-continuity",
+      "terms": {
+        "quality": "Однородность",
+        "execution": "Нераздельность",
+        "commercial": "Сбытовой"
+      },
+      "intent": "Путь пользователя от задачи до результата остаётся связным.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/embedded.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_embedded.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/EMBEDDED_C.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "standardized-integration",
+      "terms": {
+        "quality": "Унификация",
+        "execution": "Единство",
+        "commercial": "Промышленный"
+      },
+      "intent": "Форматы и интеграции используют стабильные повторяемые правила.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/interop.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_engineering_foundations.c"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/EXTERNAL_REPOSITORY_INTEGRATION.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "release-governance",
+      "terms": {
+        "quality": "Стандартизация",
+        "execution": "Слаженность",
+        "commercial": "Корпоративный"
+      },
+      "intent": "Релизы и изменения проходят повторяемые контрольные процедуры.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "scripts/check_architecture_contract.py"
+          ]
+        },
+        "commercial": {
+          "status": "planned",
+          "evidence": [
+            "docs/HUMAN_FIRST_GOVERNANCE.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "investment-diligence",
+      "terms": {
+        "quality": "Полнота",
+        "execution": "Ритмичность",
+        "commercial": "Инвестиционный"
+      },
+      "intent": "Доказательств достаточно для независимой технической и финансовой проверки.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_trace.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "docs/QUALITY_AUDIT_0.7.1.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "monetization-readiness",
+      "terms": {
+        "quality": "Точность",
+        "execution": "Размеренность",
+        "commercial": "Монетизируемый"
+      },
+      "intent": "Монетизация требует отдельного подтверждения ценности, прав и затрат.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/processor.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_core.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "README.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "unit-economics",
+      "terms": {
+        "quality": "Выверенность",
+        "execution": "Синхронность",
+        "commercial": "Рентабельный"
+      },
+      "intent": "Рентабельность опирается на измеренные затраты, а не предположения.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/cpu_suite.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_cpu_suite.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "docs/PLATFORM_VALIDATION_POLICY.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "asset-capitalization",
+      "terms": {
+        "quality": "Профессионализм",
+        "execution": "Упорядоченность",
+        "commercial": "Капитализированный"
+      },
+      "intent": "Активы продукта описаны, лицензированы и пригодны к сопровождению.",
+      "weight": 1,
+      "controls": {
+        "quality": {
+          "status": "implemented",
+          "evidence": [
+            "src/self_product.c"
+          ]
+        },
+        "execution": {
+          "status": "implemented",
+          "evidence": [
+            "tests/test_self_product.c"
+          ]
+        },
+        "commercial": {
+          "status": "not_assessed",
+          "evidence": [
+            "LICENSE"
+          ]
+        }
+      }
+    }
+  ]
+}
