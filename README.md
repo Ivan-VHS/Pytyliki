@@ -1,6 +1,7 @@
 # Pytyliki — Processor Systems Workstation
 
 [CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) · C11 · Windows/Linux · MIT
+**Developer:** [Ivan-VHS](https://github.com/Ivan-VHS)
 
 Modular native workstation for processor discovery, bounded workloads, source diagnostics, numerical tools and local DSP. The Windows GUI and portable CLI share one C11 core.
 
