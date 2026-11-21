@@ -7,6 +7,17 @@
 #include <string.h>
 #define PL_WAV_MAX_BYTES (32u*1024u*1024u)
 #define PL_PI 3.14159265358979323846
+static void appguard_audit(const vee_finding *finding, void *context) {
+    const char *decision;
+    (void)context;
+    if (finding == NULL || finding->decision == VEEELZEVUL_ALLOW) return;
+    decision = finding->decision == VEEELZEVUL_DENY ? "deny" :
+               finding->decision == VEEELZEVUL_QUARANTINE ? "quarantine" : "degrade";
+    fprintf(stderr, "[AppGuard] %s L%03u rule=%s object=%s reason=%s\\n",
+            decision, finding->level_id, finding->rule_id,
+            finding->object_id, finding->reason);
+}
+
 static int audio_valid(const pl_audio_buffer*a){if(!a||!a->samples||a->frames==0||a->frames>PL_AUDIO_MAX_FRAMES||(a->channels!=1&&a->channels!=2)||a->sample_rate<8000||a->sample_rate>192000)return 0;size_t n=a->frames*a->channels;for(size_t i=0;i<n;i++)if(!isfinite((double)a->samples[i]))return 0;return 1;}
 static uint16_t read_u16(const unsigned char*p){return(uint16_t)(p[0]|((uint16_t)p[1]<<8));}
 static uint32_t read_u32(const unsigned char*p){return(uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);}
@@ -45,7 +56,7 @@ int pl_audio_load_wav(const char *path, pl_audio_buffer *audio) {
     }
     {
         vee_guard guard;
-        vee_guard_init(&guard, PL_WAV_MAX_BYTES, 4096u, 128u, 1024u, NULL, NULL);
+        vee_guard_init(&guard, PL_WAV_MAX_BYTES, 4096u, 128u, 1024u, appguard_audit, NULL);
         if (vee_guard_check_payload(&guard, 192u, "A-09", "wav-input",
                                     (size_t)file_size) != VEEELZEVUL_ALLOW) {
             fclose(file);
