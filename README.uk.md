@@ -1,9 +1,11 @@
 # Pytyliki — робоча станція процесорних систем
 
+[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
+
 [CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) · [Збирання Windows](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) · C11 · Windows/Linux · MIT
 **Розробник:** [Ivan-VHS](https://github.com/Ivan-VHS)
 
-Pytyliki — модульна нативна робоча станція для виявлення характеристик процесора, планування обмежених навантажень, статичної діагностики коду, числових інструментів і локальної DSP. Windows GUI та CLI використовують спільне ядро C11.
+Pytyliki — модульна нативна робоча станція для виявлення характеристик процесора, планування обмежених навантажень, статичної діагностики коду, числових інструментів і локальної DSP. Застосунок Windows і CLI використовують спільне ядро C11.
 
 ## Реальний знімок Windows-застосунку
 
