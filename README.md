@@ -18,6 +18,13 @@ See [four-project OCTA-8 federation](docs/OCTA_PYRAMID_FEDERATION.md) and [conso
 <p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative Pytyliki Win32 workstation layout" width="100%"></p>
 <sub>Illustrative reconstruction based on the checked-in Win32 controls, not a screenshot captured from a live Windows session. A live capture is not yet committed.</sub>
 
+
+## Live Pytyliki workstation screenshot
+
+<p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki Processor Systems Workstation running on Windows" width="100%"></p>
+
+<sub>Actual live Windows 11 capture from the native Win32 Pytyliki workstation, 1920×1080. The screenshot shows the default empty in-memory audio buffer and no user-specific device or source data.</sub>
+
 ## Workbenches
 
 - **Processor inventory:** CPU identity, architecture, logical topology, memory and ISA capabilities. AVX-family usability includes OS-managed XCR0 state checks.
