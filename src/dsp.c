@@ -13,7 +13,7 @@ static void appguard_audit(const vee_finding *finding, void *context) {
     if (finding == NULL || finding->decision == VEEELZEVUL_ALLOW) return;
     decision = finding->decision == VEEELZEVUL_DENY ? "deny" :
                finding->decision == VEEELZEVUL_QUARANTINE ? "quarantine" : "degrade";
-    fprintf(stderr, "[AppGuard] %s L%03u rule=%s object=%s reason=%s\\n",
+    fprintf(stderr, "[AppGuard] %s L%03u rule=%s object=%s reason=%s\n",
             decision, finding->level_id, finding->rule_id,
             finding->object_id, finding->reason);
 }
