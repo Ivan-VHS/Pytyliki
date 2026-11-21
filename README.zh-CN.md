@@ -7,6 +7,8 @@
 
 Pytyliki 是一个模块化原生工作站，用于处理器信息发现、有界工作负载规划、源代码静态诊断、数值工具和本地 DSP。Windows 桌面程序与命令行工具共享同一个 C11 核心。
 
+工作站报告读取到的处理器信息；建议性计划不会修改操作系统调度、CPU 亲和性、频率或电压设置。
+
 ## Windows 实际运行截图
 
 <p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Windows 中运行的 Pytyliki 工作站" width="100%"></p>
