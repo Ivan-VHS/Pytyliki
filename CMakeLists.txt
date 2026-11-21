@@ -75,6 +75,10 @@ if(BUILD_TESTING)
   add_test(NAME architecture-atlas-cli-smoke COMMAND pytyliki --architectures)
   set_tests_properties(architecture-atlas-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Architecture systems atlas")
 
+  add_executable(pytyliki-elbrus-profile-tests tests/test_elbrus_profile.c)
+  target_link_libraries(pytyliki-elbrus-profile-tests PRIVATE pytyliki_core)
+  add_test(NAME elbrus-profile-tests COMMAND pytyliki-elbrus-profile-tests)
+
   add_executable(pytyliki-metric-tests tests/test_metric_geometry.c)
   target_link_libraries(pytyliki-metric-tests PRIVATE pytyliki_core)
   add_test(NAME metric-geometry-tests COMMAND pytyliki-metric-tests)
