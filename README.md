@@ -114,3 +114,10 @@ This repository's host adapter, shared 18-plugin catalog and compatibility rules
 ## Beelzebul repository protection
 
 This repository uses the versioned [Beelzebul 66-rule security policy](SECURITY.md), machine-readable [policy](security/beelzebul.v1.json), and read-only [scanner](tools/beelzebul.py). Run `python tools/beelzebul.py` locally; GitHub Actions runs the same gate for pull requests and protected-branch updates.
+
+
+## CLife checkpoints and recovery
+
+CLife v1 provides bounded, SHA-256-verified project/source snapshots and safe restoration into a new directory. It excludes build output, dependency caches and symlinks; it does not capture or alter live CPU or operating-system state.
+
+[CLife documentation](docs/CLIFE.md) · Run `python tools/clife.py snapshot .` and `python tools/clife.py verify <snapshot.clife>`.
