@@ -40,7 +40,7 @@ endif()
 
 if(WIN32)
   add_executable(pytyliki-gui WIN32 src/win_gui.c)
-  target_link_libraries(pytyliki-gui PRIVATE pytyliki_core comdlg32)
+  target_link_libraries(pytyliki-gui PRIVATE pytyliki_core comdlg32 advapi32)
 endif()
 add_executable(pytyliki src/cli.c)
 target_link_libraries(pytyliki PRIVATE pytyliki_core)
