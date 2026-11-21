@@ -1,0 +1,159 @@
+{
+  "schema": "anatidae.quality-repeatability-native.v1",
+  "project": {
+    "id": "pytyliki",
+    "name": "Pytyliki",
+    "runtime": "C11",
+    "native_surfaces": [
+      "C11 processor core",
+      "native DSP pipeline",
+      "embedded and platform boundaries"
+    ]
+  },
+  "pillars": {
+    "quality": {
+      "intent": "Correctness, bounded resource use, failure containment and traceable diagnostics.",
+      "criteria": [
+        {
+          "id": "memory-ownership",
+          "status": "implemented",
+          "requirement": "Memory ownership and bounded allocation behavior remain explicit.",
+          "verification": "Memory regression tests exercise the memory subsystem.",
+          "evidence": {
+            "implementation": [
+              "src/memory.c"
+            ],
+            "verification": [
+              "tests/test_memory.c"
+            ]
+          }
+        },
+        {
+          "id": "policy-boundaries",
+          "status": "implemented",
+          "requirement": "Governance and safety policies reject invalid or unsafe operations before side effects.",
+          "verification": "Governance tests cover policy decisions and failure paths.",
+          "evidence": {
+            "implementation": [
+              "src/policy.c"
+            ],
+            "verification": [
+              "tests/test_governance.c"
+            ]
+          }
+        },
+        {
+          "id": "diagnostic-provenance",
+          "status": "implemented",
+          "requirement": "Diagnostic and measurement output is attributable to the operation that produced it.",
+          "verification": "Engineering foundation tests cover diagnostic and trace contracts.",
+          "evidence": {
+            "implementation": [
+              "src/trace.c"
+            ],
+            "verification": [
+              "tests/test_engineering_foundations.c"
+            ]
+          }
+        }
+      ]
+    },
+    "multiplicity": {
+      "intent": "Repeated pipelines and improvement cycles are deterministic where feasible, bounded and auditable.",
+      "criteria": [
+        {
+          "id": "repeatable-pipeline",
+          "status": "implemented",
+          "requirement": "Pipeline stages expose consistent ordering and explicit outcomes.",
+          "verification": "Improvement tests exercise the pipeline and its repeatable stages.",
+          "evidence": {
+            "implementation": [
+              "src/pipeline.c"
+            ],
+            "verification": [
+              "tests/test_improvement.c"
+            ]
+          }
+        },
+        {
+          "id": "reproducible-evolution",
+          "status": "implemented",
+          "requirement": "Evolution steps are represented as explicit, regression-testable changes.",
+          "verification": "Evolution tests protect repeatable evolution behavior.",
+          "evidence": {
+            "implementation": [
+              "src/evolution.c"
+            ],
+            "verification": [
+              "tests/test_evolution.c"
+            ]
+          }
+        },
+        {
+          "id": "bounded-composition",
+          "status": "planned",
+          "requirement": "Composed multi-stage work defines bounded inputs, per-stage failure reporting and replayable evidence.",
+          "verification": "Autoforge and improvement tests provide the extension point; batch limits remain an acceptance item.",
+          "evidence": {
+            "implementation": [
+              "src/trimatrix_autoforge.c"
+            ],
+            "verification": [
+              "tests/test_improvement.c"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "intent": "The primary C11 and processor-facing paths stay direct, portable and testable.",
+      "criteria": [
+        {
+          "id": "c11-core",
+          "status": "implemented",
+          "requirement": "Core behavior remains available through the native C11 build without a mandatory managed-runtime layer.",
+          "verification": "The core target builds through CMake and is covered by core tests.",
+          "evidence": {
+            "implementation": [
+              "src/core.c",
+              "CMakeLists.txt"
+            ],
+            "verification": [
+              "tests/test_core.c",
+              ".github/workflows/ci.yml"
+            ]
+          }
+        },
+        {
+          "id": "native-dsp",
+          "status": "implemented",
+          "requirement": "DSP operations remain in the native processing path with explicit interfaces.",
+          "verification": "DSP engine tests guard the native processing boundary.",
+          "evidence": {
+            "implementation": [
+              "src/dsp.c",
+              "src/dsp_engine.c"
+            ],
+            "verification": [
+              "tests/test_dsp_engine.c"
+            ]
+          }
+        },
+        {
+          "id": "embedded-boundary",
+          "status": "implemented",
+          "requirement": "Embedded integration uses a defined C boundary and has an independently tested lifecycle.",
+          "verification": "Embedded tests cover the boundary and lifecycle behavior.",
+          "evidence": {
+            "implementation": [
+              "src/embedded.c"
+            ],
+            "verification": [
+              "tests/test_embedded.c"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}\n
