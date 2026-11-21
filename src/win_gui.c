@@ -548,7 +548,7 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     if(animations_enabled &&
        SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION,0,&animations_enabled,0) &&
        animations_enabled) {
-        const UINT intro_ms = g_motion_mode == 1 ? 190u : 140u;
+        const UINT intro_ms = g_motion_mode == 1 ? 240u : 140u;
         if(!AnimateWindow(w,intro_ms,AW_BLEND|AW_ACTIVATE)) ShowWindow(w,show);
     } else {
         ShowWindow(w,show);
