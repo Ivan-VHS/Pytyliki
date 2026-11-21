@@ -42,24 +42,24 @@
 static HWND g_log;
 static HWND g_main;
 static HFONT g_font;
+static HFONT g_heading_font;
 static HFONT g_log_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
 
-static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
-static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
-static COLORREF text_color(void) { return g_dark_mode ? RGB(232,237,242) : RGB(18,44,69); }
-static COLORREF input_color(void) { return g_dark_mode ? RGB(15,42,69) : RGB(255,255,255); }
-static COLORREF log_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(15,42,69); }
-static COLORREF blue_color(void) { return g_dark_mode ? RGB(112,165,255) : RGB(0,78,152); }
-static COLORREF blue_hover_color(void) { return g_dark_mode ? RGB(138,182,255) : RGB(26,95,219); }
-static COLORREF red_color(void) { return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45); }
-static COLORREF red_hover_color(void) { return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38); }
-static COLORREF border_color(void) { return g_dark_mode ? RGB(49,81,111) : RGB(202,216,232); }
+static COLORREF page_color(void) { return g_dark_mode ? RGB(10,30,70) : RGB(244,246,250); }
+static COLORREF header_color(void) { return RGB(0,57,166); }
+static COLORREF text_color(void) { return g_dark_mode ? RGB(255,255,255) : RGB(10,30,70); }
+static COLORREF input_color(void) { return g_dark_mode ? RGB(0,57,166) : RGB(255,255,255); }
+static COLORREF log_color(void) { return RGB(10,30,70); }
+static COLORREF blue_color(void) { return RGB(0,57,166); }
+static COLORREF blue_hover_color(void) { return RGB(10,30,70); }
+static COLORREF red_color(void) { return RGB(181,26,16); }
+static COLORREF red_hover_color(void) { return RGB(213,43,30); }
+static COLORREF border_color(void) { return g_dark_mode ? RGB(255,255,255) : RGB(0,57,166); }
 static COLORREF button_ink(int primary, int danger) {
-    if (primary) return g_dark_mode ? RGB(6,26,48) : RGB(255,255,255);
-    if (danger) return g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
-    return blue_color();
+    if (primary || danger) return RGB(255,255,255);
+    return text_color();
 }
 static int primary_button(UINT id) {
     return id==ID_PROFILE || id==ID_SUITE || id==ID_REVIEW || id==ID_SAVE_REPORT;
@@ -275,6 +275,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CREATE: {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
+        g_heading_font=CreateFontA(-23,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Georgia");
         rebuild_brushes();
         add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
@@ -301,7 +302,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CTLCOLOREDIT: {
         HDC dc=(HDC)p; HWND control=(HWND)l;
         if (control==g_log) {
-            SetTextColor(dc,RGB(229,237,247));
+            SetTextColor(dc,RGB(255,255,255));
             SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
         }
         SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
@@ -322,13 +323,13 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             int danger=(id==ID_CLEAR), primary=primary_button(id);
             COLORREF fill=danger?((selected||hot)?red_hover_color():red_color()):
                 primary?((selected||hot)?blue_hover_color():blue_color()):
-                (selected||hot?(g_dark_mode?RGB(36,79,130):RGB(217,232,255)):input_color());
+                (selected||hot?(g_dark_mode?RGB(10,30,70):RGB(244,246,250)):input_color());
             COLORREF ink=button_ink(primary,danger);
             HBRUSH brush=CreateSolidBrush(fill);
             HPEN pen=CreatePen(PS_SOLID,1,danger?red_color():primary?blue_color():border_color());
             HGDIOBJ old_brush=SelectObject(item->hDC,brush), old_pen=SelectObject(item->hDC,pen);
             RECT rc=item->rcItem;
-            RoundRect(item->hDC,rc.left+1,rc.top+1,rc.right-1,rc.bottom-1,16,16);
+            RoundRect(item->hDC,rc.left+1,rc.top+1,rc.right-1,rc.bottom-1,4,4);
             SetBkMode(item->hDC,TRANSPARENT); SetTextColor(item->hDC,ink);
             char label[256]={0}; GetWindowTextA(item->hwndItem,label,(int)sizeof(label));
             InflateRect(&rc,-7,-3);
@@ -344,8 +345,8 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         FillRect(dc,&r,g_page_brush);
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
-        HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | local DSP",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        HFONT old=(HFONT)SelectObject(dc,g_heading_font ? g_heading_font : g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SelectObject(dc,g_font); SetTextColor(dc,RGB(255,255,255)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | local DSP",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
@@ -374,6 +375,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_DESTROY:
         pl_audio_free(&g_audio);
         if (g_font) DeleteObject(g_font);
+        if (g_heading_font) DeleteObject(g_heading_font);
         if (g_log_font) DeleteObject(g_log_font);
         if (g_page_brush) DeleteObject(g_page_brush);
         if (g_input_brush) DeleteObject(g_input_brush);
