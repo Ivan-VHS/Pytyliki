@@ -77,3 +77,7 @@ pytyliki --partition-auto 10000 256
 **无障碍与响应式：**保持清晰的文本对比度、可见的键盘焦点、适合触控的控件尺寸、明确的 active/disabled 状态，并确保窄屏布局自然折叠。动效不得造成布局跳动或妨碍操作。
 
 本节是 DUCK CORE 视觉参考，**不代表**每个应用都已实现所有主题、动画或控件。实际发布的实现和项目专属规范才是最终依据：[界面动效规范](docs/UI_MOTION.md)。
+
+## 文档体系与视觉素材
+
+Markdown/MDX、图表、截图、SVG 与栅格素材、无障碍、语言同步和链接检查统一遵循 [README 与视觉文档规范](docs/README_VISUAL_STANDARD.md)。
