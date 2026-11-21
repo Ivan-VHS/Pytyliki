@@ -2,6 +2,7 @@
 #include "metric_geometry.h"
 #include "embedded.h"
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 uint32_t pytyliki_abi_version(void) { return PYTYLIKI_ABI_VERSION; }
 static int count_to_size(uint64_t count, size_t *out) {
