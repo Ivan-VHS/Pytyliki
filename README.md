@@ -85,6 +85,10 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 
 This is the project's design baseline, not a claim that every proposed doctrine item is already implemented.
 
+## Documentation governance
+
+[Documentation control](docs/DOCUMENTATION_CONTROL.md) defines the normative rules for public claims, evidence, privacy and integrations.
+
 ## License
 
 [MIT](LICENSE)
@@ -92,4 +96,11 @@ This is the project's design baseline, not a claim that every proposed doctrine 
 UI motion and accessibility: [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md).
 
 
-The shared [four-project federation matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) records the Reaper-side VentuSample manifest audit and clarifies that a direct VentuSample native ABI adapter remains planned.
+## Quality and commercial readiness
+
+The 20 × 3 matrix combines product quality, operational discipline and commercial governance with traceable repository evidence. Run **python tools/quality_commercial.py** or add **--format json**. Its scores do not imply hardware certification, market validation, revenue or profitability. See [the quality-commercial standard](docs/QUALITY_COMMERCIAL_STANDARD.md).
+
+
+## Four-project federation
+
+The shared [OCTA-8 project matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) documents the implemented pairings and explicit not-applicable boundaries across Reaper, Pytyliki, OPlague and VentuSample. OPlague remains a read-only device/driver diagnostics product and is not coupled to audio generation.
