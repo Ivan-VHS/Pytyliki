@@ -25,6 +25,7 @@
 The root README includes the live Windows desktop capture and current build/test commands. Legacy contract paths remain concise for validators. Machine-readable JSON, source and tests are authoritative for implemented behavior.
 
 | [UI_MOTION.md](UI_MOTION.md) | native Windows motion, accessibility preferences and reduced-motion behavior |
+| [VISUAL_DOCUMENTATION.md](VISUAL_DOCUMENTATION.md) | README graphics, SVG/raster formats, typography, Markdown/MDX, diagrams and rendering rules |
 
 
 ## Motion and embedded graphics
