@@ -116,3 +116,6 @@
 - UI не входит в C11 core, DSP, FFI, benchmark, PCM и worker paths; никакой визуальный эффект не влияет на детерминизм обработки.
 - BPM/transport, телеметрия и прогресс отображаются только при реальном источнике данных; отсутствие источника должно быть явно подписано.
 
+## Implementation evidence — Pytyliki
+
+The C11 UI policy test checks relative luminance, WCAG ordinary/large-text thresholds and the preferred 44 px target token. The helper is header-only and used only by the Win32 presentation layer; it is not linked into the DSP, FFI or processor core. Windows/Linux build checks do not replace manual keyboard-only or 200% scaling review of the native workstation.
