@@ -47,3 +47,8 @@ The runtime library does not independently configure OS sandboxes, TLS, identity
 ## Exceptions
 
 No exceptions are pre-authorized. Each exception requires an owner, reason, approver, exact rule scope, creation date and expiry within 30 days. Expired or malformed exceptions fail validation.
+
+## Wired application boundaries
+
+- `src/dsp.c::pl_audio_load_wav` invokes `AppGuard L192` / `A-09` before parsing WAV bytes. The enforced cap is the existing 32 MiB WAV limit; rejected inputs produce a redacted stderr event. The check runs during file ingestion, not in the realtime DSP path.
+- The C11 runtime is compiled into `pytyliki_core` by the root CMake target.
