@@ -325,7 +325,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
                 (selected||hot?(g_dark_mode?RGB(10,30,70):RGB(244,246,250)):input_color());
             COLORREF ink=button_ink(primary);
             HBRUSH brush=CreateSolidBrush(fill);
-            HPEN pen=CreatePen(PS_SOLID,1,danger?red_color():primary?blue_color():border_color());
+            HPEN pen=CreatePen(PS_SOLID,danger && (selected||hot)?2:1,danger?((selected||hot)?red_hover_color():red_color()):primary?blue_color():border_color());
             HGDIOBJ old_brush=SelectObject(item->hDC,brush), old_pen=SelectObject(item->hDC,pen);
             RECT rc=item->rcItem;
             RoundRect(item->hDC,rc.left+1,rc.top+1,rc.right-1,rc.bottom-1,4,4);
