@@ -37,6 +37,7 @@ typedef struct {
 } pl_clife_checkpoint;
 
 typedef struct {
+    char project_id[PL_CLIFE_PROJECT_ID_CAPACITY];
     double artifact_integrity;
     double resource_health;
     double execution_health;
