@@ -57,8 +57,8 @@ static COLORREF blue_hover_color(void) { return RGB(10,30,70); }
 static COLORREF red_color(void) { return RGB(181,26,16); }
 static COLORREF red_hover_color(void) { return RGB(213,43,30); }
 static COLORREF border_color(void) { return g_dark_mode ? RGB(255,255,255) : RGB(0,57,166); }
-static COLORREF button_ink(int primary, int danger) {
-    if (primary || danger) return RGB(255,255,255);
+static COLORREF button_ink(int primary) {
+    if (primary) return RGB(255,255,255);
     return text_color();
 }
 static int primary_button(UINT id) {
@@ -321,10 +321,9 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             int selected=(item->itemState & ODS_SELECTED)!=0;
             int hot=(item->itemState & ODS_HOTLIGHT)!=0;
             int danger=(id==ID_CLEAR), primary=primary_button(id);
-            COLORREF fill=danger?((selected||hot)?red_hover_color():red_color()):
-                primary?((selected||hot)?blue_hover_color():blue_color()):
+            COLORREF fill=primary?((selected||hot)?blue_hover_color():blue_color()):
                 (selected||hot?(g_dark_mode?RGB(10,30,70):RGB(244,246,250)):input_color());
-            COLORREF ink=button_ink(primary,danger);
+            COLORREF ink=button_ink(primary);
             HBRUSH brush=CreateSolidBrush(fill);
             HPEN pen=CreatePen(PS_SOLID,1,danger?red_color():primary?blue_color():border_color());
             HGDIOBJ old_brush=SelectObject(item->hDC,brush), old_pen=SelectObject(item->hDC,pen);
