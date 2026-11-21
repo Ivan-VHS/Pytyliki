@@ -8,6 +8,8 @@
 
 Pytyliki is a modular native workstation for processor discovery, bounded workload planning, source diagnostics, numerical tools and local DSP. The Windows desktop workstation and portable command-line tools share one C11 core.
 
+The workstation reports observed processor data; its advisory plans do not change operating-system scheduling, CPU affinity, clock or voltage settings.
+
 ## Live Windows workstation
 
 <p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki workstation running on Windows" width="100%"></p>
