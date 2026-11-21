@@ -67,3 +67,8 @@ pytyliki --partition-auto 10000 256
 [功能](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [架构](docs/ARCHITECTURE.md) · [除法与分区](docs/DIVISION_ENGINE.md) · [TRACE 溯源](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [文档索引](docs/README.md)
 
 [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
+
+
+## Motion Constitution v2026
+
+统一界面规范见 [Motion Constitution v2026](docs/MOTION_CONSTITUTION_V2026.md)。该规范定义弹簧/快速缓动词汇、0.4×–2.2× 动效缩放范围、系统 Reduce Motion 优先级、主题、2×2/焦点场景展示，以及真实 SVG/Canvas 遥测的规则。已交付的 Win32 行为以[界面动效规范](docs/UI_MOTION.md)为准。Pytyliki 当前提供可持久化的动效偏好和克制的启动过渡；图表必须来自真实处理器测量值。本产品不提供超频或电压写入控制。
