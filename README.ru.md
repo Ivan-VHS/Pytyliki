@@ -104,3 +104,7 @@ pytyliki --partition-auto 10000 256
 Пример модели бюджета 500 грн с JSON-контрактом и автономным симулятором. Это документационный пример, а не функция runtime самого приложения.
 
 [Мультиязычный справочник](docs/RESOURCE_ALLOCATION_500_UAH.md) · [Интерактивный симулятор](docs/resource-allocation-500-uah.html) · [Пример JSON](examples/resource-allocation-500-uah.json) · [JSON Schema](schemas/resource-allocation.v1.schema.json)
+
+## Поддержка Эльбрус E2K
+
+Нативная сборка C11, идентификация процессора, кросс-компиляция и проверки описаны в [руководстве по Эльбрус E2K](docs/ELBRUS_E2K.md).
