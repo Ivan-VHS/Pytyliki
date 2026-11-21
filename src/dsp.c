@@ -1,4 +1,5 @@
 #include "dsp.h"
+#include "appguard.h"
 #include <math.h>
 #include <float.h>
 #include <stdio.h>
@@ -41,6 +42,15 @@ int pl_audio_load_wav(const char *path, pl_audio_buffer *audio) {
         fseek(file, 0L, SEEK_SET) != 0 || file_size < 12L) {
         fclose(file);
         return -2;
+    }
+    {
+        vee_guard guard;
+        vee_guard_init(&guard, PL_WAV_MAX_BYTES, 4096u, 128u, 1024u, NULL, NULL);
+        if (vee_guard_check_payload(&guard, 192u, "A-11", "wav-input",
+                                    (size_t)file_size) != VEEELZEVUL_ALLOW) {
+            fclose(file);
+            return -3;
+        }
     }
     if (fread(header, 1u, sizeof(header), file) != sizeof(header) ||
         memcmp(header, "RIFF", 4u) != 0 ||
