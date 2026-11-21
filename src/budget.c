@@ -34,13 +34,13 @@ int pl_budget_calculate(pl_budget_plan *plan) {
         return -1;
     for (i = 0; i < PL_BUDGET_CATEGORY_COUNT; ++i) {
         const int64_t value = plan->allocations_uah[i];
-        if (value < 0 || value > PL_BUDGET_MAX_UAH || total > PL_BUDGET_MAX_UAH - value)
+        if (value < 0 || value > PL_BUDGET_MAX_UAH || total > 6 * PL_BUDGET_MAX_UAH - value)
             return -1;
         total += value;
     }
     plan->planned_uah = total;
     plan->over_budget = total > plan->limit_uah;
-    plan->remaining_uah = plan->over_budget ? plan->limit_uah - total : plan->limit_uah - total;
+    plan->remaining_uah = plan->limit_uah - total;
     return 0;
 }
 
