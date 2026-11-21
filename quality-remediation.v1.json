@@ -1,0 +1,296 @@
+{
+  "schema": "anatidae.quality-remediation.v1",
+  "project": {
+    "id": "pytyliki",
+    "name": "Pytyliki",
+    "scope": "Read-only processor discovery, bounded measurements, source diagnostics, memory and local DSP."
+  },
+  "entries": [
+    {
+      "id": "root-cause-correction",
+      "terms": {
+        "correction": "Исправление",
+        "coverage": "Всеобъемлемость",
+        "defect": "Ошибки"
+      },
+      "target": "Processor core and inventory result handling",
+      "acceptance": "Reproduce the defect, isolate its root cause, add a regression check, and verify the corrected behavior at the affected entry point.",
+      "evidence": [
+        "src/core.c",
+        "tests/test_core.c"
+      ]
+    },
+    {
+      "id": "tolerance-calibration",
+      "terms": {
+        "correction": "Корректировка",
+        "coverage": "Всесторонность",
+        "defect": "Погрешности"
+      },
+      "target": "Processor capability, ISA and OS-state measurements",
+      "acceptance": "Check boundaries, units, tolerances, rounding and measurement assumptions from more than one independent path.",
+      "evidence": [
+        "src/processor.c",
+        "tests/test_cpu_suite.c"
+      ]
+    },
+    {
+      "id": "subsystem-removal",
+      "terms": {
+        "correction": "Устранение",
+        "coverage": "Комплексность",
+        "defect": "Неточности"
+      },
+      "target": "Processor catalog and compute workload integration",
+      "acceptance": "Remove the underlying cause across dependent components; do not hide symptoms with local workarounds.",
+      "evidence": [
+        "src/processor_catalog.c",
+        "tests/test_cpu_suite.c"
+      ]
+    },
+    {
+      "id": "acceptance-completeness",
+      "terms": {
+        "correction": "Поправка",
+        "coverage": "Полнота",
+        "defect": "Недочёты"
+      },
+      "target": "Allocation, memory arena and buffer ownership",
+      "acceptance": "Close missing acceptance conditions across implementation, tests, documentation, configuration and distribution artifacts.",
+      "evidence": [
+        "src/memory.c",
+        "tests/test_memory.c"
+      ]
+    },
+    {
+      "id": "end-to-end-workflows",
+      "terms": {
+        "correction": "Налаживание",
+        "coverage": "Исчерпывающесть",
+        "defect": "Просчёты"
+      },
+      "target": "Native pipeline and benchmark orchestration",
+      "acceptance": "Exercise the complete user workflow, including invalid input, cancellation, failure and recovery branches.",
+      "evidence": [
+        "src/pipeline.c",
+        "tests/test_engineering_foundations.c"
+      ]
+    },
+    {
+      "id": "cross-platform-diagnostics",
+      "terms": {
+        "correction": "Отладка",
+        "coverage": "Универсальность",
+        "defect": "Отклонения"
+      },
+      "target": "CLI and Win32 diagnostic paths",
+      "acceptance": "Run deterministic diagnostics for supported platforms and configurations; report unsupported combinations explicitly.",
+      "evidence": [
+        "src/cli.c",
+        "tests/test_core.c"
+      ]
+    },
+    {
+      "id": "multidimensional-review",
+      "terms": {
+        "correction": "Доработка",
+        "coverage": "Многогранность",
+        "defect": "Дефекты"
+      },
+      "target": "WAV/DSP ingestion and local audio processing",
+      "acceptance": "Review functional behavior, security, resource use, accessibility, compatibility and documentation as one change set.",
+      "evidence": [
+        "src/dsp_engine.c",
+        "tests/test_dsp_engine.c"
+      ]
+    },
+    {
+      "id": "measured-optimization",
+      "terms": {
+        "correction": "Оптимизация",
+        "coverage": "Масштабность",
+        "defect": "Изъяны"
+      },
+      "target": "Metric geometry and benchmark measurement",
+      "acceptance": "Measure a reproducible baseline before optimizing and prove that correctness, safety and output quality do not regress.",
+      "evidence": [
+        "src/metric_geometry.c",
+        "tests/test_metric_geometry.c"
+      ]
+    },
+    {
+      "id": "contract-safe-reconstruction",
+      "terms": {
+        "correction": "Реконструкция",
+        "coverage": "Охватность",
+        "defect": "Недостатки"
+      },
+      "target": "CMake targets and CI build variants",
+      "acceptance": "Restructure components only with explicit interface contracts, migration notes and compatibility regression checks.",
+      "evidence": [
+        "CMakeLists.txt",
+        ".github/workflows/ci.yml"
+      ]
+    },
+    {
+      "id": "toolchain-modernization",
+      "terms": {
+        "correction": "Модернизация",
+        "coverage": "Многоаспектность",
+        "defect": "Оплошности"
+      },
+      "target": "Native Win32 workstation and platform integration",
+      "acceptance": "Update toolchains, platforms and dependencies deliberately, then run the affected build and regression matrix.",
+      "evidence": [
+        "src/win_gui.c",
+        "tests/test_core.c"
+      ]
+    },
+    {
+      "id": "profile-synchronization",
+      "terms": {
+        "correction": "Обновление",
+        "coverage": "Многопрофильность",
+        "defect": "Промахи"
+      },
+      "target": "README, engineering standard and project contracts",
+      "acceptance": "Synchronize supported profiles, operating modes, locales and configurations so they do not drift independently.",
+      "evidence": [
+        "docs/ENGINEERING_BASELINE.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "evidence-audit",
+      "terms": {
+        "correction": "Ревизия",
+        "coverage": "Разносторонность",
+        "defect": "Сбои"
+      },
+      "target": "Quality audit, governance and test evidence",
+      "acceptance": "Audit implementation, tests, diagnostics, release workflows and evidence links; record findings with reproducible references.",
+      "evidence": [
+        "tests/test_governance.c",
+        "docs/QUALITY_AUDIT_0.7.1.md"
+      ]
+    },
+    {
+      "id": "safe-recovery",
+      "terms": {
+        "correction": "Восстановление",
+        "coverage": "Всеохватность",
+        "defect": "Нарушения"
+      },
+      "target": "Trace and report state recovery",
+      "acceptance": "Recover from partial failures without corrupting existing data; verify idempotency and atomicity where relevant.",
+      "evidence": [
+        "src/trace.c",
+        "tests/test_trace.c"
+      ]
+    },
+    {
+      "id": "bounded-configuration",
+      "terms": {
+        "correction": "Регулировка",
+        "coverage": "Целостность",
+        "defect": "Упущения"
+      },
+      "target": "Hardware-rule thresholds and advisory decisions",
+      "acceptance": "Keep defaults, thresholds, quotas, timeouts and policy boundaries consistent with the documented operating envelope.",
+      "evidence": [
+        "src/hw_rules.c",
+        "tests/test_hw_rules.c"
+      ]
+    },
+    {
+      "id": "cross-layer-conformance",
+      "terms": {
+        "correction": "Совершенствование",
+        "coverage": "Совокупность",
+        "defect": "Несоответствия"
+      },
+      "target": "Embedded/interoperability boundary alignment",
+      "acceptance": "Verify end-to-end conformance from the public interface through implementation and persisted/exported results.",
+      "evidence": [
+        "src/interop.c",
+        "tests/test_interop.c"
+      ]
+    },
+    {
+      "id": "dependency-aware-refactoring",
+      "terms": {
+        "correction": "Рефакторинг",
+        "coverage": "Глобальность",
+        "defect": "Дисфункции"
+      },
+      "target": "Core modules and shared runtime abstractions",
+      "acceptance": "Remove harmful duplication and dependency cycles while preserving public contracts and observable behavior.",
+      "evidence": [
+        "src/core.c",
+        "tests/test_engineering_foundations.c"
+      ]
+    },
+    {
+      "id": "fault-containment",
+      "terms": {
+        "correction": "Стабилизация",
+        "coverage": "Безграничность",
+        "defect": "Неисправности"
+      },
+      "target": "CI failures, DSP regression and bounded recovery",
+      "acceptance": "Contain failures with explicit upper bounds for memory, CPU, retries, input sizes and execution time.",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "tests/test_dsp_engine.c"
+      ]
+    },
+    {
+      "id": "specification-alignment",
+      "terms": {
+        "correction": "Согласование",
+        "coverage": "Исчерпывающесть",
+        "defect": "Оговорки"
+      },
+      "target": "Platform validation policy and processor constraints",
+      "acceptance": "Resolve mismatches between source code, schemas, APIs, specifications, tests and user-facing documentation.",
+      "evidence": [
+        "docs/PLATFORM_VALIDATION_POLICY.md",
+        "src/hw_rules.c"
+      ]
+    },
+    {
+      "id": "canonical-unification",
+      "terms": {
+        "correction": "Унификация",
+        "coverage": "Фундаментальность",
+        "defect": "Ляпы"
+      },
+      "target": "Federated data exchange and stable interfaces",
+      "acceptance": "Use canonical data formats and versioned interfaces for shared capabilities without erasing project-specific boundaries.",
+      "evidence": [
+        "src/interop.c",
+        "docs/FEDERATED_INTEGRATION.md"
+      ]
+    },
+    {
+      "id": "release-readiness",
+      "terms": {
+        "correction": "Безошибочность",
+        "coverage": "Энциклопедичность",
+        "defect": "Деформации"
+      },
+      "target": "Project contract and top-level release acceptance",
+      "acceptance": "Gate releases on relevant regression checks, clean build artifacts, synchronized documentation and reviewable evidence.",
+      "evidence": [
+        "tools/validate_project_contract.py",
+        "project-contract.json",
+        "tests/test_core.c"
+      ]
+    }
+  ],
+  "limitations": [
+    "Evidence checks verify repository-relative file presence only; they do not execute or semantically validate the referenced implementation.",
+    "Passing this profile does not certify zero defects, security, hardware compatibility, language parity, audio fidelity or commercial readiness.",
+    "The project's existing permissions, licensing, interoperability and safety boundaries remain authoritative."
+  ]
+}
