@@ -1,0 +1,55 @@
+name: Pytyliki Desktop Build
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths-ignore: ["README*", "docs/**"]
+  pull_request:
+    paths: ["CMakeLists.txt", "src/**", "tests/**", ".github/workflows/desktop-build.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-windows:
+    name: Windows x64 Win32 workstation
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure C11 release build
+        run: cmake -S . -B build -DBUILD_TESTING=ON
+      - name: Build GUI and command-line tools
+        run: cmake --build build --config Release --parallel
+      - name: Run CTest suite
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Prepare distributable archive
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item build/Release/pytyliki-gui.exe dist/
+          Copy-Item build/Release/pytyliki.exe dist/
+          Copy-Item build/Release/pytyliki-apsia.exe dist/
+          Copy-Item build/Release/pytyliki-metrics.exe dist/
+          Copy-Item README.md dist/
+          Copy-Item LICENSE dist/
+          Compress-Archive -Path dist/* -DestinationPath Pytyliki-windows-x64.zip -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pytyliki-windows-x64
+          path: Pytyliki-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 30
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Pytyliki-windows-x64
+          path: release-assets
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release-assets/Pytyliki-windows-x64.zip
