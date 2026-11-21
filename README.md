@@ -102,16 +102,18 @@ Partition plans are deterministic, bounded and advisory. They describe contiguou
 [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
 
 
-## Mental wellbeing awareness reference
+## Code Mental Health / Codebase Wellbeing
 
-A read-only native C11 reference for the transcript-grounded depression-awareness material. It preserves the missing transcript interval and does not diagnose, screen or interpret host telemetry.
+A native C11, read-only repository inventory that treats maintenance signals as review prompts—not as a score or a verdict about contributors.
 
 ```sh
-pytyliki-wellbeing --catalog
-pytyliki-wellbeing --topic antidepressant-myths
+pytyliki-code-wellbeing --json .
+pytyliki-code-wellbeing .
 ```
 
-[Source, data contract and safety boundaries](docs/MENTAL_WELLBEING_AWARENESS.md) · [JSON bundle](data/wellbeing/depression-awareness.v1.json)
+The bounded scan reports source/test/documentation/CI inventory, ownership and recovery evidence, plus contextual TODO/FIXME markers. It does not edit files or prove correctness.
+
+[Engineering charter and measurement limits](docs/CODE_MENTAL_HEALTH.md) · [Versioned contract](data/code-wellbeing/codebase-wellbeing.v1.json)
 
 ## Bounded resource-allocation reference
 An illustrative 500 UAH budget model with a versioned JSON contract and an offline simulator. This is a documentation example, not a feature of the host runtime.
