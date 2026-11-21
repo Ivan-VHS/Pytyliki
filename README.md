@@ -9,7 +9,38 @@ Pytyliki is a modular native workstation for processor discovery, bounded worklo
 ## Live Windows workstation
 
 <p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki workstation running on Windows" width="100%"></p>
-<sub>Actual Windows desktop capture produced by the desktop-build workflow (1920×1080).</sub>
+
+## Functional data flow
+
+The diagram summarizes implemented data movement between the project's input sources, processing stages and generated outputs.
+
+```mermaid
+flowchart TD
+    A[Host processor] --> B[Read-only inventory]
+    B --> C[Processor profile]
+    C --> D[Bounded workload planner]
+    D --> E[Deterministic range plan]
+    F[Source text] --> G[Static diagnostics]
+    G --> H[Structured report]
+    I[PCM16 WAV] --> J[Local DSP]
+    J --> K[Processed audio and measurements]
+```
+
+## Runtime and output paths
+
+This second view separates execution paths and supported outputs from catalogue-only or unavailable behavior.
+
+```mermaid
+flowchart LR
+    A[CLI arguments] --> B[Validation and bounds]
+    B --> C[Numerical operation]
+    C --> D[Result or report]
+    E[CPU / MCU profile] --> F[Reference estimates]
+    G[QCS source] --> H[Lexer and parser]
+    H --> I[AST and diagnostics]
+```
+
+<sub>Actual application capture · 1920×1080 source image · original pixels retained; no artificial upscaling.</sub>
 
 ## Capability matrix
 
@@ -25,10 +56,6 @@ Pytyliki is a modular native workstation for processor discovery, bounded worklo
 | QCS | lexer, parser, AST and diagnostics | syntax analysis only |
 | Atomic quantum | 133 stable IDs and bounded C11 state-vector kernels: normalization, gates, measurement and noise | classical simulation only; no hardware access |
 | Interop | versioned C ABI v1 | explicit trusted library selection |
-
-## UI motion and accessibility
-
-The Windows workbench provides **Motion Settings**. **Normal** uses a 140 ms blend; **Expressive** uses a 240 ms native vertical glide. **Reduce Motion** disables the startup transition and **Eco / Low-CPU Visuals** suppresses nonessential effects; both override Expressive. **Sync to Transport / BPM** is unavailable because Pytyliki has no project transport or master-BPM source. Preferences are stored per user and respect the Windows client-area animation setting and `UI_REDUCED_MOTION`. See [UI motion contract](docs/UI_MOTION.md) and [Anatidae motion constitution](docs/ANATIDAE_MOTION_CONSTITUTION.md).
 
 ## Build and test
 
@@ -69,32 +96,3 @@ Partition plans are deterministic, bounded and advisory. They describe contiguou
 [Atomic-Quantum 133](docs/ATOMIC_QUANTUM_133.md) · [Features](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [Architecture](docs/ARCHITECTURE.md) · [Division and partitioning](docs/DIVISION_ENGINE.md) · [TRACE provenance](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Documentation index](docs/README.md)
 
 [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
-
-## DUCK CORE // README & Motion Suite
-
-The shared visual reference for interactive demos and UI documentation defines three palettes: **Pond Noir** (default dark canvas), **Golden Reed** (warm high-contrast accents) and **Arctic Glacier** (cool cyan/blue accents). Use semantic tokens for canvas, surfaces, borders, text, accents and focus states instead of unrelated hard-coded component colors.
-
-Motion follows a clear hierarchy: restrained spring easing for intentional entrances and feedback, smooth easing for routine transitions, and optional Zen / Hyper intensity presets only where the application exposes them. Parallax, floating geometry and ripple effects are decorative, nonessential and must never carry information or block input. The `reduced-motion` preference overrides every preset and suppresses decorative movement.
-
-**Accessibility and responsive behavior:** preserve readable contrast, visible keyboard focus, touch-sized controls, predictable active/disabled states and layouts that collapse cleanly on narrow screens. Motion must not cause layout shifts or make controls harder to operate.
-
-This is a DUCK CORE visual reference, **not a claim** that every theme, animation or control ships in every application. The implementation and project-specific contract are authoritative: [UI motion contract](docs/UI_MOTION.md).
-
-<!-- VISUAL-DOCS:BEGIN -->
-## Visual architecture map
-
-![Pytyliki implementation map: shared C11 core, workstation modules, command-line tools and Windows GUI](assets/visual-documentation-map.svg)
-
-This is an architecture illustration, not a runtime screenshot. The real Windows capture above remains the visual reference for the shipped application. See [Visual documentation and graphics contract](docs/VISUAL_DOCUMENTATION.md) for SVG, screenshots, typography, Markdown, diagrams and rendering rules.
-<!-- VISUAL-DOCS:END -->
-
-
-## Motion Constitution v2026
-
-The shared interface contract is [Motion Constitution v2026](docs/MOTION_CONSTITUTION_V2026.md). It defines the common spring/snappy easing vocabulary, the 0.4×–2.2× motion-scale envelope, theme and reduced-motion precedence, the 2×2/focus-scene showcase, and rules for truthful SVG/Canvas telemetry. The [native UI motion contract](docs/UI_MOTION.md) remains authoritative for shipped Win32 behavior. Pytyliki currently provides persisted motion preferences and a restrained startup transition; graphs must use measured processor values. It does not provide overclocking or voltage-write controls.
-
-## Shared motion architecture map
-
-<p align="center"><img src="assets/motion-constitution-v2026.svg" alt="Motion Constitution v2026: four-domain architecture map" width="100%"></p>
-
-This is the shared 2×2 architecture reference, not a live application screenshot. It distinguishes each product's shipped scope from unavailable or planned capabilities.
