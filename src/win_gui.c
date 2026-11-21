@@ -45,6 +45,7 @@
 #define ID_MOTION_SYNC 1303
 #define ID_MOTION_SAVE 1304
 #define ID_MOTION_CANCEL 1305
+#define ID_MOTION_MODE 1306
 
 static HWND g_log;
 static HWND g_main;
@@ -54,8 +55,9 @@ static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
 static int g_reduce_motion = 0;
 static int g_eco_visuals = 0;
+static int g_motion_mode = 0; /* 0 Normal, 1 Expressive, 2 Reduced Motion */
 static HWND g_motion_dialog = NULL;
-static HWND g_motion_reduce_check = NULL;
+static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
 static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
@@ -109,6 +111,10 @@ static void load_motion_settings(void) {
     value = 0; size = sizeof(value); type = REG_DWORD;
     if (RegQueryValueExA(key, "EcoVisuals", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
         g_eco_visuals = value != 0;
+    value = 0; size = sizeof(value); type = REG_DWORD;
+    if (RegQueryValueExA(key, "MotionMode", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
+        g_motion_mode = value > 2 ? 0 : (int)value;
+    if (g_reduce_motion) g_motion_mode = 2;
     RegCloseKey(key);
 }
 
@@ -118,10 +124,13 @@ static void save_motion_settings(void) {
     if (RegCreateKeyExA(HKEY_CURRENT_USER, "Software\\Ivan-VHS\\Pytyliki\\UI", 0, NULL, 0,
         KEY_SET_VALUE, NULL, &key, &disposition) != ERROR_SUCCESS)
         return;
+    g_reduce_motion = (g_motion_mode == 2);
     DWORD reduce = g_reduce_motion ? 1u : 0u;
     DWORD eco = g_eco_visuals ? 1u : 0u;
+    DWORD mode = (DWORD)g_motion_mode;
     RegSetValueExA(key, "ReduceMotion", 0, REG_DWORD, (const BYTE*)&reduce, sizeof(reduce));
     RegSetValueExA(key, "EcoVisuals", 0, REG_DWORD, (const BYTE*)&eco, sizeof(eco));
+    RegSetValueExA(key, "MotionMode", 0, REG_DWORD, (const BYTE*)&mode, sizeof(mode));
     RegCloseKey(key);
 }
 
@@ -133,37 +142,46 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
     (void)lparam;
     switch (message) {
     case WM_CREATE: {
-        g_motion_reduce_check = CreateWindowExA(0, "BUTTON", "Reduce Motion - disable spatial/window movement",
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 22, 430, 28,
-            dialog, (HMENU)(INT_PTR)ID_MOTION_REDUCE, GetModuleHandleA(NULL), NULL);
+        HWND mode_label = CreateWindowExA(0, "STATIC", "Motion intensity",
+            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 18, 430, 22,
+            dialog, NULL, GetModuleHandleA(NULL), NULL);
+        g_motion_mode_combo = CreateWindowExA(0, "COMBOBOX", "",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST | WS_VSCROLL,
+            22, 42, 430, 120, dialog, (HMENU)(INT_PTR)ID_MOTION_MODE, GetModuleHandleA(NULL), NULL);
+        SendMessageA(g_motion_mode_combo, CB_ADDSTRING, 0, (LPARAM)"Normal");
+        SendMessageA(g_motion_mode_combo, CB_ADDSTRING, 0, (LPARAM)"Expressive");
+        SendMessageA(g_motion_mode_combo, CB_ADDSTRING, 0, (LPARAM)"Reduced Motion");
+        SendMessageA(g_motion_mode_combo, CB_SETCURSEL, (WPARAM)g_motion_mode, 0);
         g_motion_eco_check = CreateWindowExA(0, "BUTTON", "Eco / Low-CPU Visuals - suppress nonessential effects",
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 58, 430, 28,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 82, 430, 28,
             dialog, (HMENU)(INT_PTR)ID_MOTION_ECO, GetModuleHandleA(NULL), NULL);
         HWND sync = CreateWindowExA(0, "BUTTON", "Sync to Transport / BPM (unavailable: no audio transport)",
-            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 22, 94, 430, 28,
+            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 22, 116, 430, 28,
             dialog, (HMENU)(INT_PTR)ID_MOTION_SYNC, GetModuleHandleA(NULL), NULL);
         HWND note = CreateWindowExA(0, "STATIC",
-            "This Win32 workstation has no project transport or master BPM. No fake sync is provided.",
-            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 132, 430, 42, dialog, NULL, GetModuleHandleA(NULL), NULL);
+            "Normal: balanced motion. Expressive: longer window entrance. Reduced Motion: no spatial transition. BPM sync is unavailable in this workstation.",
+            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 152, 430, 46, dialog, NULL, GetModuleHandleA(NULL), NULL);
         HWND save = CreateWindowExA(0, "BUTTON", "Save", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
-            270, 190, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
+            270, 216, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
         HWND cancel = CreateWindowExA(0, "BUTTON", "Cancel", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-            362, 190, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
-        apply_font(g_motion_reduce_check); apply_font(g_motion_eco_check);
+            362, 216, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
+        apply_font(mode_label); apply_font(g_motion_mode_combo); apply_font(g_motion_eco_check);
         apply_font(sync); apply_font(note); apply_font(save); apply_font(cancel);
-        SendMessageA(g_motion_reduce_check, BM_SETCHECK, g_reduce_motion ? BST_CHECKED : BST_UNCHECKED, 0);
         SendMessageA(g_motion_eco_check, BM_SETCHECK, g_eco_visuals ? BST_CHECKED : BST_UNCHECKED, 0);
         EnableWindow(sync, FALSE);
-        SetFocus(g_motion_reduce_check);
+        SetFocus(g_motion_mode_combo);
         return 0;
     }
     case WM_COMMAND:
         if (LOWORD(wparam) == ID_MOTION_SAVE) {
-            g_reduce_motion = SendMessageA(g_motion_reduce_check, BM_GETCHECK, 0, 0) == BST_CHECKED;
+            LRESULT selected = SendMessageA(g_motion_mode_combo, CB_GETCURSEL, 0, 0);
+            g_motion_mode = selected >= 0 && selected <= 2 ? (int)selected : 0;
+            g_reduce_motion = (g_motion_mode == 2);
             g_eco_visuals = SendMessageA(g_motion_eco_check, BM_GETCHECK, 0, 0) == BST_CHECKED;
             save_motion_settings();
-            log_format("[UI MOTION] Reduce Motion %s | Eco Visuals %s | BPM sync unavailable without transport.\\r\\n",
-                g_reduce_motion ? "ON" : "OFF", g_eco_visuals ? "ON" : "OFF");
+            log_format("[UI MOTION] Mode %s | Eco Visuals %s | BPM sync unavailable without transport.\\r\\n",
+                g_motion_mode == 2 ? "REDUCED" : g_motion_mode == 1 ? "EXPRESSIVE" : "NORMAL",
+                g_eco_visuals ? "ON" : "OFF");
             close_motion_dialog(dialog);
             return 0;
         }
@@ -177,7 +195,7 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
         return 0;
     case WM_NCDESTROY:
         g_motion_dialog = NULL;
-        g_motion_reduce_check = NULL;
+        g_motion_mode_combo = NULL;
         g_motion_eco_check = NULL;
         EnableWindow(g_main, TRUE);
         SetForegroundWindow(g_main);
@@ -194,7 +212,7 @@ static void show_motion_settings(void) {
     EnableWindow(g_main, FALSE);
     g_motion_dialog = CreateWindowExA(WS_EX_DLGMODALFRAME, "PytylikiMotionSettings",
         "UI Motion Settings", WS_CAPTION | WS_SYSMENU | WS_POPUP,
-        CW_USEDEFAULT, CW_USEDEFAULT, 490, 270, g_main, NULL, GetModuleHandleA(NULL), NULL);
+        CW_USEDEFAULT, CW_USEDEFAULT, 490, 300, g_main, NULL, GetModuleHandleA(NULL), NULL);
     if (!g_motion_dialog) {
         EnableWindow(g_main, TRUE);
         SetForegroundWindow(g_main);
@@ -519,7 +537,7 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
     load_motion_settings();
-    BOOL animations_enabled=(g_reduce_motion || g_eco_visuals) ? FALSE : TRUE;
+    BOOL animations_enabled=(g_motion_mode == 2 || g_eco_visuals) ? FALSE : TRUE;
     char reduced_motion[8]={0};
     if(GetEnvironmentVariableA("UI_REDUCED_MOTION",reduced_motion,(DWORD)sizeof(reduced_motion))>0 &&
        (reduced_motion[0]=='1' || reduced_motion[0]=='t' || reduced_motion[0]=='T' ||
@@ -530,7 +548,8 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     if(animations_enabled &&
        SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION,0,&animations_enabled,0) &&
        animations_enabled) {
-        if(!AnimateWindow(w,140,AW_BLEND|AW_ACTIVATE)) ShowWindow(w,show);
+        const UINT intro_ms = g_motion_mode == 1 ? 190u : 140u;
+        if(!AnimateWindow(w,intro_ms,AW_BLEND|AW_ACTIVATE)) ShowWindow(w,show);
     } else {
         ShowWindow(w,show);
     }

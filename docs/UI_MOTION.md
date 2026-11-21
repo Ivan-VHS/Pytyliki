@@ -1,16 +1,18 @@
-# Pytyliki Win32 UI motion contract
+# Pytyliki Win32 UI motion contract — 2026
 
-The processor workstation follows the AETHER-ANAS white/blue/red motion policy. Native C11 processing, FFI, benchmarks and PCM/DSP paths are not animation hosts and remain untouched.
+The Win32 workstation adopts the shared Motion Design 2026 accessibility profile without changing C11 processor, FFI, benchmark, PCM or DSP execution paths.
 
-## Accessibility settings
+## Modes
 
-The native UI exposes **Motion Settings**:
-- **Reduce Motion** disables the startup window transition.
-- **Eco / Low-CPU Visuals** suppresses nonessential visual effects; the current Win32 surface has no continuously animated graphs or particle scenes to throttle.
-- **Sync to Transport / BPM** is displayed as unavailable because this workstation has no project transport or master-BPM source.
+- **Normal** uses the existing restrained 140 ms startup fade.
+- **Expressive** uses a slightly longer 190 ms startup fade; no animated geometry is added to performance-critical controls.
+- **Reduced Motion** disables the startup transition and takes precedence over Expressive.
+- **Eco / Low-CPU Visuals** disables the startup transition and nonessential visual work.
 
-Preferences are stored under the current user's `Software\Ivan-VHS\Pytyliki\UI` registry key. The Windows client-area animation preference and `UI_REDUCED_MOTION` environment override are also respected.
+The motion selector and Eco preference are persisted under `Software\Ivan-VHS\Pytyliki\UI`. The legacy `ReduceMotion` registry value is still read and written for backwards compatibility. `UI_REDUCED_MOTION` and the Windows client-area animation preference override application settings.
 
-## Visual rules
+## Visual and interaction rules
 
-Blue `#0039A6` and navy `#0B1F3A` represent navigation and calm state. Red `#D52B1E` / `#B51A10` is reserved for critical/generation/safety feedback. Large-area flashing, parallax jolts and decorative rainbow effects are forbidden. Animation must never enter audio/DSP or processor worker code.
+Native owner-drawn buttons already provide restrained hover/pressed feedback. Focus rectangles and hit targets remain unchanged. Blue `#0039A6` / navy `#0B1F3A` communicate navigation and calm state; red `#D52B1E` / `#B51A10` is reserved for critical, mutation and safety feedback. CSS backdrop blur, animated rainbow mesh, pointer parallax and large-area flashing are not fabricated in Win32.
+
+All visual transitions remain separate from processor workers, FFI, benchmarks and audio/DSP operations. BPM sync is unavailable because this workstation has no project transport or master-tempo source.
