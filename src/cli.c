@@ -1,4 +1,5 @@
 #include "core.h"
+#include "division.h"
 #include "processor.h"
 #include "dsp.h"
 #include "improvement.h"
@@ -28,6 +29,8 @@ static void usage(void) {
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
+         "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
+         "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
@@ -217,6 +220,10 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
+    if (argc > 1) {
+        int division_status = pl_division_cli(argc, argv);
+        if (division_status >= 0) return division_status;
+    }
     if (argc > 1 && strcmp(argv[1], "--embedded") == 0)
         return pl_embedded_cli(argc - 1, argv + 1);
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,systems_lab=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
