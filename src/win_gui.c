@@ -95,6 +95,9 @@ static void rebuild_brushes(void) {
 }
 static pl_audio_buffer g_audio = {0};
 
+static void log_format(const char *fmt, ...);
+static void apply_font(HWND control);
+
 static void load_motion_settings(void) {
     HKEY key;
     DWORD value = 0, size = sizeof(value), type = REG_DWORD;
