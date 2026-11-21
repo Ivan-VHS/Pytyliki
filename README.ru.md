@@ -98,3 +98,9 @@ pytyliki --partition-auto 10000 256
 [Функции](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [Архитектура](docs/ARCHITECTURE.md) · [Деление и разбиение](docs/DIVISION_ENGINE.md) · [TRACE](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Индекс документации](docs/README.md)
 
 [English](README.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md) · [Релизы](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
+
+
+## Справочник распределения бюджета
+Пример модели бюджета 500 грн с JSON-контрактом и автономным симулятором. Это документационный пример, а не функция runtime самого приложения.
+
+[Мультиязычный справочник](docs/RESOURCE_ALLOCATION_500_UAH.md) · [Интерактивный симулятор](docs/resource-allocation-500-uah.html) · [Пример JSON](examples/resource-allocation-500-uah.json) · [JSON Schema](schemas/resource-allocation.v1.schema.json)
