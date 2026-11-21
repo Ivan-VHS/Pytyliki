@@ -34,5 +34,30 @@ int main(void) {
     assert(pytyliki_v1_norm_f64(NULL,2u,&value)==PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_norm_f64(a,4097u,&value)==PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_distance_f64(a,b,2u,NULL)==PYTYLIKI_ABI_INVALID_ARGUMENT);
+    {
+        int32_t available = -1;
+        int64_t native_result = 987;
+        uint64_t native_ordinal = 0u;
+        char native_error[128] = {0};
+        assert(pytyliki_v1_reaper_available(&available) == PYTYLIKI_ABI_OK);
+#ifdef PYTYLIKI_HAS_REAPER
+        assert(available == 1);
+        assert(pytyliki_v1_reaper_eval_i64("6 * 7", 5u, &native_result,
+                                          native_error, sizeof native_error) == PYTYLIKI_ABI_OK);
+        assert(native_result == 42);
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &native_ordinal) == PYTYLIKI_ABI_OK);
+        assert(native_ordinal == 2u);
+        assert(pytyliki_v1_reaper_selfhood_lookup("not-found", &native_ordinal) == PYTYLIKI_ABI_NOT_FOUND);
+#else
+        assert(available == 0);
+        assert(pytyliki_v1_reaper_eval_i64("6 * 7", 5u, &native_result,
+                                          native_error, sizeof native_error) == PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
+        assert(native_result == 987);
+        assert(strstr(native_error, "REAPER_SOURCE_DIR") != NULL);
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &native_ordinal) == PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
+#endif
+        assert(pytyliki_v1_reaper_available(NULL) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+        assert(pytyliki_v1_reaper_selfhood_lookup(NULL, &native_ordinal) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+    }
     return 0;
 }
