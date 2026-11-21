@@ -114,3 +114,11 @@ This repository's host adapter, shared 18-plugin catalog and compatibility rules
 ## Beelzebul repository protection
 
 This repository uses the versioned [Beelzebul 66-rule security policy](SECURITY.md), machine-readable [policy](security/beelzebul.v1.json), and read-only [scanner](tools/beelzebul.py). Run `python tools/beelzebul.py` locally; GitHub Actions runs the same gate for pull requests and protected-branch updates.
+
+
+## CLife — bounded checkpoint and recovery
+
+The C11 CLife adapter captures caller-owned project bytes, verifies project identity and a
+bounded integrity checksum, and selects safe recovery branches. Its public API is integrated
+into the core library and CTest. Checkpoints are in-memory; the host owns durable storage.
+See [CLife contract](clife/contract.v1.json) and [C11 adapter guide](docs/CLIFE_IMMORTALITY_POD.md).
