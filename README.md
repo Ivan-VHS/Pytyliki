@@ -102,6 +102,17 @@ Partition plans are deterministic, bounded and advisory. They describe contiguou
 [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
 
 
+## Mental wellbeing awareness reference
+
+A read-only native C11 reference for the transcript-grounded depression-awareness material. It preserves the missing transcript interval and does not diagnose, screen or interpret host telemetry.
+
+```sh
+pytyliki-wellbeing --catalog
+pytyliki-wellbeing --topic antidepressant-myths
+```
+
+[Source, data contract and safety boundaries](docs/MENTAL_WELLBEING_AWARENESS.md) · [JSON bundle](data/wellbeing/depression-awareness.v1.json)
+
 ## Bounded resource-allocation reference
 An illustrative 500 UAH budget model with a versioned JSON contract and an offline simulator. This is a documentation example, not a feature of the host runtime.
 
