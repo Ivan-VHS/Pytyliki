@@ -2,7 +2,59 @@
 #include "metric_geometry.h"
 #include "embedded.h"
 #include <stddef.h>
+#include <ctype.h>
 #include <string.h>
+
+typedef struct { const char *id, *name, *domain, *service, *capabilities; } plugin_entry;
+static const plugin_entry PLUGIN_CATALOG[] = {
+    {"operandu", "Operandu", "Data & logic", "inspect_value", "value.validation;schema.inspection;expression.metadata"},
+    {"dropaul", "Dropaul", "Actions & workflows", "plan_workflow", "workflow.graph;dependency.ordering;dry_run"},
+    {"zdoro", "Zdoro", "Integrity & diagnostics", "inspect_workspace", "workspace.inspection;integrity.summary"},
+    {"pyemont", "Pyemont", "Development", "inspect_project", "source.inventory;module.discovery;project.manifest"},
+    {"dilly", "Dilly", "Interface & experience", "lint_design_tokens", "design.token.lint;label.inventory;theme.contract"},
+    {"baplap", "Baplap", "Data infrastructure", "index_files", "file.catalog;content.fingerprint;metadata.index"},
+    {"sretuo", "Sretuo", "Quality engineering", "plan_tests", "test.discovery;coverage.targets;test.plan"},
+    {"kali", "Kali", "Security", "scan_security", "secret.pattern.scan;unsafe.api.inventory;static.findings"},
+    {"zalam", "Zalam", "Connectivity", "inspect_contracts", "contract.validation;integration.inventory;schema.checks"},
+    {"liur", "Liur", "Runtime resources", "measure_resources", "source.size.metrics;resource.budget;runtime.metadata"},
+    {"keel-koh", "Keel Koh", "Knowledge", "index_knowledge", "documentation.index;heading.extraction;link.inventory"},
+    {"vorof", "Vorof", "Reverse engineering", "inspect_structure", "ast.inventory;symbol.discovery;dependency.outline"},
+    {"vprof", "Vprof", "Profiling & metrics", "profile_source", "ast.metrics;complexity.estimates;module.comparison"},
+    {"profe", "Profe", "Engineering standards", "check_standards", "source.conventions;documentation.checks;policy.inventory"},
+    {"prossee", "Prossee", "Project planning", "plan_project", "task.graph;milestone.planning;critical.path.estimate"},
+    {"vprossee", "Vprossee", "Verification & validation", "verify_evidence", "evidence.matrix;acceptance.checks;verification.report"},
+    {"professiya", "Professiya", "Learning", "learning_paths", "learning.paths;topic.map;progress.checklist"},
+    {"profevo", "Profevo", "Evolution", "plan_evolution", "deprecation.inventory;migration.plan;change.impact"}
+};
+
+static size_t plugin_catalog_count(void) {
+    return sizeof(PLUGIN_CATALOG) / sizeof(PLUGIN_CATALOG[0]);
+}
+
+static int plugin_name_equal(const char *left, const char *right) {
+    if (left == NULL || right == NULL) return 0;
+    while (*left != '\0' && *right != '\0') {
+        unsigned char a = (unsigned char)*left++;
+        unsigned char b = (unsigned char)*right++;
+        if (a == '_' || a == ' ') a = '-';
+        if (b == '_' || b == ' ') b = '-';
+        if ((unsigned char)tolower(a) != (unsigned char)tolower(b)) return 0;
+    }
+    return *left == '\0' && *right == '\0';
+}
+
+static const plugin_entry *plugin_catalog_at(size_t index) {
+    return index < plugin_catalog_count() ? &PLUGIN_CATALOG[index] : NULL;
+}
+
+static const plugin_entry *plugin_catalog_find(const char *name) {
+    size_t i;
+    if (name == NULL || name[0] == '\0') return NULL;
+    for (i = 0u; i < plugin_catalog_count(); ++i)
+        if (plugin_name_equal(name, PLUGIN_CATALOG[i].id) || plugin_name_equal(name, PLUGIN_CATALOG[i].name))
+            return &PLUGIN_CATALOG[i];
+    return NULL;
+}
 uint32_t pytyliki_abi_version(void) { return PYTYLIKI_ABI_VERSION; }
 static int count_to_size(uint64_t count, size_t *out) {
     if (out == NULL || count > (uint64_t)SIZE_MAX) return PYTYLIKI_ABI_INVALID_ARGUMENT;
@@ -29,7 +81,6 @@ int32_t pytyliki_v1_orthogonal_f64(const double *a,const double *b,uint64_t n,do
     if(pl_metric_is_orthogonal(a,b,count,tolerance,&result)!=0)return PYTYLIKI_ABI_INVALID_ARGUMENT;
     *out=result?1:0; return PYTYLIKI_ABI_OK;
 }
-
 
 static void copy_embedded_text(char *out, size_t capacity, const char *value) {
     size_t length;
@@ -98,5 +149,42 @@ int32_t pytyliki_v1_embedded_budget_evaluate(
     out->sram_percent = budget.sram_percent;
     out->flash_fits = budget.flash_fits ? 1 : 0;
     out->sram_fits = budget.sram_fits ? 1 : 0;
+    return PYTYLIKI_ABI_OK;
+}
+
+static void copy_plugin_descriptor(pytyliki_plugin_descriptor_v1 *out,
+                                   const plugin_entry *plugin) {
+    memset(out, 0, sizeof(*out));
+    copy_embedded_text(out->id, sizeof(out->id), plugin->id);
+    copy_embedded_text(out->name, sizeof(out->name), plugin->name);
+    copy_embedded_text(out->domain, sizeof(out->domain), plugin->domain);
+    copy_embedded_text(out->service, sizeof(out->service), plugin->service);
+    copy_embedded_text(out->capabilities, sizeof(out->capabilities), plugin->capabilities);
+}
+
+int32_t pytyliki_v1_plugin_count(uint64_t *out_count) {
+    if (out_count == NULL) return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    *out_count = (uint64_t)plugin_catalog_count();
+    return PYTYLIKI_ABI_OK;
+}
+
+int32_t pytyliki_v1_plugin_at(uint64_t index, pytyliki_plugin_descriptor_v1 *out) {
+    size_t position = 0u;
+    const plugin_entry *plugin;
+    if (out == NULL || count_to_size(index, &position) != PYTYLIKI_ABI_OK)
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    plugin = plugin_catalog_at(position);
+    if (plugin == NULL) return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    copy_plugin_descriptor(out, plugin);
+    return PYTYLIKI_ABI_OK;
+}
+
+int32_t pytyliki_v1_plugin_find(const char *id_or_name, pytyliki_plugin_descriptor_v1 *out) {
+    const plugin_entry *plugin;
+    if (id_or_name == NULL || id_or_name[0] == '\0' || out == NULL)
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    plugin = plugin_catalog_find(id_or_name);
+    if (plugin == NULL) return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    copy_plugin_descriptor(out, plugin);
     return PYTYLIKI_ABI_OK;
 }
