@@ -41,7 +41,7 @@ RGB values must not be scattered through control creation and paint handlers. Al
 | `accent-primary`, `accent-secondary`, `accent-warm` | main action, linked metrics and active DSP/exploration |
 | `status-ok`, `status-warn`, `status-danger` | verified, advisory and failed states |
 
-Presets: **Morning Pond** (pearl, graphite-blue, teal, amber), **Twilight Water** (slate, soft white, mint/cyan, coral/gold), **Northern Ice 8K** (high contrast, strong borders and focus), **Warm Vibe** (cream/sand or chocolate/amber). Provide normal, high and extra-high contrast. Never encode status by color alone.
+Do not expose alternate accent presets. The production identity uses the single white-blue-red semantic token set in [ANATIDAE_DESKTOP_DESIGN_SYSTEM.md](ANATIDAE_DESKTOP_DESIGN_SYSTEM.md), with light/dark surfaces and normal/high/extra-high contrast modes. Contrast and text/icon status labels remain mandatory; theme variants may change luminance, not the product's semantic color roles.
 
 Theme changes update controls, focus rings, tables, legends and log selection atomically. Include `uiScale` 80–250%, typography and Compact/Balanced/Spacious density. On 8K, separators/focus outlines scale to about 1.5–3 physical pixels while text retains readable logical size.
 
