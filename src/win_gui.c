@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <winreg.h>
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -33,11 +34,17 @@
 #define ID_METRIC_LAB 1014
 #define ID_EMBEDDED 1015
 #define ID_THEME 1016
+#define ID_MOTION 1017
 #define ID_CUTOFF 1101
 #define ID_THRESHOLD 1102
 #define ID_RATIO 1103
 #define ID_DRIVE 1104
 #define ID_GAIN_VALUE 1105
+#define ID_MOTION_REDUCE 1301
+#define ID_MOTION_ECO 1302
+#define ID_MOTION_SYNC 1303
+#define ID_MOTION_SAVE 1304
+#define ID_MOTION_CANCEL 1305
 
 static HWND g_log;
 static HWND g_main;
@@ -45,6 +52,11 @@ static HFONT g_font;
 static HFONT g_log_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
+static int g_reduce_motion = 0;
+static int g_eco_visuals = 0;
+static HWND g_motion_dialog = NULL;
+static HWND g_motion_reduce_check = NULL;
+static HWND g_motion_eco_check = NULL;
 
 static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
 static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
@@ -82,6 +94,116 @@ static void rebuild_brushes(void) {
     g_log_brush = CreateSolidBrush(log_color());
 }
 static pl_audio_buffer g_audio = {0};
+
+static void log_format(const char *fmt, ...);
+static void apply_font(HWND control);
+
+static void load_motion_settings(void) {
+    HKEY key;
+    DWORD value = 0, size = sizeof(value), type = REG_DWORD;
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Ivan-VHS\\Pytyliki\\UI", 0, KEY_QUERY_VALUE, &key) != ERROR_SUCCESS)
+        return;
+    size = sizeof(value);
+    if (RegQueryValueExA(key, "ReduceMotion", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
+        g_reduce_motion = value != 0;
+    value = 0; size = sizeof(value); type = REG_DWORD;
+    if (RegQueryValueExA(key, "EcoVisuals", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
+        g_eco_visuals = value != 0;
+    RegCloseKey(key);
+}
+
+static void save_motion_settings(void) {
+    HKEY key;
+    DWORD disposition = 0;
+    if (RegCreateKeyExA(HKEY_CURRENT_USER, "Software\\Ivan-VHS\\Pytyliki\\UI", 0, NULL, 0,
+        KEY_SET_VALUE, NULL, &key, &disposition) != ERROR_SUCCESS)
+        return;
+    DWORD reduce = g_reduce_motion ? 1u : 0u;
+    DWORD eco = g_eco_visuals ? 1u : 0u;
+    RegSetValueExA(key, "ReduceMotion", 0, REG_DWORD, (const BYTE*)&reduce, sizeof(reduce));
+    RegSetValueExA(key, "EcoVisuals", 0, REG_DWORD, (const BYTE*)&eco, sizeof(eco));
+    RegCloseKey(key);
+}
+
+static void close_motion_dialog(HWND dialog) {
+    if (IsWindow(dialog)) DestroyWindow(dialog);
+}
+
+static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wparam, LPARAM lparam) {
+    (void)lparam;
+    switch (message) {
+    case WM_CREATE: {
+        g_motion_reduce_check = CreateWindowExA(0, "BUTTON", "Reduce Motion - disable spatial/window movement",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 22, 430, 28,
+            dialog, (HMENU)(INT_PTR)ID_MOTION_REDUCE, GetModuleHandleA(NULL), NULL);
+        g_motion_eco_check = CreateWindowExA(0, "BUTTON", "Eco / Low-CPU Visuals - suppress nonessential effects",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 58, 430, 28,
+            dialog, (HMENU)(INT_PTR)ID_MOTION_ECO, GetModuleHandleA(NULL), NULL);
+        HWND sync = CreateWindowExA(0, "BUTTON", "Sync to Transport / BPM (unavailable: no audio transport)",
+            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 22, 94, 430, 28,
+            dialog, (HMENU)(INT_PTR)ID_MOTION_SYNC, GetModuleHandleA(NULL), NULL);
+        HWND note = CreateWindowExA(0, "STATIC",
+            "This Win32 workstation has no project transport or master BPM. No fake sync is provided.",
+            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 132, 430, 42, dialog, NULL, GetModuleHandleA(NULL), NULL);
+        HWND save = CreateWindowExA(0, "BUTTON", "Save", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
+            270, 190, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
+        HWND cancel = CreateWindowExA(0, "BUTTON", "Cancel", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            362, 190, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
+        apply_font(g_motion_reduce_check); apply_font(g_motion_eco_check);
+        apply_font(sync); apply_font(note); apply_font(save); apply_font(cancel);
+        SendMessageA(g_motion_reduce_check, BM_SETCHECK, g_reduce_motion ? BST_CHECKED : BST_UNCHECKED, 0);
+        SendMessageA(g_motion_eco_check, BM_SETCHECK, g_eco_visuals ? BST_CHECKED : BST_UNCHECKED, 0);
+        EnableWindow(sync, FALSE);
+        SetFocus(g_motion_reduce_check);
+        return 0;
+    }
+    case WM_COMMAND:
+        if (LOWORD(wparam) == ID_MOTION_SAVE) {
+            g_reduce_motion = SendMessageA(g_motion_reduce_check, BM_GETCHECK, 0, 0) == BST_CHECKED;
+            g_eco_visuals = SendMessageA(g_motion_eco_check, BM_GETCHECK, 0, 0) == BST_CHECKED;
+            save_motion_settings();
+            log_format("[UI MOTION] Reduce Motion %s | Eco Visuals %s | BPM sync unavailable without transport.\\r\\n",
+                g_reduce_motion ? "ON" : "OFF", g_eco_visuals ? "ON" : "OFF");
+            close_motion_dialog(dialog);
+            return 0;
+        }
+        if (LOWORD(wparam) == ID_MOTION_CANCEL) {
+            close_motion_dialog(dialog);
+            return 0;
+        }
+        break;
+    case WM_CLOSE:
+        close_motion_dialog(dialog);
+        return 0;
+    case WM_NCDESTROY:
+        g_motion_dialog = NULL;
+        g_motion_reduce_check = NULL;
+        g_motion_eco_check = NULL;
+        EnableWindow(g_main, TRUE);
+        SetForegroundWindow(g_main);
+        return 0;
+    }
+    return DefWindowProcA(dialog, message, wparam, lparam);
+}
+
+static void show_motion_settings(void) {
+    if (g_motion_dialog && IsWindow(g_motion_dialog)) {
+        SetForegroundWindow(g_motion_dialog);
+        return;
+    }
+    EnableWindow(g_main, FALSE);
+    g_motion_dialog = CreateWindowExA(WS_EX_DLGMODALFRAME, "PytylikiMotionSettings",
+        "UI Motion Settings", WS_CAPTION | WS_SYSMENU | WS_POPUP,
+        CW_USEDEFAULT, CW_USEDEFAULT, 490, 270, g_main, NULL, GetModuleHandleA(NULL), NULL);
+    if (!g_motion_dialog) {
+        EnableWindow(g_main, TRUE);
+        SetForegroundWindow(g_main);
+        return;
+    }
+    ShowWindow(g_motion_dialog, SW_SHOW);
+    UpdateWindow(g_motion_dialog);
+}
+
 
 static void log_text(const char *text) {
     if (!g_log || !text) return;
@@ -231,11 +353,11 @@ static void layout(HWND w) {
     RECT r; GetClientRect(w,&r);
     int width=r.right-r.left, height=r.bottom-r.top;
     int margin=width<900?16:22, gap=8, button_height=44, y=98;
-    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED,ID_THEME};
-    int top_columns=width>=1480?6:3;
-    int top_rows=(6+top_columns-1)/top_columns;
+    int top_ids[]={ID_PROFILE,ID_SUITE,ID_REVIEW,ID_METRIC_LAB,ID_EMBEDDED,ID_THEME,ID_MOTION};
+    int top_columns=width>=1480?7:4;
+    int top_rows=(7+top_columns-1)/top_columns;
     int top_width=(width-2*margin-(top_columns-1)*gap)/top_columns;
-    for(int i=0;i<6;i++) {
+    for(int i=0;i<7;i++) {
         int row=i/top_columns, column=i%top_columns;
         MoveWindow(GetDlgItem(w,top_ids[i]),margin+column*(top_width+gap),y+row*(button_height+gap),top_width,button_height,TRUE);
     }
@@ -276,7 +398,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
         rebuild_brushes();
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
         add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
         add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
@@ -356,6 +478,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_REVIEW: review_source(); break;
             case ID_METRIC_LAB: show_metric_lab(); break;
             case ID_EMBEDDED: show_embedded_profiles(); break;
+            case ID_MOTION: show_motion_settings(); break;
             case ID_LOAD_WAV: load_wav(); break;
             case ID_TONE: generate_tone(); break;
             case ID_LOWPASS: case ID_COMPRESS: case ID_SATURATE: case ID_GAIN: audio_effect(LOWORD(p)); break;
@@ -388,9 +511,15 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     WNDCLASSA wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
     wc.lpszClassName="PytylikiProcessorWorkstation"; wc.hCursor=LoadCursor(NULL,IDC_ARROW); wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     if(!RegisterClassA(&wc)) return 1;
+    WNDCLASSA motion_wc; memset(&motion_wc,0,sizeof(motion_wc));
+    motion_wc.lpfnWndProc=motion_dialog_proc; motion_wc.hInstance=h;
+    motion_wc.lpszClassName="PytylikiMotionSettings"; motion_wc.hCursor=LoadCursor(NULL,IDC_ARROW);
+    motion_wc.hbrBackground=(HBRUSH)(COLOR_BTNFACE+1);
+    if(!RegisterClassA(&motion_wc)) return 1;
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
-    BOOL animations_enabled=TRUE;
+    load_motion_settings();
+    BOOL animations_enabled=(g_reduce_motion || g_eco_visuals) ? FALSE : TRUE;
     char reduced_motion[8]={0};
     if(GetEnvironmentVariableA("UI_REDUCED_MOTION",reduced_motion,(DWORD)sizeof(reduced_motion))>0 &&
        (reduced_motion[0]=='1' || reduced_motion[0]=='t' || reduced_motion[0]=='T' ||
