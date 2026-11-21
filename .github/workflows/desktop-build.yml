@@ -5,7 +5,7 @@ on:
     tags: ["v*"]
     paths-ignore: ["README*", "docs/**"]
   pull_request:
-    paths: ["CMakeLists.txt", "src/**", "tests/**", ".github/workflows/desktop-build.yml"]
+    paths: ["CMakeLists.txt", "src/**", "tests/**", ".github/workflows/desktop-build.yml", ".github/scripts/capture_desktop_screenshot.ps1"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,6 +21,16 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Run CTest suite
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Capture live Windows workstation
+        shell: pwsh
+        run: .github/scripts/capture_desktop_screenshot.ps1 -FilePath "build/Release/pytyliki-gui.exe" -OutputPath "assets/screenshots/pytyliki-workstation.png" -StartupSeconds 15
+      - name: Upload live desktop screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytyliki-live-windows-screenshot
+          path: assets/screenshots/pytyliki-workstation.png
+          if-no-files-found: error
+          retention-days: 30
       - name: Prepare distributable archive
         shell: pwsh
         run: |
