@@ -40,3 +40,5 @@ The root README includes the live Windows desktop capture and current build/test
 - [Example JSON](../examples/resource-allocation-500-uah.json) and [JSON Schema](../schemas/resource-allocation.v1.schema.json).
 
 This is an illustrative personal-budgeting reference, not a claim that the host project manages payments or live retail prices.
+
+| [REAPER_FRONTEND.md](REAPER_FRONTEND.md) | pinned native Reaper lexer and single-expression parser integration |
