@@ -26,7 +26,9 @@
 
 ## Запуск
 
-__USAGE__
+```text
+pytyliki --budget --budget-scenario weekly --budget-amount 500 --budget-set food 300
+```
 
 ## Формула
 
