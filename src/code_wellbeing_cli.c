@@ -85,8 +85,8 @@ static int is_document(const char *lower_path) {
 static int is_test(const char *lower_path) {
     const char *name = strrchr(lower_path, '/');
     name = name == NULL ? lower_path : name + 1;
-    return strstr(lower_path, "/tests/") != NULL || strstr(lower_path, "/test/") != NULL
-        || strstr(lower_path, "/spec/") != NULL || strstr(lower_path, "/specs/") != NULL
+    return strstr(lower_path, "tests/") != NULL || strstr(lower_path, "test/") != NULL
+        || strstr(lower_path, "spec/") != NULL || strstr(lower_path, "specs/") != NULL
         || strncmp(name, "test_", 5U) == 0 || strncmp(name, "test.", 5U) == 0
         || strstr(name, "_test.py") != NULL || strstr(name, ".spec.") != NULL
         || strstr(name, ".test.") != NULL;
