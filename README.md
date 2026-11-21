@@ -61,6 +61,23 @@ flowchart LR
 | Atomic quantum | 133 stable IDs and bounded C11 state-vector kernels: normalization, gates, measurement and noise | classical simulation only; no hardware access |
 | Interop | versioned C ABI v1 | explicit trusted library selection |
 
+## Reaper native frontend
+
+Pytyliki now builds an isolated native frontend library from the pinned Reaper C sources. The `pytyliki-reaper` command can tokenize UTF-8 Reaper source, serialize a single expression AST, or validate one expression without starting Python:
+
+```sh
+pytyliki-reaper --version
+pytyliki-reaper --tokens examples/expression.rpr
+pytyliki-reaper --ast-json examples/expression.rpr
+pytyliki-reaper --check-expression examples/expression.rpr
+```
+
+The imported frontend is pinned to [Reaper commit `34a5970`](https://github.com/Ivan-VHS/Reaper/commit/34a5970bbdf0a2bc186233aee6631acdeaeb9904) and retains its Apache-2.0 license and provenance notice under `vendor/reaper_frontend/`.
+
+**Scope boundary:** this is a native lexer and single-expression parser, not a Reaper interpreter. It does not execute complete `.rpr` programs, parse declarations or blocks, resolve names, load modules, or run the Reaper VM. Pytyliki's existing C11 workstation remains unchanged.
+
+See [Reaper frontend integration](docs/REAPER_FRONTEND.md) for the vendoring, API and verification contract.
+
 ## Build and test
 
 Requirements: CMake 3.16+, a C11 compiler and Git.
