@@ -244,7 +244,7 @@ int main(int argc,char **argv) {
         if(!strcmp(argv[i],"--budget")) budget=1;
         else if(!strcmp(argv[i],"--budget-amount")&&i+1<argc) {
             if(parse_i64(argv[++i],&budget_limit)!=0) {
-                fprintf(stderr,"Invalid budget amount.\\n"); return 2;
+                fprintf(stderr,"Invalid budget amount.\n"); return 2;
             }
             budget=1;
         }
@@ -255,7 +255,7 @@ int main(int argc,char **argv) {
             const int index=budget_category_index(argv[++i]);
             int64_t value;
             if(index<0 || parse_i64(argv[++i],&value)!=0 || value<0 || value>PL_BUDGET_MAX_UAH) {
-                fprintf(stderr,"Invalid budget category or amount.\\n"); return 2;
+                fprintf(stderr,"Invalid budget category or amount.\n"); return 2;
             }
             budget_set[index]=1; budget_values[index]=value; budget=1;
         }
