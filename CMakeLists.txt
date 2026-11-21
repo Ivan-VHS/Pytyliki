@@ -30,6 +30,7 @@ target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_library(pytyliki_reaper_frontend STATIC
     vendor/reaper_frontend/src/lexer.c
     vendor/reaper_frontend/src/parser.c
+    vendor/reaper_frontend/src/ast_json.c
     vendor/reaper_frontend/src/token_catalog.c
 )
 target_include_directories(pytyliki_reaper_frontend PUBLIC
