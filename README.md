@@ -104,3 +104,8 @@ The 20 × 3 matrix combines product quality, operational discipline and commerci
 ## Four-project federation
 
 The shared [OCTA-8 project matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) documents the implemented pairings and explicit not-applicable boundaries across Reaper, Pytyliki, OPlague and VentuSample. OPlague remains a read-only device/driver diagnostics product and is not coupled to audio generation.
+
+
+## Improvement and conflict resolution
+
+The [20-control improvement, dissonance, and conflict standard](docs/IMPROVEMENT_CONFLICT_STANDARD.md) turns inconsistencies into evidence-led, testable improvements while preserving Pytyliki's read-only hardware and bounded-workload boundaries. Run `python tools/improvement_conflict.py` to validate the machine-readable register. This validates the governance contract; it is not a source-code scanner and does not claim unassessed controls are resolved.
