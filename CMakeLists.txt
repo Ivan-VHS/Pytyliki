@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/gift_planner.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -33,7 +33,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/gift_planner.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -91,6 +91,10 @@ if(BUILD_TESTING)
   set_tests_properties(metric-registry-list-smoke PROPERTIES PASS_REGULAR_EXPRESSION "vector.dot")
   add_test(NAME metric-registry-search-smoke COMMAND pytyliki-metrics --search variance)
   set_tests_properties(metric-registry-search-smoke PROPERTIES PASS_REGULAR_EXPRESSION "statistics.mean_variance")
+
+  add_executable(pytyliki-gift-planner-tests tests/test_gift_planner.c)
+  target_link_libraries(pytyliki-gift-planner-tests PRIVATE pytyliki_core)
+  add_test(NAME discrete-gift-planner COMMAND pytyliki-gift-planner-tests)
 
   add_executable(pytyliki-memory-tests tests/test_memory.c)
   target_link_libraries(pytyliki-memory-tests PRIVATE pytyliki_core)
@@ -212,7 +216,6 @@ if(BUILD_TESTING)
   set_tests_properties(qcs-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "QCS valid")
 
 endif()
-
 
 if(BUILD_TESTING)
   add_executable(pytyliki-three-medium-tests tests/test_three_medium.c)
