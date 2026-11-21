@@ -263,7 +263,7 @@ static void print_report(int json, const char *project) {
             "  \"schema_version\": 1,\n"
             "  \"concept\": \"Code Mental Health / Codebase Wellbeing v1\",\n"
             "  \"project\": \"selected\",\n"
-            "  \"scan\": {\"read_only\": true, \"truncated\": %s, \"file_limit\": %lu, \"depth_limit\": %d},\n"
+            "  \"scan\": {\"read_only\": true, \"truncated\": %s, \"file_limit\": %lu, \"depth_limit\": %d, \"max_source_bytes_per_file\": %lu, \"max_source_bytes_total\": %lu},\n"
             "  \"inventory\": {"
             "\"total_files\": %lu, \"source_files\": %lu, \"test_files\": %lu, "
             "\"documentation_files\": %lu, \"readme_files\": %lu, \"ci_workflow_files\": %lu, "
