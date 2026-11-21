@@ -1,9 +1,11 @@
 # Pytyliki — 处理器系统工作站
 
+[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
+
 [CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) · [Windows 桌面构建](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) · C11 · Windows/Linux · MIT
 **开发者：** [Ivan-VHS](https://github.com/Ivan-VHS)
 
-Pytyliki 是一个模块化原生工作站，用于处理器信息发现、有界工作负载规划、源代码静态诊断、数值工具和本地 DSP。Windows GUI 与命令行工具共享同一个 C11 核心。
+Pytyliki 是一个模块化原生工作站，用于处理器信息发现、有界工作负载规划、源代码静态诊断、数值工具和本地 DSP。Windows 桌面程序与命令行工具共享同一个 C11 核心。
 
 ## Windows 实际运行截图
 
