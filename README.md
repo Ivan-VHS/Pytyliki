@@ -28,7 +28,7 @@ Pytyliki is a modular native workstation for processor discovery, bounded worklo
 
 ## UI motion and accessibility
 
-The Windows workbench provides **Motion Settings**. **Reduce Motion** disables the startup window transition; **Eco / Low-CPU Visuals** suppresses nonessential effects. **Sync to Transport / BPM** is unavailable because Pytyliki has no project transport or master-BPM source. Preferences are stored per user and respect the Windows client-area animation setting and `UI_REDUCED_MOTION`. See [UI motion contract](docs/UI_MOTION.md).
+The Windows workbench provides **Motion Settings**. **Normal** uses a 140 ms blend; **Expressive** uses a 240 ms native vertical glide. **Reduce Motion** disables the startup transition and **Eco / Low-CPU Visuals** suppresses nonessential effects; both override Expressive. **Sync to Transport / BPM** is unavailable because Pytyliki has no project transport or master-BPM source. Preferences are stored per user and respect the Windows client-area animation setting and `UI_REDUCED_MOTION`. See [UI motion contract](docs/UI_MOTION.md) and [Anatidae motion constitution](docs/ANATIDAE_MOTION_CONSTITUTION.md).
 
 ## Build and test
 

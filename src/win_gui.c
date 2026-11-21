@@ -549,7 +549,11 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
        SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION,0,&animations_enabled,0) &&
        animations_enabled) {
         const UINT intro_ms = g_motion_mode == 1 ? 240u : 140u;
-        if(!AnimateWindow(w,intro_ms,AW_BLEND|AW_ACTIVATE)) ShowWindow(w,show);
+        /* Expressive maps the paddle response to one native glide; no ambient loop. */
+        const DWORD intro_flags = g_motion_mode == 1
+            ? (AW_SLIDE | AW_VER_NEGATIVE | AW_ACTIVATE)
+            : (AW_BLEND | AW_ACTIVATE);
+        if(!AnimateWindow(w,intro_ms,intro_flags)) ShowWindow(w,show);
     } else {
         ShowWindow(w,show);
     }
