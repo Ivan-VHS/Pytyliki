@@ -85,6 +85,10 @@ CPU discovery is read-only. Benchmarks are bounded and hardware-dependent. Sourc
 
 This is the project's design baseline, not a claim that every proposed doctrine item is already implemented.
 
+## Documentation governance
+
+[Documentation control](docs/DOCUMENTATION_CONTROL.md) defines the normative rules for public claims, evidence, privacy and integrations.
+
 ## License
 
 [MIT](LICENSE)
