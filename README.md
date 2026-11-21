@@ -90,3 +90,6 @@ This is the project's design baseline, not a claim that every proposed doctrine 
 [MIT](LICENSE)
 
 UI motion and accessibility: [12 animation principles](docs/DISNEY_MOTION_SYSTEM.md).
+
+
+The shared [four-project federation matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) records the Reaper-side VentuSample manifest audit and clarifies that a direct VentuSample native ABI adapter remains planned.
