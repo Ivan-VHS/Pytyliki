@@ -10,7 +10,10 @@
 #include "syntax_pie.h"
 #include "berry_core.h"
 #include "ironclad_systems.h"
+#include "architecture_atlas.h"
+#include "systems_accel.h"
 #include "trimatrix_autoforge.h"
+#include "embedded.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -21,10 +24,11 @@ static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite] [--e2k-profile]\n"
-         "           [--systems] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
+         "           [--systems] [--systems-lab] [--architectures] [--architecture NAME] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
          "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
          "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
+         "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
@@ -103,6 +107,46 @@ static void print_system_enhancements(void) {
     puts("These are acceptance contracts and roadmap tracks, not claims of completed features.");
 }
 
+static void print_systems_lab(void) {
+    const pl_systems_function_info *items = NULL;
+    size_t count = pl_systems_lab_catalog(&items);
+    puts("33-function blockchain and processor systems lab:");
+    for (size_t i = 0u; i < count; ++i)
+        printf("%02u | %-36s | %-16s | %s\n", items[i].id,
+               items[i].name, pl_systems_mode_name(items[i].mode), items[i].description);
+    puts("Blockchain proofs use supplied cryptographic adapters; VM/CPU effects are local simulations or plans.");
+    puts("No provider limits are bypassed; no physical clock, voltage, PMU, CAT, firmware or microcode registers are written.");
+}
+
+static void print_architecture_atlas(void) {
+    const pl_architecture_profile *items = NULL;
+    size_t count = pl_architecture_atlas_catalog(&items);
+    puts("Architecture systems atlas (14 targets):");
+    for (size_t i = 0u; i < count; ++i) {
+        const pl_architecture_profile *p = &items[i];
+        printf("%02u | %-12s | %-16s | %2u-bit | %-12s | %s\\n",
+               p->id, p->name, p->class_name, p->word_bits,
+               p->endianness, p->execution_model);
+        printf("    Toolchain: %s\\n    Diagnostics: %s\\n",
+               p->toolchain_hint, p->diagnostic_focus);
+    }
+    puts("Reference metadata only; no toolchain is assumed installed and no hardware is modified.");
+}
+static int print_architecture_profile(const char *name) {
+    pl_architecture_profile p;
+    int result = pl_architecture_atlas_find(name, &p);
+    if (result != 0) {
+        fprintf(stderr, "Unknown architecture profile: %s\\n", name ? name : "(null)");
+        return 2;
+    }
+    printf("%s | %s | %s | %u-bit | %s-endian\\n",
+           p.name, p.family, p.class_name, p.word_bits, p.endianness);
+    printf("Execution: %s\\nToolchains: %s\\nDiagnostics: %s\\n",
+           p.execution_model, p.toolchain_hint, p.diagnostic_focus);
+    puts("This is a reference profile, not a live compatibility or toolchain-availability verdict.");
+    return 0;
+}
+
 static void print_syntax_pie(void) {
     const pl_syntax_pie_layer *items = NULL;
     size_t count = pl_syntax_pie_catalog(&items);
@@ -173,7 +217,9 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
+    if (argc > 1 && strcmp(argv[1], "--embedded") == 0)
+        return pl_embedded_cli(argc - 1, argv + 1);
+    int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,systems_lab=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
@@ -183,6 +229,9 @@ int main(int argc,char **argv) {
         if(!strcmp(argv[i],"--profile")) profile=1;
         else if(!strcmp(argv[i],"--e2k-profile")) e2k_profile=1;
         else if(!strcmp(argv[i],"--systems")) systems=1;
+        else if(!strcmp(argv[i],"--systems-lab")) systems_lab=1;
+        else if(!strcmp(argv[i],"--architectures")) architectures=1;
+        else if(!strcmp(argv[i],"--architecture")&&i+1<argc) architecture_name=argv[++i];
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
@@ -225,6 +274,9 @@ int main(int argc,char **argv) {
     if(berry_list) { print_berry_core_catalog(); if(argc==2) return 0; }
     if(berry_name) return dispatch_berry_core(berry_name,berry_core);
     if(systems) print_system_enhancements();
+    if(systems_lab) print_systems_lab();
+    if(architectures) print_architecture_atlas();
+    if(architecture_name) return print_architecture_profile(architecture_name);
     if(improvement_plan) print_improvement_plan();
     if(trimatrix) print_trimatrix(trimatrix_depth);
     if(syntax_pie) print_syntax_pie();
@@ -250,8 +302,8 @@ int main(int argc,char **argv) {
         if(process_in) printf("Processed WAV written: %s\n",process_out);
         pl_audio_free(&a); return 0;
     }
-    if((systems || improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile){profile=1;bench=1;}
+    if((systems || systems_lab || architectures || architecture_name || improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
+    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!systems_lab&&!architectures&&!architecture_name&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile){profile=1;bench=1;}
     pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
     if(pl_cpu_profile(&cpu)!=0)return 1;
     if((profile||capabilities))print_profile();
