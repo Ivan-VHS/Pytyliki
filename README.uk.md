@@ -67,3 +67,8 @@ pytyliki --partition-auto 10000 256
 [Можливості](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [Архітектура](docs/ARCHITECTURE.md) · [Ділення та розбиття](docs/DIVISION_ENGINE.md) · [TRACE](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Індекс документації](docs/README.md)
 
 [English](README.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md) · [Релізи](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
+
+
+## Motion Constitution v2026
+
+Спільний контракт інтерфейсу — [Motion Constitution v2026](docs/MOTION_CONSTITUTION_V2026.md). Він визначає єдину лексику пружинних і швидких кривих, діапазон масштабу 0,4×–2,2×, пріоритет системного Reduce Motion, теми, стенд 2×2/фокус-сцену та правила достовірної SVG/Canvas-телеметрії. Фактичну поведінку Win32 описує [контракт руху інтерфейсу](docs/UI_MOTION.md). Наразі Pytyliki має збережувані налаштування руху та стриманий стартовий перехід; графіки мають використовувати реальні вимірювання процесора. Керування розгоном і запис напруги не підтримуються.
