@@ -101,6 +101,8 @@ UI motion and accessibility: [12 animation principles](docs/DISNEY_MOTION_SYSTEM
 The 20 × 3 matrix combines product quality, operational discipline and commercial governance with traceable repository evidence. Run **python tools/quality_commercial.py** or add **--format json**. Its scores do not imply hardware certification, market validation, revenue or profitability. See [the quality-commercial standard](docs/QUALITY_COMMERCIAL_STANDARD.md).
 
 
+The readiness report also prints a prioritized commercial action plan. Open items stay explicit: license review, support ownership, release delivery, user validation, cost measurement and any future pricing decision. No revenue, profit or market-fit claim is inferred.
+
 ## Four-project federation
 
 The shared [OCTA-8 project matrix](https://github.com/Ivan-VHS/Reaper/blob/main/docs/PROJECT_FEDERATION_MATRIX.md) documents the implemented pairings and explicit not-applicable boundaries across Reaper, Pytyliki, OPlague and VentuSample. OPlague remains a read-only device/driver diagnostics product and is not coupled to audio generation.
