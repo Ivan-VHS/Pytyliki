@@ -182,6 +182,14 @@
       "status": "implemented",
       "opt_in": false,
       "summary": "Participates in the direct OCTA-8 peer mesh through explicit OPlague/Pytyliki native metric requests and responses."
+    },
+    {
+      "project": "ventusample",
+      "interface": "pytyliki.c-abi.v1",
+      "mode": "native-ffi",
+      "status": "planned",
+      "opt_in": true,
+      "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
     }
   ],
   "safety_boundaries": [

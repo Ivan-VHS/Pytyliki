@@ -177,3 +177,12 @@ A change applying AETHER-ANAS to Pytyliki is ready only when:
 7. No performance, accelerator or hardware-control claim exceeds the available evidence.
 
 This profile is a staged engineering plan, not a claim that Pytyliki has become a new language or a distributed execution platform.
+
+
+## 5. Implemented numerical-statistics slice
+
+The bounded compute module now exposes `pl_compute_statistics` as a one-pass, allocation-free descriptive-statistics operation. It uses Welford's online recurrence for the mean and second central moment, returning population variance, sample variance (with an explicit defined flag), standard deviation, minimum and maximum.
+
+The function rejects empty/oversized input through the existing bounded-input contract, rejects non-finite values and unrepresentable results, and commits the output structure only after the entire calculation succeeds. This gives callers a deterministic local-memory implementation without silently accepting NaN, infinity or partially updated result records.
+
+This is an executable numerical primitive. It does not claim GPU, distributed, SIMD or quantum execution.

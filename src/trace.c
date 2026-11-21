@@ -81,3 +81,73 @@ int pl_trace_compare(
     out->uncertainty_envelopes_disjoint = fabs(delta) > combined ? 1 : 0;
     return 1;
 }
+
+int pl_trace_analyze_cadence(
+    const double *intervals,
+    size_t count,
+    double expected_interval,
+    double tolerance_ratio,
+    pl_trace_cadence *out
+) {
+    size_t i;
+    size_t split;
+    double mean = 0.0;
+    double m2 = 0.0;
+    double first_sum = 0.0;
+    double second_sum = 0.0;
+    double first_mean;
+    double second_mean;
+    double standard_deviation;
+    double coefficient_of_variation;
+    double relative_bias;
+    double relative_drift;
+    double penalty;
+    double score;
+
+    if (out == NULL || intervals == NULL ||
+        count < 2u || count > PL_TRACE_MAX_CADENCE_SAMPLES ||
+        !isfinite(expected_interval) || expected_interval < 1e-9 ||
+        expected_interval > 1e12 ||
+        !isfinite(tolerance_ratio) || tolerance_ratio <= 0.0 ||
+        tolerance_ratio > 1.0)
+        return -1;
+
+    split = count / 2u;
+    for (i = 0u; i < count; ++i) {
+        const double value = intervals[i];
+        const double delta = value - mean;
+        double delta_after;
+        if (!isfinite(value) || value < 1e-9 || value > 1e12) return -1;
+        mean += delta / (double)(i + 1u);
+        delta_after = value - mean;
+        m2 += delta * delta_after;
+        if (i < split) first_sum += value;
+        else second_sum += value;
+        if (!isfinite(mean) || !isfinite(m2) ||
+            !isfinite(first_sum) || !isfinite(second_sum))
+            return -1;
+    }
+
+    first_mean = first_sum / (double)split;
+    second_mean = second_sum / (double)(count - split);
+    standard_deviation = sqrt(m2 / (double)(count - 1u));
+    coefficient_of_variation = standard_deviation / mean;
+    relative_bias = (mean - expected_interval) / expected_interval;
+    relative_drift = (second_mean - first_mean) / expected_interval;
+    penalty = coefficient_of_variation + fabs(relative_bias) + 0.5 * fabs(relative_drift);
+    if (!isfinite(standard_deviation) || !isfinite(coefficient_of_variation) ||
+        !isfinite(relative_bias) || !isfinite(relative_drift) || !isfinite(penalty))
+        return -1;
+
+    score = 100.0 * (1.0 - fmin(1.0, penalty / tolerance_ratio));
+    memset(out, 0, sizeof(*out));
+    out->sample_count = count;
+    out->expected_interval = expected_interval;
+    out->mean_interval = mean;
+    out->sample_standard_deviation = standard_deviation;
+    out->coefficient_of_variation = coefficient_of_variation;
+    out->relative_bias = relative_bias;
+    out->relative_drift = relative_drift;
+    out->cadence_score = score;
+    return 0;
+}
