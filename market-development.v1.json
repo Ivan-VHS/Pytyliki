@@ -1,0 +1,181 @@
+{
+  "schema": "anatidae.market-development.v1",
+  "version": 1,
+  "project": {
+    "id": "pytyliki",
+    "name": "Pytyliki",
+    "repository": "Ivan-VHS/Pytyliki"
+  },
+  "product": {
+    "category": "Native processor-systems workstation",
+    "summary": "A modular C11 workstation for read-only processor discovery, bounded measurements, source diagnostics, memory operations and local DSP.",
+    "proof_points": [
+      "Native C11 core with Windows desktop and portable command-line surfaces.",
+      "Read-only discovery and bounded local measurement workflows.",
+      "Source diagnostics, memory utilities and local PCM/DSP operations."
+    ],
+    "non_claims": [
+      "Benchmark results are not hardware certification or universal cross-device rankings.",
+      "The product does not silently change processor, firmware or operating-system settings.",
+      "Market demand, paid conversion and profitability are not established."
+    ]
+  },
+  "audiences": [
+    {
+      "id": "systems-developers",
+      "audience": "Systems developers and performance engineers",
+      "need": "Inspect processor capabilities and compare bounded local measurements without opaque changes.",
+      "value": "A transparent native workstation with traceable measurement context."
+    },
+    {
+      "id": "it-labs",
+      "audience": "IT labs, QA teams and technical educators",
+      "need": "Create repeatable local diagnostics and explain machine-specific results.",
+      "value": "A modular toolset with explicit limits and inspectable output."
+    },
+    {
+      "id": "native-tool-builders",
+      "audience": "C/C++ tool builders and DSP experimenters",
+      "need": "Explore reusable native utilities and local audio-processing operations.",
+      "value": "A C11-oriented implementation with documented interfaces and bounded operations."
+    }
+  ],
+  "positioning": {
+    "statement": "Pytyliki is a read-only processor-systems workstation for transparent discovery, bounded measurement and local diagnostics.",
+    "differentiators": [
+      "Native C11 implementation and portable CLI/Windows desktop surfaces.",
+      "Read-only-by-default product posture.",
+      "Processor inventory, bounded tests, source diagnostics and local DSP in one modular workstation."
+    ]
+  },
+  "brand": {
+    "promise": "Make local processor-system inspection understandable, bounded and reproducible.",
+    "voice": [
+      "precise",
+      "measured",
+      "technical",
+      "transparent"
+    ],
+    "message_pillars": [
+      "Read-only by default",
+      "Measurements with context",
+      "Native modular tooling",
+      "Explicit safety and scope boundaries"
+    ]
+  },
+  "go_to_market": {
+    "stages": [
+      {
+        "name": "Problem discovery",
+        "status": "not_assessed",
+        "success_criteria": "Collect observed workflows from developers, lab operators and educators."
+      },
+      {
+        "name": "Message and documentation",
+        "status": "implemented",
+        "success_criteria": "README and market profile explain workflows, proof points and non-claims."
+      },
+      {
+        "name": "Distribution",
+        "status": "implemented",
+        "success_criteria": "Public source repository and documented build path remain reproducible."
+      },
+      {
+        "name": "User validation",
+        "status": "not_assessed",
+        "success_criteria": "Record dated feedback and repeat-use evidence from target users."
+      },
+      {
+        "name": "Retention and support",
+        "status": "planned",
+        "success_criteria": "Publish support boundaries, issue triage and compatibility maintenance policy."
+      }
+    ]
+  },
+  "channels": [
+    {
+      "name": "GitHub repository and README",
+      "kind": "owned documentation",
+      "status": "implemented",
+      "purpose": "Explain capabilities, build instructions, boundaries and release provenance.",
+      "guardrail": "Keep every claim linked to code, tests or documentation."
+    },
+    {
+      "name": "Versioned release artifacts",
+      "kind": "software distribution",
+      "status": "planned",
+      "purpose": "Provide a stable way to evaluate packaged builds when published.",
+      "guardrail": "Do not imply certification or compatibility beyond tested environments."
+    },
+    {
+      "name": "Technical demonstrations and articles",
+      "kind": "technical media",
+      "status": "planned",
+      "purpose": "Show bounded measurements and diagnostic workflows with reproducible inputs.",
+      "guardrail": "Disclose hardware, OS, versions and test conditions."
+    },
+    {
+      "name": "Developer and hardware communities",
+      "kind": "community",
+      "status": "planned",
+      "purpose": "Collect qualified workflow feedback and answer technical questions.",
+      "guardrail": "No spam, fake endorsements or claims based on anecdote."
+    }
+  ],
+  "commercial_gates": {
+    "market_validation": {
+      "status": "not_assessed",
+      "notes": "No structured target-user research or adoption evidence is asserted."
+    },
+    "pricing": {
+      "status": "not_set",
+      "notes": "No price, paid tier or willingness-to-pay assumption is published."
+    },
+    "unit_economics": {
+      "status": "not_assessed",
+      "notes": "Development, packaging and support costs require measurement."
+    },
+    "licensing": {
+      "status": "manual_review_required",
+      "notes": "Review project license and dependencies before redistribution or commercial packaging."
+    },
+    "support": {
+      "status": "planned",
+      "notes": "Define supported platforms, issue intake and maintenance ownership."
+    },
+    "distribution": {
+      "status": "implemented",
+      "notes": "The public repository and build documentation are available; packaged release availability is release-specific."
+    }
+  },
+  "metrics": [
+    {
+      "name": "First successful diagnostic workflow",
+      "definition": "Share of evaluated users who complete a documented inventory or measurement task.",
+      "status": "not_assessed",
+      "source": "Consent-based feedback or an explicitly documented evaluation study.",
+      "privacy_note": "Do not add hidden in-product tracking."
+    },
+    {
+      "name": "Release retrieval",
+      "definition": "Downloads of published release assets, when present.",
+      "status": "not_assessed",
+      "source": "GitHub release statistics, where available.",
+      "privacy_note": "Downloads are not active use or proof of demand."
+    },
+    {
+      "name": "Support resolution",
+      "definition": "Time from a scoped issue to a verified resolution.",
+      "status": "not_assessed",
+      "source": "Public issue timestamps and release notes.",
+      "privacy_note": "Avoid collecting unnecessary machine-identifying data."
+    }
+  ],
+  "governance": {
+    "claims": "State processor, OS and measurement conditions; do not claim universal accuracy, hardware certification or guaranteed performance gains.",
+    "promotion": "Use reproducible technical demonstrations and precise capability descriptions; separate implemented work from roadmap.",
+    "privacy": "Keep diagnostics local by default; do not introduce undisclosed telemetry or machine fingerprinting.",
+    "rights": "Review dependency licenses, logos and third-party assets before commercial distribution."
+  },
+  "vocabulary_alignment": "docs/MARKET_DEVELOPMENT_STANDARD.md — 20-term Russian vocabulary-to-control crosswalk."
+}
