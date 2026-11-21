@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 #define PYTYLIKI_ABI_VERSION 1u
-enum { PYTYLIKI_ABI_OK = 0, PYTYLIKI_ABI_INVALID_ARGUMENT = -1, PYTYLIKI_ABI_UNSUPPORTED_ABI = -2 };
+enum { PYTYLIKI_ABI_OK = 0, PYTYLIKI_ABI_INVALID_ARGUMENT = -1, PYTYLIKI_ABI_UNSUPPORTED_ABI = -2, PYTYLIKI_ABI_BACKEND_UNAVAILABLE = -3, PYTYLIKI_ABI_REAPER_ERROR = -4, PYTYLIKI_ABI_NOT_FOUND = -5 };
 
 #define PYTYLIKI_EMBEDDED_PROFILE_ID_CAP 40u
 #define PYTYLIKI_EMBEDDED_ARCH_CAP 24u
@@ -61,6 +61,12 @@ PYTYLIKI_FFI_API int32_t pytyliki_v1_dot_f64(const double *, const double *, uin
 PYTYLIKI_FFI_API int32_t pytyliki_v1_norm_f64(const double *, uint64_t, double *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_distance_f64(const double *, const double *, uint64_t, double *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_orthogonal_f64(const double *, const double *, uint64_t, double, int32_t *);
+
+/* Optional Reaper C17 expression bridge. Unavailable unless REAPER_SOURCE_DIR
+ * is explicitly configured at CMake time. No runtime library discovery occurs. */
+PYTYLIKI_FFI_API int32_t pytyliki_v1_reaper_available(int32_t *);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_reaper_eval_i64(const char *, uint64_t, int64_t *, char *, uint64_t);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_reaper_selfhood_lookup(const char *, uint64_t *);
 
 /* Embedded C metadata and host-side FLASH/SRAM budget evaluation.
  * All calls are synchronous and never access physical MCU addresses. */

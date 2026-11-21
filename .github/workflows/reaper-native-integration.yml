@@ -1,0 +1,30 @@
+name: Reaper native C17 integration
+on:
+  pull_request:
+    paths:
+      - "CMakeLists.txt"
+      - "src/interop.c"
+      - "src/interop.h"
+      - "tests/test_interop.c"
+      - ".github/workflows/reaper-native-integration.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reaper-abi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: 8c84fd6c4213dddd174689d36f22bd7717eaccd3
+          path: _deps/Reaper
+      - name: Configure linked C11 + C17 build
+        run: cmake -S . -B build -DREAPER_SOURCE_DIR="$GITHUB_WORKSPACE/_deps/Reaper" -DCMAKE_BUILD_TYPE=Release
+      - name: Build the actual ABI integration test
+        run: cmake --build build --parallel --target pytyliki-interop-tests
+      - name: Test Reaper delegation and Pytyliki fallback contract
+        run: ctest --test-dir build --output-on-failure -R '^interop-abi-tests$'
