@@ -22,15 +22,22 @@ static int parse_i64(const char *text, int64_t *out) {
 }
 
 static int parse_u64(const char *text, uint64_t *out) {
-    char *end = NULL;
-    uintmax_t value;
-    if (text == NULL || text[0] == '\0' || text[0] == '-' || out == NULL)
+    const unsigned char *cursor = (const unsigned char *)text;
+    uint64_t value = 0u;
+    if (cursor == NULL || out == NULL || *cursor == '\0' || *cursor == '-') {
         return -1;
-    errno = 0;
-    value = strtoumax(text, &end, 10);
-    if (end == text || *end != '\0' || errno == ERANGE ||
-        value > UINT64_MAX) return -1;
-    *out = (uint64_t)value;
+    }
+    if (*cursor == '+') ++cursor;
+    if (*cursor == '\0') return -1;
+    for (; *cursor != '\0'; ++cursor) {
+        uint64_t digit;
+        if (*cursor < (unsigned char)'0' || *cursor > (unsigned char)'9')
+            return -1;
+        digit = (uint64_t)(*cursor - (unsigned char)'0');
+        if (value > (UINT64_MAX - digit) / 10u) return -1;
+        value = value * 10u + digit;
+    }
+    *out = value;
     return 0;
 }
 
