@@ -94,6 +94,9 @@ int pl_cpu_profile(pl_cpu_info *out) {
         trim_spaces(brand);
         copy_text(out->model, sizeof(out->model), brand);
     }
+#elif defined(__e2k__)
+    copy_text(out->vendor, sizeof(out->vendor), "MCST");
+    copy_text(out->model, sizeof(out->model), "Elbrus E2K");
 #else
     copy_text(out->vendor, sizeof(out->vendor), "not-available");
 #endif
