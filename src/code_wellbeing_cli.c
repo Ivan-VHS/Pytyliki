@@ -1,3 +1,7 @@
+#ifndef _WIN32
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 /*
  * Read-only Code Mental Health / Codebase Wellbeing inventory.
  * A software-maintenance metaphor only; never a human or clinical assessment.
@@ -262,7 +266,7 @@ static void print_report(int json, const char *project) {
             "  \"reporting_note\": \"No aggregate mental-health or code-quality score is computed.\",\n"
             "  \"privacy_note\": \"No contributor, commit-time, hardware, audio or device telemetry is inspected.\"\n"
             "}\n",
-            project, REPORT.truncated ? "true" : "false", FILE_LIMIT, DEPTH_LIMIT,
+            REPORT.truncated ? "true" : "false", FILE_LIMIT, DEPTH_LIMIT,
             REPORT.total_files, REPORT.source_files, REPORT.test_files, REPORT.documentation_files,
             REPORT.readme_files, REPORT.workflow_files, REPORT.ownership_files, REPORT.dependency_files,
             REPORT.recovery_files, REPORT.incident_records, REPORT.source_scanned, REPORT.large_source_units,
