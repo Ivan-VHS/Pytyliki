@@ -24,6 +24,7 @@ int main(void) {
     assert(pl_gift_count_combinations(5u, 2u, &combinations) == 0 && combinations == 10u);
     assert(pl_gift_count_combinations(5u, 0u, &combinations) == 0 && combinations == 1u);
     assert(pl_gift_count_combinations(4u, 5u, &combinations) == -1);
+    assert(pl_gift_count_combinations(UINT32_MAX, 0u, &combinations) == -1);
 
     const pl_gift_candy_item candy[] = {
         {40u, 10u, 5u}, {25u, 10u, 4u}, {80u, 2u, 5u}
