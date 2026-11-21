@@ -15,6 +15,7 @@ Modular native workstation for processor discovery, bounded workloads, source di
 | Embedded C | MCU profiles, FLASH/SRAM, MMIO model | simulation only |
 | Rules/TRACE | advisory routing and measurement provenance | evidence, not certification |
 | QCS | lexer, parser, AST, diagnostics | syntax-only |
+| Atomic quantum | 133 stable operation IDs and bounded C11 state-vector kernels (H, phase, X/Z, CNOT, SWAP, measurement, noise) | classical simulation only; no quantum hardware access |
 | Interop | versioned C ABI v1 | explicit library selection |
 
 Build: CMake 3.16+, C11 compiler, Git.
@@ -35,6 +36,6 @@ Useful commands: `pytyliki --profile`, `--suite`, `--systems`, `--embedded profi
 
 Division CLI: `--divide A B`, `--partition ITEMS WORKERS GRAIN`, `--partition-auto ITEMS GRAIN`. Partition plans are bounded and advisory; they do not launch threads or set CPU affinity.
 
-[Features](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md) · [Division](docs/DIVISION_ENGINE.md) · [TRACE](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Docs index](docs/README.md)
+[Atomic-Quantum 133](docs/ATOMIC_QUANTUM_133.md) · [Features](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md) · [Division](docs/DIVISION_ENGINE.md) · [TRACE](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [Docs index](docs/README.md)
 
 [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
