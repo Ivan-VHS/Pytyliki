@@ -59,6 +59,23 @@ flowchart LR
 | QCS | lexer, parser, AST и диагностика | только синтаксический анализ |
 | Interop | версионированный C ABI v1 | явный выбор доверенной библиотеки |
 
+## Нативный frontend Reaper
+
+Pytyliki собирает отдельную нативную C11-библиотеку из закреплённых исходников Reaper. Команда `pytyliki-reaper` выполняет токенизацию UTF-8-кода, сериализацию AST одного выражения или его синтаксическую проверку без запуска Python:
+
+```sh
+pytyliki-reaper --version
+pytyliki-reaper --tokens expression.rpr
+pytyliki-reaper --ast-json expression.rpr
+pytyliki-reaper --check-expression expression.rpr
+```
+
+Встроен Reaper [commit `34a5970`](https://github.com/Ivan-VHS/Reaper/commit/34a5970bbdf0a2bc186233aee6631acdeaeb9904), лицензия Apache-2.0 и сведения об источнике сохранены в `vendor/reaper_frontend/`.
+
+**Граница возможностей:** это нативный lexer и Pratt parser одного выражения, а не интерпретатор Reaper. Полные программы `.rpr`, объявления, блоки, разрешение имён и запуск VM пока не поддерживаются. Ядро Pytyliki на C11 и ABI v1 не заменяются.
+
+Подробности: [интеграция Reaper frontend](docs/REAPER_FRONTEND.md).
+
 ## Сборка и тесты
 
 Требуются CMake 3.16+, компилятор C11 и Git.
