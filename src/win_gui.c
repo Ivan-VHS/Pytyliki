@@ -13,6 +13,7 @@
 #include "metric_geometry.h"
 #include "metric_registry.h"
 #include "embedded.h"
+#include "ui_ux_policy.h"
 
 #ifndef WM_DPICHANGED
 #define WM_DPICHANGED 0x02E0
@@ -62,7 +63,22 @@ static HWND g_motion_eco_check = NULL;
 
 static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
 static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
-static COLORREF text_color(void) { return g_dark_mode ? RGB(232,237,242) : RGB(18,44,69); }
+static COLORREF contrast_safe_text(COLORREF proposed, COLORREF background) {
+    if (pl_ui_text_contrast_meets(
+        GetRValue(proposed), GetGValue(proposed), GetBValue(proposed),
+        GetRValue(background), GetGValue(background), GetBValue(background), 0))
+        return proposed;
+    const double black_ratio = pl_ui_contrast_ratio_rgb(
+        0,0,0,GetRValue(background),GetGValue(background),GetBValue(background));
+    const double white_ratio = pl_ui_contrast_ratio_rgb(
+        255,255,255,GetRValue(background),GetGValue(background),GetBValue(background));
+    return black_ratio >= white_ratio ? RGB(0,0,0) : RGB(255,255,255);
+}
+static COLORREF text_color(void) {
+    return contrast_safe_text(
+        g_dark_mode ? RGB(232,237,242) : RGB(18,44,69), page_color()
+    );
+}
 static COLORREF input_color(void) { return g_dark_mode ? RGB(15,42,69) : RGB(255,255,255); }
 static COLORREF log_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(15,42,69); }
 static COLORREF blue_color(void) { return g_dark_mode ? RGB(112,165,255) : RGB(0,78,152); }
@@ -153,18 +169,18 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
         SendMessageA(g_motion_mode_combo, CB_ADDSTRING, 0, (LPARAM)"Reduced Motion");
         SendMessageA(g_motion_mode_combo, CB_SETCURSEL, (WPARAM)g_motion_mode, 0);
         g_motion_eco_check = CreateWindowExA(0, "BUTTON", "Eco / Low-CPU Visuals - suppress nonessential effects",
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 82, 430, 28,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 82, 430, 44,
             dialog, (HMENU)(INT_PTR)ID_MOTION_ECO, GetModuleHandleA(NULL), NULL);
         HWND sync = CreateWindowExA(0, "BUTTON", "Sync to Transport / BPM (unavailable: no audio transport)",
-            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 22, 116, 430, 28,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 132, 430, 44,
             dialog, (HMENU)(INT_PTR)ID_MOTION_SYNC, GetModuleHandleA(NULL), NULL);
         HWND note = CreateWindowExA(0, "STATIC",
             "Normal: balanced motion. Expressive: longer window entrance. Reduced Motion: no spatial transition. BPM sync is unavailable in this workstation.",
-            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 152, 430, 46, dialog, NULL, GetModuleHandleA(NULL), NULL);
+            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 184, 430, 46, dialog, NULL, GetModuleHandleA(NULL), NULL);
         HWND save = CreateWindowExA(0, "BUTTON", "Save", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
-            270, 216, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
+            270, 242, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
         HWND cancel = CreateWindowExA(0, "BUTTON", "Cancel", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-            362, 216, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
+            362, 242, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
         apply_font(mode_label); apply_font(g_motion_mode_combo); apply_font(g_motion_eco_check);
         apply_font(sync); apply_font(note); apply_font(save); apply_font(cancel);
         SendMessageA(g_motion_eco_check, BM_SETCHECK, g_eco_visuals ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -190,6 +206,12 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
             return 0;
         }
         break;
+    case WM_KEYDOWN:
+        if (wparam == VK_ESCAPE) {
+            close_motion_dialog(dialog);
+            return 0;
+        }
+        break;
     case WM_CLOSE:
         close_motion_dialog(dialog);
         return 0;
@@ -210,9 +232,9 @@ static void show_motion_settings(void) {
         return;
     }
     EnableWindow(g_main, FALSE);
-    g_motion_dialog = CreateWindowExA(WS_EX_DLGMODALFRAME, "PytylikiMotionSettings",
+    g_motion_dialog = CreateWindowExA(WS_EX_DLGMODALFRAME | WS_EX_CONTROLPARENT, "PytylikiMotionSettings",
         "UI Motion Settings", WS_CAPTION | WS_SYSMENU | WS_POPUP,
-        CW_USEDEFAULT, CW_USEDEFAULT, 490, 300, g_main, NULL, GetModuleHandleA(NULL), NULL);
+        CW_USEDEFAULT, CW_USEDEFAULT, 490, 320, g_main, NULL, GetModuleHandleA(NULL), NULL);
     if (!g_motion_dialog) {
         EnableWindow(g_main, TRUE);
         SetForegroundWindow(g_main);
