@@ -202,3 +202,15 @@ JSON-вивід можна обгорнути в загальний формат
     python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
 
 Див. docs/REPORT_ENVELOPE.md і schemas/ivan-vhs.report.v1.schema.json. Оболонка фіксує походження й обмеження результату; вона не є криптографічним підписом або підтвердженням сумісності.
+
+## Порівняння прогонів
+
+Збережіть два повторювані звіти на тому самому комп’ютері — до та після зміни:
+
+```sh
+./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
+./build/pytyliki --profile --suite --repeat 10 --json > candidate.json
+python tools/compare_suite_runs.py baseline.json candidate.json --json comparison.json
+```
+
+Інструмент перевіряє ідентичність хоста й навантаження, виключає прогрівальні прогони та використовує медіану й медіанне абсолютне відхилення (MAD) для integer, memory і matrix timings. Невелику різницю позначає як `within_noise`, а не видає за прискорення. Докладніше — у [посібнику з порівняння прогонів](docs/SUITE_COMPARISON.md).

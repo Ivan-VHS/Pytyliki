@@ -202,3 +202,15 @@ CI 日志可在对应的 GitHub Actions Workflow 中查看。README 和测试套
     python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
 
 请参阅 docs/REPORT_ENVELOPE.md 和 schemas/ivan-vhs.report.v1.schema.json。该封装记录结果来源和限制；它不是密码学签名，也不代表兼容性认证。
+
+## 基准测试对比
+
+在同一台计算机上，分别在更改前后保存两份重复测试报告：
+
+```sh
+./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
+./build/pytyliki --profile --suite --repeat 10 --json > candidate.json
+python tools/compare_suite_runs.py baseline.json candidate.json --json comparison.json
+```
+
+对比工具会验证主机和负载配置是否一致，排除预热轮次，并使用 integer、memory 和 matrix 耗时的中位数及中位绝对偏差（MAD）。微小差异将标记为 `within_noise`，不会被误报为性能提升。详情请参阅[基准测试对比指南](docs/SUITE_COMPARISON.md)。

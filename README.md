@@ -202,3 +202,15 @@ JSON outputs can be wrapped in the shared ivan-vhs.report.v1 metadata format wit
     python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
 
 See docs/REPORT_ENVELOPE.md and schemas/ivan-vhs.report.v1.schema.json. The envelope records provenance and project limitations; it is not a security signature or a compatibility verdict.
+
+## Suite comparison
+
+Capture two repeated reports on the same host, before and after a change:
+
+```sh
+./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
+./build/pytyliki --profile --suite --repeat 10 --json > candidate.json
+python tools/compare_suite_runs.py baseline.json candidate.json --json comparison.json
+```
+
+The comparator validates host and workload identity, excludes warm-up runs, and uses medians and median absolute deviation (MAD) for integer, memory and matrix timings. Small differences are marked `within_noise`, not presented as speedups. See the [suite comparison guide](docs/SUITE_COMPARISON.md).

@@ -21,6 +21,7 @@
 | [QCS_NATIVE.md](QCS_NATIVE.md) | syntax-only frontend |
 | [UI_UX_SYSTEM.md](UI_UX_SYSTEM.md) | desktop interaction |
 | [QUALITY_REPEATABILITY_NATIVE.md](QUALITY_REPEATABILITY_NATIVE.md) | reproducibility gates |
+| [SUITE_COMPARISON.md](SUITE_COMPARISON.md) | median/MAD comparison of repeated CPU suite reports |
 
 The root README includes the live Windows desktop capture and current build/test commands. Legacy contract paths remain concise for validators. Machine-readable JSON, source and tests are authoritative for implemented behavior.
 

@@ -202,3 +202,15 @@ JSON-вывод можно обернуть в общий формат мета�
     python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
 
 См. docs/REPORT_ENVELOPE.md и schemas/ivan-vhs.report.v1.schema.json. Оболочка фиксирует происхождение и ограничения результата; она не является криптографической подписью или подтверждением совместимости.
+
+## Сравнение прогонов
+
+Сохраните два повторяемых отчёта на одном и том же компьютере — до и после изменения:
+
+```sh
+./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
+./build/pytyliki --profile --suite --repeat 10 --json > candidate.json
+python tools/compare_suite_runs.py baseline.json candidate.json --json comparison.json
+```
+
+Сравниватель проверяет идентичность хоста и нагрузки, исключает прогревочные прогоны и использует медиану и медианное абсолютное отклонение (MAD) для integer, memory и matrix timings. Небольшая разница помечается как `within_noise`, а не выдаётся за ускорение. Подробности — в [руководстве по сравнению прогонов](docs/SUITE_COMPARISON.md).
