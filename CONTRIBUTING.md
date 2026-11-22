@@ -24,3 +24,6 @@ For memory-safety-sensitive changes, also use the repository sanitizer configura
 ## Pull request expectations
 
 Explain the user-visible result, compatibility impact, resource bounds and evidence for performance claims. Include CLI output or a screenshot when useful. Do not describe a roadmap item as implemented until code and tests are present. Maintainers decide issue closure after review.
+## Shared report format
+
+To wrap an existing JSON result in the common report metadata contract, run python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json. Keep the tool-specific payload unchanged and preserve the limitation statements. Tests for this helper are in tests/test_report_envelope.py.
