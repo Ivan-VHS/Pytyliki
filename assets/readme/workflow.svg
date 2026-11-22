@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="280" viewBox="0 0 1440 280" role="img" aria-labelledby="title desc">
+<title id="title">Pytyliki — verified workflow</title>
+<desc id="desc">Vector diagram of the implemented Pytyliki workflow. It is an architecture illustration, not a screenshot.</desc>
+<defs><linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#55C4D5"/><stop offset=".5" stop-color="#F07D78"/><stop offset="1" stop-color="#8C9DF2"/></linearGradient>
+<style>
+ .label{font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:2px;fill:#49627C}
+ .title{font:700 23px Inter,Segoe UI,Arial,sans-serif;letter-spacing:-.4px;fill:#142B49}
+ .num{font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px;fill:#6B8299}
+ .nodeTitle{font:700 14px Inter,Segoe UI,Arial,sans-serif;letter-spacing:.5px;fill:#142B49}
+ .nodeBody{font:400 11px Inter,Segoe UI,Arial,sans-serif;fill:#546C85}
+ .foot{font:500 10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px;fill:#60758D}
+</style></defs>
+<rect width="1440" height="280" rx="22" fill="#F4F7FB"/>
+<path d="M22 17H1418" stroke="url(#line)" stroke-width="3" opacity=".9"/>
+<text x="28" y="43" class="label">IMPLEMENTED DATA FLOW</text>
+<text x="1412" y="43" class="label" text-anchor="end">PYTYLIKI / SYSTEM MAP</text>
+<path d="M279 147H308" stroke="#7890A9" stroke-width="2" stroke-linecap="round"/><path d="M302 141L308 147L302 153" fill="none" stroke="#7890A9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M564 147H593" stroke="#7890A9" stroke-width="2" stroke-linecap="round"/><path d="M587 141L593 147L587 153" fill="none" stroke="#7890A9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M849 147H878" stroke="#7890A9" stroke-width="2" stroke-linecap="round"/><path d="M872 141L878 147L872 153" fill="none" stroke="#7890A9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1134 147H1163" stroke="#7890A9" stroke-width="2" stroke-linecap="round"/><path d="M1157 141L1163 147L1157 153" fill="none" stroke="#7890A9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(28 76)">
+  <rect width="246" height="142" rx="16" fill="#FFFFFF" stroke="#D8E3EE" stroke-width="1.2"/>
+  <rect x="0" y="0" width="246" height="5" rx="2.5" fill="#55C4D5"/>
+  <text x="18" y="31" class="num">01</text>
+  <text x="18" y="61" class="nodeTitle">LOCAL INPUT</text>
+  <text x="18" y="89" class="nodeBody">Host data • source</text>
+  <text x="18" y="109" class="nodeBody">PCM16 WAV • files</text>
+  <circle cx="224" cy="122" r="4" fill="#55C4D5"/>
+  </g><g transform="translate(313 76)">
+  <rect width="246" height="142" rx="16" fill="#FFFFFF" stroke="#D8E3EE" stroke-width="1.2"/>
+  <rect x="0" y="0" width="246" height="5" rx="2.5" fill="#F07D78"/>
+  <text x="18" y="31" class="num">02</text>
+  <text x="18" y="61" class="nodeTitle">C11 CORE</text>
+  <text x="18" y="89" class="nodeBody">Validate • bound</text>
+  <text x="18" y="109" class="nodeBody">safe local processing</text>
+  <circle cx="224" cy="122" r="4" fill="#F07D78"/>
+  </g><g transform="translate(598 76)">
+  <rect width="246" height="142" rx="16" fill="#FFFFFF" stroke="#D8E3EE" stroke-width="1.2"/>
+  <rect x="0" y="0" width="246" height="5" rx="2.5" fill="#8C9DF2"/>
+  <text x="18" y="31" class="num">03</text>
+  <text x="18" y="61" class="nodeTitle">INSPECT</text>
+  <text x="18" y="89" class="nodeBody">CPU • code • audio</text>
+  <text x="18" y="109" class="nodeBody">measure • parse • filter</text>
+  <circle cx="224" cy="122" r="4" fill="#8C9DF2"/>
+  </g><g transform="translate(883 76)">
+  <rect width="246" height="142" rx="16" fill="#FFFFFF" stroke="#D8E3EE" stroke-width="1.2"/>
+  <rect x="0" y="0" width="246" height="5" rx="2.5" fill="#55C4D5"/>
+  <text x="18" y="31" class="num">04</text>
+  <text x="18" y="61" class="nodeTitle">EVIDENCE</text>
+  <text x="18" y="89" class="nodeBody">Diagnostics • metrics</text>
+  <text x="18" y="109" class="nodeBody">advisory results</text>
+  <circle cx="224" cy="122" r="4" fill="#55C4D5"/>
+  </g><g transform="translate(1168 76)">
+  <rect width="246" height="142" rx="16" fill="#FFFFFF" stroke="#D8E3EE" stroke-width="1.2"/>
+  <rect x="0" y="0" width="246" height="5" rx="2.5" fill="#F07D78"/>
+  <text x="18" y="31" class="num">05</text>
+  <text x="18" y="61" class="nodeTitle">LOCAL OUTPUT</text>
+  <text x="18" y="89" class="nodeBody">Reports • WAV</text>
+  <text x="18" y="109" class="nodeBody">operator-controlled files</text>
+  <circle cx="224" cy="122" r="4" fill="#F07D78"/>
+  </g>
+<text x="28" y="251" class="foot">LOCAL / READ-ONLY / ADVISORY — NO FIRMWARE FLASHING OR OS SCHEDULING CHANGES</text>
+</svg>
