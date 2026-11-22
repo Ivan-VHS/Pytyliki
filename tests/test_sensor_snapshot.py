@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import unittest
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tools.sensor_snapshot import collect_snapshot
 
