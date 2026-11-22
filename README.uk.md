@@ -32,9 +32,9 @@ flowchart TD
     G --> H[Структурований звіт]
     I[PCM16 WAV] --> J[Локальна DSP-обробка]
     J --> K[Оброблений звук і вимірювання]
-  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  classDef readmeNode fill:#EDF5FF,stroke:#0B55B7,color:#173456,stroke-width:1.5px;
   class A,B,C,D,E,F,G,H,I,J,K readmeNode;
-  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
+  linkStyle default stroke:#0B55B7,stroke-width:1.8px;
 ```
 
 ## Шляхи виконання та результатів
@@ -49,9 +49,9 @@ flowchart LR
     E[Профіль CPU / MCU] --> F[Еталонні оцінки]
     G[Вихідний код QCS] --> H[Lexer і parser]
     H --> I[AST і діагностика]
-  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  classDef readmeNode fill:#EDF5FF,stroke:#0B55B7,color:#173456,stroke-width:1.5px;
   class A,B,C,D,E,F,G,H,I readmeNode;
-  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
+  linkStyle default stroke:#0B55B7,stroke-width:1.8px;
 ```
 
 <sub>Фактичний знімок програми · вихідне зображення 1920×1080 · початкові пікселі збережено, штучне збільшення не застосовується.</sub>
