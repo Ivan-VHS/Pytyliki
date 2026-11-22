@@ -52,6 +52,29 @@ int main(void) {
     CHECK(offset == 2u && count == 0u);
     CHECK(pl_partition_plan_create(1u, 0u, &plan) != 0);
     CHECK(pl_partition_plan_create(1u, PL_DIVISION_MAX_PARTITIONS + 1u, &plan) != 0);
+    CHECK(pl_partition_plan_create(10u, 3u, &plan) == 0);
+    {
+        pl_partition_stats stats;
+        CHECK(pl_partition_plan_analyze(&plan, 4u, 0.25, &stats) == 0);
+        CHECK(stats.minimum_count == 3u && stats.maximum_count == 4u);
+        CHECK(stats.unaligned_partitions == 1u);
+        CHECK(stats.load_imbalance_ratio > 1.19 &&
+              stats.load_imbalance_ratio < 1.21);
+        CHECK(stats.tail_fraction > 0.099 && stats.tail_fraction < 0.101);
+        CHECK(stats.amdahl_speedup_bound > 1.99 &&
+              stats.amdahl_speedup_bound < 2.01);
+        CHECK(pl_partition_plan_analyze(&plan, 0u, 0.25, &stats) != 0);
+        CHECK(pl_partition_plan_analyze(&plan, 4u, 1.1, &stats) != 0);
+    }
+    CHECK(pl_partition_plan_create(0u, 2u, &plan) == 0);
+    {
+        pl_partition_stats stats;
+        CHECK(pl_partition_plan_analyze(&plan, 64u, 0.0, &stats) == 0);
+        CHECK(stats.minimum_count == 0u && stats.maximum_count == 0u);
+        CHECK(stats.load_imbalance_ratio == 0.0);
+        CHECK(stats.tail_fraction == 0.0);
+        CHECK(stats.amdahl_speedup_bound == 0.0);
+    }
 
     CHECK(pl_division_recommend_workers(10000u, 16u, 256u, &workers) == 0);
     CHECK(workers == 16u);
