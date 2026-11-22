@@ -146,6 +146,16 @@ static void print_suite_json(FILE *out, const pl_suite_result *runs,
         matrix_sum / measured, median_of(matrix_ms + warmup_count, measured));
 }
 
+static FILE *open_report_file(const char *path) {
+#if defined(_MSC_VER)
+    FILE *file = NULL;
+    if (fopen_s(&file, path, "wb") != 0) return NULL;
+    return file;
+#else
+    return fopen(path, "wb");
+#endif
+}
+
 static void print_wav_info_json(FILE *out, const pl_audio_buffer *audio,
                                 const pl_audio_stats *stats) {
     const double rms_dbfs = stats->rms > 0.0 ? 20.0 * log10(stats->rms) : -INFINITY;
@@ -510,7 +520,7 @@ int main(int argc,char **argv) {
             }
             FILE *report_out = stdout;
             if (json != NULL) {
-                report_out = fopen(json, "wb");
+                report_out = open_report_file(json);
                 if (report_out == NULL) {
                     fprintf(stderr, "Could not open JSON report: %s\n", json);
                     pl_audio_free(&audio);
