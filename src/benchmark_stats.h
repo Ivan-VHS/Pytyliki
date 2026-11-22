@@ -21,7 +21,8 @@ typedef struct {
 
 /*
  * Analyze finite, non-negative timing samples without modifying the input.
- * Percentiles use the nearest-rank definition. The function is bounded to
+ * Percentiles use nearest-rank ceil(p*N); MAD is the median of absolute
+ * deviations from the sample median. The function is bounded to
  * PL_BENCHMARK_MAX_SAMPLES and returns -1 for invalid input or allocation
  * failure. No benchmark workload is started by this routine.
  */
