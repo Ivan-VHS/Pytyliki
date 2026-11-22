@@ -241,3 +241,14 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-runtime-transaction-tests PRIVATE pytyliki_core)
   add_test(NAME runtime-transaction-contract-tests COMMAND pytyliki-runtime-transaction-tests)
 endif()
+
+
+if(BUILD_TESTING)
+  find_package(Python3 QUIET COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    add_test(
+      NAME sysmon-pulse-tests
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_sysmon_pulse.py
+    )
+  endif()
+endif()
