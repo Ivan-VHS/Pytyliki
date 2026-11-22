@@ -93,18 +93,7 @@ pytyliki --process-wav input.wav output.wav --lowpass 12000
 
 Полный список параметров выводит `pytyliki --help`. Команды работают локально; стандартного HTTP-порта или URL localhost нет.
 
-### Сравнение повторных бенчмарков
-
-Сохраните два отчёта suite на одной машине и с одинаковыми условиями:
-
-```sh
-pytyliki --suite --repeat 5 --json > baseline.json
-# После изменения сборки:
-pytyliki --suite --repeat 5 --json > candidate.json
-python scripts/compare_benchmarks.py baseline.json candidate.json --threshold 5
-```
-
-Сравнение использует медианы измеренных прогонов, игнорирует warmup и помечает изменения выше заданного порога. Отчёты не нормализуются между разными процессорами или профилями питания.
+Для сравнения повторных бенчмарков сохраните отчёты `pytyliki --suite --repeat 5 --json` в `baseline.json` и `candidate.json`, затем запустите `python scripts/compare_benchmarks.py baseline.json candidate.json --threshold 5`. Сравнение использует медианы измеренных прогонов, игнорирует warmup и не нормализует результаты между разными процессорами или профилями питания.
 
 ### Необязательная сборка с sanitizer
 
