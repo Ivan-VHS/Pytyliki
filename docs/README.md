@@ -2,7 +2,7 @@
 
 | File | Scope |
 |---|---|
-| [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
+| [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |\n| [REAPER_LANGUAGE_INTEGRATION.md](REAPER_LANGUAGE_INTEGRATION.md) | Reaper 0.2 orchestration, C ABI v1 and metadata-only plugin discovery |
 | [ENGINEERING.md](ENGINEERING.md) | quality and safety gates |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | runtime and data flow |
 | [DIVISION_ENGINE.md](DIVISION_ENGINE.md) | checked division, balanced partitioning and weighted allocation |
