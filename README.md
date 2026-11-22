@@ -176,7 +176,7 @@ CI logs are available in the linked GitHub Actions workflows. The README and tes
 
 ## Known limitations, contribution and license
 
-Known boundaries are listed above rather than hidden behind a "production-ready" claim: the GUI is Windows-only, source inspection is static, embedded values are advisory, DSP is local/offline and quantum routines are classical simulations. No separate `CONTRIBUTING.md` was found in the repository. For a change, open a GitHub Issue or Pull Request with the platform, exact command, expected result and actual output; run the build and CTest suite before proposing the change.
+Known boundaries are listed above rather than hidden behind a "production-ready" claim: the GUI is Windows-only, source inspection is static, embedded values are advisory, DSP is local/offline and quantum routines are classical simulations. See [CONTRIBUTING.md](CONTRIBUTING.md) for the repository's contribution workflow and validation requirements. For a change, open a GitHub Issue or Pull Request with the platform, exact command, expected result and actual output; run the build and CTest suite before proposing the change.
 
 Support and defect reports: [GitHub Issues](https://github.com/Ivan-VHS/Pytyliki/issues). License: [MIT](LICENSE).
 
