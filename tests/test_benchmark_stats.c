@@ -26,7 +26,7 @@ int main(void) {
     assert(first.sample_standard_deviation > 0.0);
 
     assert(pl_benchmark_stats_analyze(reordered, 5u, &second) == 0);
-    assert(first.mean == second.mean);
+    assert(fabs(first.mean - second.mean) < 1e-12);
     assert(first.median == second.median);
     assert(first.p95 == second.p95);
 
