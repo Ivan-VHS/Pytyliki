@@ -16,6 +16,8 @@ This file assigns the Pytyliki portion of the supplied 1,000-item catalogue to a
 
 - **Benchmark Statistics** — src/benchmark_stats.c/.h, pytyliki-benchstats, and CTest. The function analyzes caller-supplied timing samples using nearest-rank p90/p95/p99, sample deviation, coefficient of variation and MAD.
 - The existing CPU inventory, bounded suite, TRACE provenance and source-analysis modules remain the shared base. The new statistics tool does not run workloads or claim universal benchmark scores.
+- **Profile Import** — `tools/profile_import.py` reads collapsed stacks and Speedscope sampled profiles, aggregates frame weights, and exports folded stacks or an escaped SVG flamegraph. It is bounded and never launches a profiler.
+- **Sensor Snapshot** — `tools/sensor_snapshot.py` reads available Linux sysfs/procfs CPU-frequency, governor, thermal and energy counters with source paths and quality labels. Missing sensors remain missing; unsupported platforms are reported explicitly.
 
 ## Adoption rules
 
