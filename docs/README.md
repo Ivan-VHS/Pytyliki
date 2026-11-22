@@ -14,7 +14,6 @@
 | [QUALITY_COHESION_CADENCE.md](QUALITY_COHESION_CADENCE.md) | measurement cadence |
 | [TRACE_MEASUREMENT_PROVENANCE.md](TRACE_MEASUREMENT_PROVENANCE.md) | measurement context and evidence provenance |
 | [MEMORY_ARENA.md](MEMORY_ARENA.md) | bounded allocation |
-| [PROCESSOR_NATIVE_DSP.md](PROCESSOR_NATIVE_DSP.md) | local audio processing and WAV boundaries |
 | [PROCESSOR_TAXONOMY.md](PROCESSOR_TAXONOMY.md) | processor profiles |
 | [EMBEDDED_C.md](EMBEDDED_C.md) | MCU reference tools |
 | [HARDWARE_RULE_ENGINE.md](HARDWARE_RULE_ENGINE.md) | advisory rules |
