@@ -421,7 +421,23 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
+        SelectObject(dc,old);
+        {
+            const int blue_end = r.right * 34 / 100;
+            const int white_end = r.right * 66 / 100;
+            RECT blue_band = {0,82,blue_end,87};
+            RECT white_band = {blue_end,82,white_end,87};
+            RECT red_band = {white_end,82,r.right,87};
+            HBRUSH blue_brush = CreateSolidBrush(blue_color());
+            HBRUSH white_brush = CreateSolidBrush(RGB(255,255,255));
+            HBRUSH red_brush = CreateSolidBrush(red_color());
+            FillRect(dc,&blue_band,blue_brush);
+            FillRect(dc,&white_band,white_brush);
+            FillRect(dc,&red_band,red_brush);
+            DeleteObject(blue_brush);
+            DeleteObject(white_brush);
+            DeleteObject(red_brush);
+        }
         EndPaint(w,&ps); return 0;
     }
     case WM_COMMAND:
