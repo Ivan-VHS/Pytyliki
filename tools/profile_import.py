@@ -141,13 +141,12 @@ def parse_speedscope(value: Any) -> dict[str, Any]:
         for sample_index, (sample, raw_weight) in enumerate(zip(samples, weights)):
             if not isinstance(sample, list) or not sample or len(sample) > MAX_DEPTH:
                 raise ProfileError(f"profile {profile_index}, sample {sample_index}: invalid stack")
-            try:
-                names = tuple(frames[index] for index in sample
-                              if isinstance(index, int) and not isinstance(index, bool))
-            except (IndexError, TypeError) as error:
-                raise ProfileError("sample references an unknown frame") from error
-            if len(names) != len(sample):
-                raise ProfileError("sample frame indexes must be valid integers")
+            if any(
+                isinstance(index, bool) or not isinstance(index, int) or index < 0 or index >= len(frames)
+                for index in sample
+            ):
+                raise ProfileError("sample frame indexes must reference an existing frame")
+            names = tuple(frames[index] for index in sample)
             weight = _weight(raw_weight, f"profile {profile_index} weight")
             stacks[names] += weight
     return _aggregate(stacks, "speedscope-sampled")
@@ -171,6 +170,8 @@ def load_profile(path: str | Path) -> dict[str, Any]:
         value = json.loads(raw.decode("utf-8-sig"))
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ProfileError(f"profile is not valid UTF-8 JSON: {error}") from error
+    if not isinstance(value, dict):
+        raise ProfileError("profile JSON root must be an object")
     if value.get("$schema") or "profiles" in value:
         return parse_speedscope(value)
     raise ProfileError("unsupported profile format")
