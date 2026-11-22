@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tools.profile_import import ProfileError, parse_collapsed, parse_speedscope, render_folded, render_svg
 
