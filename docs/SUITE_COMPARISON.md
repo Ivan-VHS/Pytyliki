@@ -10,7 +10,7 @@ Build and test Pytyliki as described in the root README. On the same host, captu
 ./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
 ```
 
-Zfter the change, repeat the exact command and save the second report:
+After the change, repeat the exact command and save the second report:
 
 ```sh
 ./build/pytyliki --profile --suite --repeat 10 --json > candidate.json

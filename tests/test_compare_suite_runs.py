@@ -13,7 +13,7 @@ SPEC.loader.exec_module(module)
 
 def make_report(values, *, profile=None, workload=None, warmup=None, integrity=True):
     profile = profile or {
-        "architecture": "x86_64", "cpu": "Example CPU ", "vendor": "Example Vendor",
+        "architecture": "x86_64", "cpu": $", "vendor": "Example Vendor",
         "logical_processors": 8,
     }
     workload = workload or {"iterations": 12000000, "memory_mib": 8, "passes": 4}
@@ -56,7 +56,7 @@ class SuiteComparisonTests(unittest.TestCase):
         result = module.compare_reports(make_report([1, 2]), make_report([1, 2], workload=other))
         self.assertFalse(result["comparable"])
 
-    def test_rejects_failed_integrity_check(selfu):
+    def test_rejects_failed_integrity_check(self):
         with self.assertRaises(ValueError):
             module.compare_reports(make_report([1, 2]), make_report([1, 2], integrity=False))
 
