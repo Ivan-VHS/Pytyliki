@@ -33,9 +33,9 @@ flowchart TD
     G --> H[Structured report]
     I[PCM16 WAV] --> J[Local DSP]
     J --> K[Processed audio and measurements]
-  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  classDef readmeNode fill:#EDF5FF,stroke:#0B55B7,color:#173456,stroke-width:1.5px;
   class A,B,C,D,E,F,G,H,I,J,K readmeNode;
-  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
+  linkStyle default stroke:#0B55B7,stroke-width:1.8px;
 ```
 
 ## Runtime and output paths
@@ -50,9 +50,9 @@ flowchart LR
     E[CPU / MCU profile] --> F[Reference estimates]
     G[QCS source] --> H[Lexer and parser]
     H --> I[AST and diagnostics]
-  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  classDef readmeNode fill:#EDF5FF,stroke:#0B55B7,color:#173456,stroke-width:1.5px;
   class A,B,C,D,E,F,G,H,I readmeNode;
-  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
+  linkStyle default stroke:#0B55B7,stroke-width:1.8px;
 ```
 
 <sub>Actual application capture · 1920×1080 source image · original pixels retained; no artificial upscaling.</sub>
