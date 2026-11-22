@@ -222,7 +222,7 @@ def render_svg(report: dict[str, Any], *, width: int = 1200) -> str:
         children = sorted(node["children"].values(), key=lambda item: (-item["weight"], item["name"].casefold()))
         cursor = x
         for child in children:
-            child_width = available * child["weight"] / root["weight"] if root["weight"] else 0
+            child_width = available * child["weight"] / node["weight"] if node["weight"] else 0
             if child_width < 0.6:
                 continue
             digest = hashlib.sha256(child["name"].encode("utf-8")).digest()
