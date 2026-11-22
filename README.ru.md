@@ -32,9 +32,9 @@ flowchart TD
     G --> H[Структурированный отчёт]
     I[PCM16 WAV] --> J[Локальная DSP-обработка]
     J --> K[Обработанный звук и измерения]
-  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  classDef readmeNode fill:#EDF5FF,stroke:#0B55B7,color:#173456,stroke-width:1.5px;
   class A,B,C,D,E,F,G,H,I,J,K readmeNode;
-  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
+  linkStyle default stroke:#0B55B7,stroke-width:1.8px;
 ```
 
 ## Пути выполнения и результатов
@@ -49,9 +49,9 @@ flowchart LR
     E[Профиль CPU / MCU] --> F[Эталонные оценки]
     G[Исходный код QCS] --> H[Лексер и парсер]
     H --> I[AST и диагностика]
-  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  classDef readmeNode fill:#EDF5FF,stroke:#0B55B7,color:#173456,stroke-width:1.5px;
   class A,B,C,D,E,F,G,H,I readmeNode;
-  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
+  linkStyle default stroke:#0B55B7,stroke-width:1.8px;
 ```
 
 <sub>Фактический снимок приложения · исходное изображение 1920×1080 · исходные пиксели сохранены, искусственное увеличение не применяется.</sub>
