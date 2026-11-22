@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c)
+add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -49,6 +49,8 @@ add_executable(pytyliki-apsia src/apsia_cli.c)
 target_link_libraries(pytyliki-apsia PRIVATE pytyliki_core)
 add_executable(pytyliki-metrics src/metric_cli.c)
 target_link_libraries(pytyliki-metrics PRIVATE pytyliki_core)
+add_executable(pytyliki-benchstats src/benchstats_cli.c)
+target_link_libraries(pytyliki-benchstats PRIVATE pytyliki_core)
 add_executable(pytyliki-qcs src/qcs_cli.c)
 target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 
@@ -124,6 +126,12 @@ if(BUILD_TESTING)
   set_tests_properties(partition-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "recommended-workers=3")
 
 
+
+  add_executable(pytyliki-benchmark-stats-tests tests/test_benchmark_stats.c)
+  target_link_libraries(pytyliki-benchmark-stats-tests PRIVATE pytyliki_core)
+  add_test(NAME benchmark-statistics-tests COMMAND pytyliki-benchmark-stats-tests)
+  add_test(NAME benchmark-statistics-cli-smoke COMMAND pytyliki-benchstats 1,2,3,4,5,100)
+  set_tests_properties(benchmark-statistics-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.benchmark-statistics.v1")
 
   add_executable(pytyliki-tests tests/test_core.c)
   target_link_libraries(pytyliki-tests PRIVATE pytyliki_core)
