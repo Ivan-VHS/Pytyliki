@@ -90,6 +90,10 @@ More local examples:
 pytyliki --systems
 pytyliki --embedded profiles
 pytyliki --divide -17 5
+
+python tools/profile_import.py cpu.collapsed --format svg --output cpu-flamegraph.svg
+python tools/profile_import.py capture.speedscope.json --format folded --output cpu.folded
+python tools/sensor_snapshot.py --output host-sensors.json
 ```
 
 The exact supported switches are also printed by `pytyliki --help`. These commands run locally; there is no default HTTP port or localhost URL.
