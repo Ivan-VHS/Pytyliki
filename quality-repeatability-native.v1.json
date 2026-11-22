@@ -6,8 +6,8 @@
     "runtime": "C11",
     "native_surfaces": [
       "C11 processor core",
-      "native DSP pipeline",
-      "embedded and platform boundaries"
+      "embedded and platform boundaries",
+      "processor benchmark and diagnostics"
     ]
   },
   "pillars": {
@@ -125,17 +125,16 @@
           }
         },
         {
-          "id": "native-dsp",
+          "id": "processor-suite",
           "status": "implemented",
-          "requirement": "DSP operations remain in the native processing path with explicit interfaces.",
-          "verification": "DSP engine tests guard the native processing boundary.",
+          "requirement": "Processor discovery and bounded benchmark workloads remain in the native C11 path.",
+          "verification": "Core regression tests cover processor discovery, bounded benchmark execution and the repeated suite.",
           "evidence": {
             "implementation": [
-              "src/dsp.c",
-              "src/dsp_engine.c"
+              "src/processor.c"
             ],
             "verification": [
-              "tests/test_dsp_engine.c"
+              "tests/test_core.c"
             ]
           }
         },
