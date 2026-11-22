@@ -1,0 +1,50 @@
+name: Reaper language / Pytyliki ABI
+
+on:
+  pull_request:
+    paths:
+      - "automation/reaper/**"
+      - "docs/REAPER_LANGUAGE_INTEGRATION.md"
+      - "src/interop.*"
+      - "CMakeLists.txt"
+      - ".github/workflows/reaper-language.yml"
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "automation/reaper/**"
+      - "src/interop.*"
+      - "CMakeLists.txt"
+      - ".github/workflows/reaper-language.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reaper-pytyliki:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: feat/clife-catalytic-resynthesis-2026-11
+          path: _deps/Reaper
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build the actual Pytyliki ABI v1 shared library
+        run: |
+          cmake -S . -B build -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel --target pytyliki_ffi
+      - name: Check Reaper source
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/processor_metrics.rpr
+      - name: Execute Reaper program against the native Pytyliki ABI
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --engine vm --allow-native-ffi automation/reaper/processor_metrics.rpr
+      - name: Verify the versioned Reaper report
+        run: |
+          python -c "import json,pathlib; p=json.loads(pathlib.Path('build/reaper-metrics-report.json').read_text()); assert p['schema']=='pytyliki.reaper-metrics.v1'; assert p['vector_norm']==5.0; assert p['dot_product']==11.0; assert p['euclidean_distance']==5.0; assert p['orthogonal'] is True"
