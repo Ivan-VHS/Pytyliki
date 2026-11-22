@@ -23,13 +23,22 @@ assert(product == 11, "Pytyliki ABI dot product mismatch")
 assert(distance == 5, "Pytyliki ABI distance mismatch")
 assert(orthogonal == true, "Pytyliki ABI orthogonality mismatch")
 
+let plugins = pytyliki_plugin_catalog(library)
+let primary_plugin = pytyliki_plugin_info("operandu", library)
+assert(size(plugins) == 18, "Pytyliki native plugin catalogue count mismatch")
+assert(primary_plugin.id == "operandu", "Pytyliki plugin lookup mismatch")
+assert(primary_plugin.service == "inspect_value", "Pytyliki plugin service metadata mismatch")
+
 let report = {
     "schema": "pytyliki.reaper-metrics.v1",
     "backend": "pytyliki-c-abi-v1",
     "vector_norm": magnitude,
     "dot_product": product,
     "euclidean_distance": distance,
-    "orthogonal": orthogonal
+    "orthogonal": orthogonal,
+    "plugin_count": size(plugins),
+    "primary_plugin": primary_plugin.id,
+    "primary_plugin_service": primary_plugin.service
 }
 
 write_json("build/reaper-metrics-report.json", report)
