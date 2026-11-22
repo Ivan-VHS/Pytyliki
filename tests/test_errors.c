@@ -16,8 +16,12 @@ int main(void) {
     assert(entry != NULL);
     assert(strcmp(entry->severity, "error") == 0);
     assert(strstr(entry->remedy, "0.49") != NULL);
+#if defined(_MSC_VER)
+    assert(tmpfile_s(&stream) == 0);
+#else
     stream = tmpfile();
     assert(stream != NULL);
+#endif
     pl_error_print(stream, entry);
     rewind(stream);
     bytes = fread(output, 1u, sizeof(output) - 1u, stream);
