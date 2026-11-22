@@ -125,6 +125,8 @@ if(BUILD_TESTING)
   set_tests_properties(division-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "quotient=-4")
   add_test(NAME partition-cli-smoke COMMAND pytyliki --partition 10 3)
   set_tests_properties(partition-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "recommended-workers=3")
+  add_test(NAME partition-stats-cli-smoke COMMAND pytyliki --partition 10 3 1 --partition-stats --alignment 4 --serial-fraction 0.25)
+  set_tests_properties(partition-stats-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "amdahl-speedup-bound=2.000000")
 
 
   add_executable(pytyliki-error-registry-tests tests/test_errors.c)
