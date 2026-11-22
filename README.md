@@ -107,6 +107,12 @@ An illustrative 500 UAH budget model with a versioned JSON contract and an offli
 
 [Multilingual guide](docs/RESOURCE_ALLOCATION_500_UAH.md) · [Interactive simulator](docs/resource-allocation-500-uah.html) · [JSON example](examples/resource-allocation-500-uah.json) · [JSON Schema](schemas/resource-allocation.v1.schema.json)
 
+## Reaper 0.2 automation language
+
+ Pytyliki can be orchestrated offline with Reaper 0.2 `.rpr` scripts. The integration example uses the explicit Pytyliki C ABI v1 path to run bounded vector metrics, inspect the native 18-plugin catalogue and emit a versioned JSON report. Native C11 DSP and processor code remains authoritative; the Reaper script is not part of a real-time callback.
+
+ See [Reaper language integration](docs/REAPER_LANGUAGE_INTEGRATION.md). GitHub Actions builds the native ABI library and executes the example through the Reaper bytecode VM.
+
 ## Cross-repository plugin federation
 
 This repository's host adapter, shared 18-plugin catalog and compatibility rules are documented in [Plugin Federation](docs/PLUGIN_FEDERATION.md). The machine-readable host declaration is `federation/plugins/host.v1.json`.
