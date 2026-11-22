@@ -2,6 +2,11 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+<p align="center"><img src="assets/readme/dashboard.svg" alt="Візуальний огляд Pytyliki 2026" width="100%"></p>
+<sub>Візуальний огляд проєкту · README оновлено 22.11.2026 · палітра проєкту · читабельні схеми даних</sub>
+
+
+
 [CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) · [Збирання Windows](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) · C11 · Windows/Linux · MIT
 **Розробник:** [Ivan-VHS](https://github.com/Ivan-VHS)
 
@@ -27,6 +32,9 @@ flowchart TD
     G --> H[Структурований звіт]
     I[PCM16 WAV] --> J[Локальна DSP-обробка]
     J --> K[Оброблений звук і вимірювання]
+  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  class A,B,C,D,E,F,G,H,I,J,K readmeNode;
+  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
 ```
 
 ## Шляхи виконання та результатів
@@ -41,6 +49,9 @@ flowchart LR
     E[Профіль CPU / MCU] --> F[Еталонні оцінки]
     G[Вихідний код QCS] --> H[Lexer і parser]
     H --> I[AST і діагностика]
+  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  class A,B,C,D,E,F,G,H,I readmeNode;
+  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
 ```
 
 <sub>Фактичний знімок програми · вихідне зображення 1920×1080 · початкові пікселі збережено, штучне збільшення не застосовується.</sub>
