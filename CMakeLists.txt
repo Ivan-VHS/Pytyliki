@@ -57,6 +57,16 @@ if(BUILD_TESTING)
   find_package(Python3 QUIET COMPONENTS Interpreter)
   if(Python3_Interpreter_FOUND)
     add_test(NAME plugin-federation-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/validate_plugin_federation.py)
+  add_test(NAME processor-profile-json COMMAND pytyliki --profile --json)
+  set_tests_properties(processor-profile-json PROPERTIES
+    PASS_REGULAR_EXPRESSION "pytyliki.report.v1")
+  add_test(NAME processor-suite-repeat-json COMMAND pytyliki --suite --repeat 3 --json)
+  set_tests_properties(processor-suite-repeat-json PROPERTIES
+    PASS_REGULAR_EXPRESSION "\"measured_runs\":2")
+  add_test(NAME wav-info-cli-option COMMAND pytyliki --help)
+  set_tests_properties(wav-info-cli-option PROPERTIES
+    PASS_REGULAR_EXPRESSION "--wav-info")
+
   endif()
   add_executable(pytyliki-ui-ux-40026-tests tests/test_ui_ux_40026.c)
   target_include_directories(pytyliki-ui-ux-40026-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
