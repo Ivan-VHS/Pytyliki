@@ -176,7 +176,7 @@ CI 日志可在对应的 GitHub Actions Workflow 中查看。README 和测试套
 
 ## 已知边界、贡献与许可证
 
-已知限制明确列出：GUI 仅支持 Windows，源码检查为静态分析，Embedded 数值是建议性参考，DSP 为本地离线处理，量子功能是经典模拟。仓库中未找到独立的 `CONTRIBUTING.md`。提交改进时，请创建 GitHub Issue 或 Pull Request，说明平台、确切命令、预期结果和实际输出；提交前运行构建与 CTest。
+已知限制明确列出：GUI 仅支持 Windows，源码检查为静态分析，Embedded 数值是建议性参考，DSP 为本地离线处理，量子功能是经典模拟。仓库的贡献流程、变更验证和 Pull Request 要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。提交改进时，请创建 GitHub Issue 或 Pull Request，说明平台、确切命令、预期结果和实际输出；提交前运行构建与 CTest。
 
 支持和缺陷反馈：[GitHub Issues](https://github.com/Ivan-VHS/Pytyliki/issues)。许可证：[MIT](LICENSE)。
 
@@ -194,3 +194,11 @@ CI 日志可在对应的 GitHub Actions Workflow 中查看。README 和测试套
 | 56–66 · 运维与支持 | 链接真实 Workflow/Release，说明桌面压缩包回退、故障排查、已知限制、贡献方式与许可证 |
 
 **本项目没有公开的 Web Stand URL。** 桌面截图和 GitHub Actions Artifact 并不是交互式 Web Stand。
+
+## 统一报告封装格式
+
+可以将 JSON 输出包装为通用的 ivan-vhs.report.v1 元数据格式，而不改变工具自身的数据：
+
+    python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
+
+请参阅 docs/REPORT_ENVELOPE.md 和 schemas/ivan-vhs.report.v1.schema.json。该封装记录结果来源和限制；它不是密码学签名，也不代表兼容性认证。
