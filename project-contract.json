@@ -125,6 +125,16 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "benchmark.report-comparison",
+      "status": "implemented",
+      "summary": "Compares repeat-suite JSON reports using warmup-excluded medians and explicit improvement/regression thresholds.",
+      "evidence": [
+        "scripts/compare_benchmarks.py",
+        "tests/test_benchmark_compare.py",
+        "CMakeLists.txt"
+      ]
     }
   ],
   "interfaces": [
