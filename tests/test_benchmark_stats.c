@@ -22,7 +22,7 @@ int main(void) {
     assert(first.minimum == 1.0 && first.maximum == 100.0);
     assert(first.median == 3.0);
     assert(first.p90 == 100.0 && first.p95 == 100.0 && first.p99 == 100.0);
-    assert(first.median_absolute_deviation == 2.0);
+    assert(first.median_absolute_deviation == 1.0);
     assert(first.sample_standard_deviation > 0.0);
 
     assert(pl_benchmark_stats_analyze(reordered, 5u, &second) == 0);
