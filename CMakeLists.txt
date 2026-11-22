@@ -59,6 +59,7 @@ if(BUILD_TESTING)
     add_test(NAME plugin-federation-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/validate_plugin_federation.py)
     add_test(NAME error-documentation-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/validate_errors.py)
     add_test(NAME report-envelope-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_report_envelope.py)
+    add_test(NAME benchmark-archive-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_benchmark_archive.py)
   add_test(NAME processor-profile-json COMMAND pytyliki --profile --json)
   set_tests_properties(processor-profile-json PROPERTIES
     PASS_REGULAR_EXPRESSION "pytyliki.report.v1")
