@@ -248,7 +248,10 @@ if(BUILD_TESTING)
   if(Python3_Interpreter_FOUND)
     add_test(
       NAME sysmon-pulse-tests
-      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_sysmon_pulse.py
+      COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_sysmon_pulse
+    )
+    set_tests_properties(sysmon-pulse-tests PROPERTIES
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
   endif()
 endif()
