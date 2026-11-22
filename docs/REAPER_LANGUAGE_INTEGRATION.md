@@ -4,7 +4,7 @@ Pytyliki remains a C11 processor/DSP workstation. Reaper 0.2 is added as an opti
 
 ## Reaper program
 
-`automation/reaper/processor_metrics.rpr` is an executable integration program. It opens the explicitly built Pytyliki C ABI v1 library, calls norm/dot/distance/orthogonality operations through Reaper's typed bridge, checks the returned values, and writes a versioned JSON report.
+`automation/reaper/processor_metrics.rpr` is an executable integration program. It opens the explicitly built Pytyliki C ABI v1 library, calls norm/dot/distance/orthogonality operations through Reaper's typed bridge, discovers the 18-entry native plugin catalogue without loading plugins, resolves one metadata descriptor, checks the returned values, and writes a versioned JSON report.
 
 Build and run from the repository root:
 
@@ -23,6 +23,7 @@ The example expects the Linux shared-library path `build/libpytyliki_ffi.so`. On
 - Pytyliki owns the native numerical implementation and C ABI v1.
 - The script passes only finite, small vectors and scalar tolerances to the native ABI.
 - The native library is loaded only with the explicit `--allow-native-ffi` opt-in and a path resolved relative to the script.
+- `pytyliki_plugin_catalog` and `pytyliki_plugin_info` expose bounded metadata only; plugin code is not loaded or invoked.
 - There is no automatic network access, executable lookup, plugin loading or audio-callback dependency.
 - Reaper's Python reference runtime and bytecode VM are both test targets; C17 Reaper remains a separate partial compiler track.
 
