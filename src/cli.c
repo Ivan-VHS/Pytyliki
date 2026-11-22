@@ -16,6 +16,7 @@
 #include "systems_accel.h"
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
+#include "errors.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -32,7 +33,7 @@ static void print_json_string(FILE *out, const char *value) {
         case '\\': fputs("\\\\", out); break;
         case '\b': fputs("\\b", out); break;
         case '\f': fputs("\\f", out); break;
-        case '\n': fputs("\\n", out); break;
+        case '\n': fputs("\n", out); break;
         case '\r': fputs("\\r", out); break;
         case '\t': fputs("\\t", out); break;
         default:
@@ -286,10 +287,10 @@ static void print_architecture_atlas(void) {
     puts("Architecture systems atlas (14 targets):");
     for (size_t i = 0u; i < count; ++i) {
         const pl_architecture_profile *p = &items[i];
-        printf("%02u | %-12s | %-16s | %2u-bit | %-12s | %s\\n",
+        printf("%02u | %-12s | %-16s | %2u-bit | %-12s | %s\n",
                p->id, p->name, p->class_name, p->word_bits,
                p->endianness, p->execution_model);
-        printf("    Toolchain: %s\\n    Diagnostics: %s\\n",
+        printf("    Toolchain: %s\n    Diagnostics: %s\n",
                p->toolchain_hint, p->diagnostic_focus);
     }
     puts("Reference metadata only; no toolchain is assumed installed and no hardware is modified.");
@@ -298,12 +299,12 @@ static int print_architecture_profile(const char *name) {
     pl_architecture_profile p;
     int result = pl_architecture_atlas_find(name, &p);
     if (result != 0) {
-        fprintf(stderr, "Unknown architecture profile: %s\\n", name ? name : "(null)");
+        fprintf(stderr, "Unknown architecture profile: %s\n", name ? name : "(null)");
         return 2;
     }
-    printf("%s | %s | %s | %u-bit | %s-endian\\n",
+    printf("%s | %s | %s | %u-bit | %s-endian\n",
            p.name, p.family, p.class_name, p.word_bits, p.endianness);
-    printf("Execution: %s\\nToolchains: %s\\nDiagnostics: %s\\n",
+    printf("Execution: %s\nToolchains: %s\nDiagnostics: %s\n",
            p.execution_model, p.toolchain_hint, p.diagnostic_focus);
     puts("This is a reference profile, not a live compatibility or toolchain-availability verdict.");
     return 0;
@@ -379,6 +380,19 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
+    if (argc > 1 && strcmp(argv[1], "--explain") == 0) {
+        if (argc != 3) {
+            fputs("Usage: pytyliki --explain ERROR_CODE\n", stderr);
+            return 2;
+        }
+        const pl_error_entry *entry = pl_error_find(argv[2]);
+        if (!entry) {
+            fprintf(stderr, "Unknown Pytyliki error code: %s\n", argv[2]);
+            return 2;
+        }
+        pl_error_print(stdout, entry);
+        return ferror(stdout) ? 1 : 0;
+    }
     if (argc > 1) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;
@@ -428,7 +442,7 @@ int main(int argc,char **argv) {
             char *end=NULL;
             unsigned long n=strtoul(argv[++i],&end,10);
             if(!end||*end||n<1u||n>100u) {
-                fprintf(stderr,"Repeat count must be 1..100.\\n"); return 2;
+                fprintf(stderr,"Repeat count must be 1..100.\n"); return 2;
             }
             repeat=(unsigned)n;
         }
