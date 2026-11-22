@@ -19,6 +19,15 @@ typedef struct {
     uint64_t remainder_count;
 } pl_partition_plan;
 
+typedef struct {
+    uint64_t minimum_count;
+    uint64_t maximum_count;
+    uint64_t unaligned_partitions;
+    double load_imbalance_ratio;
+    double tail_fraction;
+    double amdahl_speedup_bound;
+} pl_partition_stats;
+
 /* Euclidean result: dividend = quotient * divisor + remainder,
  * with 0 <= remainder < abs(divisor). Returns 0 on success. */
 int pl_division_euclidean(int64_t dividend, int64_t divisor,
@@ -30,6 +39,12 @@ int pl_partition_plan_create(uint64_t item_count, uint64_t partition_count,
                              pl_partition_plan *out);
 int pl_partition_plan_range(const pl_partition_plan *plan, uint64_t index,
                             uint64_t *offset, uint64_t *count);
+/* Analyze a completed plan. alignment_items is an explicit range-start
+ * alignment, and serial_fraction is the assumed sequential workload share. */
+int pl_partition_plan_analyze(const pl_partition_plan *plan,
+                              uint64_t alignment_items,
+                              double serial_fraction,
+                              pl_partition_stats *out);
 
 /* Bounded, advisory partition recommendation based on work grain. */
 int pl_division_recommend_workers(uint64_t work_items,
