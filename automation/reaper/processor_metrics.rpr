@@ -18,9 +18,9 @@ let orthogonal = pytyliki_bridge_orthogonal(
     orthogonal_left, orthogonal_right, 0.000000001, bridge
 )
 
-assert(magnitude == 5, "Pytyliki ABI norm mismatch")
-assert(product == 11, "Pytyliki ABI dot product mismatch")
-assert(distance == 5, "Pytyliki ABI distance mismatch")
+assert(magnitude == 5.0, "Pytyliki ABI norm mismatch")
+assert(product == 11.0, "Pytyliki ABI dot product mismatch")
+assert(distance == 5.0, "Pytyliki ABI distance mismatch")
 assert(orthogonal == true, "Pytyliki ABI orthogonality mismatch")
 
 let plugins = pytyliki_plugin_catalog(library)
