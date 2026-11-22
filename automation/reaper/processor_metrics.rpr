@@ -1,0 +1,38 @@
+# Reaper 0.2 orchestrates Pytyliki's explicit native numerical ABI.
+# Native code is loaded only after --allow-native-ffi and through an absolute
+# path resolved relative to this script; no implicit library discovery occurs.
+
+let library = absolute_path("../../build/libpytyliki_ffi.so")
+let bridge = pytyliki_open(library)
+
+let vector = [3, 4]
+let left = [1, 2]
+let right = [3, 4]
+let orthogonal_left = [1, 0]
+let orthogonal_right = [0, 1]
+
+let magnitude = pytyliki_bridge_norm(vector, bridge)
+let product = pytyliki_bridge_dot(left, right, bridge)
+let distance = pytyliki_bridge_distance([0, 0], vector, bridge)
+let orthogonal = pytyliki_bridge_orthogonal(
+    orthogonal_left, orthogonal_right, 0.000000001, bridge
+)
+
+assert(magnitude == 5, "Pytyliki ABI norm mismatch")
+assert(product == 11, "Pytyliki ABI dot product mismatch")
+assert(distance == 5, "Pytyliki ABI distance mismatch")
+assert(orthogonal == true, "Pytyliki ABI orthogonality mismatch")
+
+let report = {
+    "schema": "pytyliki.reaper-metrics.v1",
+    "backend": "pytyliki-c-abi-v1",
+    "vector_norm": magnitude,
+    "dot_product": product,
+    "euclidean_distance": distance,
+    "orthogonal": orthogonal
+}
+
+write_json("build/reaper-metrics-report.json", report)
+emit "Pytyliki / Reaper integration: PASS"
+emit report
+ffi_close(bridge)
