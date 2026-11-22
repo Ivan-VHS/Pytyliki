@@ -1,6 +1,7 @@
 #include "division.h"
 
 #include <limits.h>
+#include <math.h>
 #include <stdint.h>
 
 int pl_division_euclidean(int64_t dividend, int64_t divisor,
@@ -61,6 +62,58 @@ int pl_partition_plan_range(const pl_partition_plan *plan, uint64_t index,
     *count = plan->base_count + (index < plan->remainder_count ? 1u : 0u);
     *offset = index * plan->base_count +
         (index < plan->remainder_count ? index : plan->remainder_count);
+    return 0;
+}
+
+int pl_partition_plan_analyze(const pl_partition_plan *plan,
+                              uint64_t alignment_items,
+                              double serial_fraction,
+                              pl_partition_stats *out) {
+    uint64_t minimum = UINT64_MAX;
+    uint64_t maximum = 0u;
+    uint64_t unaligned = 0u;
+
+    if (plan == NULL || out == NULL || alignment_items == 0u ||
+        plan->partition_count == 0u ||
+        plan->partition_count > PL_DIVISION_MAX_PARTITIONS ||
+        !isfinite(serial_fraction) || serial_fraction < 0.0 ||
+        serial_fraction > 1.0) {
+        return -1;
+    }
+
+    for (uint64_t index = 0u; index < plan->partition_count; ++index) {
+        uint64_t offset = 0u;
+        uint64_t count = 0u;
+        if (pl_partition_plan_range(plan, index, &offset, &count) != 0) {
+            return -1;
+        }
+        if (count < minimum) minimum = count;
+        if (count > maximum) maximum = count;
+        if (offset % alignment_items != 0u) ++unaligned;
+    }
+
+    out->minimum_count = minimum == UINT64_MAX ? 0u : minimum;
+    out->maximum_count = maximum;
+    out->unaligned_partitions = unaligned;
+    if (plan->item_count == 0u) {
+        out->load_imbalance_ratio = 0.0;
+        out->tail_fraction = 0.0;
+        out->amdahl_speedup_bound = 0.0;
+        return 0;
+    }
+
+    {
+        const double mean = (double)plan->item_count /
+                            (double)plan->partition_count;
+        const double denominator = serial_fraction +
+            (1.0 - serial_fraction) / (double)plan->partition_count;
+        out->load_imbalance_ratio = mean > 0.0
+            ? (double)maximum / mean : 0.0;
+        out->tail_fraction = (double)plan->remainder_count /
+                             (double)plan->item_count;
+        out->amdahl_speedup_bound = denominator > 0.0
+            ? 1.0 / denominator : 0.0;
+    }
     return 0;
 }
 
