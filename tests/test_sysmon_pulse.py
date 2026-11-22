@@ -19,7 +19,7 @@ class SysmonPulseTests(unittest.TestCase):
         before = parse_cpu_ticks("cpu  100 2 30 60 8 4 3 1\ncpu0 10 0 3 6\n")
         after = parse_cpu_ticks("cpu  160 2 45 90 10 5 5 3\n")
         self.assertEqual(before, (208, 68))
-        self.assertAlmostEqual(cpu_usage_percent(before, after), 55.0)
+        self.assertAlmostEqual(cpu_usage_percent(before, after), 80.0 * 100.0 / 112.0)
 
     def test_cpu_delta_without_elapsed_ticks_is_unknown(self):
         self.assertIsNone(cpu_usage_percent((10, 4), (10, 4)))
