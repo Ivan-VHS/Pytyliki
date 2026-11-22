@@ -1,17 +1,23 @@
-# Original replacement tools
+# Pytyliki Watch — integrated host telemetry
 
-The new tools/pytyliki_watch.py utility is an independently written, read-only host monitor. It reports CPU load from counter deltas, physical memory, swap, Linux interrupt totals, logical CPU count and process count where the platform exposes them.
+Pytyliki Watch is the read-only telemetry and trend-analysis workbench in the Pytyliki processor-systems workstation. It has three integrated stages:
 
-Run:
+1. Collection — platform adapters read OS counters without changing processor, scheduler, firmware or cooling state.
+2. Analysis — counter deltas, memory pressure, swap pressure, load averages and configurable thresholds are normalized into a stable report model.
+3. Presentation — table output is intended for operators, JSONL/CSV for pipelines, and the versioned analysis report for archiving and later comparison.
 
-    python tools/pytyliki_watch.py --count 5 --interval 1 --format jsonl --output reports/host.jsonl
+Examples:
 
-The monitor uses Python's standard library only. Linux data comes from /proc; Windows data comes from read-only Win32 counter APIs. The first CPU sample has no utilization percentage because a delta is not yet available. Interrupt totals and process count may be unavailable on Windows. Other operating systems return an explicit unsupported-platform error.
+    python tools/pytyliki_watch.py --count 10 --interval 1
+    python tools/pytyliki_watch.py --count 60 --interval 1 --format jsonl --output reports/session.jsonl --report reports/session-summary.json
+    python tools/pytyliki_watch.py --cpu-limit 85 --memory-limit 88 --swap-limit 20 --report reports/policy.json
 
-This is not a clone of Intel XTU, Ryzen Master, HWiNFO, htop, btop or another product. It does not change clock speeds, voltage, fan curves, affinity, scheduler state or firmware. No third-party source code, assets, interface layout or trademarks are included.
+The report schema is pytyliki.telemetry-analysis.v1. It includes a non-identifying host profile ID, sample statistics, p95 estimates, configurable threshold alerts and explicit collection limits. The profile ID is a hash of platform and processor-class metadata; it does not include the account name, hostname or network addresses.
 
-The new source and tests are original Pytyliki contributions, copyright (c) 2026 Ivan-VHS, under the repository's MIT License. The existing LICENSE file remains authoritative.
+Linux reads /proc/stat, /proc/meminfo, /proc/loadavg and process-directory entries. Windows reads system CPU times and memory counters through Win32. The first sample has no CPU percentage because a delta is not yet available. Per-process accounting, hardware sensor access and fan/clock controls are intentionally outside this read-only application.
 
-Test:
+This is an original Pytyliki tool, not a clone of any hardware-monitoring product. It contains no third-party source, product assets or copied interface. Copyright (c) 2026 Ivan-VHS. The repository MIT LICENSE remains authoritative.
+
+Run tests:
 
     python -m unittest discover -s tests -p "test_pytyliki_watch.py" -v
