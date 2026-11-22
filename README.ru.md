@@ -6,6 +6,23 @@
 
 [Исходный код](https://github.com/Ivan-VHS/Pytyliki) · [C11 CI](.github/workflows/ci.yml) · [Сборка Windows](.github/workflows/desktop-build.yml) · [Индекс документации](docs/README.md) · [MIT](LICENSE)
 
+## Реальный снимок приложения
+
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Реальный снимок Pytyliki в Windows" width="100%"></a></p>
+<p align="center"><sub>1920×1080 · Нажмите на изображение, чтобы открыть исходный PNG.</sub></p>
+
+Настоящий снимок запущенного Windows desktop-приложения, полученный в build workflow этого репозитория. Баннер и схема процесса выше — авторские SVG-иллюстрации, а не скриншоты.
+
+### Архитектура с первого взгляда
+
+<p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
+
+Реальный путь: локальные данные хоста и файлы → ограниченное ядро C11 → проверка, анализ и DSP → доказательства и локальный результат.
+
+
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
+
+
 > **Назначение:** локальная рабочая станция на C11 с графическим интерфейсом Windows и переносными CLI-инструментами. В репозитории **нет** опубликованного веб-демо, браузерного sandbox, API-сервиса или промышленного контура управления. Документация сверена с веткой `main` **22.11.2026**.
 
 ## Назначение и границы
@@ -29,8 +46,6 @@ Pytyliki объединяет инвентаризацию процессора,
 
 Скриншот ниже — снимок desktop-приложения, а не интерактивное браузерное превью.
 
-<p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Настольное приложение Pytyliki в Windows" width="100%"></p>
-<sub>Снимок desktop-программы · исходное изображение 1920×1080. Это статичный скриншот, а не вебстенд.</sub>
 
 ## Быстрый старт
 

@@ -6,6 +6,23 @@
 
 [Вихідний код](https://github.com/Ivan-VHS/Pytyliki) · [C11 CI](.github/workflows/ci.yml) · [Збирання Windows](.github/workflows/desktop-build.yml) · [Індекс документації](docs/README.md) · [MIT](LICENSE)
 
+## Реальний знімок застосунку
+
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Реальний знімок Pytyliki у Windows" width="100%"></a></p>
+<p align="center"><sub>1920×1080 · Натисніть зображення, щоб відкрити оригінальний PNG.</sub></p>
+
+Справжній знімок запущеного Windows desktop-застосунку, отриманий у build workflow цього репозиторію. Банер і схема процесу вище — авторські SVG-ілюстрації, а не скріншоти.
+
+### Архітектура одним поглядом
+
+<p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
+
+Реальний шлях: локальні дані хоста й файли → обмежене ядро C11 → перевірка, аналіз і DSP → докази та локальний результат.
+
+
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
+
+
 > **Призначення:** локальна робоча станція на C11 із графічним інтерфейсом Windows і переносними CLI-інструментами. Репозиторій **не містить** опублікованого вебдемо, браузерного sandbox, API-сервісу чи промислового контуру керування. Документацію звірено з гілкою `main` **22.11.2026**.
 
 ## Призначення та межі
@@ -29,8 +46,6 @@ Pytyliki об’єднує інвентаризацію процесора, пл
 
 Скріншот нижче — знімок desktop-застосунку, а не інтерактивне браузерне прев’ю.
 
-<p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Настільний застосунок Pytyliki у Windows" width="100%"></p>
-<sub>Знімок desktop-програми · вихідне зображення 1920×1080. Це статичний скріншот, а не вебстенд.</sub>
 
 ## Швидкий старт
 
