@@ -47,4 +47,4 @@ jobs:
         run: python -m reaper --engine vm --allow-native-ffi automation/reaper/processor_metrics.rpr
       - name: Verify the versioned Reaper report
         run: |
-          python -c "import json,pathlib; p=json.loads(pathlib.Path('build/reaper-metrics-report.json').read_text()); assert p['schema']=='pytyliki.reaper-metrics.v1'; assert p['vector_norm']==5.0; assert p['dot_product']==11.0; assert p['euclidean_distance']==5.0; assert p['orthogonal'] is True"
+          python -c "import json,pathlib; p=json.loads(pathlib.Path('build/reaper-metrics-report.json').read_text()); assert p['schema']=='pytyliki.reaper-metrics.v1'; assert p['vector_norm']==5.0; assert p['dot_product']==11.0; assert p['euclidean_distance']==5.0; assert p['orthogonal'] is True; assert p['plugin_count']==18; assert p['primary_plugin']=='operandu'; assert p['primary_plugin_service']=='inspect_value'"
