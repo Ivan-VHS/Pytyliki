@@ -38,6 +38,8 @@ The app reports information it can observe and produces advisory plans. It does 
 | Processor inventory | inspect model, topology, memory and available ISA/XCR0 information | local, read-only discovery |
 | CPU and memory suite | run bounded local measurements and workload-partition examples | results depend on the host; not universal benchmarks |
 | Benchmark statistics | summarize caller-supplied timing samples with percentiles, variability and MAD | analysis only; does not launch or repeat workloads |
+| Profile import | import collapsed stacks and Speedscope samples; export folded stacks and SVG flamegraphs | profile data is parsed as text/JSON; no profiler is launched |
+| Linux sensor snapshot | read exposed CPU frequency, governor, thermal and energy counters with source provenance | Linux sysfs/procfs read-only; unavailable sensors remain unknown |
 | Source review | inspect source and produce diagnostics/reports | reviewed source is not built or executed |
 | Embedded C | browse MCU profiles and estimate FLASH/SRAM use | reference estimates, not firmware deployment |
 | QCS | tokenize/parse input and inspect AST/diagnostics | syntax analysis only |
@@ -88,6 +90,10 @@ More local examples:
 pytyliki --systems
 pytyliki --embedded profiles
 pytyliki --divide -17 5
+
+python tools/profile_import.py cpu.collapsed --format svg --output cpu-flamegraph.svg
+python tools/profile_import.py capture.speedscope.json --format folded --output cpu.folded
+python tools/sensor_snapshot.py --output host-sensors.json
 ```
 
 The exact supported switches are also printed by `pytyliki --help`. These commands run locally; there is no default HTTP port or localhost URL.
