@@ -6,6 +6,23 @@
 
 [Source](https://github.com/Ivan-VHS/Pytyliki) · [C11 CI](.github/workflows/ci.yml) · [Windows desktop build](.github/workflows/desktop-build.yml) · [Documentation index](docs/README.md) · [MIT](LICENSE)
 
+## Live application capture
+
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Real Windows desktop capture of Pytyliki" width="100%"></a></p>
+<p align="center"><sub>1920×1080 · Click the image to open the original PNG.</sub></p>
+
+Genuine Windows desktop capture of the running application, produced by this repository's desktop build workflow. The dashboard and workflow graphics above are original SVG illustrations; they are not screenshots.
+
+### Architecture at a glance
+
+<p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
+
+Implemented path: local host and file inputs → bounded C11 core → inspection, analysis and DSP → evidence and local output.
+
+
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
+
+
 > **Scope:** a local C11 processor-systems workstation with a Windows GUI and portable command-line tools. This repository does **not** publish a hosted web demo, browser sandbox, API service or production control plane. Documentation was checked against `main` on **2026-11-22**.
 
 ## Purpose and boundaries
@@ -29,8 +46,6 @@ The app reports information it can observe and produces advisory plans. It does 
 
 The Windows screenshot below is a captured desktop application, not an interactive browser preview.
 
-<p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki desktop application on Windows" width="100%"></p>
-<sub>Desktop capture · 1920×1080 source image. It is a static screenshot, not a hosted stand.</sub>
 
 ## Quick Start
 
