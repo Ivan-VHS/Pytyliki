@@ -80,7 +80,7 @@ def _validated_run_data(report: Dict[str, Any], label: str) -> Dict[str, Any]:
         if workload is None:
             workload = current_workload
         elif workload != current_workload:
-            raise ValueError(f"{label}: worklload settings vary between measured runs")
+            raise ValueError(f"{label}: workload settings vary between measured runs")
 
         for metric in METRICS:
             value = run.get(metric)
@@ -207,7 +207,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         candidate = _read_report(args.candidate)
         result = compare_reports(baseline, candidate, args.noise_percent)
     except (OSError, ValueError) as exc:
-        print(f"compare-suite-runs : {exc}", file=sys.stderr)
+        print(f"compare-suite-runs: {exc}", file=sys.stderr)
         return 2
 
     summary = format_summary(result)

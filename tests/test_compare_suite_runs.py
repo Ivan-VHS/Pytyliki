@@ -56,6 +56,13 @@ class SuiteComparisonTests(unittest.TestCase):
         result = module.compare_reports(make_report([1, 2]), make_report([1, 2], workload=other))
         self.assertFalse(result["comparable"])
 
+    def test_formats_host_mismatch_without_crashing(self):
+        other = {"architecture": "arm64", "cpu": "Other CPU", "vendor": "Other", "logical_processors": 8}
+        result = module.compare_reports(make_report([1, 2]), make_report([1, 2], profile=other))
+        summary = module.format_summary(result)
+        self.assertIn("not_comparable", summary)
+        self.assertIn("processor identity differs", summary)
+
     def test_rejects_failed_integrity_check(self):
         with self.assertRaises(ValueError):
             module.compare_reports(make_report([1, 2]), make_report([1, 2], integrity=False))
