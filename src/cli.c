@@ -592,8 +592,8 @@ int main(int argc,char **argv) {
     }
 
     pl_cpu_info cpu;
-    pl_benchmark benchmark = {0};
-    pl_analysis analysis = {0};
+    pl_benchmark b = {0};
+    pl_analysis a = {0};
     char details[8192] = {0};
     pl_processor_snapshot snapshot = {0};
     pl_suite_result suite_runs[100] = {{0}};
@@ -605,11 +605,11 @@ int main(int argc,char **argv) {
         if (!json_stdout) print_profile();
     }
     if (bench) {
-        if (pl_run_benchmark(UINT64_C(10000000), &benchmark) != 0) return 1;
+        if (pl_run_benchmark(UINT64_C(10000000), &b) != 0) return 1;
         if (!json_stdout) {
             printf("Benchmark: %llu iterations, %.3f ms, %.1f iterations/ms\n",
-                   (unsigned long long)benchmark.iterations,
-                   benchmark.elapsed_ms, benchmark.score);
+                   (unsigned long long)b.iterations,
+                   b.elapsed_ms, b.score);
         }
     }
     if (suite) {
@@ -634,7 +634,7 @@ int main(int argc,char **argv) {
     }
     if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not inspect processor source: %s\n",analyze);return 1;}printf("Processor implementation review: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
     if (json != NULL && !wav_info) {
-        if (pl_write_json(json, &cpu, &benchmark, &analysis) != 0) {
+        if (pl_write_json(json, &cpu, &b, &a) != 0) {
             fprintf(stderr, "Could not write JSON report: %s\n", json);
             return 1;
         }
