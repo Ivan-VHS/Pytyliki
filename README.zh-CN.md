@@ -6,6 +6,23 @@
 
 [源代码仓库](https://github.com/Ivan-VHS/Pytyliki) · [C11 CI](.github/workflows/ci.yml) · [Windows 桌面构建](.github/workflows/desktop-build.yml) · [文档索引](docs/README.md) · [MIT](LICENSE)
 
+## 实际应用截屏
+
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki 在 Windows 上运行的实际截屏" width="100%"></a></p>
+<p align="center"><sub>1920×1080 · 点击图片查看原始 PNG 文件。</sub></p>
+
+这张图片是在本仓库的桌面构建工作流中，从真实运行的 Windows 桌面应用截取的。上方横幅和流程图是原创 SVG 矢量插图，并非应用截图。
+
+### 架构一览
+
+<p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
+
+实际流程：本地主机数据与文件 → 有界 C11 核心 → 检查、分析与 DSP → 证据和本地输出。
+
+
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
+
+
 > **项目范围：** 基于 C11 的本地处理器系统工作站，包含 Windows 图形界面和可移植命令行工具。本仓库**没有**托管的 Web Demo、浏览器 Sandbox、API 服务或生产控制平面。文档已于 **2026-11-22** 对照 `main` 分支核对。
 
 ## 项目用途与边界
@@ -29,8 +46,6 @@ Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断�
 
 下方图片是桌面应用的实际截屏，并非交互式浏览器预览。
 
-<p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Windows 上运行的 Pytyliki 桌面应用" width="100%"></p>
-<sub>桌面程序截屏 · 原始图像 1920×1080。这是静态截图，不是托管 Web Stand。</sub>
 
 ## 快速开始
 
