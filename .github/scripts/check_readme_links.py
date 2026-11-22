@@ -9,10 +9,10 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 READMES = ("README.md", "README.ru.md", "README.uk.md", "README.zh-CN.md")
-MARKDOWN_LINK = re.compile(r"!?\\[[^\\]]*\\]\\(\\s*(?:<([^>]+)>|([^\\s)]+))")
-HTML_LINK = re.compile(r"\\b(?:href|src)\\s*=\\s*[\\"']([^\\"']+)[\\"']", re.IGNORECASE)
-FENCE = re.compile(r"^\\s*(?P<marker>\\x60{3,}|~{3,})(?P<info>.*)$")
-TABLE_ROW = re.compile(r"^\\s*\\|.*\\|\\s*$")
+MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(\s*(?:<([^>]+)>|([^\s)]+))")
+HTML_LINK = re.compile(r"""\b(?:href|src)\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
+FENCE = re.compile(r"^\s*(?P<marker>\x60{3,}|~{3,})(?P<info>.*)$")
+TABLE_ROW = re.compile(r"^\s*\|.*\|\s*$")
 
 
 def inspect_structure(markdown: str):
@@ -43,7 +43,7 @@ def inspect_structure(markdown: str):
         if in_fence:
             continue
 
-        heading = re.match(r"^(#{1,6})\\s+\\S", line)
+        heading = re.match(r"^(#{1,6})\s+\S", line)
         if heading:
             headings.append(len(heading.group(1)))
 
@@ -59,7 +59,7 @@ def inspect_structure(markdown: str):
         table_shapes.append(table_rows)
 
     return (
-        "\\n".join(visible_lines),
+        "\n".join(visible_lines),
         tuple(headings),
         tuple(code_languages),
         tuple(table_shapes),
@@ -91,13 +91,13 @@ def validate() -> list[str]:
         if not content.strip():
             errors.append(f"{path.name}: file is empty")
             continue
-        if not re.search(r"(?m)^#\\s+\\S", content):
+        if not re.search(r"(?m)^#\s+\S", content):
             errors.append(f"{path.name}: missing top-level Markdown heading")
-        if not re.search(r"\\[[^\\]]+\\]\\(CONTRIBUTING\\.md(?:#[^)]+)?\\)", content):
+        if not re.search(r"\[[^\]]+\]\(CONTRIBUTING\.md(?:#[^)]+)?\)", content):
             errors.append(f"{path.name}: must link to CONTRIBUTING.md")
 
         for raw in targets(content):
-            target = raw.strip().strip("\\"'")
+            target = raw.strip().strip(chr(34) + chr(39))
             if not target:
                 continue
             parsed = urlsplit(target)
