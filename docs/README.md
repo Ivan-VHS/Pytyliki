@@ -3,6 +3,8 @@
 | File | Scope |
 |---|---|
 | [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
+| [BENCHMARK_STATISTICS.md](BENCHMARK_STATISTICS.md) | bounded statistical analysis of timing samples |
+| [PROGRAM_CATALOG_1000.md](PROGRAM_CATALOG_1000.md) | adoption map and project ownership for the 1,000-item catalogue |
 | [ENGINEERING.md](ENGINEERING.md) | quality and safety gates |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | runtime and data flow |
 | [DIVISION_ENGINE.md](DIVISION_ENGINE.md) | checked division, balanced partitioning and weighted allocation |

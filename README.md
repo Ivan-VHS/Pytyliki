@@ -37,6 +37,7 @@ The app reports information it can observe and produces advisory plans. It does 
 |---|---|---|
 | Processor inventory | inspect model, topology, memory and available ISA/XCR0 information | local, read-only discovery |
 | CPU and memory suite | run bounded local measurements and workload-partition examples | results depend on the host; not universal benchmarks |
+| Benchmark statistics | summarize caller-supplied timing samples with percentiles, variability and MAD | analysis only; does not launch or repeat workloads |
 | Source review | inspect source and produce diagnostics/reports | reviewed source is not built or executed |
 | Embedded C | browse MCU profiles and estimate FLASH/SRAM use | reference estimates, not firmware deployment |
 | QCS | tokenize/parse input and inspect AST/diagnostics | syntax analysis only |
@@ -76,6 +77,7 @@ On Windows, CMake places Release executables in `build/Release/`. On a typical s
 ./build/pytyliki --suite
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
+./build/pytyliki-benchstats 1.8,1.7,1.9,1.8,2.4,1.8
 ```
 
 On Windows use `build\Release\pytyliki.exe` and `build\Release\pytyliki-metrics.exe`. The desktop GUI is `build\Release\pytyliki-gui.exe`.
