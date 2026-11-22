@@ -93,7 +93,7 @@ static void print_suite_json(FILE *out, const pl_suite_result *runs,
     double integer_ms[100], memory_ms[100], matrix_ms[100];
     double integer_sum = 0.0, memory_sum = 0.0, matrix_sum = 0.0;
     double integer_min = HUGE_VAL, integer_max = 0.0;
-    double integer_variance = 0.0;
+    double integer_stddev = 0.0;
     unsigned measured = repeat - warmup_count;
     for (unsigned i = 0u; i < repeat; ++i) {
         integer_ms[i] = runs[i].integer_ms;
@@ -111,10 +111,10 @@ static void print_suite_json(FILE *out, const pl_suite_result *runs,
         const double mean = integer_sum / measured;
         for (unsigned i = warmup_count; i < repeat; ++i) {
             const double difference = runs[i].integer_ms - mean;
-            integer_variance += difference * difference;
+            integer_stddev += difference * difference;
         }
-        integer_variance = measured > 1u
-            ? sqrt(integer_variance / (measured - 1u)) : 0.0;
+        integer_stddev = measured > 1u
+            ? sqrt(integer_stddev / (measured - 1u)) : 0.0;
     }
     fputs("\"suite\":{\"schema\":\"pytyliki.suite.v1\",", out);
     fprintf(out, "\"repeat\":%u,\"warmup_runs\":%u,\"measured_runs\":%u,\"runs\":[",
@@ -140,9 +140,8 @@ static void print_suite_json(FILE *out, const pl_suite_result *runs,
         "\"matrix_ms\":{\"mean\":%.6f,\"median\":%.6f}},"
         "\"timing_note\":\"Host-dependent wall-clock measurements; not a guaranteed performance claim.\"}",
         integer_min, integer_max, integer_sum / measured,
-        median_of(integer_ms + warmup_count, measured), integer_variance,
-        integer_sum > 0.0 ? integer_variance / sqrt((double)measured) /
-            (integer_sum / measured) : 0.0,
+        median_of(integer_ms + warmup_count, measured), integer_stddev,
+        integer_sum > 0.0 ? integer_stddev / (integer_sum / measured) : 0.0,
         memory_sum / measured, median_of(memory_ms + warmup_count, measured),
         matrix_sum / measured, median_of(matrix_ms + warmup_count, measured));
 }
@@ -495,26 +494,164 @@ int main(int argc,char **argv) {
         printf("Generated %s (%g Hz, %g s, stereo 48 kHz PCM16).\n",tone_out,frequency,seconds); return 0;
     }
     if(audio_info || process_in) {
-        pl_audio_buffer a={0}; const char *input=audio_info?audio_info:process_in;
-        int rc=pl_audio_load_wav(input,&a); if(rc!=0){fprintf(stderr,"Could not load supported PCM16 WAV (%d): %s\n",rc,input);return 1;}
-        if(lowpass>0.0 && pl_audio_apply_lowpass(&a,lowpass)!=0){fprintf(stderr,"Invalid low-pass cutoff.\n");pl_audio_free(&a);return 2;}
-        if(use_compressor && pl_audio_apply_compressor(&a,threshold,ratio)!=0){fprintf(stderr,"Invalid compressor settings.\n");pl_audio_free(&a);return 2;}
-        if(saturation>0.0 && pl_audio_apply_saturation(&a,saturation)!=0){fprintf(stderr,"Invalid saturation drive.\n");pl_audio_free(&a);return 2;}
-        if(use_gain && pl_audio_apply_gain(&a,gain)!=0){fprintf(stderr,"Invalid gain.\n");pl_audio_free(&a);return 2;}
-        pl_audio_stats st; if(pl_audio_measure(&a,&st)==0) printf("%u Hz | %u channel(s) | %lu frames | peak %.5f | RMS %.5f | crest %.2f dB | clipped %lu\n",a.sample_rate,a.channels,(unsigned long)a.frames,st.peak,st.rms,st.crest_db,(unsigned long)st.clipped_samples);
-        if(process_in && pl_audio_write_wav(process_out,&a)!=0){fprintf(stderr,"Could not write processed WAV: %s\n",process_out);pl_audio_free(&a);return 1;}
-        if(process_in) printf("Processed WAV written: %s\n",process_out);
-        pl_audio_free(&a); return 0;
+        pl_audio_buffer audio = {0};
+        const char *input = audio_info ? audio_info : process_in;
+        int rc = pl_audio_load_wav(input, &audio);
+        if (rc != 0) {
+            fprintf(stderr, "Could not load supported PCM16 WAV (%d): %s\n", rc, input);
+            return 1;
+        }
+
+        if (wav_info) {
+            pl_audio_stats stats;
+            if (pl_audio_measure(&audio, &stats) != 0) {
+                pl_audio_free(&audio);
+                return 1;
+            }
+            FILE *report_out = stdout;
+            if (json != NULL) {
+                report_out = fopen(json, "wb");
+                if (report_out == NULL) {
+                    fprintf(stderr, "Could not open JSON report: %s\n", json);
+                    pl_audio_free(&audio);
+                    return 1;
+                }
+            }
+            if (json_stdout || json != NULL) {
+                print_wav_info_json(report_out, &audio, &stats);
+                fputc('\n', report_out);
+            } else {
+                printf("%u Hz | %u channel(s) | %llu frames | %.3f s | "
+                       "peak %.5f | RMS %.5f | DC %.6f | crest %.2f dB | clipped %llu\n",
+                       audio.sample_rate, audio.channels,
+                       (unsigned long long)audio.frames,
+                       (double)audio.frames / audio.sample_rate,
+                       stats.peak, stats.rms, stats.dc, stats.crest_db,
+                       (unsigned long long)stats.clipped_samples);
+            }
+            if (report_out != stdout && fclose(report_out) != 0) {
+                pl_audio_free(&audio);
+                return 1;
+            }
+            pl_audio_free(&audio);
+            return 0;
+        }
+
+        if (lowpass > 0.0 && pl_audio_apply_lowpass(&audio, lowpass) != 0) {
+            fprintf(stderr, "Invalid low-pass cutoff.\n");
+            pl_audio_free(&audio);
+            return 2;
+        }
+        if (use_compressor && pl_audio_apply_compressor(&audio, threshold, ratio) != 0) {
+            fprintf(stderr, "Invalid compressor settings.\n");
+            pl_audio_free(&audio);
+            return 2;
+        }
+        if (saturation > 0.0 && pl_audio_apply_saturation(&audio, saturation) != 0) {
+            fprintf(stderr, "Invalid saturation drive.\n");
+            pl_audio_free(&audio);
+            return 2;
+        }
+        if (use_gain && pl_audio_apply_gain(&audio, gain) != 0) {
+            fprintf(stderr, "Invalid gain.\n");
+            pl_audio_free(&audio);
+            return 2;
+        }
+        pl_audio_stats stats;
+        if (pl_audio_measure(&audio, &stats) == 0) {
+            printf("%u Hz | %u channel(s) | %lu frames | peak %.5f | RMS %.5f | "
+                   "crest %.2f dB | clipped %lu\n",
+                   audio.sample_rate, audio.channels, (unsigned long)audio.frames,
+                   stats.peak, stats.rms, stats.crest_db,
+                   (unsigned long)stats.clipped_samples);
+        }
+        if (process_in && pl_audio_write_wav(process_out, &audio) != 0) {
+            fprintf(stderr, "Could not write processed WAV: %s\n", process_out);
+            pl_audio_free(&audio);
+            return 1;
+        }
+        if (process_in) printf("Processed WAV written: %s\n", process_out);
+        pl_audio_free(&audio);
+        return 0;
     }
     if((systems || systems_lab || architectures || architecture_name || improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
-    if(!profile&&!bench&&!suite&&!capabilities&&!analyze&&!json&&!systems&&!systems_lab&&!architectures&&!architecture_name&&!improvement_plan&&!trimatrix&&!syntax_pie&&!hw_rules&&!pipeline&&!catalog&&!policy&&!evolve&&!e2k_profile){profile=1;bench=1;}
-    pl_cpu_info cpu; pl_benchmark b={0}; pl_analysis a={0}; char details[8192]={0};
-    if(pl_cpu_profile(&cpu)!=0)return 1;
-    if((profile||capabilities))print_profile();
-    if(bench){if(pl_run_benchmark(UINT64_C(10000000),&b)!=0)return 1;printf("Benchmark: %llu iterations, %.3f ms, %.1f iterations/ms\n",(unsigned long long)b.iterations,b.elapsed_ms,b.score);}
-    if(suite){pl_suite_result sr;int rc=pl_processor_benchmark_suite(UINT64_C(12000000),8,4,&sr);if(rc!=0){fprintf(stderr,"Processor suite failed (%d).\n",rc);return 1;}printf("Suite: integer %.2f ms | memory %.2f ms | matrix %.2f ms | checksum %llu | integrity %s\n",sr.integer_ms,sr.memory_ms,sr.matrix_ms,(unsigned long long)sr.checksum,sr.integrity_ok?"PASS":"CHECK");}
+    if (!profile && !bench && !suite && !capabilities && !analyze &&
+        !json && !json_stdout && !systems && !systems_lab && !architectures &&
+        !architecture_name && !improvement_plan && !trimatrix && !syntax_pie &&
+        !hw_rules && !pipeline && !catalog && !policy && !evolve && !e2k_profile) {
+        profile = 1;
+        bench = 1;
+    }
+    if (repeat > 1u && !suite) {
+        fprintf(stderr, "--repeat requires --suite.\n");
+        return 2;
+    }
+    if (json_stdout && analyze && !profile && !capabilities && !suite) {
+        fprintf(stderr, "Use --json FILE for processor review reports; stdout JSON currently covers profile and suite.\n");
+        return 2;
+    }
+
+    pl_cpu_info cpu;
+    pl_benchmark benchmark = {0};
+    pl_analysis analysis = {0};
+    char details[8192] = {0};
+    pl_processor_snapshot snapshot = {0};
+    pl_suite_result suite_runs[100] = {{0}};
+    const unsigned warmup_count = repeat >= 3u ? 1u : 0u;
+
+    if (pl_cpu_profile(&cpu) != 0) return 1;
+    if (profile || capabilities) {
+        if (pl_processor_scan(&snapshot) != 0) return 1;
+        if (!json_stdout) print_profile();
+    }
+    if (bench) {
+        if (pl_run_benchmark(UINT64_C(10000000), &benchmark) != 0) return 1;
+        if (!json_stdout) {
+            printf("Benchmark: %llu iterations, %.3f ms, %.1f iterations/ms\n",
+                   (unsigned long long)benchmark.iterations,
+                   benchmark.elapsed_ms, benchmark.score);
+        }
+    }
+    if (suite) {
+        for (unsigned run = 0u; run < repeat; ++run) {
+            if (pl_processor_benchmark_suite(UINT64_C(12000000), 8u, 4u,
+                                             &suite_runs[run]) != 0) {
+                fprintf(stderr, "Processor suite failed on run %u.\n", run + 1u);
+                return 1;
+            }
+        }
+        if (!json_stdout) {
+            const unsigned measured = repeat - warmup_count;
+            double integer_total = 0.0;
+            for (unsigned run = warmup_count; run < repeat; ++run)
+                integer_total += suite_runs[run].integer_ms;
+            printf("Suite: %u run(s), %u warm-up | integer mean %.2f ms | "
+                   "checksum %llu | integrity %s\n",
+                   repeat, warmup_count, integer_total / measured,
+                   (unsigned long long)suite_runs[repeat - 1u].checksum,
+                   suite_runs[repeat - 1u].integrity_ok ? "PASS" : "CHECK");
+        }
+    }
     if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not inspect processor source: %s\n",analyze);return 1;}printf("Processor implementation review: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
-    if(json){if(pl_write_json(json,&cpu,&b,&a)!=0){fprintf(stderr,"Could not write JSON report: %s\n",json);return 1;}printf("JSON report: %s\n",json);}
+    if (json != NULL && !wav_info) {
+        if (pl_write_json(json, &cpu, &benchmark, &analysis) != 0) {
+            fprintf(stderr, "Could not write JSON report: %s\n", json);
+            return 1;
+        }
+        printf("JSON report: %s\n", json);
+    }
+    if (json_stdout) {
+        fputs("{\"schema\":\"pytyliki.report.v1\","
+              "\"program\":{\"name\":\"Pytyliki\",\"version\":\"0.8.0\"},",
+              stdout);
+        if (profile || capabilities) {
+            print_profile_json(stdout, &snapshot);
+            if (suite) fputc(',', stdout);
+        }
+        if (suite) print_suite_json(stdout, suite_runs, repeat, warmup_count);
+        fputs("}\n", stdout);
+        return ferror(stdout) ? 1 : 0;
+    }
     if(evolve){
         pl_processor_snapshot snapshot;
         pl_evolution_input input={0};
