@@ -42,9 +42,10 @@ class ProfileImportTests(unittest.TestCase):
     def test_limits_and_unsafe_frame_names(self):
         with self.assertRaises(ProfileError):
             parse_collapsed("main;bad\x00frame 1")
-        with self.assertRaises(ProfileError):
-            parse_speedscope({"shared": {"frames": [{"name": "main"}]},
-                              "profiles": [{"type": "sampled", "samples": [[4]], "weights": [1]}]})
+        for invalid_index in (4, -1, True, 1.5):
+            with self.assertRaises(ProfileError):
+                parse_speedscope({"shared": {"frames": [{"name": "main"}]},
+                                  "profiles": [{"type": "sampled", "samples": [[invalid_index]], "weights": [1]}]})
 
     def test_render_svg_escapes_frame_names(self):
         report = parse_collapsed("main;<script>alert 1")
