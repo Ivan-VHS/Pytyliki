@@ -2,7 +2,6 @@
 #include "budget.h"
 #include "division.h"
 #include "processor.h"
-#include "dsp.h"
 #include "improvement.h"
 #include "hw_rules.h"
 #include "processor_catalog.h"
@@ -147,51 +146,19 @@ static void print_suite_json(FILE *out, const pl_suite_result *runs,
         matrix_sum / measured, median_of(matrix_ms + warmup_count, measured));
 }
 
-static FILE *open_report_file(const char *path) {
-#if defined(_MSC_VER)
-    FILE *file = NULL;
-    if (fopen_s(&file, path, "wb") != 0) return NULL;
-    return file;
-#else
-    return fopen(path, "wb");
-#endif
-}
-
-static void print_wav_info_json(FILE *out, const pl_audio_buffer *audio,
-                                const pl_audio_stats *stats) {
-    const double rms_dbfs = stats->rms > 0.0 ? 20.0 * log10(stats->rms) : -INFINITY;
-    const double peak_dbfs = stats->peak > 0.0 ? 20.0 * log10(stats->peak) : -INFINITY;
-    fputs("{\"schema\":\"pytyliki.wav-info.v1\",\"read_only\":true,", out);
-    fprintf(out,
-        "\"sample_rate\":%u,\"channels\":%u,\"frames\":%llu,"
-        "\"duration_seconds\":%.9f,\"peak\":%.9f,\"peak_dbfs\":",
-        audio->sample_rate, audio->channels, (unsigned long long)audio->frames,
-        (double)audio->frames / audio->sample_rate, stats->peak, stats->peak);
-    if (isfinite(peak_dbfs)) fprintf(out, "%.6f", peak_dbfs); else fputs("null", out);
-    fprintf(out, ",\"rms\":%.9f,\"rms_dbfs\":", stats->rms);
-    if (isfinite(rms_dbfs)) fprintf(out, "%.6f", rms_dbfs); else fputs("null", out);
-    fprintf(out,
-        ",\"dc_offset\":%.9f,\"crest_db\":%.6f,"
-        "\"clipped_samples\":%llu,\"container\":\"RIFF/WAVE PCM16\"}",
-        stats->dc, stats->crest_db, (unsigned long long)stats->clipped_samples);
-}
-
 static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
          "  pytyliki [--profile] [--capabilities] [--benchmark] [--suite] [--e2k-profile]\n"
          "           [--systems] [--systems-lab] [--architectures] [--architecture NAME] [--improvement-plan] [--trimatrix [DEPTH]] [--syntax-pie] [--hw-rules] [--pipeline] [--processor-catalog] [--policy-check ROLE ACTION] [--evolve] [--evolution-rounds N] [--review-processor FILE] (alias: --analyze FILE) [--json FILE]\n"
-         "  pytyliki --tone-out FILE.wav [--frequency HZ] [--seconds N]\n"
-         "  pytyliki --audio-info FILE.wav\n"
          "  pytyliki --budget [--budget-amount UAH] [--budget-scenario weekly|groceries|transport|coffee|household|learning|reserve]\n"
          "           [--budget-set food|transport|household|digital|leisure|reserve UAH]\n"
-         "  pytyliki --process-wav INPUT.wav OUTPUT.wav [--lowpass HZ]\n"
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
-         "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
-         "  pytyliki --profile --json | --suite --repeat N --json | --wav-info FILE.wav [--json]\n"
-         "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
+
+         "  pytyliki --profile --json | --suite --repeat N --json\n"
+         "Processor inspection is read-only. Execution workloads are bounded.");
 }
 static void print_berry_core_catalog(void) {
     const pl_berry_core_command *items = NULL;
@@ -224,9 +191,6 @@ static int dispatch_berry_core(const char *name, unsigned core) {
 }
 static int parse_i64(const char *s, int64_t *out) { char *end=NULL; errno=0; long long v=strtoll(s,&end,10); if(!s[0]||!end||end==s||*end||errno==ERANGE) return -1; *out=(int64_t)v; return 0; }
 static int budget_category_index(const char *name) { const char *names[] = {"food","transport","household","digital","leisure","reserve"}; for (int i=0;i<6;i++) if(strcmp(name,names[i])==0) return i; return -1; }
-static int parse_double(const char *s,double *out) {
-    char *end=NULL; errno=0; double v=strtod(s,&end); if(!s[0]||!end||end==s||*end||errno==ERANGE||!isfinite(v)) return -1; *out=v; return 0;
-}
 static void print_trimatrix(unsigned depth) {
     pl_tma_plan plan;
     pl_tma_step step;
@@ -400,13 +364,10 @@ int main(int argc,char **argv) {
     if (argc > 1 && strcmp(argv[1], "--embedded") == 0)
         return pl_embedded_cli(argc - 1, argv + 1);
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,systems_lab=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
-    const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
-    int json_stdout=0,wav_info=0;
+    int json_stdout=0;
     unsigned repeat=1u;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
-    double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
-    int use_compressor=0,use_gain=0;
     int budget=0, budget_set[PL_BUDGET_CATEGORY_COUNT]={0};
     int64_t budget_limit=500, budget_values[PL_BUDGET_CATEGORY_COUNT]={0};
     const char *budget_scenario="weekly";
@@ -475,16 +436,6 @@ int main(int argc,char **argv) {
                 json_stdout=0;
             }
         }
-        else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
-        else if(!strcmp(argv[i],"--audio-info")&&i+1<argc) audio_info=argv[++i];
-        else if(!strcmp(argv[i],"--wav-info")&&i+1<argc) { audio_info=argv[++i]; wav_info=1; }
-        else if(!strcmp(argv[i],"--process-wav")&&i+2<argc){process_in=argv[++i];process_out=argv[++i];}
-        else if(!strcmp(argv[i],"--frequency")&&i+1<argc){if(parse_double(argv[++i],&frequency))return 2;}
-        else if(!strcmp(argv[i],"--seconds")&&i+1<argc){if(parse_double(argv[++i],&seconds))return 2;}
-        else if(!strcmp(argv[i],"--lowpass")&&i+1<argc){if(parse_double(argv[++i],&lowpass))return 2;}
-        else if(!strcmp(argv[i],"--compress")&&i+2<argc){if(parse_double(argv[++i],&threshold)||parse_double(argv[++i],&ratio))return 2;use_compressor=1;}
-        else if(!strcmp(argv[i],"--saturate")&&i+1<argc){if(parse_double(argv[++i],&saturation))return 2;}
-        else if(!strcmp(argv[i],"--gain")&&i+1<argc){if(parse_double(argv[++i],&gain))return 2;use_gain=1;}
         else if(!strcmp(argv[i],"--help")){usage();return 0;}
         else {fprintf(stderr,"Unknown or incomplete option: %s\n",argv[i]);usage();return 2;}
     }
@@ -510,94 +461,6 @@ int main(int argc,char **argv) {
     if(hw_rules) print_hw_report();
     if(pipeline||catalog||policy) print_foundations(pipeline,catalog,policy,pipeline_target,policy_role,policy_action);
     if(policy && !pl_policy_authorize(policy_role,policy_action)) return 3;
-    if(tone_out) {
-        pl_audio_buffer a={0}; int rc=pl_audio_generate_tone(&a,48000,2,frequency,seconds);
-        if(rc!=0){fprintf(stderr,"Tone parameters rejected (%d).\n",rc);return 1;}
-        rc=pl_audio_write_wav(tone_out,&a); pl_audio_free(&a);
-        if(rc!=0){fprintf(stderr,"Could not write WAV: %s\n",tone_out);return 1;}
-        printf("Generated %s (%g Hz, %g s, stereo 48 kHz PCM16).\n",tone_out,frequency,seconds); return 0;
-    }
-    if(audio_info || process_in) {
-        pl_audio_buffer audio = {0};
-        const char *input = audio_info ? audio_info : process_in;
-        int rc = pl_audio_load_wav(input, &audio);
-        if (rc != 0) {
-            fprintf(stderr, "Could not load supported PCM16 WAV (%d): %s\n", rc, input);
-            return 1;
-        }
-
-        if (wav_info) {
-            pl_audio_stats stats;
-            if (pl_audio_measure(&audio, &stats) != 0) {
-                pl_audio_free(&audio);
-                return 1;
-            }
-            FILE *report_out = stdout;
-            if (json != NULL) {
-                report_out = open_report_file(json);
-                if (report_out == NULL) {
-                    fprintf(stderr, "Could not open JSON report: %s\n", json);
-                    pl_audio_free(&audio);
-                    return 1;
-                }
-            }
-            if (json_stdout || json != NULL) {
-                print_wav_info_json(report_out, &audio, &stats);
-                fputc('\n', report_out);
-            } else {
-                printf("%u Hz | %u channel(s) | %llu frames | %.3f s | "
-                       "peak %.5f | RMS %.5f | DC %.6f | crest %.2f dB | clipped %llu\n",
-                       audio.sample_rate, audio.channels,
-                       (unsigned long long)audio.frames,
-                       (double)audio.frames / audio.sample_rate,
-                       stats.peak, stats.rms, stats.dc, stats.crest_db,
-                       (unsigned long long)stats.clipped_samples);
-            }
-            if (report_out != stdout && fclose(report_out) != 0) {
-                pl_audio_free(&audio);
-                return 1;
-            }
-            pl_audio_free(&audio);
-            return 0;
-        }
-
-        if (lowpass > 0.0 && pl_audio_apply_lowpass(&audio, lowpass) != 0) {
-            fprintf(stderr, "Invalid low-pass cutoff.\n");
-            pl_audio_free(&audio);
-            return 2;
-        }
-        if (use_compressor && pl_audio_apply_compressor(&audio, threshold, ratio) != 0) {
-            fprintf(stderr, "Invalid compressor settings.\n");
-            pl_audio_free(&audio);
-            return 2;
-        }
-        if (saturation > 0.0 && pl_audio_apply_saturation(&audio, saturation) != 0) {
-            fprintf(stderr, "Invalid saturation drive.\n");
-            pl_audio_free(&audio);
-            return 2;
-        }
-        if (use_gain && pl_audio_apply_gain(&audio, gain) != 0) {
-            fprintf(stderr, "Invalid gain.\n");
-            pl_audio_free(&audio);
-            return 2;
-        }
-        pl_audio_stats stats;
-        if (pl_audio_measure(&audio, &stats) == 0) {
-            printf("%u Hz | %u channel(s) | %lu frames | peak %.5f | RMS %.5f | "
-                   "crest %.2f dB | clipped %lu\n",
-                   audio.sample_rate, audio.channels, (unsigned long)audio.frames,
-                   stats.peak, stats.rms, stats.crest_db,
-                   (unsigned long)stats.clipped_samples);
-        }
-        if (process_in && pl_audio_write_wav(process_out, &audio) != 0) {
-            fprintf(stderr, "Could not write processed WAV: %s\n", process_out);
-            pl_audio_free(&audio);
-            return 1;
-        }
-        if (process_in) printf("Processed WAV written: %s\n", process_out);
-        pl_audio_free(&audio);
-        return 0;
-    }
     if((systems || systems_lab || architectures || architecture_name || improvement_plan || syntax_pie || trimatrix || e2k_profile) && (argc==2 || (trimatrix && argc<=3))) return 0;
     if (!profile && !bench && !suite && !capabilities && !analyze &&
         !json && !json_stdout && !systems && !systems_lab && !architectures &&
@@ -657,7 +520,7 @@ int main(int argc,char **argv) {
         }
     }
     if(analyze){if(pl_analyze_file(analyze,&a,details,sizeof(details))!=0){fprintf(stderr,"Could not inspect processor source: %s\n",analyze);return 1;}printf("Processor implementation review: %u file(s), %u finding(s), %u read error(s)\n%s",a.files_scanned,a.findings,a.read_errors,details);}
-    if (json != NULL && !wav_info) {
+    if (json != NULL) {
         if (pl_write_json(json, &cpu, &b, &a) != 0) {
             fprintf(stderr, "Could not write JSON report: %s\n", json);
             return 1;

@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/dsp_engine.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/errors.c)
+add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/errors.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
@@ -65,10 +65,6 @@ if(BUILD_TESTING)
   add_test(NAME processor-suite-repeat-json COMMAND pytyliki --suite --repeat 3 --json)
   set_tests_properties(processor-suite-repeat-json PROPERTIES
     PASS_REGULAR_EXPRESSION "\"measured_runs\":2")
-  add_test(NAME wav-info-cli-option COMMAND pytyliki --help)
-  set_tests_properties(wav-info-cli-option PROPERTIES
-    PASS_REGULAR_EXPRESSION "--wav-info")
-
   endif()
   add_executable(pytyliki-ui-ux-40026-tests tests/test_ui_ux_40026.c)
   target_include_directories(pytyliki-ui-ux-40026-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -179,19 +175,11 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-mtte-tests PRIVATE pytyliki_core)
   add_test(NAME mtte-tests COMMAND pytyliki-mtte-tests)
 
-  add_executable(pytyliki-wav-boundary-tests tests/test_wav_boundaries.c)
-  target_link_libraries(pytyliki-wav-boundary-tests PRIVATE pytyliki_core)
-  add_test(NAME wav-container-boundary-tests COMMAND pytyliki-wav-boundary-tests)
-
   add_executable(pytyliki-system-enhancement-tests tests/test_ironclad_systems.c)
   target_link_libraries(pytyliki-system-enhancement-tests PRIVATE pytyliki_core)
   add_test(NAME system-enhancement-registry-tests COMMAND pytyliki-system-enhancement-tests)
   add_test(NAME system-enhancement-cli-smoke COMMAND pytyliki --systems)
   set_tests_properties(system-enhancement-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Twenty-system engineering contract catalogue")
-
-  add_executable(pytyliki-dsp-engine-tests tests/test_dsp_engine.c)
-  target_link_libraries(pytyliki-dsp-engine-tests PRIVATE pytyliki_core)
-  add_test(NAME dsp-engine-tests COMMAND pytyliki-dsp-engine-tests)
 
   add_executable(pytyliki-forge66-tests tests/test_forge66.c)
   target_link_libraries(pytyliki-forge66-tests PRIVATE pytyliki_core)
