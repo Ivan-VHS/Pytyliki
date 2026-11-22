@@ -2,6 +2,11 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+<p align="center"><img src="assets/readme/dashboard.svg" alt="Pytyliki 2026 项目视觉概览" width="100%"></p>
+<sub>项目视觉概览 · README 更新于 2026-11-22 · 项目配色 · 清晰的数据图表</sub>
+
+
+
 [CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) · [Windows 桌面构建](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) · C11 · Windows/Linux · MIT
 **开发者：** [Ivan-VHS](https://github.com/Ivan-VHS)
 
@@ -27,6 +32,9 @@ flowchart TD
     G --> H[结构化报告]
     I[PCM16 WAV] --> J[本地 DSP]
     J --> K[处理后的音频与测量结果]
+  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  class A,B,C,D,E,F,G,H,I,J,K readmeNode;
+  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
 ```
 
 ## 执行路径与输出
@@ -41,6 +49,9 @@ flowchart LR
     E[CPU / MCU 配置] --> F[参考估算]
     G[QCS 源代码] --> H[词法分析与解析]
     H --> I[AST 与诊断]
+  classDef readmeNode fill:#142B3B,stroke:#45D5E8,color:#F4FBFF,stroke-width:1.5px;
+  class A,B,C,D,E,F,G,H,I readmeNode;
+  linkStyle default stroke:#45D5E8,stroke-width:1.8px;
 ```
 
 <sub>应用实际截屏 · 原始图像为 1920×1080 · 保留原始像素，不进行人为放大。</sub>
