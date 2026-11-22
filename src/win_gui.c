@@ -165,7 +165,6 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
         apply_font(mode_label); apply_font(g_motion_mode_combo); apply_font(g_motion_eco_check);
         apply_font(note); apply_font(save); apply_font(cancel);
         SendMessageA(g_motion_eco_check, BM_SETCHECK, g_eco_visuals ? BST_CHECKED : BST_UNCHECKED, 0);
-        EnableWindow(sync, FALSE);
         SetFocus(g_motion_mode_combo);
         return 0;
     }
