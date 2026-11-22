@@ -44,7 +44,7 @@ def _shell_body(body: str) -> str:
 
 def _normalise_number(value: str) -> str:
     compact = value.replace(" ", "")
-    if re.fullmatch(r"[0-9]{1,3}(?:,[0-9]{3})+(?:\\.[0-9]+)?", compact):
+    if re.fullmatch(r"[0-9]{1,3}(?:,[0-9]{3})+(?:[.][0-9]+)?", compact):
         return compact.replace(",", "")
     return compact
 
