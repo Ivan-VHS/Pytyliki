@@ -3,6 +3,7 @@
 | File | Scope |
 |---|---|
 | [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
+| [OCTA8_CLIFE.md](OCTA8_CLIFE.md) | OCTA-8 C11 adapter and CLife savepoint lifecycle |
 | [ENGINEERING.md](ENGINEERING.md) | quality and safety gates |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | runtime and data flow |
 | [DIVISION_ENGINE.md](DIVISION_ENGINE.md) | checked division, balanced partitioning and weighted allocation |
