@@ -22,6 +22,150 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+static void print_json_string(FILE *out, const char *value) {
+    const unsigned char *cursor = (const unsigned char *)(value ? value : "");
+    fputc('"', out);
+    for (; *cursor != '\0'; ++cursor) {
+        switch (*cursor) {
+        case '"': fputs("\\\"", out); break;
+        case '\\': fputs("\\\\", out); break;
+        case '\b': fputs("\\b", out); break;
+        case '\f': fputs("\\f", out); break;
+        case '\n': fputs("\\n", out); break;
+        case '\r': fputs("\\r", out); break;
+        case '\t': fputs("\\t", out); break;
+        default:
+            if (*cursor < 0x20u) fprintf(out, "\\u%04x", (unsigned)*cursor);
+            else fputc((int)*cursor, out);
+        }
+    }
+    fputc('"', out);
+}
+
+static int compare_doubles(const void *left, const void *right) {
+    const double a = *(const double *)left;
+    const double b = *(const double *)right;
+    return (a > b) - (a < b);
+}
+
+static double median_of(const double *values, size_t count) {
+    double ordered[100];
+    if (!values || count == 0u || count > 100u) return 0.0;
+    memcpy(ordered, values, count * sizeof(*values));
+    qsort(ordered, count, sizeof(*ordered), compare_doubles);
+    return count % 2u
+        ? ordered[count / 2u]
+        : (ordered[count / 2u - 1u] + ordered[count / 2u]) * 0.5;
+}
+
+static void print_profile_json(FILE *out, const pl_processor_snapshot *snapshot) {
+    fputs("\"profile\":{\"architecture\":", out);
+    print_json_string(out, snapshot->architecture);
+    fputs(",\"cpu\":", out);
+    print_json_string(out, snapshot->base.model);
+    fputs(",\"vendor\":", out);
+    print_json_string(out, snapshot->base.vendor);
+    fprintf(out,
+        ",\"logical_processors\":%u,\"family\":%u,\"model_id\":%u,"
+        "\"physical_memory_mib\":%llu,\"available_memory_mib\":%llu,"
+        "\"isa\":{\"sse2\":%s,\"sse4_2\":%s,\"avx_hardware\":%s,"
+        "\"osxsave\":%s,\"avx_usable\":%s,\"avx2_usable\":%s,"
+        "\"avx512f_usable\":%s,\"aes\":%s,\"fma_usable\":%s,"
+        "\"virtualization\":%s}}",
+        snapshot->base.logical_cpus, snapshot->base.family, snapshot->base.model_id,
+        (unsigned long long)snapshot->physical_memory_mib,
+        (unsigned long long)snapshot->available_memory_mib,
+        snapshot->sse2 ? "true" : "false",
+        snapshot->sse42 ? "true" : "false",
+        snapshot->avx_hw ? "true" : "false",
+        snapshot->osxsave ? "true" : "false",
+        snapshot->avx ? "true" : "false",
+        snapshot->avx2 ? "true" : "false",
+        snapshot->avx512f ? "true" : "false",
+        snapshot->aes ? "true" : "false",
+        snapshot->fma ? "true" : "false",
+        snapshot->virtualization ? "true" : "false");
+}
+
+static void print_suite_json(FILE *out, const pl_suite_result *runs,
+                             unsigned repeat, unsigned warmup_count) {
+    double integer_ms[100], memory_ms[100], matrix_ms[100];
+    double integer_sum = 0.0, memory_sum = 0.0, matrix_sum = 0.0;
+    double integer_min = HUGE_VAL, integer_max = 0.0;
+    double integer_variance = 0.0;
+    unsigned measured = repeat - warmup_count;
+    for (unsigned i = 0u; i < repeat; ++i) {
+        integer_ms[i] = runs[i].integer_ms;
+        memory_ms[i] = runs[i].memory_ms;
+        matrix_ms[i] = runs[i].matrix_ms;
+        if (i >= warmup_count) {
+            integer_sum += runs[i].integer_ms;
+            memory_sum += runs[i].memory_ms;
+            matrix_sum += runs[i].matrix_ms;
+            if (runs[i].integer_ms < integer_min) integer_min = runs[i].integer_ms;
+            if (runs[i].integer_ms > integer_max) integer_max = runs[i].integer_ms;
+        }
+    }
+    if (measured > 0u) {
+        const double mean = integer_sum / measured;
+        for (unsigned i = warmup_count; i < repeat; ++i) {
+            const double difference = runs[i].integer_ms - mean;
+            integer_variance += difference * difference;
+        }
+        integer_variance = measured > 1u
+            ? sqrt(integer_variance / (measured - 1u)) : 0.0;
+    }
+    fputs("\"suite\":{\"schema\":\"pytyliki.suite.v1\",", out);
+    fprintf(out, "\"repeat\":%u,\"warmup_runs\":%u,\"measured_runs\":%u,\"runs\":[",
+            repeat, warmup_count, measured);
+    for (unsigned i = 0u; i < repeat; ++i) {
+        if (i != 0u) fputc(',', out);
+        fprintf(out,
+            "{\"run\":%u,\"warmup\":%s,\"iterations\":%llu,"
+            "\"memory_mib\":%u,\"passes\":%u,\"integer_ms\":%.6f,"
+            "\"memory_ms\":%.6f,\"matrix_ms\":%.6f,\"checksum\":%llu,"
+            "\"integrity_ok\":%s}",
+            i + 1u, i < warmup_count ? "true" : "false",
+            (unsigned long long)runs[i].iterations, runs[i].memory_mib,
+            runs[i].passes, runs[i].integer_ms, runs[i].memory_ms,
+            runs[i].matrix_ms, (unsigned long long)runs[i].checksum,
+            runs[i].integrity_ok ? "true" : "false");
+    }
+    fprintf(out,
+        "],\"statistics\":{\"integer_ms\":{\"minimum\":%.6f,\"maximum\":%.6f,"
+        "\"mean\":%.6f,\"median\":%.6f,\"sample_stddev\":%.6f,"
+        "\"coefficient_of_variation\":%.6f},"
+        "\"memory_ms\":{\"mean\":%.6f,\"median\":%.6f},"
+        "\"matrix_ms\":{\"mean\":%.6f,\"median\":%.6f}},"
+        "\"timing_note\":\"Host-dependent wall-clock measurements; not a guaranteed performance claim.\"}",
+        integer_min, integer_max, integer_sum / measured,
+        median_of(integer_ms + warmup_count, measured), integer_variance,
+        integer_sum > 0.0 ? integer_variance / sqrt((double)measured) /
+            (integer_sum / measured) : 0.0,
+        memory_sum / measured, median_of(memory_ms + warmup_count, measured),
+        matrix_sum / measured, median_of(matrix_ms + warmup_count, measured));
+}
+
+static void print_wav_info_json(FILE *out, const pl_audio_buffer *audio,
+                                const pl_audio_stats *stats) {
+    const double rms_dbfs = stats->rms > 0.0 ? 20.0 * log10(stats->rms) : -INFINITY;
+    const double peak_dbfs = stats->peak > 0.0 ? 20.0 * log10(stats->peak) : -INFINITY;
+    fputs("{\"schema\":\"pytyliki.wav-info.v1\",\"read_only\":true,", out);
+    fprintf(out,
+        "\"sample_rate\":%u,\"channels\":%u,\"frames\":%llu,"
+        "\"duration_seconds\":%.9f,\"peak\":%.9f,\"peak_dbfs\":",
+        audio->sample_rate, audio->channels, (unsigned long long)audio->frames,
+        (double)audio->frames / audio->sample_rate, stats->peak, stats->peak);
+    if (isfinite(peak_dbfs)) fprintf(out, "%.6f", peak_dbfs); else fputs("null", out);
+    fprintf(out, ",\"rms\":%.9f,\"rms_dbfs\":", stats->rms);
+    if (isfinite(rms_dbfs)) fprintf(out, "%.6f", rms_dbfs); else fputs("null", out);
+    fprintf(out,
+        ",\"dc_offset\":%.9f,\"crest_db\":%.6f,"
+        "\"clipped_samples\":%llu,\"container\":\"RIFF/WAVE PCM16\"}",
+        stats->dc, stats->crest_db, (unsigned long long)stats->clipped_samples);
+}
+
 static void usage(void) {
     puts("Pytyliki Processor Systems Workstation 0.7.0\n"
          "Usage:\n"
@@ -36,6 +180,7 @@ static void usage(void) {
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "           [--compress THRESHOLD_DB RATIO] [--saturate DRIVE] [--gain DB]\n"
+         "  pytyliki --profile --json | --suite --repeat N --json | --wav-info FILE.wav [--json]\n"
          "Processor inspection is read-only. Execution and DSP datapath workloads are bounded.");
 }
 static void print_berry_core_catalog(void) {
@@ -233,6 +378,8 @@ int main(int argc,char **argv) {
         return pl_embedded_cli(argc - 1, argv + 1);
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,systems_lab=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
     const char *tone_out=NULL,*audio_info=NULL,*process_in=NULL,*process_out=NULL;
+    int json_stdout=0,wav_info=0;
+    unsigned repeat=1u;
     pl_pipeline_target pipeline_target=PL_TARGET_C11; pl_role policy_role=PL_ROLE_VIEWER; pl_action policy_action=PL_ACTION_READ;
     unsigned evolution_rounds=8u, trimatrix_depth=PL_TMA_MAX_DEPTH;
     double frequency=440.0,seconds=3.0,lowpass=0.0,threshold=-12.0,ratio=4.0,saturation=0.0,gain=0.0;
@@ -268,6 +415,14 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--capabilities")) capabilities=1;
         else if(!strcmp(argv[i],"--benchmark")) bench=1;
         else if(!strcmp(argv[i],"--suite")) suite=1;
+        else if(!strcmp(argv[i],"--repeat")&&i+1<argc) {
+            char *end=NULL;
+            unsigned long n=strtoul(argv[++i],&end,10);
+            if(!end||*end||n<1u||n>100u) {
+                fprintf(stderr,"Repeat count must be 1..100.\\n"); return 2;
+            }
+            repeat=(unsigned)n;
+        }
         else if(!strcmp(argv[i],"--improvement-plan")) improvement_plan=1;
         else if(!strcmp(argv[i],"--trimatrix")) {
             trimatrix=1;
@@ -290,9 +445,16 @@ int main(int argc,char **argv) {
         else if(!strcmp(argv[i],"--target")&&i+1<argc){const char *v=argv[++i];if(!strcmp(v,"c11"))pipeline_target=PL_TARGET_C11;else if(!strcmp(v,"c23"))pipeline_target=PL_TARGET_C23;else return 2;}
         else if(!strcmp(argv[i],"--policy-check")&&i+2<argc){policy=1;if(pl_policy_parse_role(argv[++i],&policy_role)!=0||pl_policy_parse_action(argv[++i],&policy_action)!=0)return 2;}
         else if((!strcmp(argv[i],"--review-processor")||!strcmp(argv[i],"--analyze"))&&i+1<argc) analyze=argv[++i];
-        else if(!strcmp(argv[i],"--json")&&i+1<argc) json=argv[++i];
+        else if(!strcmp(argv[i],"--json")) {
+            json_stdout=1;
+            if(i+1<argc && argv[i+1][0]!='-') {
+                json=argv[++i];
+                json_stdout=0;
+            }
+        }
         else if(!strcmp(argv[i],"--tone-out")&&i+1<argc) tone_out=argv[++i];
         else if(!strcmp(argv[i],"--audio-info")&&i+1<argc) audio_info=argv[++i];
+        else if(!strcmp(argv[i],"--wav-info")&&i+1<argc) { audio_info=argv[++i]; wav_info=1; }
         else if(!strcmp(argv[i],"--process-wav")&&i+2<argc){process_in=argv[++i];process_out=argv[++i];}
         else if(!strcmp(argv[i],"--frequency")&&i+1<argc){if(parse_double(argv[++i],&frequency))return 2;}
         else if(!strcmp(argv[i],"--seconds")&&i+1<argc){if(parse_double(argv[++i],&seconds))return 2;}
