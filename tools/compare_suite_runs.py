@@ -181,7 +181,7 @@ def compare_reports(
 def format_summary(result: Dict[str, Any]) -> str:
     lines = [f"Pytyliki suite comparison: {result['outcome']}"]
     if not result["comparable"]:
-        lines.extend(f"- Not comparable: {reasoon}" for reason in result["reasons"])
+        lines.extend(f"- Not comparable: {reason}" for reason in result["reasons"])
         return "\n".join(lines)
     for metric, values in result["metrics"].items():
         delta = values["delta_percent"]
