@@ -194,3 +194,11 @@ The 66-point web-stand standard is applied to the documentation without inventin
 | 56–66 · operations and support | links real workflows/releases, explains rollback of downloadable builds, troubleshooting, known limitations, contribution path and license |
 
 **No live web URL is published for this project.** The desktop screenshot and GitHub Actions artifacts are not an interactive web stand.
+
+## Unified report envelope
+
+JSON outputs can be wrapped in the shared ivan-vhs.report.v1 metadata format without changing the tool-specific payload:
+
+    python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
+
+See docs/REPORT_ENVELOPE.md and schemas/ivan-vhs.report.v1.schema.json. The envelope records provenance and project limitations; it is not a security signature or a compatibility verdict.
