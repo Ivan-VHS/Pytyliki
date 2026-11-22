@@ -16,6 +16,7 @@
 #include "systems_accel.h"
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
+#include "errors.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -379,6 +380,19 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
+    if (argc > 1 && strcmp(argv[1], "--explain") == 0) {
+        if (argc != 3) {
+            fputs("Usage: pytyliki --explain ERROR_CODE\\n", stderr);
+            return 2;
+        }
+        const pl_error_entry *entry = pl_error_find(argv[2]);
+        if (!entry) {
+            fprintf(stderr, "Unknown Pytyliki error code: %s\\n", argv[2]);
+            return 2;
+        }
+        pl_error_print(stdout, entry);
+        return ferror(stdout) ? 1 : 0;
+    }
     if (argc > 1) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;
