@@ -5,6 +5,7 @@
 #endif
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 
 int main(void) {
@@ -14,6 +15,7 @@ int main(void) {
     const double zeros[] = {0.0, 0.0};
     const double negative[] = {1.0, -0.1};
     const double invalid[] = {1.0, NAN};
+    const double extreme[] = {DBL_MAX, 0.0};
     pl_benchmark_stats first;
     pl_benchmark_stats second;
 
@@ -43,6 +45,18 @@ int main(void) {
     assert(pl_benchmark_stats_analyze(samples, 5u, NULL) != 0);
     assert(pl_benchmark_stats_analyze(negative, 2u, &first) != 0);
     assert(pl_benchmark_stats_analyze(invalid, 2u, &first) != 0);
+
+    /* Finite inputs near DBL_MAX must not overflow the variance path. */
+    assert(pl_benchmark_stats_analyze(extreme, 2u, &first) == 0);
+    assert(isfinite(first.mean) && first.mean == DBL_MAX / 2.0);
+    assert(isfinite(first.sample_standard_deviation));
+    assert(isfinite(first.coefficient_of_variation));
+    assert(isfinite(first.median_absolute_deviation));
+
+    /* Failed analysis must leave the caller's previous result untouched. */
+    first.mean = 123.0;
+    assert(pl_benchmark_stats_analyze(negative, 2u, &first) != 0);
+    assert(first.mean == 123.0);
     assert(pl_benchmark_stats_analyze(samples, PL_BENCHMARK_MAX_SAMPLES + 1u, &first) != 0);
     return 0;
 }
