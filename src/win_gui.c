@@ -451,7 +451,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CTLCOLOREDIT: {
         HDC dc=(HDC)p; HWND control=(HWND)l;
         if (control==g_log) {
-            SetTextColor(dc,MORA_DARK_TEXT);
+            SetTextColor(dc,g_mora_theme ? MORA_AMBER_TEXT : MORA_DARK_TEXT);
             SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
         }
         SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
@@ -493,9 +493,9 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         PAINTSTRUCT ps; HDC dc=BeginPaint(w,&ps); RECT r; GetClientRect(w,&r);
         FillRect(dc,&r,g_page_brush);
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
-        SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
+        SetBkMode(dc,TRANSPARENT); SetTextColor(dc,g_mora_theme?MORA_AMBER_TEXT:RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,g_mora_theme?MORA_AMBER_SECONDARY:RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SetTextColor(dc,g_mora_theme?MORA_AMBER_SECONDARY:RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,g_mora_theme ? "MORA AMBER    CPU diagnostics | metrics | source review | embedded tools" : "WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
