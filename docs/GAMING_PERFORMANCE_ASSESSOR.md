@@ -24,3 +24,7 @@ python -m unittest tests.test_gaming_performance_assessor -v
 ## Sequential rollout
 
 Rollout gate: this PR stays in draft until DuckOS #75 and OPlague #166 are merged. Then it is the third stage of the gaming-policy rollout.
+
+## DuckOS integration
+
+`to_duckos_capability_evidence(report)` translates measured counters into the versioned `duckos.gaming-provider-evidence.v1` document. It reports only CPU telemetry, memory pressure, swap metrics and frame-time availability. Missing samples remain unavailable; the output is explicitly whole-host/read-only and can be passed to DuckOS `gaming-assess --capabilities`.
