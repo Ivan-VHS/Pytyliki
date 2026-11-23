@@ -13,6 +13,7 @@
 #include "metric_registry.h"
 #include "embedded.h"
 #include "ui_ux_policy.h"
+#include "mora_theme.h"
 
 #ifndef WM_DPICHANGED
 #define WM_DPICHANGED 0x02E0
@@ -46,8 +47,8 @@ static HWND g_motion_dialog = NULL;
 static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
-static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
-static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
+static COLORREF page_color(void) { return g_dark_mode ? MORA_DARK_PAGE : MORA_LIGHT_PAGE; }
+static COLORREF header_color(void) { return g_dark_mode ? MORA_DARK_HEADER : MORA_LIGHT_HEADER; }
 static COLORREF contrast_safe_text(COLORREF proposed, COLORREF background) {
     if (pl_ui_text_contrast_meets(
         GetRValue(proposed), GetGValue(proposed), GetBValue(proposed),
@@ -61,18 +62,19 @@ static COLORREF contrast_safe_text(COLORREF proposed, COLORREF background) {
 }
 static COLORREF text_color(void) {
     return contrast_safe_text(
-        g_dark_mode ? RGB(232,237,242) : RGB(18,44,69), page_color()
+        g_dark_mode ? MORA_DARK_TEXT : MORA_LIGHT_TEXT, page_color()
     );
 }
-static COLORREF input_color(void) { return g_dark_mode ? RGB(15,42,69) : RGB(255,255,255); }
-static COLORREF log_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(15,42,69); }
-static COLORREF blue_color(void) { return g_dark_mode ? RGB(112,165,255) : RGB(0,78,152); }
-static COLORREF blue_hover_color(void) { return g_dark_mode ? RGB(138,182,255) : RGB(26,95,219); }
+static COLORREF input_color(void) { return g_dark_mode ? MORA_DARK_SURFACE : MORA_LIGHT_SURFACE; }
+static COLORREF log_color(void) { return g_dark_mode ? MORA_DARK_LOG : MORA_LIGHT_LOG; }
+static COLORREF blue_color(void) { return g_dark_mode ? MORA_DARK_BRAND : MORA_LIGHT_BRAND; }
+static COLORREF blue_hover_color(void) { return g_dark_mode ? MORA_DARK_BRAND_HOVER : MORA_LIGHT_BRAND_HOVER; }
 static COLORREF red_color(void) { return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45); }
 static COLORREF red_hover_color(void) { return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38); }
-static COLORREF border_color(void) { return g_dark_mode ? RGB(49,81,111) : RGB(202,216,232); }
+static COLORREF border_color(void) { return g_dark_mode ? MORA_DARK_BORDER : MORA_LIGHT_BORDER; }
+static COLORREF selection_color(void) { return g_dark_mode ? MORA_DARK_SELECTION : MORA_LIGHT_SELECTION; }
 static COLORREF button_ink(int primary, int danger) {
-    if (primary) return g_dark_mode ? RGB(6,26,48) : RGB(255,255,255);
+    if (primary) return g_dark_mode ? MORA_DARK_ON_BRAND : MORA_LIGHT_ON_BRAND;
     if (danger) return g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
     return blue_color();
 }
@@ -386,7 +388,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CTLCOLOREDIT: {
         HDC dc=(HDC)p; HWND control=(HWND)l;
         if (control==g_log) {
-            SetTextColor(dc,RGB(229,237,247));
+            SetTextColor(dc,MORA_DARK_TEXT);
             SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
         }
         SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
@@ -407,7 +409,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             int danger=(id==ID_CLEAR), primary=primary_button(id);
             COLORREF fill=danger?((selected||hot)?red_hover_color():red_color()):
                 primary?((selected||hot)?blue_hover_color():blue_color()):
-                (selected||hot?(g_dark_mode?RGB(36,79,130):RGB(217,232,255)):input_color());
+                (selected||hot?selection_color():input_color());
             COLORREF ink=button_ink(primary,danger);
             HBRUSH brush=CreateSolidBrush(fill);
             HPEN pen=CreatePen(PS_SOLID,1,danger?red_color():primary?blue_color():border_color());
