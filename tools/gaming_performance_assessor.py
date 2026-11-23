@@ -158,3 +158,51 @@ def assess_game_session(
         "host_settings_changed": False,
         "execution_performed": False,
     }
+
+
+def to_duckos_capability_evidence(report: dict[str, Any]) -> dict[str, Any]:
+    """Translate measured Pytyliki counters into DuckOS evidence, not control claims."""
+    if not isinstance(report, dict) or report.get("schema") != SCHEMA:
+        raise GamingAssessmentError(f"expected a {SCHEMA} report")
+    if report.get("host_settings_changed") is not False or report.get("execution_performed") is not False:
+        raise GamingAssessmentError("Pytyliki evidence must be read-only")
+    metrics = report.get("metrics")
+    if not isinstance(metrics, dict):
+        raise GamingAssessmentError("report.metrics must be an object")
+
+    def available(metric_name: str) -> bool:
+        record = metrics.get(metric_name)
+        if not isinstance(record, dict):
+            raise GamingAssessmentError(f"report.metrics.{metric_name} must be an object")
+        count = record.get("sample_count")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise GamingAssessmentError(f"report.metrics.{metric_name}.sample_count is invalid")
+        return count > 0
+
+    capabilities = {
+        "cpu_telemetry": available("cpu_percent"),
+        "memory_pressure": available("memory_percent"),
+        "swap_metrics": available("swap_percent"),
+        "frame_time": report.get("frame_time") is not None,
+    }
+    evidence = {
+        name: {
+            "available": present,
+            "provider": "Pytyliki Watch",
+            "version": "measured",
+            "reason": None if present else "no measured samples were supplied",
+        }
+        for name, present in capabilities.items()
+    }
+    if capabilities["frame_time"]:
+        frame_time = report["frame_time"]
+        if not isinstance(frame_time, dict) or frame_time.get("sample_count", 0) <= 0:
+            raise GamingAssessmentError("report.frame_time must contain measured frame samples")
+    return {
+        "schema": "duckos.gaming-provider-evidence.v1",
+        "source_schema": SCHEMA,
+        "capabilities": evidence,
+        "evidence_scope": "whole_host",
+        "per_process_attribution": False,
+        "system_mutations_performed": False,
+    }
