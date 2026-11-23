@@ -98,8 +98,9 @@ def load_manifest(path: str | Path = DEFAULT_MANIFEST) -> tuple[Path, list[dict[
     for index, case in enumerate(cases):
         label = f"cases[{index}]"
         required = {"id", "syntax", "source", "expected_valid"}
-        if not isinstance(case, dict) or set(case) - (required | {"polyglot"}) or not required.issubset(case):
-            raise ConformanceError(f"{label} must contain id, syntax, source, expected_valid and optional polyglot")
+        optional = {"polyglot", "expected_error"}
+        if not isinstance(case, dict) or set(case) - (required | optional) or not required.issubset(case):
+            raise ConformanceError(f"{label} must contain id, syntax, source, expected_valid and optional polyglot/expected_error")
         identifier = case["id"]
         if not isinstance(identifier, str) or not ID_PATTERN.fullmatch(identifier):
             raise ConformanceError(f"{label}.id must be a canonical lowercase identifier")
@@ -111,6 +112,13 @@ def load_manifest(path: str | Path = DEFAULT_MANIFEST) -> tuple[Path, list[dict[
             raise ConformanceError(f"{label}.syntax is not supported")
         if type(case["expected_valid"]) is not bool:
             raise ConformanceError(f"{label}.expected_valid must be a boolean")
+        expected_error = case.get("expected_error")
+        if case["expected_valid"] and expected_error is not None:
+            raise ConformanceError(f"{label}.expected_error is only valid for intentionally invalid fixtures")
+        if not case["expected_valid"] and (
+            not isinstance(expected_error, str) or not expected_error.strip()
+        ):
+            raise ConformanceError(f"{label}.expected_error must identify the expected diagnostic for invalid fixtures")
         polyglot = case.get("polyglot", False)
         if type(polyglot) is not bool:
             raise ConformanceError(f"{label}.polyglot must be a boolean")
@@ -120,6 +128,7 @@ def load_manifest(path: str | Path = DEFAULT_MANIFEST) -> tuple[Path, list[dict[
             "syntax": syntax,
             "source": source,
             "expected_valid": case["expected_valid"],
+            "expected_error": expected_error,
             "polyglot": polyglot,
         })
     return base, validated
@@ -180,11 +189,19 @@ def run_conformance(
                 except json.JSONDecodeError:
                     payload = None
             actual_valid = completed.returncode == 0 and isinstance(payload, dict) and payload.get("valid") is True
-            matched = actual_valid is case["expected_valid"]
+            if case["expected_valid"]:
+                matched = actual_valid
+            else:
+                matched = (
+                    completed.returncode != 0
+                    and isinstance(case["expected_error"], str)
+                    and case["expected_error"].casefold() in (completed.stderr or "").casefold()
+                )
             results.append({
                 "id": case["id"],
                 "syntax": case["syntax"],
                 "expected_valid": case["expected_valid"],
+                "expected_error": case["expected_error"],
                 "actual_valid": actual_valid,
                 "matched": matched,
                 "exit_code": completed.returncode,
@@ -196,6 +213,7 @@ def run_conformance(
                 "id": case["id"],
                 "syntax": case["syntax"],
                 "expected_valid": case["expected_valid"],
+                "expected_error": case["expected_error"],
                 "actual_valid": False,
                 "matched": False,
                 "exit_code": None,
