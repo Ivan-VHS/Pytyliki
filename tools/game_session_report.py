@@ -121,14 +121,26 @@ def analyze_file(path: str | Path, game_id: str, thresholds: dict[str, float] | 
         raise ValueError("samples path must be a regular, non-symlink file")
     if source.stat().st_size > 8 * 1024 * 1024:
         raise ValueError("samples file exceeds the 8 MiB input limit")
-    payload = json.loads(source.read_text(encoding="utf-8"))
+    raw = source.read_text(encoding="utf-8")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        # Pytyliki Watch's jsonl output is one independent sample per line.
+        payload = []
+        for line_number, line in enumerate(raw.splitlines(), start=1):
+            if not line.strip():
+                continue
+            try:
+                payload.append(json.loads(line))
+            except json.JSONDecodeError as error:
+                raise ValueError(f"invalid JSONL record on line {line_number}: {error.msg}") from error
     if isinstance(payload, dict):
         payload = payload.get("samples")
     return build_game_session_report(game_id, payload, thresholds)
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Analyze Pytyliki Watch telemetry around a game session.")
-    parser.add_argument("samples", type=Path, help="JSON array or object with a samples array")
+    parser.add_argument("samples", type=Path, help="JSON array, object with a samples array, or Pytyliki Watch JSONL file")
     parser.add_argument("--game-id", required=True)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
