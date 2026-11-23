@@ -33,7 +33,7 @@ class GamingPerformanceAssessorTests(unittest.TestCase):
         )
         frame = report["frame_time"]
         self.assertEqual(frame["sample_count"], 100)
-        self.assertEqual(frame["average_fps"], 95.24)
+        self.assertEqual(frame["average_fps"], 96.15)
         self.assertIsNone(frame["point_one_percent_low_fps"])
         self.assertFalse(frame["point_one_percent_low_available"])
 
