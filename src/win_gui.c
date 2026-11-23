@@ -88,6 +88,16 @@ static void request_dpi_awareness(void) {
     }
     SetProcessDPIAware();
 }
+static void apply_mora_theme(void) {
+    char theme[16] = {0};
+    DWORD length = GetEnvironmentVariableA(
+        "MORA_THEME_MODE", theme, (DWORD)sizeof(theme)
+    );
+    if (length == 0 || length >= sizeof(theme)) return;
+    if (lstrcmpiA(theme, "dark") == 0) g_dark_mode = 1;
+    else if (lstrcmpiA(theme, "light") == 0) g_dark_mode = 0;
+}
+
 static void rebuild_brushes(void) {
     if (g_page_brush) DeleteObject(g_page_brush);
     if (g_input_brush) DeleteObject(g_input_brush);
@@ -455,6 +465,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
 int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     (void)prev; (void)cmd;
     request_dpi_awareness();
+    apply_mora_theme();
     WNDCLASSA wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
     wc.lpszClassName="PytylikiProcessorWorkstation"; wc.hCursor=LoadCursor(NULL,IDC_ARROW); wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     if(!RegisterClassA(&wc)) return 1;
