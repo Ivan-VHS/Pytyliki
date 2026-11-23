@@ -49,6 +49,10 @@ Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断�
 下方图片是桌面应用的实际截屏，并非交互式浏览器预览。
 
 
+## 相关操作系统产品：DuckOS
+
+七款 Mora 应用（Cockos、Kavun、Ka-bon、Gloverty、Po、Illidia 和 Unify）在独立的 [DuckOS 项目](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/PREINSTALLED_APPLICATIONS.md)中定义。它们属于操作系统应用层，并不是 Pytyliki 的组成部分。本仓库不声称随附这些应用或提供其操作系统服务。Pytyliki 自身的能力和接口仍以本仓库的源代码、测试和版本化契约为准。
+
 ## 快速开始
 
 ### 环境要求
