@@ -87,6 +87,11 @@ jobs:
                 ;;
             esac
 
+            if [[ "$compare_status" == "diverged" ]]; then
+              echo "NOTICE PR #$number: branch and main have diverged; leaving the merge/rebase decision for manual resolution."
+              return 0
+            fi
+
             if (( behind_by > 0 )); then
               echo "UPDATE PR #$number: branch is behind main by $behind_by commit(s) (ahead=$ahead_by, compare=$compare_status, mergeable_state=$state)."
               gh api --method PUT "repos/$GITHUB_REPOSITORY/pulls/$number/update-branch" \
