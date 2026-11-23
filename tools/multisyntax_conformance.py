@@ -116,7 +116,7 @@ def load_manifest(path: str | Path = DEFAULT_MANIFEST) -> tuple[Path, list[dict[
         if case["expected_valid"] and expected_error is not None:
             raise ConformanceError(f"{label}.expected_error is only valid for intentionally invalid fixtures")
         if not case["expected_valid"] and (
-            not isinstance(expected_error, str) or not expected_error.strip()
+            not isinstance(expected_error, str) or not expected_error.strip() or len(expected_error) > 128
         ):
             raise ConformanceError(f"{label}.expected_error must identify the expected diagnostic for invalid fixtures")
         polyglot = case.get("polyglot", False)
@@ -142,8 +142,14 @@ def _reaper_root(path: str | Path) -> Path:
         root = candidate.resolve(strict=True)
     except OSError as error:
         raise ConformanceError(f"cannot open Reaper checkout: {error}") from error
-    if not (root / "pyproject.toml").is_file() or not (root / "reaper" / "multisyntax.py").is_file():
-        raise ConformanceError("Reaper root must contain pyproject.toml and reaper/multisyntax.py")
+    required = (
+        root / "pyproject.toml",
+        root / "reaper" / "__main__.py",
+        root / "reaper" / "cli.py",
+        root / "reaper" / "multisyntax.py",
+    )
+    if any(not item.is_file() or item.is_symlink() for item in required):
+        raise ConformanceError("Reaper root must contain pyproject.toml and the runnable reaper package entry points")
     return root
 
 
@@ -188,7 +194,26 @@ def run_conformance(
                     payload = json.loads(completed.stdout)
                 except json.JSONDecodeError:
                     payload = None
-            actual_valid = completed.returncode == 0 and isinstance(payload, dict) and payload.get("valid") is True
+            report_matches = False
+            if isinstance(payload, dict) and payload.get("valid") is True:
+                if case["polyglot"]:
+                    blocks = payload.get("blocks")
+                    report_matches = (
+                        payload.get("schema") == "reaper.polyglot-validation.v1"
+                        and payload.get("block_count") == len(blocks) if isinstance(blocks, list)
+                        else False
+                    )
+                    if report_matches:
+                        report_matches = all(
+                            isinstance(block, dict) and block.get("valid") is True
+                            for block in blocks
+                        )
+                else:
+                    report_matches = (
+                        payload.get("schema") == "reaper.syntax-validation.v1"
+                        and payload.get("syntax") == case["syntax"]
+                    )
+            actual_valid = completed.returncode == 0 and report_matches
             if case["expected_valid"]:
                 matched = actual_valid
             else:
