@@ -49,6 +49,10 @@ The app reports information it can observe and produces advisory plans. It does 
 The Windows screenshot below is a captured desktop application, not an interactive browser preview.
 
 
+## Related OS product: DuckOS
+
+The seven-app **Mora** suite (Cockos, Kavun, Ka-bon, Gloverty, Po, Illidia and Unify) is specified in the separate [DuckOS project](https://github.com/Ivan-VHS/DuckOS/blob/docs/unified-documentation-standard/docs/PREINSTALLED_APPLICATIONS.md). It is an operating-system application layer, not a component of Pytyliki. This repository does not claim to ship those applications or provide their OS services. Its own capabilities and interfaces remain independently defined by this repository's source, tests and versioned contracts.
+
 ## Quick Start
 
 ### Requirements
