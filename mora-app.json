@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "pytyliki",
+  "name": "Pytyliki",
+  "summary": "Рабочая станция процессорных систем",
+  "description": "Локальная C11-станция для инвентаризации CPU, ограниченных измерений, анализа исходников и системных отчётов.",
+  "category": "compute",
+  "accent": "#386CAA",
+  "capabilities": ["CPU inventory", "Local measurements", "Source review", "Profile analysis", "System reports"],
+  "entrypoint": {
+    "kind": "native",
+    "path": "build/Release/pytyliki-gui.exe",
+    "platforms": ["windows"],
+    "requires": ["Windows", "CMake 3.16+", "C11 compiler"]
+  },
+  "integration": {
+    "theme_environment": "MORA_THEME_MODE",
+    "themes": ["dark", "light"],
+    "window_mode": "separate-native-window",
+    "local_only": true
+  }
+}
