@@ -24,6 +24,8 @@ class MultiSyntaxConformanceTests(unittest.TestCase):
         self.manifest = self.fixtures / "manifest.json"
         self.reaper = self.root / "reaper"
         (self.reaper / "reaper").mkdir(parents=True)
+        (self.reaper / "reaper" / "__main__.py").write_text("from .cli import main\\n", encoding="utf-8")
+        (self.reaper / "reaper" / "cli.py").write_text("def main(): pass\\n", encoding="utf-8")
         (self.reaper / "pyproject.toml").write_text("[project]\nname='reaper'\n", encoding="utf-8")
         (self.reaper / "reaper" / "multisyntax.py").write_text("REGISTRY = True\n", encoding="utf-8")
 
@@ -77,7 +79,7 @@ class MultiSyntaxConformanceTests(unittest.TestCase):
         ])
         calls = []
         responses = [
-            subprocess.CompletedProcess([], 0, '{"valid": true}', ""),
+            subprocess.CompletedProcess([], 0, '{"schema": "reaper.syntax-validation.v1", "syntax": "python", "valid": true}', ""),
             subprocess.CompletedProcess([], 1, "", "unmatched '[' at source offset 2"),
         ]
 
