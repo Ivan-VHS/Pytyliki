@@ -135,7 +135,7 @@ def analyze_file(path: str | Path, game_id: str, thresholds: dict[str, float] | 
             except json.JSONDecodeError as error:
                 raise ValueError(f"invalid JSONL record on line {line_number}: {error.msg}") from error
     if isinstance(payload, dict):
-        payload = payload.get("samples")
+        payload = payload["samples"] if "samples" in payload else [payload]
     return build_game_session_report(game_id, payload, thresholds)
 
 def main(argv: list[str] | None = None) -> int:
