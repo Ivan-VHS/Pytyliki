@@ -142,6 +142,7 @@ def validate_capability_standard(document: str) -> list[str]:
         "treat imported files",
         "rollback or recovery path",
         "partial or planned",
+        "keep planned and not_applicable items in the roadmap or implementation-status ledger",
     )
     for control in required_controls:
         if control.casefold() not in document.casefold():
