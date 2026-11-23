@@ -73,12 +73,12 @@ class MultiSyntaxConformanceTests(unittest.TestCase):
     def test_runs_validator_without_shell_and_checks_expected_invalid_cases(self):
         self.write_manifest([
             {"id": "valid", "syntax": "python", "source": "sample.py", "expected_valid": True},
-            {"id": "invalid", "syntax": "brainfuck", "source": "sample.py", "expected_valid": False},
+            {"id": "invalid", "syntax": "brainfuck", "source": "sample.py", "expected_valid": False, "expected_error": "unmatched"},
         ])
         calls = []
         responses = [
             subprocess.CompletedProcess([], 0, '{"valid": true}', ""),
-            subprocess.CompletedProcess([], 1, "", "unmatched bracket"),
+            subprocess.CompletedProcess([], 1, "", "unmatched '[' at source offset 2"),
         ]
 
         def runner(command, **kwargs):
