@@ -38,6 +38,7 @@ static HWND g_log;
 static HWND g_main;
 static HFONT g_font;
 static HFONT g_log_font;
+static HFONT g_brand_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
 static int g_mora_theme = 1;
@@ -429,6 +430,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CREATE: {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
+        g_brand_font=CreateFontA(-25,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Lobster");
         rebuild_brushes();
         add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,theme_button_label(),ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
@@ -494,8 +496,13 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         FillRect(dc,&r,g_page_brush);
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,g_mora_theme?MORA_AMBER_TEXT:RGB(255,255,255));
-        HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,g_mora_theme?MORA_AMBER_SECONDARY:RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,g_mora_theme ? "MORA AMBER    CPU diagnostics | metrics | source review | embedded tools" : "WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        HFONT old=(HFONT)SelectObject(dc,g_brand_font ? g_brand_font : g_font);
+        RECT title={22,8,190,42}; DrawTextA(dc,"PYTYLIKI",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SelectObject(dc,g_font);
+        SetTextColor(dc,g_mora_theme?MORA_AMBER_TEXT:RGB(255,255,255));
+        RECT product={190,10,r.right-20,42}; DrawTextA(dc,"PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&product,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SetTextColor(dc,g_mora_theme?MORA_AMBER_SECONDARY:RGB(218,231,245));
+        RECT sub={23,43,r.right-20,70}; DrawTextA(dc,g_mora_theme ? "MORA AMBER    CPU diagnostics | metrics | source review | embedded tools" : "WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
@@ -522,6 +529,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         return 0;
     case WM_DESTROY:
         if (g_font) DeleteObject(g_font);
+        if (g_brand_font) DeleteObject(g_brand_font);
         if (g_log_font) DeleteObject(g_log_font);
         if (g_page_brush) DeleteObject(g_page_brush);
         if (g_input_brush) DeleteObject(g_input_brush);
