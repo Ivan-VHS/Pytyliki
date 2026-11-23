@@ -212,3 +212,8 @@ See docs/REPORT_ENVELOPE.md and schemas/ivan-vhs.report.v1.schema.json. The enve
 ## Documentation map
 
 Use the [documentation index](docs/README.md) as the entry point and the [information architecture map](docs/INFORMATION_ARCHITECTURE.md) for topic clusters, related pages and cross-repository boundaries. Each topic hub links to its detailed contracts; implementation status remains governed by the relevant source, tests and schemas.
+
+
+## Mora desktop integration
+
+Pytyliki is listed in the shared Mora workspace. Its native launch action is available on Windows when the existing Win32 GUI target has been built; portable C11 and CLI use remain independent. See [Mora integration](docs/MORA_DESKTOP_INTEGRATION.md) and the [DuckOS workspace contract](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md).
