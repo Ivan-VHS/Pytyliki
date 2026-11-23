@@ -1,0 +1,220 @@
+{
+  "schema": "ivan-vhs.backend-engineering.v1",
+  "version": 1,
+  "project": "Pytyliki",
+  "scope": "Local C11 processor-systems workstation, CPU and platform diagnostics, embedded helpers, bounded memory/transaction modules, measurement tools and Win32 GUI; not a federated network compute service.",
+  "standard": "docs/BACKEND_ENGINEERING_STANDARD.md",
+  "schema_file": ".architecture/backend-engineering.v1.schema.json",
+  "status_policy": {
+    "allowed_statuses": [
+      "implemented",
+      "partial",
+      "planned",
+      "not_applicable",
+      "not_assessed"
+    ],
+    "rule": "Use implemented or partial only when repository code and focused verification paths support the exact statement. Record limits explicitly. A design document, capability catalog or profile-validation job does not prove runtime behavior."
+  },
+  "controls": [
+    {
+      "id": "boundaries-contracts",
+      "title": "Module boundaries and versioned contracts",
+      "status": "partial",
+      "assessment": "The C modules and architecture-atlas layer expose explicit local component boundaries with dedicated tests.",
+      "evidence": [
+        "src/architecture_atlas.c",
+        "src/ironclad_systems.c",
+        "docs/ARCHITECTURE.md"
+      ],
+      "verification": [
+        "tests/test_architecture_atlas.c",
+        "tests/test_ironclad_systems.c"
+      ],
+      "limitations": [
+        "The current contracts do not establish a stable network ABI or a general multi-process service platform."
+      ]
+    },
+    {
+      "id": "input-validation-idempotency",
+      "title": "Input validation and idempotent state changes",
+      "status": "partial",
+      "assessment": "The APSIA and transactional-runtime paths validate bounded inputs and reject stale snapshot generations in their documented scope.",
+      "evidence": [
+        "src/apsia.c",
+        "src/runtime_transaction.c",
+        "docs/TRANSACTIONAL_RUNTIME.md"
+      ],
+      "verification": [
+        "tests/test_apsia.c",
+        "tests/test_runtime_transaction.c"
+      ],
+      "limitations": [
+        "The transaction engine changes caller-owned in-memory snapshots; it does not perform hardware flashing or persistent database commits."
+      ]
+    },
+    {
+      "id": "io-transport",
+      "title": "Low-level I/O and transport boundaries",
+      "status": "partial",
+      "assessment": "Interop and trace modules cover selected local host/API boundaries with focused regression tests.",
+      "evidence": [
+        "src/interop.c",
+        "src/trace.c",
+        "docs/EMBEDDED_C.md"
+      ],
+      "verification": [
+        "tests/test_interop.c",
+        "tests/test_trace.c"
+      ],
+      "limitations": [
+        "This is not a network transport or distributed RPC implementation; outbound network access is not part of the stated product boundary."
+      ]
+    },
+    {
+      "id": "concurrency-backpressure",
+      "title": "Concurrency, scheduling and backpressure",
+      "status": "not_assessed",
+      "assessment": "The repository has local pipelines and embedded components, but a verified bounded worker scheduler, queue backpressure and concurrent cancellation contract have not been established.",
+      "evidence": [
+        "src/pipeline.c"
+      ],
+      "verification": [],
+      "limitations": [
+        "No load, race, saturation or worker-shutdown tests currently prove general concurrency behavior."
+      ]
+    },
+    {
+      "id": "memory-resource-lifecycle",
+      "title": "Memory ownership and resource lifetime",
+      "status": "partial",
+      "assessment": "A dedicated memory/arena subsystem and regression test exist for selected local allocation and resource paths.",
+      "evidence": [
+        "src/memory.c",
+        "src/memory.h",
+        "docs/MEMORY_ARENA.md"
+      ],
+      "verification": [
+        "tests/test_memory.c"
+      ],
+      "limitations": [
+        "The test does not establish a process-wide memory ceiling or safety of every caller and native boundary."
+      ]
+    },
+    {
+      "id": "data-integrity-transactions",
+      "title": "Data integrity and transactions",
+      "status": "partial",
+      "assessment": "The C11 transaction engine provides bounded staging, CRC checks, optimistic generation validation and rollback for in-memory snapshots.",
+      "evidence": [
+        "src/runtime_transaction.c",
+        "docs/TRANSACTIONAL_RUNTIME.md"
+      ],
+      "verification": [
+        "tests/test_runtime_transaction.c"
+      ],
+      "limitations": [
+        "The word flash in this API means committing an in-memory snapshot; it is not a physical firmware or device operation."
+      ]
+    },
+    {
+      "id": "failure-recovery-lifecycle",
+      "title": "Failure handling, recovery and lifecycle",
+      "status": "partial",
+      "assessment": "Transaction rollback and guarded error states have focused tests; recovery remains limited to the local snapshot contract.",
+      "evidence": [
+        "src/runtime_transaction.c",
+        "docs/TRANSACTIONAL_RUNTIME.md"
+      ],
+      "verification": [
+        "tests/test_runtime_transaction.c"
+      ],
+      "limitations": [
+        "No persistent storage recovery, distributed failover or physical hardware recovery is claimed."
+      ]
+    },
+    {
+      "id": "security-privilege-secrets",
+      "title": "Security, privileges and secret handling",
+      "status": "partial",
+      "assessment": "The repository documents default-deny, bounded-work and explicit-approval policies, with validator tests for the declarative resilience profile.",
+      "evidence": [
+        "SECURITY.md",
+        "docs/DISTRIBUTED_SYSTEMS_ENGINEERING_STANDARD.md",
+        "scripts/validate_resilience_policy.py"
+      ],
+      "verification": [
+        "tests/test_resilience_policy.py"
+      ],
+      "limitations": [
+        "Policy/profile validation is not a kernel sandbox or proof of privilege enforcement in every native module."
+      ]
+    },
+    {
+      "id": "observability-diagnostics",
+      "title": "Observability and diagnostics",
+      "status": "partial",
+      "assessment": "The trace subsystem records diagnostic events with a dedicated native test and measurement-provenance documentation.",
+      "evidence": [
+        "src/trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ],
+      "verification": [
+        "tests/test_trace.c"
+      ],
+      "limitations": [
+        "Local trace output is not distributed tracing or a hosted metrics/alerting service."
+      ]
+    },
+    {
+      "id": "performance-capacity",
+      "title": "Performance budgets and capacity",
+      "status": "partial",
+      "assessment": "CPU benchmark statistics are collected and tested as local measurement data; service-capacity and horizontal-scaling baselines are not defined.",
+      "evidence": [
+        "src/benchmark_stats.c",
+        "docs/BENCHMARK_STATISTICS.md"
+      ],
+      "verification": [
+        "tests/test_benchmark_stats.c"
+      ],
+      "limitations": [
+        "Benchmark aggregation does not itself demonstrate that a workload meets a performance target or scales under concurrency."
+      ]
+    },
+    {
+      "id": "configuration-extensibility",
+      "title": "Configuration, extensibility and integration",
+      "status": "partial",
+      "assessment": "The interop and embedded-C surfaces provide controlled integration points with native tests and documented boundaries.",
+      "evidence": [
+        "src/interop.c",
+        "src/embedded.c",
+        "docs/EMBEDDED_C.md"
+      ],
+      "verification": [
+        "tests/test_interop.c",
+        "tests/test_embedded.c"
+      ],
+      "limitations": [
+        "External modules do not acquire unrestricted host or hardware authority through these interfaces."
+      ]
+    },
+    {
+      "id": "verification-delivery",
+      "title": "Verification and delivery gate",
+      "status": "implemented",
+      "assessment": "This PR adds a machine-readable backend engineering profile, safe-path/status validator, negative self-tests and a dedicated CI gate.",
+      "evidence": [
+        "docs/BACKEND_ENGINEERING_STANDARD.md",
+        "tools/validate_backend_engineering.py",
+        ".github/workflows/backend-engineering.yml"
+      ],
+      "verification": [
+        ".github/workflows/backend-engineering.yml"
+      ],
+      "limitations": [
+        "The gate validates profile integrity and evidence paths; it does not certify hardware safety, OS-level control or production readiness."
+      ]
+    }
+  ]
+}
