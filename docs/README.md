@@ -1,5 +1,9 @@
 # Documentation
 
+## Related operating-system product
+
+[DuckOS — Mora seven-app suite](https://github.com/Ivan-VHS/DuckOS/blob/docs/unified-documentation-standard/docs/PREINSTALLED_APPLICATIONS.md) is a separate OS-level product specification. It does not add these applications or their services to this repository.
+
 ## Normative documentation standard
 
 [Unified documentation and semantics standard](UNIFIED_DOCUMENTATION_STANDARD.md) defines the shared terminology, capability maturity, runtime states, verification outcomes, evidence rules, localization requirements and documentation acceptance criteria. It is normative for this repository; project-specific architecture and implementation evidence remain authoritative for the product itself.
