@@ -1,3 +1,16 @@
+> **Navigation:** Start with the [information architecture map](INFORMATION_ARCHITECTURE.md), then open the relevant [topic hub](clusters/architecture.md). The map catalogs every Markdown page and keeps the repository's topic clusters discoverable.
+
+## Topic hubs
+
+- [Architecture and system contracts](clusters/architecture.md) — System structure, data flow, processor models and bounded execution contracts.
+- [Processor, hardware and computational labs](clusters/processor-labs.md) — CPU capabilities, hardware reference models, numerical engines and bounded lab workflows.
+- [Quality, safety and evidence](clusters/quality-evidence.md) — Validation gates, repeatability, traceability, reporting and safety boundaries.
+- [UI, motion and visual documentation](clusters/ui-visual.md) — Desktop interaction, accessibility, motion behavior and visual asset standards.
+- [Integrations and project federation](clusters/federation.md) — External interfaces, plugins, shared contracts and cross-project integration boundaries.
+- [Governance, planning and reference material](clusters/governance-planning.md) — Project stewardship, decision standards, roadmaps and supporting references.
+
+---
+
 # Documentation
 
 ## Normative documentation standard

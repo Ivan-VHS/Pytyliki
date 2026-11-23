@@ -203,3 +203,8 @@ JSON outputs can be wrapped in the shared ivan-vhs.report.v1 metadata format wit
     python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
 
 See docs/REPORT_ENVELOPE.md and schemas/ivan-vhs.report.v1.schema.json. The envelope records provenance and project limitations; it is not a security signature or a compatibility verdict.
+
+
+## Documentation map
+
+Use the [documentation index](docs/README.md) as the entry point and the [information architecture map](docs/INFORMATION_ARCHITECTURE.md) for topic clusters, related pages and cross-repository boundaries. Each topic hub links to its detailed contracts; implementation status remains governed by the relevant source, tests and schemas.
