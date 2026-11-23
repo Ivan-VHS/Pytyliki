@@ -1,0 +1,6 @@
+%% python
+print(2 + 3)
+%% forth
+4 5 + .
+%% brainfuck
+++++++++[>++++++++<-]>+.
