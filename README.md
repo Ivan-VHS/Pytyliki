@@ -46,6 +46,10 @@ The app reports information it can observe and produces advisory plans. It does 
 | Interop | build the versioned C ABI v1 library | consumers must select a trusted library explicitly |
 | Atomic-Quantum | run the bounded classical state-vector subset | simulation only; no quantum-hardware access |
 
+### Explicitly not implemented
+
+PCM16 WAV import/export, test-tone generation and DSP processing are not part of the current Pytyliki source tree. The corresponding project-contract entry remains partial until implementation code, boundary tests and CI evidence are committed.
+
 The Windows screenshot below is a captured desktop application, not an interactive browser preview.
 
 
