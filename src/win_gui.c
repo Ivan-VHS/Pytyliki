@@ -131,7 +131,7 @@ static void load_theme_settings(void) {
     HKEY key;
     DWORD value = 2, size = sizeof(value), type = REG_DWORD;
     if (RegOpenKeyExA(HKEY_CURRENT_USER,
-        "Software\\\\Ivan-VHS\\\\Pytyliki\\\\UI", 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
+        "Software\\Ivan-VHS\\Pytyliki\\UI", 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
         if (RegQueryValueExA(key, "ThemeMode", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS
             && type == REG_DWORD && value <= 2) {
             apply_theme_mode((int)value);
@@ -153,7 +153,7 @@ static void save_theme_settings(void) {
     HKEY key;
     DWORD disposition = 0;
     if (RegCreateKeyExA(HKEY_CURRENT_USER,
-        "Software\\\\Ivan-VHS\\\\Pytyliki\\\\UI", 0, NULL, 0,
+        "Software\\Ivan-VHS\\Pytyliki\\UI", 0, NULL, 0,
         KEY_SET_VALUE, NULL, &key, &disposition) != ERROR_SUCCESS) return;
     const DWORD value = g_mora_theme ? 2u : g_dark_mode ? 1u : 0u;
     RegSetValueExA(key, "ThemeMode", 0, REG_DWORD, (const BYTE*)&value, sizeof(value));
