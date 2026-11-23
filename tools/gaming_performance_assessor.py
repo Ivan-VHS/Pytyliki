@@ -196,8 +196,9 @@ def to_duckos_capability_evidence(report: dict[str, Any]) -> dict[str, Any]:
     }
     if capabilities["frame_time"]:
         frame_time = report["frame_time"]
-        if not isinstance(frame_time, dict) or frame_time.get("sample_count", 0) <= 0:
-            raise GamingAssessmentError("report.frame_time must contain measured frame samples")
+        frame_count = frame_time.get("sample_count") if isinstance(frame_time, dict) else None
+        if isinstance(frame_count, bool) or not isinstance(frame_count, int) or frame_count <= 0:
+            raise GamingAssessmentError("report.frame_time must contain a positive measured sample count")
     return {
         "schema": "duckos.gaming-provider-evidence.v1",
         "source_schema": SCHEMA,
