@@ -40,6 +40,7 @@ static HFONT g_font;
 static HFONT g_log_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
+static int g_mora_theme = 1;
 static int g_reduce_motion = 0;
 static int g_eco_visuals = 0;
 static int g_motion_mode = 0; /* 0 Normal, 1 Expressive, 2 Reduced Motion */
@@ -47,8 +48,14 @@ static HWND g_motion_dialog = NULL;
 static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
-static COLORREF page_color(void) { return g_dark_mode ? MORA_DARK_PAGE : MORA_LIGHT_PAGE; }
-static COLORREF header_color(void) { return g_dark_mode ? MORA_DARK_HEADER : MORA_LIGHT_HEADER; }
+static COLORREF page_color(void) {
+    if (g_mora_theme) return MORA_AMBER_PAGE;
+    return g_dark_mode ? MORA_DARK_PAGE : MORA_LIGHT_PAGE;
+}
+static COLORREF header_color(void) {
+    if (g_mora_theme) return MORA_AMBER_HEADER;
+    return g_dark_mode ? MORA_DARK_HEADER : MORA_LIGHT_HEADER;
+}
 static COLORREF contrast_safe_text(COLORREF proposed, COLORREF background) {
     if (pl_ui_text_contrast_meets(
         GetRValue(proposed), GetGValue(proposed), GetBValue(proposed),
@@ -61,21 +68,47 @@ static COLORREF contrast_safe_text(COLORREF proposed, COLORREF background) {
     return black_ratio >= white_ratio ? RGB(0,0,0) : RGB(255,255,255);
 }
 static COLORREF text_color(void) {
-    return contrast_safe_text(
-        g_dark_mode ? MORA_DARK_TEXT : MORA_LIGHT_TEXT, page_color()
-    );
+    const COLORREF proposed = g_mora_theme ? MORA_AMBER_TEXT
+        : g_dark_mode ? MORA_DARK_TEXT : MORA_LIGHT_TEXT;
+    return contrast_safe_text(proposed, page_color());
 }
-static COLORREF input_color(void) { return g_dark_mode ? MORA_DARK_SURFACE : MORA_LIGHT_SURFACE; }
-static COLORREF log_color(void) { return g_dark_mode ? MORA_DARK_LOG : MORA_LIGHT_LOG; }
-static COLORREF blue_color(void) { return g_dark_mode ? MORA_DARK_BRAND : MORA_LIGHT_BRAND; }
-static COLORREF blue_hover_color(void) { return g_dark_mode ? MORA_DARK_BRAND_HOVER : MORA_LIGHT_BRAND_HOVER; }
-static COLORREF red_color(void) { return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45); }
-static COLORREF red_hover_color(void) { return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38); }
-static COLORREF border_color(void) { return g_dark_mode ? MORA_DARK_BORDER : MORA_LIGHT_BORDER; }
-static COLORREF selection_color(void) { return g_dark_mode ? MORA_DARK_SELECTION : MORA_LIGHT_SELECTION; }
+static COLORREF input_color(void) {
+    if (g_mora_theme) return MORA_AMBER_SURFACE;
+    return g_dark_mode ? MORA_DARK_SURFACE : MORA_LIGHT_SURFACE;
+}
+static COLORREF log_color(void) {
+    if (g_mora_theme) return MORA_AMBER_LOG;
+    return g_dark_mode ? MORA_DARK_LOG : MORA_LIGHT_LOG;
+}
+static COLORREF blue_color(void) {
+    if (g_mora_theme) return MORA_AMBER_BRAND;
+    return g_dark_mode ? MORA_DARK_BRAND : MORA_LIGHT_BRAND;
+}
+static COLORREF blue_hover_color(void) {
+    if (g_mora_theme) return MORA_AMBER_BRAND_HOVER;
+    return g_dark_mode ? MORA_DARK_BRAND_HOVER : MORA_LIGHT_BRAND_HOVER;
+}
+static COLORREF red_color(void) {
+    if (g_mora_theme) return MORA_AMBER_SIGNAL;
+    return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45);
+}
+static COLORREF red_hover_color(void) {
+    if (g_mora_theme) return RGB(200,92,80);
+    return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38);
+}
+static COLORREF border_color(void) {
+    if (g_mora_theme) return MORA_AMBER_BORDER;
+    return g_dark_mode ? MORA_DARK_BORDER : MORA_LIGHT_BORDER;
+}
+static COLORREF selection_color(void) {
+    if (g_mora_theme) return MORA_AMBER_SELECTION;
+    return g_dark_mode ? MORA_DARK_SELECTION : MORA_LIGHT_SELECTION;
+}
 static COLORREF button_ink(int primary, int danger) {
-    if (primary) return g_dark_mode ? MORA_DARK_ON_BRAND : MORA_LIGHT_ON_BRAND;
-    if (danger) return g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
+    if (primary) return g_mora_theme ? MORA_AMBER_ON_BRAND
+        : g_dark_mode ? MORA_DARK_ON_BRAND : MORA_LIGHT_ON_BRAND;
+    if (danger) return g_mora_theme ? MORA_AMBER_ON_SIGNAL
+        : g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
     return blue_color();
 }
 static int primary_button(UINT id) {
@@ -90,14 +123,44 @@ static void request_dpi_awareness(void) {
     }
     SetProcessDPIAware();
 }
-static void apply_mora_theme(void) {
+static void apply_theme_mode(int mode) {
+    g_mora_theme = mode == 2;
+    g_dark_mode = mode == 1;
+}
+static void load_theme_settings(void) {
+    HKEY key;
+    DWORD value = 2, size = sizeof(value), type = REG_DWORD;
+    if (RegOpenKeyExA(HKEY_CURRENT_USER,
+        "Software\\Ivan-VHS\\Pytyliki\\UI", 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
+        if (RegQueryValueExA(key, "ThemeMode", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS
+            && type == REG_DWORD && value <= 2) {
+            apply_theme_mode((int)value);
+        }
+        RegCloseKey(key);
+    }
+
     char theme[16] = {0};
-    DWORD length = GetEnvironmentVariableA(
-        "MORA_THEME_MODE", theme, (DWORD)sizeof(theme)
-    );
+    DWORD length = GetEnvironmentVariableA("MORA_THEME_MODE", theme, (DWORD)sizeof(theme));
     if (length == 0 || length >= sizeof(theme)) return;
-    if (lstrcmpiA(theme, "dark") == 0) g_dark_mode = 1;
-    else if (lstrcmpiA(theme, "light") == 0) g_dark_mode = 0;
+    if (lstrcmpiA(theme, "mora") == 0 || lstrcmpiA(theme, "amber") == 0)
+        apply_theme_mode(2);
+    else if (lstrcmpiA(theme, "dark") == 0)
+        apply_theme_mode(1);
+    else if (lstrcmpiA(theme, "light") == 0)
+        apply_theme_mode(0);
+}
+static void save_theme_settings(void) {
+    HKEY key;
+    DWORD disposition = 0;
+    if (RegCreateKeyExA(HKEY_CURRENT_USER,
+        "Software\\Ivan-VHS\\Pytyliki\\UI", 0, NULL, 0,
+        KEY_SET_VALUE, NULL, &key, &disposition) != ERROR_SUCCESS) return;
+    const DWORD value = g_mora_theme ? 2u : g_dark_mode ? 1u : 0u;
+    RegSetValueExA(key, "ThemeMode", 0, REG_DWORD, (const BYTE*)&value, sizeof(value));
+    RegCloseKey(key);
+}
+static const char *theme_button_label(void) {
+    return g_mora_theme ? "DARK THEME" : g_dark_mode ? "LIGHT THEME" : "MORA AMBER";
 }
 
 static void rebuild_brushes(void) {
@@ -367,7 +430,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
         rebuild_brushes();
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,theme_button_label(),ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
         g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nDeveloper: Ivan-VHS\r\nCPU operations are read-only and bounded. Measurements and workload plans are local and bounded.\r\n",
             WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL);
@@ -388,7 +451,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     case WM_CTLCOLOREDIT: {
         HDC dc=(HDC)p; HWND control=(HWND)l;
         if (control==g_log) {
-            SetTextColor(dc,MORA_DARK_TEXT);
+            SetTextColor(dc,g_mora_theme ? MORA_AMBER_TEXT : MORA_DARK_TEXT);
             SetBkColor(dc,log_color()); return (LRESULT)g_log_brush;
         }
         SetTextColor(dc,text_color()); SetBkColor(dc,input_color());
@@ -430,9 +493,9 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         PAINTSTRUCT ps; HDC dc=BeginPaint(w,&ps); RECT r; GetClientRect(w,&r);
         FillRect(dc,&r,g_page_brush);
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
-        SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
+        SetBkMode(dc,TRANSPARENT); SetTextColor(dc,g_mora_theme?MORA_AMBER_TEXT:RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SetTextColor(dc,g_mora_theme?MORA_AMBER_SECONDARY:RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,g_mora_theme ? "MORA AMBER    CPU diagnostics | metrics | source review | embedded tools" : "WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
@@ -446,12 +509,15 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_MOTION: show_motion_settings(); break;
             case ID_SAVE_REPORT: save_report(); break;
             case ID_CLEAR: SetWindowTextA(g_log,"Session log cleared.\r\n"); break;
-            case ID_THEME:
-                g_dark_mode = !g_dark_mode;
+            case ID_THEME: {
+                const int next_mode = g_mora_theme ? 1 : g_dark_mode ? 0 : 2;
+                apply_theme_mode(next_mode);
+                save_theme_settings();
                 rebuild_brushes();
-                SetWindowTextA(GetDlgItem(w,ID_THEME),g_dark_mode?"LIGHT THEME":"DARK THEME");
+                SetWindowTextA(GetDlgItem(w,ID_THEME),theme_button_label());
                 RedrawWindow(w,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN|RDW_ERASE);
                 break;
+            }
         }
         return 0;
     case WM_DESTROY:
@@ -467,7 +533,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
 int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     (void)prev; (void)cmd;
     request_dpi_awareness();
-    apply_mora_theme();
+    load_theme_settings();
     WNDCLASSA wc; memset(&wc,0,sizeof(wc)); wc.lpfnWndProc=wndproc; wc.hInstance=h;
     wc.lpszClassName="PytylikiProcessorWorkstation"; wc.hCursor=LoadCursor(NULL,IDC_ARROW); wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     if(!RegisterClassA(&wc)) return 1;
