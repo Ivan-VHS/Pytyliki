@@ -74,3 +74,8 @@ Native Win32 processor workstation: retain responsive control layout, owner-draw
 - [Microsoft Windows app design](https://learn.microsoft.com/windows/apps/design/)
 
 References define targets; this document does not claim all manual tests have passed.
+
+
+## Mora Amber profile
+
+The native Win32 workstation defaults to the shared [Mora Amber profile](MORA_AMBER_DESIGN_SYSTEM.md). Light and Dark remain selectable. The palette does not change processor or report behavior; Reduce Motion and Eco remain authoritative.
