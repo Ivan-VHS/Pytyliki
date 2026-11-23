@@ -37,6 +37,7 @@
 | [EMBEDDED_C.md](EMBEDDED_C.md) | MCU reference tools |
 | [HARDWARE_RULE_ENGINE.md](HARDWARE_RULE_ENGINE.md) | advisory rules |
 | [QCS_NATIVE.md](QCS_NATIVE.md) | syntax-only frontend |
+| [MORA_AMBER_DESIGN_SYSTEM.md](MORA_AMBER_DESIGN_SYSTEM.md) | native Win32 Amber palette, persistence and contrast contract |
 | [UI_UX_SYSTEM.md](UI_UX_SYSTEM.md) | desktop interaction |
 | [QUALITY_REPEATABILITY_NATIVE.md](QUALITY_REPEATABILITY_NATIVE.md) | reproducibility gates |
 
