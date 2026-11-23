@@ -217,3 +217,8 @@ Use the [documentation index](docs/README.md) as the entry point and the [inform
 ## Mora desktop integration
 
 Pytyliki is listed in the shared Mora workspace. Its native launch action is available on Windows when the existing Win32 GUI target has been built; portable C11 and CLI use remain independent. See [Mora integration](docs/MORA_DESKTOP_INTEGRATION.md) and the [DuckOS workspace contract](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md).
+
+
+## Capability boundary: PCM16 and DSP
+
+PCM16 WAV import/export, test-tone generation and DSP processing are not part of the current Pytyliki source tree. The corresponding project-contract entry is intentionally marked `partial` until implementation code, boundary tests and CI evidence are committed. The current implemented scope is described in the sections above; this entry must not be presented as a shipped audio feature.
