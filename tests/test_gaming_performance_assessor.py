@@ -5,6 +5,7 @@ import unittest
 from tools.gaming_performance_assessor import (
     GamingAssessmentError,
     assess_game_session,
+    to_duckos_capability_evidence,
 )
 
 
@@ -45,6 +46,25 @@ class GamingPerformanceAssessorTests(unittest.TestCase):
         )
         self.assertEqual(report["frame_time"]["sample_count"], 1000)
         self.assertTrue(report["frame_time"]["point_one_percent_low_available"])
+
+    def test_exports_only_measured_metrics_to_duckos(self):
+        report = assess_game_session(
+            [{"cpu_percent": 55, "memory_percent": 60, "swap_percent": 0}],
+            game_id="sample",
+        )
+        document = to_duckos_capability_evidence(report)
+        self.assertEqual(document["schema"], "duckos.gaming-provider-evidence.v1")
+        self.assertTrue(document["capabilities"]["cpu_telemetry"]["available"])
+        self.assertTrue(document["capabilities"]["memory_pressure"]["available"])
+        self.assertTrue(document["capabilities"]["swap_metrics"]["available"])
+        self.assertFalse(document["capabilities"]["frame_time"]["available"])
+        self.assertFalse(document["system_mutations_performed"])
+
+    def test_rejects_mutating_or_malformed_report(self):
+        report = assess_game_session([{}], game_id="sample")
+        report["host_settings_changed"] = True
+        with self.assertRaises(GamingAssessmentError):
+            to_duckos_capability_evidence(report)
 
     def test_missing_metrics_remain_unknown(self):
         report = assess_game_session([{}], game_id="sample")
