@@ -52,8 +52,12 @@ class GameSessionReportTests(unittest.TestCase):
             ]
             source.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
             report = analyze_file(source, "sample-game")
+            single = Path(temporary) / "single.jsonl"
+            single.write_text(json.dumps(rows[0]) + "\n", encoding="utf-8")
+            single_report = analyze_file(single, "single-sample")
         self.assertEqual(report["sample_count"], 2)
         self.assertEqual(report["duration_seconds"], 1.0)
+        self.assertEqual(single_report["sample_count"], 1)
 
     def test_rejects_unbounded_or_invalid_samples(self):
         with self.assertRaises(ValueError):
