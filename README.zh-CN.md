@@ -203,3 +203,8 @@ CI 日志可在对应的 GitHub Actions Workflow 中查看。README 和测试套
 ## 文档导航图
 
 请从[文档索引](docs/README.md)进入，并使用[信息架构图](docs/INFORMATION_ARCHITECTURE.md)查看主题集群、相关页面及跨仓库边界。主题入口链接到详细契约；实现状态仍以对应的源代码、测试和 Schema 为准。
+
+
+## Mora 桌面集成
+
+Pytyliki 已加入统一的 Mora 应用目录。只有在 Windows 上构建现有 Win32 GUI 目标后，才能从 Mora 启动原生窗口；可移植 C11 核心和 CLI 仍保持独立。请参阅 [Mora 集成说明](docs/MORA_DESKTOP_INTEGRATION.md) 和 [DuckOS 工作空间契约](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md)。
