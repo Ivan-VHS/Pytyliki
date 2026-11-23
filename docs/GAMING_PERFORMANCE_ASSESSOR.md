@@ -19,3 +19,8 @@ This module does not change scheduling, process priority, affinity, paging, memo
 ```sh
 python -m unittest tests.test_gaming_performance_assessor -v
 ```
+
+
+## Sequential rollout
+
+Rollout gate: this PR stays in draft until DuckOS #75 and OPlague #166 are merged. Then it is the third stage of the gaming-policy rollout.
