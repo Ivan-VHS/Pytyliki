@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import unittest
+import json
+import tempfile
+from pathlib import Path
 
-from tools.game_session_report import build_game_session_report
+from tools.game_session_report import analyze_file, build_game_session_report
 
 
 class GameSessionReportTests(unittest.TestCase):
@@ -39,6 +42,18 @@ class GameSessionReportTests(unittest.TestCase):
         )
         self.assertEqual(report["alert_count"], 1)
         self.assertEqual(report["alerts"][0]["metric"], "cpu_percent")
+
+    def test_reads_pytyliki_watch_jsonl_output(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "session.jsonl"
+            rows = [
+                {"timestamp": 1, "cpu_percent": 20, "memory_percent": 40, "swap_percent": 0},
+                {"timestamp": 2, "cpu_percent": 80, "memory_percent": 70, "swap_percent": 10},
+            ]
+            source.write_text("\\n".join(json.dumps(row) for row in rows) + "\\n", encoding="utf-8")
+            report = analyze_file(source, "sample-game")
+        self.assertEqual(report["sample_count"], 2)
+        self.assertEqual(report["duration_seconds"], 1.0)
 
     def test_rejects_unbounded_or_invalid_samples(self):
         with self.assertRaises(ValueError):
