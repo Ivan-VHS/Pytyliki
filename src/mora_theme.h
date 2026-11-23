@@ -4,6 +4,27 @@
 /* Mora desktop tokens for the native Win32 workstation.
  * Include after windows.h so the RGB macro is available.
  */
+/* Mora Amber is the shared default profile across the desktop family. */
+#define MORA_AMBER_PAGE RGB(33,25,19)
+#define MORA_AMBER_HEADER RGB(24,18,13)
+#define MORA_AMBER_SURFACE RGB(51,38,29)
+#define MORA_AMBER_LOG RGB(24,18,13)
+#define MORA_AMBER_TEXT RGB(255,243,226)
+#define MORA_AMBER_SECONDARY RGB(231,210,184)
+#define MORA_AMBER_MUTED RGB(196,169,138)
+#define MORA_AMBER_BRAND RGB(213,139,61)
+#define MORA_AMBER_BRAND_HOVER RGB(234,166,83)
+#define MORA_AMBER_ON_BRAND RGB(33,25,19)
+#define MORA_AMBER_SIGNAL RGB(182,74,64)
+#define MORA_AMBER_ON_SIGNAL RGB(255,243,226)
+#define MORA_AMBER_SELECTION RGB(96,68,46)
+#define MORA_AMBER_BORDER RGB(117,84,58)
+#define MORA_AMBER_FOCUS RGB(243,193,107)
+#define MORA_AMBER_SUCCESS RGB(158,195,154)
+#define MORA_AMBER_WARNING RGB(240,190,115)
+#define MORA_AMBER_ERROR RGB(239,142,124)
+#define MORA_AMBER_INFO RGB(232,201,159)
+
 #define MORA_DARK_PAGE RGB(16,20,42)
 #define MORA_DARK_HEADER RGB(23,21,47)
 #define MORA_DARK_SURFACE RGB(25,30,57)
