@@ -30,8 +30,10 @@ int pl_benchmark_stats_analyze(
 ) {
     double *sorted;
     double *deviations;
-    double mean = 0.0;
-    double sum_squares = 0.0;
+    double scale = 0.0;
+    double normalized_mean = 0.0;
+    double normalized_sum_squares = 0.0;
+    pl_benchmark_stats result;
     size_t index;
 
     if (samples == NULL || out == NULL || count == 0u ||
@@ -41,6 +43,7 @@ int pl_benchmark_stats_analyze(
 
     for (index = 0u; index < count; ++index) {
         if (!isfinite(samples[index]) || samples[index] < 0.0) return -1;
+        if (samples[index] > scale) scale = samples[index];
     }
 
     sorted = (double *)malloc(count * sizeof(*sorted));
@@ -54,34 +57,59 @@ int pl_benchmark_stats_analyze(
     memcpy(sorted, samples, count * sizeof(*sorted));
     qsort(sorted, count, sizeof(*sorted), compare_double);
 
-    for (index = 0u; index < count; ++index) {
-        const double delta = samples[index] - mean;
-        mean += delta / (double)(index + 1u);
-        sum_squares += delta * (samples[index] - mean);
+    /*
+     * Work in [0, 1] before calculating the mean and variance. Direct
+     * Welford accumulation can still overflow its squared-difference term
+     * for valid finite inputs close to DBL_MAX.
+     */
+    if (scale > 0.0) {
+        for (index = 0u; index < count; ++index) {
+            const double normalized = samples[index] / scale;
+            const double delta = normalized - normalized_mean;
+            normalized_mean += delta / (double)(index + 1u);
+            normalized_sum_squares += delta * (normalized - normalized_mean);
+        }
     }
 
-    memset(out, 0, sizeof(*out));
-    out->sample_count = count;
-    out->minimum = sorted[0];
-    out->maximum = sorted[count - 1u];
-    out->mean = mean;
-    out->median = median_of_sorted(sorted, count);
-    out->p90 = percentile_nearest_rank(sorted, count, 0.90);
-    out->p95 = percentile_nearest_rank(sorted, count, 0.95);
-    out->p99 = percentile_nearest_rank(sorted, count, 0.99);
-    out->sample_standard_deviation = count > 1u
-        ? sqrt(sum_squares / (double)(count - 1u)) : 0.0;
-    out->coefficient_of_variation = mean > 0.0
-        ? out->sample_standard_deviation / mean : 0.0;
+    memset(&result, 0, sizeof(result));
+    result.sample_count = count;
+    result.minimum = sorted[0];
+    result.maximum = sorted[count - 1u];
+    result.mean = normalized_mean * scale;
+    result.median = median_of_sorted(sorted, count);
+
+    result.p90 = percentile_nearest_rank(sorted, count, 0.90);
+    result.p95 = percentile_nearest_rank(sorted, count, 0.95);
+    result.p99 = percentile_nearest_rank(sorted, count, 0.99);
+
+    if (count > 1u) {
+        const double normalized_deviation =
+            sqrt(normalized_sum_squares / (double)(count - 1u));
+        result.sample_standard_deviation = normalized_deviation * scale;
+        result.coefficient_of_variation = normalized_mean > 0.0
+            ? normalized_deviation / normalized_mean : 0.0;
+    }
 
     for (index = 0u; index < count; ++index) {
-        deviations[index] = fabs(samples[index] - out->median);
+        deviations[index] = fabs(samples[index] - result.median);
     }
     qsort(deviations, count, sizeof(*deviations), compare_double);
-    out->median_absolute_deviation = median_of_sorted(deviations, count);
+    result.median_absolute_deviation = median_of_sorted(deviations, count);
 
     free(deviations);
     free(sorted);
-    return isfinite(out->mean) && isfinite(out->sample_standard_deviation) &&
-        isfinite(out->coefficient_of_variation) ? 0 : -1;
+
+    /*
+     * Publish the result only after every derived value passes validation.
+     * Callers never receive a partially populated structure on failure.
+     */
+    if (!isfinite(result.mean) ||
+        !isfinite(result.sample_standard_deviation) ||
+        !isfinite(result.coefficient_of_variation) ||
+        !isfinite(result.median_absolute_deviation)) {
+        return -1;
+    }
+
+    *out = result;
+    return 0;
 }
