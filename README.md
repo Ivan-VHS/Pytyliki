@@ -49,6 +49,10 @@ The app reports information it can observe and produces advisory plans. It does 
 The Windows screenshot below is a captured desktop application, not an interactive browser preview.
 
 
+## Related operating-system product
+
+The seven-app Mora suite is specified by the separate [DuckOS project](https://github.com/Ivan-VHS/DuckOS/blob/docs/unified-documentation-standard/docs/PREINSTALLED_APPLICATIONS.md). This reference describes the OS-level application layer only; it does not mean Cockos, Kavun, Ka-bon, Gloverty, Po, Illidia or Unify are implemented or distributed by Pytyliki. This repository remains independently built and its own source, tests and versioned interfaces remain authoritative for its capabilities.
+
 ## Quick Start
 
 ### Requirements
