@@ -65,6 +65,7 @@ pl_rt_status pl_rt_init(pl_runtime_transaction *tx, const void *data, size_t siz
     tx->committed_size = size;
     tx->staged_size = size;
     tx->schema_version = schema_version;
+    tx->committed_schema_version = schema_version;
     tx->committed_crc32 = pl_rt_crc32(tx->committed, size);
     tx->staged_crc32 = tx->committed_crc32;
     tx->event_callback = callback;
@@ -178,6 +179,7 @@ static pl_rt_status commit(pl_runtime_transaction *tx, uint64_t expected_generat
     tx->committed = next;
     tx->committed_size = tx->staged_size;
     tx->committed_crc32 = tx->staged_crc32;
+    tx->committed_schema_version = tx->schema_version;
     ++tx->generation;
     notify(tx, event_kind, event_name);
     return PL_RT_OK;
@@ -205,6 +207,7 @@ pl_rt_status pl_rt_rollback(pl_runtime_transaction *tx) {
     tx->staged = next;
     tx->staged_size = tx->committed_size;
     tx->staged_crc32 = tx->committed_crc32;
+    tx->schema_version = tx->committed_schema_version;
     tx->failed = 0;
     tx->last_error[0] = '\0';
     notify(tx, PL_RT_EVENT_ROLLBACK, "rollback");
