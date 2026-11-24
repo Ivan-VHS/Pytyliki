@@ -41,7 +41,7 @@ This roadmap turns the 20 requested directions into traceable workstreams. It di
 | `17-test-controls` | Протестировать | P0 | active | `.github/workflows/quality-remediation.yml`, `tests/test_core.c` |
 | `18-verify-observability` | Верифицировать | P1 | active | `verified-auto-merge.yml`, `update-behind-pr-branches.yml`, `safe-ci-recovery.yml` |
 | `19-document-automation` | Документировать | P1 | active | `docs/README.md`, `docs/DOCUMENTATION_CONTROL.md`, this roadmap |
-| `20-release-publication` | Развернуть | P2 | planned | `.github/workflows/verified-auto-merge.yml`, `project-contract.json` |
+| `20-release-publication` | Развернуть | P2 | extend | `.github/workflows/desktop-build.yml`, `docs/RELEASE.md`, `project-contract.json` |
 
 ## Operating rules
 
@@ -73,7 +73,7 @@ The validator uses only the Python standard library and checks all 20 identifier
 
 ## Deliberate release boundaries
 
-Workstream 14 remains planned because these repositories do not have a production service deployment target; local desktop/CLI packaging is not production deployment. Workstream 20 remains planned until a protected release environment, maintainer approval, signing/provenance credentials and supported publication target are configured. The recovery workflow does not deploy or publish artifacts.
+Workstream 14 remains planned because these repositories do not have a production service deployment target; local desktop/CLI packaging is not production deployment. Workstream 20 is now `extend`: the tag workflow verifies the archive checksum and creates a draft release behind the `release-review` environment. It remains incomplete until required reviewers are configured in that environment, a maintainer verifies the approval path, and a publisher-signing identity/provenance process exists. The recovery workflow does not deploy or publish artifacts.
 
 ## Governance and CI scale controls
 
