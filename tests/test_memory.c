@@ -19,8 +19,11 @@ int main(void){
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,0,sizeof(values),0)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(double),0)==PL_STATUS_OUT_OF_RANGE);
  assert(pl_view_init(&view,NULL,1,PL_TYPE_F64,sizeof(double),sizeof(double),0)==PL_STATUS_INVALID_ARGUMENT);
+ assert(pl_view_init(&view,(void *)(uintptr_t)(UINTPTR_MAX-3u),1,PL_TYPE_F64,
+                     sizeof(double),sizeof(double),0)==PL_STATUS_OVERFLOW);
 
  unsigned char scratch[160];pl_arena_t arena;
+ assert(pl_arena_init(&arena,(void *)(uintptr_t)(UINTPTR_MAX-3u),16u)==PL_STATUS_OVERFLOW);
  assert(pl_arena_init(&arena,scratch+1,sizeof(scratch)-1)==PL_STATUS_OK);
  void *a=pl_arena_alloc(&arena,13,8),*b=pl_arena_alloc(&arena,16,16);
  assert(a!=NULL&&b!=NULL&&pl_memory_is_aligned(a,8)&&pl_memory_is_aligned(b,16));
