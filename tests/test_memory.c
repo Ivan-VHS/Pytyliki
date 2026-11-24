@@ -42,6 +42,10 @@ int main(void){
 
  pl_arena_t owned;assert(pl_arena_create(&owned,256,NULL)==PL_STATUS_OK);
  assert(pl_arena_alloc(&owned,32,16)!=NULL);pl_arena_destroy(&owned);assert(owned.memory==NULL);
+ /* Pool payload and bitmap metadata must never alias. */
+ unsigned char overlapping[64];pl_pool_t rejected_pool;
+ assert(pl_pool_init(&rejected_pool,overlapping,32u,overlapping+16u,16u,8u,1u)
+        ==PL_STATUS_INVALID_ARGUMENT);
  unsigned char bitmap[4];pl_pool_t pool;
  unsigned char *pool_storage=(unsigned char *)pl_aligned_alloc(16u,512u);
  assert(pool_storage!=NULL);
