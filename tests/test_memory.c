@@ -37,6 +37,13 @@ int main(void){
  assert(pl_arena_alloc(&arena,256,8)==NULL);
  pl_arena_reset(&arena);
  assert(arena.used==0&&arena.allocation_count==0);
+ unsigned char secure_storage[32];pl_arena_t secure_arena;
+ assert(pl_arena_init(&secure_arena,secure_storage,sizeof(secure_storage))==PL_STATUS_OK);
+ void *secret=pl_arena_alloc(&secure_arena,13u,1u);assert(secret!=NULL);
+ memset(secret,0xA5,13u);
+ pl_arena_reset_secure(&secure_arena);
+ assert(secure_arena.used==0u&&secure_arena.allocation_count==0u);
+ for(size_t i=0u;i<13u;i++)assert(secure_storage[i]==0u);
  assert(pl_arena_get_stats(&arena,&stats)==PL_STATUS_OK&&stats.peak_used>0);
  pl_arena_destroy(&arena);
 
@@ -52,7 +59,10 @@ int main(void){
  assert(pl_pool_init(&pool,pool_storage,512u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
  void *p1=pl_pool_alloc(&pool),*p2=pl_pool_alloc(&pool);
  assert(p1!=NULL&&p2!=NULL&&p1!=p2&&pool.in_use==2);
- assert(pl_pool_free(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
+ memset(p1,0xA5,pool.block_size);
+ assert(pl_pool_free_secure(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
+ for(size_t i=0u;i<pool.stride_bytes;i++)assert(((unsigned char *)p1)[i]==0u);
+ assert(pl_pool_free_secure(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_pool_free(&pool,(unsigned char *)p2+1)==PL_STATUS_OUT_OF_RANGE);
  assert(pl_pool_free(&pool,p2)==PL_STATUS_OK&&pool.in_use==0);
