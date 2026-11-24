@@ -1,0 +1,26 @@
+{
+  "schema": "anatidae.safe-ci-rerun.v1",
+  "repository": "Ivan-VHS/Pytyliki",
+  "max_attempts": 2,
+  "allowed_events": [
+    "push",
+    "pull_request",
+    "schedule",
+    "workflow_dispatch"
+  ],
+  "allowed_conclusions": [
+    "failure",
+    "timed_out"
+  ],
+  "allowed_workflow_names": [
+    "C11 CI",
+    "Pytyliki Desktop Build",
+    "Quality, Repeatability and Native Contract",
+    "Automation Roadmap Contract",
+    "Architecture Contract",
+    "Backend engineering contract",
+    "System capability profile",
+    "Recursive Evolution Gate"
+  ],
+  "same_repository_only": true
+}
