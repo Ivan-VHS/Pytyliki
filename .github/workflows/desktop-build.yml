@@ -64,6 +64,8 @@ jobs:
           Compress-Archive -Path dist/* -DestinationPath Pytyliki-windows-x64.zip -Force
           $hash = (Get-FileHash Pytyliki-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Pytyliki-windows-x64.zip" | Set-Content -Encoding ascii SHA256SUMS.txt
+          $hash = (Get-FileHash Pytyliki-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Pytyliki-windows-x64.zip" | Set-Content -Encoding ascii SHA256SUMS.txt
       - uses: actions/upload-artifact@v7
         with:
           name: Pytyliki-windows-x64
