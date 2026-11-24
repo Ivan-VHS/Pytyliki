@@ -52,6 +52,7 @@ typedef struct {
     uint64_t generation;
     uint64_t binding;
     uint32_t schema_version;
+    uint32_t committed_schema_version;
     uint32_t committed_crc32;
     uint32_t staged_crc32;
     int active;
