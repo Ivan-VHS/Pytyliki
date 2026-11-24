@@ -35,7 +35,7 @@ This roadmap turns the 20 requested directions into traceable workstreams. It di
 | `11-structure-test-updates` | Структурировать | P0 | active | `.github/workflows/quality-repeatability-native.yml`, `tests/test_core.c` |
 | `12-scale-validation` | Масштабировать | P1 | active | `ci-scale-policy.v1.json`, `ci-scale-policy.v1.schema.json`, `validate_delivery_contracts.py`, `test_delivery_contracts.py`, `.github/workflows/ci.yml` |
 | `13-implement-verification` | Реализовать | P0 | active | `.github/workflows/quality-commercial.yml`, `.github/workflows/quality-remediation.yml` |
-| `14-coordinate-deployment` | Координировать | P2 | planned | `.github/workflows/verified-auto-merge.yml`, `project-contract.json` |
+| `14-coordinate-deployment` | Координировать | P2 | not_applicable | `.github/workflows/verified-auto-merge.yml`, `project-contract.json` |
 | `15-consolidate-test-matrix` | Консолидировать | P1 | active | `.github/workflows/quality-repeatability-native.yml`, `tests/test_core.c` |
 | `16-improve-recovery` | Усовершенствовать | P1 | active | `safe-ci-recovery.yml`, `automation-rerun-policy.v1.json`, `validate_safe_rerun.py`, `test_safe_rerun.py` |
 | `17-test-controls` | Протестировать | P0 | active | `.github/workflows/quality-remediation.yml`, `tests/test_core.c` |
@@ -73,7 +73,7 @@ The validator uses only the Python standard library and checks all 20 identifier
 
 ## Deliberate release boundaries
 
-Workstream 14 remains planned because these repositories do not have a production service deployment target; local desktop/CLI packaging is not production deployment. Workstream 20 is now `extend`: the tag workflow verifies the archive checksum and creates a draft release behind the `release-review` environment. It remains incomplete until required reviewers are configured in that environment, a maintainer verifies the approval path, and a publisher-signing identity/provenance process exists. The recovery workflow does not deploy or publish artifacts.
+Workstream 14 is `not_applicable`: this repository is a local desktop/CLI product without a hosted production service or remote control plane. Desktop archive distribution belongs to workstream 20, not production deployment. Re-open this direction only after an approved product decision defines a real deployable target, owner, threat model, protected environment and rollback plan. Workstream 20 is now `extend`: the tag workflow verifies the archive checksum and creates a draft release behind the `release-review` environment. It remains incomplete until required reviewers are configured in that environment, a maintainer verifies the approval path, and a publisher-signing identity/provenance process exists. The recovery workflow does not deploy or publish artifacts.
 
 ## Governance and CI scale controls
 
