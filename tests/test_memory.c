@@ -63,6 +63,14 @@ int main(void){
  assert(pl_pool_alloc(&pool)==blocks[8]&&pool.in_use==16u);
  for(size_t i=0u;i<16u;i++)assert(pl_pool_free(&pool,blocks[i])==PL_STATUS_OK);
  assert(pool.in_use==0u);
+ pl_pool_t corrupted=pool;
+ corrupted.stride_bytes=0u;
+ assert(pl_pool_alloc(&corrupted)==NULL);
+ assert(pl_pool_free(&corrupted,pool_storage)==PL_STATUS_INVALID_ARGUMENT);
+ corrupted=pool;
+ corrupted.block_count=SIZE_MAX;
+ assert(pl_pool_alloc(&corrupted)==NULL);
+ assert(pl_pool_free(&corrupted,pool_storage)==PL_STATUS_INVALID_ARGUMENT);
  pl_aligned_free(pool_storage);
  pl_chunk_t chunk;assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(values),0)==PL_STATUS_OK);
  assert(pl_chunk_init(&chunk,&view,4096,7)==PL_STATUS_OK&&chunk.source_offset==4096&&chunk.sequence==7);
