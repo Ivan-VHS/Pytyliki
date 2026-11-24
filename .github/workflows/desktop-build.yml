@@ -62,10 +62,14 @@ jobs:
           Copy-Item README.md dist/
           Copy-Item LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath Pytyliki-windows-x64.zip -Force
+          $hash = (Get-FileHash Pytyliki-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Pytyliki-windows-x64.zip" | Set-Content -Encoding ascii SHA256SUMS.txt
       - uses: actions/upload-artifact@v7
         with:
           name: Pytyliki-windows-x64
-          path: Pytyliki-windows-x64.zip
+          path: |
+            Pytyliki-windows-x64.zip
+            SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30
   publish-release:
@@ -74,12 +78,22 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    environment: release-review
     steps:
       - uses: actions/download-artifact@v8
         with:
           name: Pytyliki-windows-x64
           path: release-assets
+      - name: Verify release archive checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          sha256sum --check SHA256SUMS.txt
       - uses: softprops/action-gh-release@v3
         with:
+          draft: true
           generate_release_notes: true
-          files: release-assets/Pytyliki-windows-x64.zip
+          files: |
+            release-assets/Pytyliki-windows-x64.zip
+            release-assets/SHA256SUMS.txt
