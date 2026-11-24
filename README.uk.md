@@ -160,7 +160,7 @@ ctest --test-dir build-sanitized --output-on-failure
 - [C11 CI](.github/workflows/ci.yml) збирає й тестує проєкт на Ubuntu та Windows і має Linux sanitizer job.
 - [Desktop build](.github/workflows/desktop-build.yml) збирає GUI та CLI для Windows, запускає CTest, захоплює скріншот і створює `Pytyliki-windows-x64.zip`.
 - Windows-архів завантажується як workflow artifact зі строком зберігання 30 днів.
-- Git-тег формату `v*` запускає публікацію релізу. Push у `main` сам по собі не означає вебдеплой.
+- Git-тег формату `v*` збирає Windows-архів, перевіряє його SHA-256 sidecar і створює чернетку GitHub Release за бар’єром `release-review`. Чернетку має вручну опублікувати супровідник; push у `main` сам по собі не означає вебдеплой.
 
 Артефакти створюються в build/dist шляхах workflow. Для відкату поширеної desktop-версії використовуйте попередній відомий робочий GitHub Release/архів. Сервісу, який треба було б відкотити, немає.
 
