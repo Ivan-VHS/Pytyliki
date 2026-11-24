@@ -89,6 +89,10 @@ int main(void) {
     assert(pl_rt_rollback(&tx) == PL_RT_OK);
     assert(tx.schema_version == 2u);
     assert(tx.staged_size == 4u && memcmp(tx.staged, "ABC!", 4u) == 0);
+    tx.generation = UINT64_MAX;
+    assert(pl_rt_flash(&tx, UINT64_MAX) == PL_RT_LIMIT);
+    assert(tx.generation == UINT64_MAX);
+    assert(tx.committed_size == 4u && memcmp(tx.committed, "ABC!", 4u) == 0);
     pl_rt_destroy(&tx);
     puts("Pytyliki runtime transaction tests passed.");
     return 0;
