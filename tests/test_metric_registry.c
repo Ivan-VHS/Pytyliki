@@ -32,8 +32,8 @@ int main(void) {
     assert(page.total_matches == 4u && page.written == 1u);
     assert(strcmp(results[0]->name, "vector.dot") == 0);
 
-    query.required_type_mask = 0u;
-    query.excluded_type_mask = 1u << 1;
+    query.required_type_mask = 1u << 1;
+    query.excluded_type_mask = 1u << 0;
     query.category = "memory";
     query.query = NULL;
     query.required_capabilities = PL_METRIC_CAP_IN_PLACE;
@@ -50,9 +50,13 @@ int main(void) {
 
     query.required_capabilities = 0u;
     query.excluded_capabilities = 0u;
-    query.query = "this query is deliberately longer than the declared 256 character query bound only if we construct it dynamically";
-    assert(pl_metric_registry_search_ex(&query, results, 4u, &page) == PL_METRIC_QUERY_OK);
-    assert(page.total_matches == 0u);
+    {
+        char oversized[PL_METRIC_QUERY_MAX_TEXT + 2u];
+        memset(oversized, 'x', sizeof(oversized));
+        oversized[sizeof(oversized) - 1u] = '\\0';
+        query.query = oversized;
+        assert(pl_metric_registry_search_ex(&query, results, 4u, &page) == PL_METRIC_QUERY_INVALID);
+    }
 
     query.query = "vector";
     query.limit = PL_METRIC_QUERY_MAX_PAGE + 1u;
