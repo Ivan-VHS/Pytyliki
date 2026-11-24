@@ -40,6 +40,7 @@
 | [MORA_AMBER_DESIGN_SYSTEM.md](MORA_AMBER_DESIGN_SYSTEM.md) | native Win32 Amber palette, persistence and contrast contract |
 | [UI_UX_SYSTEM.md](UI_UX_SYSTEM.md) | desktop interaction |
 | [QUALITY_REPEATABILITY_NATIVE.md](QUALITY_REPEATABILITY_NATIVE.md) | reproducibility gates |
+| [ROADMAP_GOVERNANCE_AND_CI_SCALE.md](ROADMAP_GOVERNANCE_AND_CI_SCALE.md) | evidence-based roadmap statuses, priority review and bounded workflow resources |
 
 The root README includes the live Windows desktop capture and current build/test commands. Legacy contract paths remain concise for validators. Machine-readable JSON, source and tests are authoritative for implemented behavior.
 

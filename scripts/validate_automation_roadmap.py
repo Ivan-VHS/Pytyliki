@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import subprocess
 from collections import Counter
 from pathlib import Path
 
@@ -195,6 +196,20 @@ def main() -> int:
         fail(f"roadmap validation is not wired into the existing merge/CI gate: {gate_relative}")
 
     validate_recovery_contract(project["repository"])
+
+    delivery_validator = ROOT / "tools" / "validate_delivery_contracts.py"
+    if not delivery_validator.is_file():
+        fail("roadmap governance and CI scale validator is missing")
+    delivery_result = subprocess.run(
+        [sys.executable, str(delivery_validator), "--self-test"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if delivery_result.returncode != 0:
+        detail = (delivery_result.stdout + "\\n" + delivery_result.stderr).strip()
+        fail("roadmap governance / CI scale contract failed: " + detail)
 
     print(
         f"Validated {len(tasks)} workstreams for {project['repository']}: "
