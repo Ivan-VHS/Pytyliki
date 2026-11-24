@@ -58,6 +58,8 @@ pl_status_t pl_view_init(pl_view_t *out,void *data,size_t count,pl_data_type_t t
  else{
   if(mul_overflow_size(count-1u,stride,&offset)||add_overflow_size(offset,elem,&required))return PL_STATUS_OVERFLOW;
   if(required>extent)return PL_STATUS_OUT_OF_RANGE;
+  /* Validate the numeric address range before constructing any view pointer. */
+  if(required>(size_t)(UINTPTR_MAX-(uintptr_t)data))return PL_STATUS_OVERFLOW;
  }
  out->data=data;out->count=count;out->elem_size=elem;out->stride_bytes=stride;
  out->extent_bytes=extent;out->type=type;out->flags=flags;return PL_STATUS_OK;
