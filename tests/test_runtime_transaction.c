@@ -14,6 +14,18 @@ static void on_event(pl_rt_event_kind kind, const char *name, uint64_t generatio
     if ((unsigned)kind < 8u) ++log->events[(unsigned)kind];
 }
 
+static int migrate_v2_to_v3(const unsigned char *input, size_t input_size,
+                            uint32_t from_schema, uint32_t to_schema,
+                            const unsigned char **output, size_t *output_size,
+                            void *context) {
+    (void)context;
+    assert(from_schema == 2u && to_schema == 3u);
+    assert(input_size == 4u && memcmp(input, "ABC!", 4u) == 0);
+    *output = (const unsigned char *)"V3!";
+    *output_size = 3u;
+    return 0;
+}
+
 static int migrate_v1_to_v2(const unsigned char *input, size_t input_size,
                             uint32_t from_schema, uint32_t to_schema,
                             const unsigned char **output, size_t *output_size,
@@ -70,6 +82,13 @@ int main(void) {
     assert(log.events[PL_RT_EVENT_REFLASH] == 1u);
     data = tx.committed;
     assert(memcmp(data, "ABC!", 4u) == 0);
+
+    /* An uncommitted schema migration must roll back with its payload. */
+    assert(pl_rt_migrate(&tx, 3u, migrate_v2_to_v3, NULL) == PL_RT_OK);
+    assert(tx.schema_version == 3u);
+    assert(pl_rt_rollback(&tx) == PL_RT_OK);
+    assert(tx.schema_version == 2u);
+    assert(tx.staged_size == 4u && memcmp(tx.staged, "ABC!", 4u) == 0);
     pl_rt_destroy(&tx);
     puts("Pytyliki runtime transaction tests passed.");
     return 0;
