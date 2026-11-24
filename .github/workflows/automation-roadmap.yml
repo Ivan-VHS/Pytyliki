@@ -11,6 +11,12 @@ on:
       - ".architecture/automation-rerun-policy.v1.json"
       - ".architecture/automation-rerun-policy.v1.schema.json"
       - "scripts/validate_safe_rerun.py"
+      - ".architecture/roadmap-governance.v1.json"
+      - ".architecture/roadmap-governance.v1.schema.json"
+      - ".architecture/ci-scale-policy.v1.json"
+      - ".architecture/ci-scale-policy.v1.schema.json"
+      - "tools/validate_delivery_contracts.py"
+      - "tests/test_delivery_contracts.py"
       - "tests/test_safe_rerun.py"
       - ".github/workflows/safe-ci-recovery.yml"
       - ".github/ISSUE_TEMPLATE/engineering_improvement.yml"
@@ -24,6 +30,12 @@ on:
       - ".architecture/automation-rerun-policy.v1.json"
       - ".architecture/automation-rerun-policy.v1.schema.json"
       - "scripts/validate_safe_rerun.py"
+      - ".architecture/roadmap-governance.v1.json"
+      - ".architecture/roadmap-governance.v1.schema.json"
+      - ".architecture/ci-scale-policy.v1.json"
+      - ".architecture/ci-scale-policy.v1.schema.json"
+      - "tools/validate_delivery_contracts.py"
+      - "tests/test_delivery_contracts.py"
       - "tests/test_safe_rerun.py"
       - ".github/workflows/safe-ci-recovery.yml"
       - ".github/ISSUE_TEMPLATE/engineering_improvement.yml"
@@ -59,3 +71,7 @@ jobs:
         run: python scripts/validate_automation_roadmap.py --strict
       - name: Test bounded manual CI recovery policy
         run: python -m unittest discover -s tests -p "test_safe_rerun.py" -v
+      - name: Validate roadmap governance and bounded CI scale
+        run: python tools/validate_delivery_contracts.py --self-test
+      - name: Test governance and CI scale regressions
+        run: python -m unittest discover -s tests -p "test_delivery_contracts.py" -v
