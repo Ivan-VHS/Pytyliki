@@ -1,4 +1,5 @@
 #include "interop.h"
+#include "metric_registry.h"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
