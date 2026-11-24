@@ -70,7 +70,7 @@ int main(void) {
     assert(pytyliki_v1_metric_registry_search(
         &metric_query, metric_results, 2u, &metric_result
     ) == PYTYLIKI_ABI_OK);
-    assert(metric_result.total_matches == 4u && metric_result.written == 2u);
+    assert(metric_result.total_matches == 6u && metric_result.written == 2u);
     assert(strcmp(metric_results[0].name, "vector.norm.l2") == 0);
     assert(strcmp(metric_results[1].name, "vector.norm.l1") == 0);
 
@@ -79,7 +79,7 @@ int main(void) {
     assert(pytyliki_v1_metric_registry_search(
         &metric_query, NULL, 0u, &metric_result
     ) == PYTYLIKI_ABI_OK);
-    assert(metric_result.total_matches == 4u && metric_result.written == 0u);
+    assert(metric_result.total_matches == 6u && metric_result.written == 0u);
 
     metric_query.limit = PL_METRIC_QUERY_MAX_PAGE + 1u;
     assert(pytyliki_v1_metric_registry_search(
