@@ -1,0 +1,14 @@
+# Reference-only memory budget policy for CI.
+# These values are deterministic fixtures, not live MCU telemetry.
+make flash_budget := 524288
+make flash_reserved := 131072
+make sram_budget := 131072
+make sram_reserved := 65536
+make stack_budget := 8192
+make stack_reserved := 4096
+
+when flash_reserved <= flash_budget and sram_reserved <= sram_budget and stack_reserved <= stack_budget {
+    emit "PYTYLIKI_REAPER_POLICY:PASS"
+} otherwise {
+    emit "PYTYLIKI_REAPER_POLICY:FAIL"
+}

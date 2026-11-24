@@ -49,6 +49,10 @@ The app reports information it can observe and produces advisory plans. It does 
 The Windows screenshot below is a captured desktop application, not an interactive browser preview.
 
 
+## Reaper policy verification
+
+Pytyliki keeps its processor inspection, measurements and embedded-memory calculations in the native C11 core. A separate CI-only Reaper policy example checks bounded reference memory-budget invariants through Reaper's own parser and runtime; it is not linked into the workstation, does not inspect live hardware and is not a required application dependency. See [Reaper integration](docs/REAPER_INTEGRATION.md) and [the policy program](examples/reaper_resource_policy.rpr).
+
 ## Quick Start
 
 ### Requirements

@@ -49,6 +49,12 @@ Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断�
 下方图片是桌面应用的实际截屏，并非交互式浏览器预览。
 
 
+## Reaper 策略验证
+
+FLASH/SRAM/stack 预算不变量通过独立的 CI Reaper 策略进行验证，使用固定的参考数据。该策略调用 Reaper 自身的解析器和运行时，但不会链接进工作站、不读取 MCU 实时数据，也不取代原生 C11 核心。
+
+详见 [Reaper 集成说明](docs/REAPER_INTEGRATION.md) 和 [策略程序](examples/reaper_resource_policy.rpr)。
+
 ## 快速开始
 
 ### 环境要求

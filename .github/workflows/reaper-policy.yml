@@ -1,0 +1,51 @@
+name: Reaper policy verification
+
+on:
+  push:
+    branches: [main, "feat/**", "integration/**"]
+    paths:
+      - "examples/reaper_resource_policy.rpr"
+      - "docs/REAPER_INTEGRATION.md"
+      - ".github/workflows/reaper-policy.yml"
+  pull_request:
+    paths:
+      - "examples/reaper_resource_policy.rpr"
+      - "docs/REAPER_INTEGRATION.md"
+      - ".github/workflows/reaper-policy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Pytyliki
+        uses: actions/checkout@v7
+
+      - name: Check out pinned Reaper toolchain
+        uses: actions/checkout@v7
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: e48fb2a38384da75292b948ae18f69f3d80bcd08
+          path: _deps/Reaper
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Validate Reaper source and syntax
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check examples/reaper_resource_policy.rpr
+
+      - name: Execute deterministic policy and assert the result
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          set -euo pipefail
+          python -m reaper examples/reaper_resource_policy.rpr | tee reaper-policy.txt
+          grep -qx "PYTYLIKI_REAPER_POLICY:PASS" reaper-policy.txt
