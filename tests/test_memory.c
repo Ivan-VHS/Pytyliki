@@ -52,6 +52,13 @@ int main(void){
  assert(pl_pool_init(&pool,pool_storage,512u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
  void *p1=pl_pool_alloc(&pool),*p2=pl_pool_alloc(&pool);
  assert(p1!=NULL&&p2!=NULL&&p1!=p2&&pool.in_use==2);
+ /* Corrupted counters must not wrap or release a live bitmap entry. */
+ pool.in_use=0u;
+ assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT&&pool.in_use==0u);
+ pool.in_use=2u;
+ pool.in_use=pool.block_count;
+ assert(pl_pool_alloc(&pool)==NULL&&pool.in_use==pool.block_count);
+ pool.in_use=2u;
  assert(pl_pool_free(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
  assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_pool_free(&pool,(unsigned char *)p2+1)==PL_STATUS_OUT_OF_RANGE);
