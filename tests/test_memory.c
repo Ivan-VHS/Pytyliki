@@ -19,6 +19,10 @@ int main(void){
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,0,sizeof(values),0)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(double),0)==PL_STATUS_OUT_OF_RANGE);
  assert(pl_view_init(&view,NULL,1,PL_TYPE_F64,sizeof(double),sizeof(double),0)==PL_STATUS_INVALID_ARGUMENT);
+ pl_view_t address_overflow;
+ void *near_address_end=(void *)(uintptr_t)(UINTPTR_MAX-3u);
+ assert(pl_view_init(&address_overflow,near_address_end,1u,PL_TYPE_F64,
+                     sizeof(double),sizeof(double),0u)==PL_STATUS_OVERFLOW);
 
  unsigned char scratch[160];pl_arena_t arena;
  assert(pl_arena_init(&arena,scratch+1,sizeof(scratch)-1)==PL_STATUS_OK);
