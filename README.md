@@ -163,7 +163,7 @@ The core is C11. The GUI uses the Windows Win32 API and is only built on Windows
 - [C11 CI](.github/workflows/ci.yml) builds and tests on Ubuntu and Windows and includes a Linux sanitizer job.
 - [Desktop build](.github/workflows/desktop-build.yml) builds the Windows GUI and CLI tools, runs CTest, captures the application screenshot and creates `Pytyliki-windows-x64.zip`.
 - The Windows archive is uploaded as a workflow artifact with a 30-day retention period.
-- A Git tag matching `v*` triggers release publication. A push to `main` is not itself a public web deployment.
+- A Git tag matching `v*` builds a Windows archive, verifies its SHA-256 sidecar and creates a draft GitHub Release behind the `release-review` environment. A maintainer must publish the draft manually; `main` pushes do not publish releases.
 
 Artifacts are created under the workflow's build/dist paths. To roll back a distributed desktop build, use the previous known-good GitHub Release/archive. There is no running service to roll back.
 
