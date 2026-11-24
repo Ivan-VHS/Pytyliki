@@ -94,13 +94,16 @@ int pl_metric_registry_search_ex(
 
 size_t pl_metric_registry_search(const char *q,const char *category,uint32_t required,
                                  const pl_metric_operation_t **results,size_t cap) {
+    const size_t page_limit = cap == 0u ? 1u :
+        (cap > PL_METRIC_QUERY_MAX_PAGE ? PL_METRIC_QUERY_MAX_PAGE : cap);
+    const size_t writable_capacity = results == NULL ? 0u : cap;
     pl_metric_query_t query = {
-        q, category, required, 0u, 0u, 0u, 0u,
-        cap == 0u ? 1u : cap
+        q, category, required, 0u, 0u, 0u, 0u, page_limit
     };
     pl_metric_search_result_t result = {0u, 0u};
-    if (cap > PL_METRIC_QUERY_MAX_PAGE) return 0u;
-    if (pl_metric_registry_search_ex(&query, results, cap, &result) != PL_METRIC_QUERY_OK) {
+    if (pl_metric_registry_search_ex(
+            &query, results, writable_capacity, &result
+        ) != PL_METRIC_QUERY_OK) {
         return 0u;
     }
     return result.total_matches;
