@@ -97,11 +97,11 @@
         "coverage": "Многогранность",
         "defect": "Дефекты"
       },
-      "target": "WAV/DSP ingestion and local audio processing",
-      "acceptance": "Review functional behavior, security, resource use, accessibility, compatibility and documentation as one change set.",
+      "target": "Cross-project DSP ownership and offline audio handoff",
+      "acceptance": "Verify that Pytyliki no longer duplicates VentuSample-owned audio processing, that the migration boundary is documented, and that the versioned federation contract remains explicit.",
       "evidence": [
-        "src/dsp_engine.c",
-        "tests/test_dsp_engine.c"
+        "docs/PYTYLIKI_DSP_MIGRATION.md",
+        "federation/octa-pyramid.v1.json"
       ]
     },
     {
@@ -237,11 +237,12 @@
         "coverage": "Безграничность",
         "defect": "Неисправности"
       },
-      "target": "CI failures, DSP regression and bounded recovery",
-      "acceptance": "Contain failures with explicit upper bounds for memory, CPU, retries, input sizes and execution time.",
+      "target": "CI failures, bounded manual recovery and native processor regression",
+      "acceptance": "Contain CI recovery with a two-attempt ceiling, same-repository allowlisting, failed-job-only reruns, regression tests and unchanged native processor safety boundaries.",
       "evidence": [
         ".github/workflows/ci.yml",
-        "tests/test_dsp_engine.c"
+        "tests/test_safe_rerun.py",
+        "tests/test_core.c"
       ]
     },
     {
