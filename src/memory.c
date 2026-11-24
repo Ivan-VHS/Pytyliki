@@ -143,9 +143,14 @@ pl_status_t pl_arena_get_stats(const pl_arena_t *a,pl_arena_stats_t *out){
 void pl_arena_reset(pl_arena_t *a){if(a!=NULL){a->used=0u;a->allocation_count=0u;}}
 void pl_arena_reset_secure(pl_arena_t *a){
  volatile unsigned char *bytes;
- if(a==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return;
+ if(a==NULL||a->used>a->capacity||a->peak_used>a->capacity||
+    (a->capacity!=0u&&a->memory==NULL))return;
  bytes=(volatile unsigned char *)a->memory;
- for(size_t i=0u;i<a->used;i++)bytes[i]=0u;
+ /*
+  * Rewind without clear_released may reduce used while leaving old payload bytes
+  * above it. Wipe the high-water region, not just the current allocation cursor.
+  */
+ for(size_t i=0u;i<a->peak_used;i++)bytes[i]=0u;
  a->used=0u;
  a->allocation_count=0u;
 }
