@@ -62,7 +62,9 @@ int main(void) {
     query.limit = PL_METRIC_QUERY_MAX_PAGE + 1u;
     assert(pl_metric_registry_search_ex(&query, results, 4u, &page) == PL_METRIC_QUERY_INVALID);
 
-    assert(pl_metric_registry_search("variance", NULL, 0u, results, 4u) == 1u);
+    /* Substring search also matches "variance" inside "covariance". */
+    assert(pl_metric_registry_search("variance", NULL, 0u, results, 4u) == 2u);
     assert(strcmp(results[0]->name, "statistics.mean_variance") == 0);
+    assert(strcmp(results[1]->name, "statistics.covariance") == 0);
     return 0;
 }
