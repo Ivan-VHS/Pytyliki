@@ -84,7 +84,7 @@ int32_t pytyliki_v1_orthogonal_f64(const double *a,const double *b,uint64_t n,do
 }
 
 static int has_terminator(const char *value, size_t capacity) {
-    return value != NULL && memchr(value, '\\0', capacity) != NULL;
+    return value != NULL && memchr(value, '\0', capacity) != NULL;
 }
 
 static void copy_embedded_text(char *out, size_t capacity, const char *value) {
