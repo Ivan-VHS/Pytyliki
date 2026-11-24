@@ -153,6 +153,11 @@ void pl_arena_destroy(pl_arena_t *a){
  if(a==NULL)return;if(a->owns_memory&&a->allocator.deallocate!=NULL)a->allocator.deallocate(a->allocator.user_data,a->memory);
  memset(a,0,sizeof(*a));
 }
+void pl_arena_destroy_secure(pl_arena_t *a){
+ if(a==NULL)return;
+ pl_arena_reset_secure(a);
+ pl_arena_destroy(a);
+}
 pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *bitmap,
                          size_t bitmap_bytes,size_t block_size,size_t alignment){
  size_t stride,blocks,need;
