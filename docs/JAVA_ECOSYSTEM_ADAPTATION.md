@@ -38,6 +38,18 @@ ownership transfer.
 | Camel EIP | Existing explicit C ABI and file-based federated contracts, not a generic integration bus |
 | Actuator / OpenTelemetry | Existing local reports, benchmark evidence and trace modules; no remote exporter is claimed |
 
+## Cross-repository C ABI
+
+The typed metric query is also exposed as the additive ABI v1 function
+`pytyliki_v1_metric_registry_search`. It uses fixed-width, NUL-terminated
+query structures and caller-owned result records. It reports both
+`total_matches` and `written`, retains no caller pointers and does not execute
+a metric operation. The OPlague bridge in
+[tools/pytyliki_ffi.py](https://github.com/Ivan-VHS/OPlague/blob/feature/java-ecosystem-capability-adaptation/tools/pytyliki_ffi.py)
+uses an explicit absolute shared-library path and applies matching UTF-8,
+mask and pagination validation. This is an opt-in native integration; it does
+not install or search for shared libraries implicitly.
+
 ## Compatibility
 
 The original metric search function and its count-return contract remain
