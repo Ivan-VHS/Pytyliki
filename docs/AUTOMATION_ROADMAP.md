@@ -22,7 +22,7 @@ This roadmap turns the 20 requested directions into traceable workstreams. It di
 
 | ID | Direction | Priority | Status | Current evidence |
 |---|---|---:|---|---|
-| `01-plan-governance` | Запланировать | P0 | extend | `project-contract.json`, `docs/DOCUMENTATION_CONTROL.md` |
+| `01-plan-governance` | Запланировать | P0 | active | `roadmap-governance.v1.json`, `roadmap-governance.v1.schema.json`, `validate_delivery_contracts.py`, `test_delivery_contracts.py` |
 | `02-organize-triggers` | Организовать | P0 | active | `.github/workflows/verified-auto-merge.yml`, `.github/workflows/update-behind-pr-branches.yml` |
 | `03-systematize-sync` | Систематизировать | P0 | active | `project-contract.json`, `federation/octa-pyramid.v1.json` |
 | `04-prioritize-change-flow` | Приоритизировать | P1 | active | `improvement-conflict.yml`, `quality-remediation.yml`, `.github/ISSUE_TEMPLATE/engineering_improvement.yml` |
@@ -33,7 +33,7 @@ This roadmap turns the 20 requested directions into traceable workstreams. It di
 | `09-modernize-quality-flow` | Модернизировать | P0 | active | `.github/workflows/quality-remediation.yml`, `quality-remediation.v1.json` |
 | `10-automate-diagnostics` | Автоматизировать | P0 | active | `.github/workflows/quality-remediation.yml`, `.github/workflows/update-behind-pr-branches.yml` |
 | `11-structure-test-updates` | Структурировать | P0 | active | `.github/workflows/quality-repeatability-native.yml`, `tests/test_core.c` |
-| `12-scale-validation` | Масштабировать | P1 | extend | `.github/workflows/quality-repeatability-native.yml`, `quality-repeatability-native.v1.json` |
+| `12-scale-validation` | Масштабировать | P1 | active | `ci-scale-policy.v1.json`, `ci-scale-policy.v1.schema.json`, `validate_delivery_contracts.py`, `test_delivery_contracts.py`, `.github/workflows/ci.yml` |
 | `13-implement-verification` | Реализовать | P0 | active | `.github/workflows/quality-commercial.yml`, `.github/workflows/quality-remediation.yml` |
 | `14-coordinate-deployment` | Координировать | P2 | planned | `.github/workflows/verified-auto-merge.yml`, `project-contract.json` |
 | `15-consolidate-test-matrix` | Консолидировать | P1 | active | `.github/workflows/quality-repeatability-native.yml`, `tests/test_core.c` |
@@ -74,3 +74,9 @@ The validator uses only the Python standard library and checks all 20 identifier
 ## Deliberate release boundaries
 
 Workstream 14 remains planned because these repositories do not have a production service deployment target; local desktop/CLI packaging is not production deployment. Workstream 20 remains planned until a protected release environment, maintainer approval, signing/provenance credentials and supported publication target are configured. The recovery workflow does not deploy or publish artifacts.
+
+## Governance and CI scale controls
+
+- **Governance (01):** the versioned roadmap-governance policy defines status-evidence requirements, priority review, change control and release boundaries. Its Draft 2020-12 schema and negative-case tests are enforced by `validate_delivery_contracts.py` and the main roadmap validator.
+- **Bounded validation (12):** the CI scale policy caps the native matrix at three jobs and 35 minutes per runner job, and the focused quality contract at one job and 15 minutes. Both workflows require explicit concurrency and cancellation behavior; future matrices must declare `max-parallel`. Required Windows/Linux/sanitizer coverage is retained.
+- **Toolchain optimisation (06):** remains `extend` until a reproducible before/after toolchain benchmark is captured; no default compiler or linker settings are changed without measured evidence.
