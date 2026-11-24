@@ -221,12 +221,16 @@ def main() -> int:
     parser.add_argument("--self-test", action="store_true", help="run validator negative-case checks")
     args = parser.parse_args()
     try:
-        project = load_json(ROOT / "project-contract.json")
+        project_contract = load_json(ROOT / "project-contract.json")
     except (OSError, json.JSONDecodeError) as exc:
         print(f"delivery contracts: cannot load project contract: {exc}", file=sys.stderr)
         return 2
-    repository = project.get("repository")
-    errors = validate_contracts(repository if isinstance(repository, str) else "")
+    project = project_contract.get("project")
+    repository = project.get("repository") if isinstance(project, dict) else None
+    if not isinstance(repository, str) or not repository.strip():
+        print("delivery contracts: project-contract.json has no project.repository", file=sys.stderr)
+        return 2
+    errors = validate_contracts(repository)
     if args.self_test:
         governance = load_json(GOVERNANCE)
         scale = load_json(SCALE)
