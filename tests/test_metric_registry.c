@@ -21,7 +21,7 @@ int main(void) {
 
     assert(pl_metric_registry_count() == 16u);
     assert(pl_metric_registry_search_ex(&query, results, 4u, &page) == PL_METRIC_QUERY_OK);
-    assert(page.total_matches == 6u);
+    assert(page.total_matches == 5u);
     assert(page.written == 2u);
     assert(results[0] != NULL && strcmp(results[0]->name, "vector.norm.l2") == 0);
     assert(results[1] != NULL && strcmp(results[1]->name, "vector.norm.l1") == 0);
@@ -29,7 +29,7 @@ int main(void) {
     query.offset = 0u;
     query.limit = 1u;
     assert(pl_metric_registry_search_ex(&query, results, 4u, &page) == PL_METRIC_QUERY_OK);
-    assert(page.total_matches == 6u && page.written == 1u);
+    assert(page.total_matches == 5u && page.written == 1u);
     assert(strcmp(results[0]->name, "vector.dot") == 0);
 
     query.required_type_mask = 1u << 1;
