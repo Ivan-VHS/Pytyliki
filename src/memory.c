@@ -153,6 +153,21 @@ pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *b
  if(!align_up_size(block_size,alignment,&stride))return PL_STATUS_OVERFLOW;
  blocks=storage_bytes/stride;if(blocks==0u)return PL_STATUS_OUT_OF_RANGE;
  need=blocks/8u+(blocks%8u!=0u?1u:0u);if(bitmap_bytes<need)return PL_STATUS_OUT_OF_RANGE;
+ /*
+  * The bitmap is mutable allocator metadata. If it overlaps the pool's data
+  * region, initialization or later allocation can silently corrupt payloads.
+  * Check integer address ranges before touching either caller-owned region.
+  */
+ {
+  uintptr_t storage_begin=(uintptr_t)storage,bitmap_begin=(uintptr_t)bitmap;
+  uintptr_t storage_end,bitmap_end;
+  if(storage_bytes>(size_t)(UINTPTR_MAX-storage_begin) ||
+     need>(size_t)(UINTPTR_MAX-bitmap_begin))return PL_STATUS_OVERFLOW;
+  storage_end=storage_begin+(uintptr_t)storage_bytes;
+  bitmap_end=bitmap_begin+(uintptr_t)need;
+  if(storage_begin<bitmap_end && bitmap_begin<storage_end)
+   return PL_STATUS_INVALID_ARGUMENT;
+ }
  memset(p,0,sizeof(*p));memset(bitmap,0,need);p->storage=(unsigned char *)storage;
  p->bitmap=(unsigned char *)bitmap;p->storage_bytes=storage_bytes;p->bitmap_bytes=bitmap_bytes;
  p->block_size=block_size;p->stride_bytes=stride;p->block_count=blocks;return PL_STATUS_OK;
