@@ -23,7 +23,7 @@ Implemented path: local host and file inputs → bounded C11 core → inspection
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 
-> **Scope:** a local C11 processor-systems workstation with a Windows GUI and portable command-line tools. This repository does **not** publish a hosted web demo, browser sandbox, API service or production control plane. Documentation was checked against `main` on **2026-11-22**.
+> **Scope:** a local C11 processor-systems workstation with a Windows GUI and portable command-line tools. This repository does **not** publish a hosted web demo, browser sandbox, API service or production control plane. README build commands and repository entry points were checked against `main` on **2026-11-24**.
 
 ## Purpose and boundaries
 

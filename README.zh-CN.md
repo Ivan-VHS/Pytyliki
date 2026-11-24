@@ -23,7 +23,7 @@
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 
-> **项目范围：** 基于 C11 的本地处理器系统工作站，包含 Windows 图形界面和可移植命令行工具。本仓库**没有**托管的 Web Demo、浏览器 Sandbox、API 服务或生产控制平面。文档已于 **2026-11-22** 对照 `main` 分支核对。
+> **项目范围：** 基于 C11 的本地处理器系统工作站，包含 Windows 图形界面和可移植命令行工具。本仓库**没有**托管的 Web Demo、浏览器 Sandbox、API 服务或生产控制平面。README 构建命令和仓库入口已于 **2026-11-24** 对照 `main` 分支核验。
 
 ## 项目用途与边界
 

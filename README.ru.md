@@ -23,7 +23,7 @@
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 
-> **Назначение:** локальная рабочая станция на C11 с графическим интерфейсом Windows и переносными CLI-инструментами. В репозитории **нет** опубликованного веб-демо, браузерного sandbox, API-сервиса или промышленного контура управления. Документация сверена с веткой `main` **22.11.2026**.
+> **Назначение:** локальная рабочая станция на C11 с графическим интерфейсом Windows и переносными CLI-инструментами. В репозитории **нет** опубликованного веб-демо, браузерного sandbox, API-сервиса или промышленного контура управления. Команды сборки README и точки входа репозитория проверены по ветке `main` **24.11.2026**.
 
 ## Назначение и границы
 
