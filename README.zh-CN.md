@@ -160,7 +160,7 @@ MSVC 不支持此选项。
 - [C11 CI](.github/workflows/ci.yml) 在 Ubuntu 和 Windows 上构建、测试，并包含 Linux Sanitizer Job。
 - [Desktop build](.github/workflows/desktop-build.yml) 构建 Windows GUI 和 CLI，运行 CTest，截取应用画面并生成 `Pytyliki-windows-x64.zip`。
 - Windows 压缩包作为 Workflow Artifact 上传，保留 30 天。
-- 名称匹配 `v*` 的 Git Tag 会触发 Release 发布。向 `main` 推送本身并不表示 Web 部署。
+- 名称匹配 `v*` 的 Git Tag 会构建 Windows 压缩包、验证 SHA-256 校验文件，并在 `release-review` 环境门禁后创建 GitHub 草稿 Release。维护者必须手动发布草稿；向 `main` 推送本身并不表示 Web 部署。
 
 构建产物位于 Workflow 的 build/dist 路径中。回滚已分发的桌面版本时，使用上一个已知正常的 GitHub Release/压缩包。项目没有需要回滚的在线服务。
 
