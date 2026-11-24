@@ -97,6 +97,7 @@ static void copy_embedded_text(char *out, size_t capacity, const char *value) {
 }
 
 
+
 int32_t pytyliki_v1_metric_registry_search(
     const pytyliki_metric_query_v1 *query,
     pytyliki_metric_operation_v1 *results,
@@ -104,10 +105,12 @@ int32_t pytyliki_v1_metric_registry_search(
     pytyliki_metric_search_result_v1 *out
 ) {
     size_t offset = 0u, limit = 0u, capacity = 0u;
-    size_t i;
-    const pl_metric_operation_t *matches[PL_METRIC_QUERY_MAX_PAGE];
+    size_t i, available;
     pl_metric_search_result_t native_result = {0u, 0u};
+    pl_metric_search_result_t item_result = {0u, 0u};
     pl_metric_query_t native_query;
+    pl_metric_query_t item_query;
+    const pl_metric_operation_t *item = NULL;
 
     if (query == NULL || out == NULL
         || (results == NULL && result_capacity != 0u)
@@ -130,19 +133,30 @@ int32_t pytyliki_v1_metric_registry_search(
     native_query.offset = offset;
     native_query.limit = limit;
 
+    /* Count first, then fetch only the caller-owned page one row at a time.
+     * This keeps the native stack independent of the maximum page size. */
     if (pl_metric_registry_search_ex(
-            &native_query,
-            capacity == 0u ? NULL : matches,
-            capacity,
-            &native_result
+            &native_query, NULL, 0u, &native_result
         ) != PL_METRIC_QUERY_OK) {
         return PYTYLIKI_ABI_INVALID_ARGUMENT;
     }
 
     out->total_matches = (uint64_t)native_result.total_matches;
-    out->written = (uint64_t)native_result.written;
-    for (i = 0u; i < native_result.written; ++i) {
-        const pl_metric_operation_t *item = matches[i];
+    out->written = 0u;
+    available = native_result.total_matches > offset
+        ? native_result.total_matches - offset : 0u;
+    if (capacity > available) capacity = available;
+
+    item_query = native_query;
+    item_query.limit = 1u;
+    for (i = 0u; i < capacity; ++i) {
+        item_query.offset = offset + i;
+        item = NULL;
+        if (pl_metric_registry_search_ex(
+                &item_query, &item, 1u, &item_result
+            ) != PL_METRIC_QUERY_OK || item_result.written != 1u || item == NULL) {
+            return PYTYLIKI_ABI_INVALID_ARGUMENT;
+        }
         memset(&results[i], 0, sizeof(results[i]));
         results[i].id = item->id;
         copy_embedded_text(results[i].name, sizeof(results[i].name), item->name);
@@ -151,6 +165,7 @@ int32_t pytyliki_v1_metric_registry_search(
         copy_embedded_text(results[i].complexity, sizeof(results[i].complexity), item->complexity);
         results[i].type_mask = item->type_mask;
         results[i].capabilities = item->capabilities;
+        ++out->written;
     }
     return PYTYLIKI_ABI_OK;
 }
