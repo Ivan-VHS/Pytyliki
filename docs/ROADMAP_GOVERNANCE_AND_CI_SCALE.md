@@ -18,6 +18,9 @@ The JSON policies and schemas are normative for their machine-readable fields. T
 | `active` | Existing implementation/control, valid evidence paths, regression verification and an executable acceptance gate | The scoped control exists and its stated checks run; do not generalize beyond the tested surface |
 | `extend` | Existing partial control, explicit gap and a next measurable acceptance gate | The target is only partially delivered |
 | `planned` | Explicit blocker, owner/dependency and exit criteria | Not implemented; no shipped-capability claim is permitted |
+| `not_applicable` | Explicit product-scope rationale, owner and a trigger that would change the product boundary | The capability is outside this product's current scope; it is not an unfinished feature |
+
+A `not_applicable` status is valid only when the machine-readable roadmap includes a specific reason and the validator tests that reason. Use it for capability areas outside the approved product boundary; do not use it to hide incomplete implementation.
 
 A Markdown checkbox, catalog entry, schema, interface declaration or passing documentation validator is not runtime implementation evidence. Contract validation proves the declaration and paths; it does not prove hardware access, timing guarantees, release provenance or production deployment.
 
