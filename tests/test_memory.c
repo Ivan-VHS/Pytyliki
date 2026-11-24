@@ -44,6 +44,19 @@ int main(void){
  pl_arena_reset_secure(&secure_arena);
  assert(secure_arena.used==0u&&secure_arena.allocation_count==0u);
  for(size_t i=0u;i<13u;i++)assert(secure_storage[i]==0u);
+
+ /* Rewind without clearing leaves a high-water secret beyond used. */
+ unsigned char rewind_storage[64];pl_arena_t rewind_arena;pl_arena_mark_t rewind_mark;
+ assert(pl_arena_init(&rewind_arena,rewind_storage,sizeof(rewind_storage))==PL_STATUS_OK);
+ void *rewind_secret=pl_arena_alloc(&rewind_arena,24u,1u);assert(rewind_secret!=NULL);
+ memset(rewind_secret,0xD3,24u);
+ assert(pl_arena_mark(&rewind_arena,&rewind_mark)==PL_STATUS_OK);
+ void *later_secret=pl_arena_alloc(&rewind_arena,24u,1u);assert(later_secret!=NULL);
+ memset(later_secret,0xE4,24u);
+ assert(pl_arena_rewind(&rewind_arena,rewind_mark,0)==PL_STATUS_OK);
+ assert(rewind_arena.used==rewind_mark.used&&rewind_arena.peak_used>=48u);
+ pl_arena_reset_secure(&rewind_arena);
+ for(size_t i=0u;i<48u;i++)assert(rewind_storage[i]==0u);
  unsigned char destroy_storage[24];pl_arena_t destroy_arena;
  assert(pl_arena_init(&destroy_arena,destroy_storage,sizeof(destroy_storage))==PL_STATUS_OK);
  void *destroy_secret=pl_arena_alloc(&destroy_arena,17u,1u);assert(destroy_secret!=NULL);
