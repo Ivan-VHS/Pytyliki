@@ -175,6 +175,8 @@ pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *b
 void *pl_pool_alloc(pl_pool_t *p){
  size_t bitmap_bytes;
  if(p==NULL||p->storage==NULL||p->bitmap==NULL)return NULL;
+ /* Never let inconsistent public counters wrap or exceed the pool capacity. */
+ if(p->in_use>=p->block_count)return NULL;
  bitmap_bytes=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
  for(size_t byte=0u;byte<bitmap_bytes;byte++){
   unsigned char occupied=p->bitmap[byte];
@@ -200,5 +202,6 @@ pl_status_t pl_pool_free(pl_pool_t *p,void *block){
  delta=address-base;if(delta>=p->storage_bytes||delta%p->stride_bytes!=0u)return PL_STATUS_OUT_OF_RANGE;
  index=(size_t)(delta/p->stride_bytes);if(index>=p->block_count)return PL_STATUS_OUT_OF_RANGE;
  mask=(unsigned char)(1u<<(index&7u));if((p->bitmap[index>>3u]&mask)==0u)return PL_STATUS_INVALID_ARGUMENT;
+ if(p->in_use==0u)return PL_STATUS_INVALID_ARGUMENT;
  p->bitmap[index>>3u]=(unsigned char)(p->bitmap[index>>3u]&(unsigned char)~mask);--p->in_use;return PL_STATUS_OK;
 }
