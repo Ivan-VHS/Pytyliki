@@ -195,6 +195,27 @@ def validate_scale(policy: Any, repository: str, root: Path = ROOT) -> list[str]
     return errors
 
 
+def validate_documentation(root: Path = ROOT) -> list[str]:
+    path = root / "docs" / "ROADMAP_GOVERNANCE_AND_CI_SCALE.md"
+    if not path.is_file():
+        return ["roadmap governance and CI scale documentation is missing"]
+    content = path.read_text(encoding="utf-8")
+    required = (
+        "Capability maturity",
+        "Priority and change control",
+        "CI execution budget",
+        "Safe recovery and release boundaries",
+        "Toolchain optimization",
+        "`active`",
+        "`extend`",
+        "`planned`",
+        "timeout-minutes",
+        "max-parallel",
+    )
+    return [f"roadmap governance documentation is missing required section or term: {term}"
+            for term in required if term not in content]
+
+
 def validate_contracts(repository: str, root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     pairs = (
@@ -217,6 +238,7 @@ def validate_contracts(repository: str, root: Path = ROOT) -> list[str]:
             errors.extend(validator(policy, repository))
         else:
             errors.extend(validate_scale(policy, repository, root))
+    errors.extend(validate_documentation(root))
     return errors
 
 
