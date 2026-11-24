@@ -141,6 +141,14 @@ pl_status_t pl_arena_get_stats(const pl_arena_t *a,pl_arena_stats_t *out){
  out->peak_used=a->peak_used;out->allocation_count=a->allocation_count;return PL_STATUS_OK;
 }
 void pl_arena_reset(pl_arena_t *a){if(a!=NULL){a->used=0u;a->allocation_count=0u;}}
+void pl_arena_reset_secure(pl_arena_t *a){
+ volatile unsigned char *bytes;
+ if(a==NULL||a->used>a->capacity||(a->capacity!=0u&&a->memory==NULL))return;
+ bytes=(volatile unsigned char *)a->memory;
+ for(size_t i=0u;i<a->used;i++)bytes[i]=0u;
+ a->used=0u;
+ a->allocation_count=0u;
+}
 void pl_arena_destroy(pl_arena_t *a){
  if(a==NULL)return;if(a->owns_memory&&a->allocator.deallocate!=NULL)a->allocator.deallocate(a->allocator.user_data,a->memory);
  memset(a,0,sizeof(*a));
@@ -201,4 +209,34 @@ pl_status_t pl_pool_free(pl_pool_t *p,void *block){
  index=(size_t)(delta/p->stride_bytes);if(index>=p->block_count)return PL_STATUS_OUT_OF_RANGE;
  mask=(unsigned char)(1u<<(index&7u));if((p->bitmap[index>>3u]&mask)==0u)return PL_STATUS_INVALID_ARGUMENT;
  p->bitmap[index>>3u]=(unsigned char)(p->bitmap[index>>3u]&(unsigned char)~mask);--p->in_use;return PL_STATUS_OK;
+}
+pl_status_t pl_pool_free_secure(pl_pool_t *p,void *block){
+ uintptr_t base,address,delta;
+ size_t index,required_bitmap;
+ unsigned char mask;
+ volatile unsigned char *payload;
+ if(p==NULL||block==NULL||p->storage==NULL||p->bitmap==NULL||
+    p->stride_bytes==0u||p->block_size==0u||p->block_size>p->stride_bytes)
+  return PL_STATUS_INVALID_ARGUMENT;
+ if(p->block_count>p->storage_bytes/p->stride_bytes)
+  return PL_STATUS_INVALID_ARGUMENT;
+ required_bitmap=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
+ if(p->bitmap_bytes<required_bitmap)return PL_STATUS_INVALID_ARGUMENT;
+ base=(uintptr_t)p->storage;
+ address=(uintptr_t)block;
+ if(address<base)return PL_STATUS_OUT_OF_RANGE;
+ delta=address-base;
+ if(delta>=p->storage_bytes||delta%p->stride_bytes!=0u)return PL_STATUS_OUT_OF_RANGE;
+ index=(size_t)(delta/p->stride_bytes);
+ if(index>=p->block_count||p->stride_bytes>p->storage_bytes-(size_t)delta)
+  return PL_STATUS_OUT_OF_RANGE;
+ mask=(unsigned char)(1u<<(index&7u));
+ if((p->bitmap[index>>3u]&mask)==0u||p->in_use==0u)
+  return PL_STATUS_INVALID_ARGUMENT;
+ /* Volatile stores keep this explicit erasure observable to the compiler. */
+ payload=(volatile unsigned char *)p->storage+(size_t)delta;
+ for(size_t i=0u;i<p->stride_bytes;i++)payload[i]=0u;
+ p->bitmap[index>>3u]=(unsigned char)(p->bitmap[index>>3u]&(unsigned char)~mask);
+ --p->in_use;
+ return PL_STATUS_OK;
 }
