@@ -53,7 +53,7 @@ int main(void) {
     {
         char oversized[PL_METRIC_QUERY_MAX_TEXT + 2u];
         memset(oversized, 'x', sizeof(oversized));
-        oversized[sizeof(oversized) - 1u] = '\\0';
+        oversized[sizeof(oversized) - 1u] = '\0';
         query.query = oversized;
         assert(pl_metric_registry_search_ex(&query, results, 4u, &page) == PL_METRIC_QUERY_INVALID);
     }
