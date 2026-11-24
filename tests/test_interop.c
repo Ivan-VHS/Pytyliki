@@ -60,8 +60,9 @@ int main(void) {
 
     /* Typed jOOQ-style query parameters cross the versioned ABI without exposing C pointers. */
     memset(&metric_query, 0, sizeof(metric_query));
-    strcpy(metric_query.query, "vector");
-    strcpy(metric_query.category, "vector-algebra");
+    /* Copy complete NUL-terminated literals into the fixed-size ABI fields. */
+    memcpy(metric_query.query, "vector", sizeof("vector"));
+    memcpy(metric_query.category, "vector-algebra", sizeof("vector-algebra"));
     metric_query.required_capabilities = PL_METRIC_CAP_STREAMING;
     metric_query.excluded_capabilities = PL_METRIC_CAP_ALLOCATES;
     metric_query.required_type_mask = 1u;
