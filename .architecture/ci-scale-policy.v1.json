@@ -17,6 +17,41 @@
       "max_jobs": 1,
       "max_job_timeout_minutes": 15,
       "max_parallel_matrix": 1
+    },
+    ".github/workflows/automation-roadmap.yml": {
+      "max_jobs": 1,
+      "max_job_timeout_minutes": 10,
+      "max_parallel_matrix": 1
+    },
+    ".github/workflows/quality-remediation.yml": {
+      "max_jobs": 1,
+      "max_job_timeout_minutes": 15,
+      "max_parallel_matrix": 1
+    },
+    ".github/workflows/quality-commercial.yml": {
+      "max_jobs": 1,
+      "max_job_timeout_minutes": 15,
+      "max_parallel_matrix": 1
+    },
+    ".github/workflows/improvement-conflict.yml": {
+      "max_jobs": 1,
+      "max_job_timeout_minutes": 10,
+      "max_parallel_matrix": 1
+    },
+    ".github/workflows/safe-ci-recovery.yml": {
+      "max_jobs": 1,
+      "max_job_timeout_minutes": 5,
+      "max_parallel_matrix": 1
+    },
+    ".github/workflows/update-behind-pr-branches.yml": {
+      "max_jobs": 1,
+      "max_job_timeout_minutes": 15,
+      "max_parallel_matrix": 1
+    },
+    ".github/workflows/verified-auto-merge.yml": {
+      "max_jobs": 3,
+      "max_job_timeout_minutes": 35,
+      "max_parallel_matrix": 2
     }
   },
   "rules": {
