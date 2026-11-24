@@ -56,6 +56,7 @@ pl_status_t pl_view_init(pl_view_t *out,void *data,size_t count,pl_data_type_t t
  if(count!=0u&&data==NULL)return PL_STATUS_INVALID_ARGUMENT;
  if(count==0u){if(extent!=0u)return PL_STATUS_INVALID_ARGUMENT;}
  else{
+  if((uintmax_t)extent>(uintmax_t)(UINTPTR_MAX-(uintptr_t)data))return PL_STATUS_OVERFLOW;
   if(mul_overflow_size(count-1u,stride,&offset)||add_overflow_size(offset,elem,&required))return PL_STATUS_OVERFLOW;
   if(required>extent)return PL_STATUS_OUT_OF_RANGE;
  }
@@ -98,6 +99,8 @@ pl_status_t pl_chunk_init(pl_chunk_t *out,const pl_view_t *v,uint64_t offset,uin
 }
 pl_status_t pl_arena_init(pl_arena_t *a,void *storage,size_t capacity){
  if(a==NULL||(capacity!=0u&&storage==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ if(capacity!=0u&&(uintmax_t)capacity>(uintmax_t)(UINTPTR_MAX-(uintptr_t)storage))
+  return PL_STATUS_OVERFLOW;
  memset(a,0,sizeof(*a));a->memory=(unsigned char *)storage;a->capacity=capacity;return PL_STATUS_OK;
 }
 pl_status_t pl_arena_create(pl_arena_t *a,size_t capacity,const pl_allocator_t *allocator){
