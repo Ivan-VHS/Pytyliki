@@ -15,6 +15,9 @@ int main(void) {
     pytyliki_embedded_budget_v1 embedded_budget;
     uint64_t plugin_count=0u;
     pytyliki_plugin_descriptor_v1 plugin;
+    pytyliki_metric_query_v1 metric_query;
+    pytyliki_metric_operation_v1 metric_results[2];
+    pytyliki_metric_search_result_v1 metric_result;
     assert(pytyliki_abi_version()==PYTYLIKI_ABI_VERSION);
     assert(pytyliki_v1_norm_f64(a,2u,&value)==0&&fabs(value-5.0)<1e-12);
     assert(pytyliki_v1_dot_f64(a,y,2u,&value)==0&&fabs(value-4.0)<1e-12);
@@ -53,5 +56,41 @@ int main(void) {
     assert(pytyliki_v1_plugin_at(plugin_count,&plugin)==PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_plugin_count(NULL)==PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_plugin_find(NULL,&plugin)==PYTYLIKI_ABI_INVALID_ARGUMENT);
+
+    /* Typed jOOQ-style query parameters cross the versioned ABI without exposing C pointers. */
+    memset(&metric_query, 0, sizeof(metric_query));
+    strcpy(metric_query.query, "vector");
+    strcpy(metric_query.category, "vector-algebra");
+    metric_query.required_capabilities = PL_METRIC_CAP_STREAMING;
+    metric_query.excluded_capabilities = PL_METRIC_CAP_ALLOCATES;
+    metric_query.required_type_mask = 1u;
+    metric_query.offset = 1u;
+    metric_query.limit = 2u;
+    assert(pytyliki_v1_metric_registry_search(
+        &metric_query, metric_results, 2u, &metric_result
+    ) == PYTYLIKI_ABI_OK);
+    assert(metric_result.total_matches == 4u && metric_result.written == 2u);
+    assert(strcmp(metric_results[0].name, "vector.norm.l2") == 0);
+    assert(strcmp(metric_results[1].name, "vector.norm.l1") == 0);
+
+    metric_query.offset = 0u;
+    metric_query.limit = 1u;
+    assert(pytyliki_v1_metric_registry_search(
+        &metric_query, NULL, 0u, &metric_result
+    ) == PYTYLIKI_ABI_OK);
+    assert(metric_result.total_matches == 4u && metric_result.written == 0u);
+
+    metric_query.limit = PL_METRIC_QUERY_MAX_PAGE + 1u;
+    assert(pytyliki_v1_metric_registry_search(
+        &metric_query, metric_results, 2u, &metric_result
+    ) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+    metric_query.limit = 1u;
+    assert(pytyliki_v1_metric_registry_search(
+        &metric_query, NULL, 2u, &metric_result
+    ) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+    memset(metric_query.query, 'x', sizeof(metric_query.query));
+    assert(pytyliki_v1_metric_registry_search(
+        &metric_query, metric_results, 2u, &metric_result
+    ) == PYTYLIKI_ABI_INVALID_ARGUMENT);
     return 0;
 }
