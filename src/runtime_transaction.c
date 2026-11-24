@@ -169,6 +169,7 @@ static pl_rt_status commit(pl_runtime_transaction *tx, uint64_t expected_generat
     unsigned char *next;
     if (!usable(tx)) return PL_RT_STATE;
     if (expected_generation != tx->generation) return PL_RT_CONFLICT;
+    if (tx->generation == UINT64_MAX) return PL_RT_LIMIT;
     if (tx->staged_crc32 != pl_rt_crc32(tx->staged, tx->staged_size)) {
         set_error(tx, "staged payload checksum mismatch");
         return PL_RT_INTEGRITY;
