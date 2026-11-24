@@ -60,11 +60,15 @@ pl_status_t pl_arena_mark(const pl_arena_t *arena,pl_arena_mark_t *out);
 pl_status_t pl_arena_rewind(pl_arena_t *arena,pl_arena_mark_t mark,int clear_released);
 pl_status_t pl_arena_get_stats(const pl_arena_t *arena,pl_arena_stats_t *out);
 void pl_arena_reset(pl_arena_t *arena);
+/* Explicitly wipe used bytes before resetting arena metadata. */
+void pl_arena_reset_secure(pl_arena_t *arena);
 void pl_arena_destroy(pl_arena_t *arena);
 pl_status_t pl_pool_init(pl_pool_t *pool,void *storage,size_t storage_bytes,void *bitmap,
                          size_t bitmap_bytes,size_t block_size,size_t alignment);
 void *pl_pool_alloc(pl_pool_t *pool);
 pl_status_t pl_pool_free(pl_pool_t *pool,void *block);
+/* Wipe one complete pool slot before returning it to the allocator. */
+pl_status_t pl_pool_free_secure(pl_pool_t *pool,void *block);
 #ifdef __cplusplus
 }
 #endif
