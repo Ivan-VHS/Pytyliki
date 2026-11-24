@@ -138,9 +138,13 @@ static pl_snapshot_status read_candidate(const char *path, snapshot_candidate *o
         return PL_SNAPSHOT_INTEGRITY;
     }
     trailing = fgetc(file);
-    if (ferror(file) || trailing != EOF || fclose(file) != 0) {
-        free(payload);
-        return PL_SNAPSHOT_INTEGRITY;
+    {
+        const int read_error = ferror(file);
+        const int close_error = fclose(file);
+        if (read_error || trailing != EOF || close_error != 0) {
+            free(payload);
+            return PL_SNAPSHOT_INTEGRITY;
+        }
     }
     if (snapshot_crc32(payload, (size_t)payload_size) != crc) {
         free(payload);
