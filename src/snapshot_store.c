@@ -32,6 +32,16 @@ static uint32_t snapshot_crc32(const unsigned char *data, size_t size) {
     return ~crc;
 }
 
+static FILE *open_snapshot_file(const char *path, const char *mode) {
+#if defined(_WIN32)
+    FILE *file = NULL;
+    if (fopen_s(&file, path, mode) != 0) return NULL;
+    return file;
+#else
+    return fopen(path, mode);
+#endif
+}
+
 static int write_u32(FILE *file, uint32_t value) {
     unsigned char bytes[4];
     unsigned index;
@@ -107,7 +117,7 @@ static pl_snapshot_status read_candidate(const char *path, snapshot_candidate *o
     int trailing;
     if (out == NULL || !valid_path(path)) return PL_SNAPSHOT_INVALID;
     memset(out, 0, sizeof *out);
-    file = fopen(path, "rb");
+    file = open_snapshot_file(path, "rb");
     if (file == NULL) return PL_SNAPSHOT_NOT_FOUND;
     if (fread(magic, 1u, sizeof magic, file) != sizeof magic ||
         memcmp(magic, "PLSJ", 4u) != 0 ||
@@ -192,7 +202,7 @@ pl_snapshot_status pl_snapshot_save_atomic(const char *path, uint32_t schema_ver
     }
 
     crc = snapshot_crc32((const unsigned char *)payload, payload_size);
-    file = fopen(pending, "wb");
+    file = open_snapshot_file(pending, "wb");
     if (file == NULL) return PL_SNAPSHOT_IO;
     if (fwrite("PLSJ", 1u, 4u, file) != 4u ||
         !write_u32(file, 1u) || !write_u32(file, schema_version) ||
