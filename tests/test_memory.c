@@ -44,6 +44,13 @@ int main(void){
  pl_arena_reset_secure(&secure_arena);
  assert(secure_arena.used==0u&&secure_arena.allocation_count==0u);
  for(size_t i=0u;i<13u;i++)assert(secure_storage[i]==0u);
+ unsigned char destroy_storage[24];pl_arena_t destroy_arena;
+ assert(pl_arena_init(&destroy_arena,destroy_storage,sizeof(destroy_storage))==PL_STATUS_OK);
+ void *destroy_secret=pl_arena_alloc(&destroy_arena,17u,1u);assert(destroy_secret!=NULL);
+ memset(destroy_secret,0x5Au,17u);
+ pl_arena_destroy_secure(&destroy_arena);
+ assert(destroy_arena.memory==NULL&&destroy_arena.capacity==0u);
+ for(size_t i=0u;i<17u;i++)assert(destroy_storage[i]==0u);
  assert(pl_arena_get_stats(&arena,&stats)==PL_STATUS_OK&&stats.peak_used>0);
  pl_arena_destroy(&arena);
 
