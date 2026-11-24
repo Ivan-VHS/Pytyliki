@@ -145,10 +145,14 @@ def validate_scale(policy: Any, repository: str, root: Path = ROOT) -> list[str]
     if not isinstance(global_limits, dict):
         return errors + ["global_limits must be an object"]
     keys = ("max_jobs_per_workflow", "max_job_timeout_minutes", "max_parallel_matrix")
+    global_limits_valid = True
     for key in keys:
         value = global_limits.get(key)
         if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
             errors.append(f"global_limits.{key} must be a positive integer")
+            global_limits_valid = False
+    if not global_limits_valid:
+        return errors
     workflows = policy.get("workflows")
     if not isinstance(workflows, dict) or not workflows:
         return errors + ["workflows must be a non-empty path-to-budget object"]
