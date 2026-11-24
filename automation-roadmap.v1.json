@@ -81,7 +81,11 @@
         "tools/validate_delivery_contracts.py",
         "tests/test_delivery_contracts.py",
         "scripts/validate_automation_roadmap.py",
-        ".github/workflows/automation-roadmap.yml"
+        ".github/workflows/automation-roadmap.yml",
+        "docs/ROADMAP_GOVERNANCE_AND_CI_SCALE.md",
+        "docs/README.md",
+        "docs/INFORMATION_ARCHITECTURE.md",
+        "docs/clusters/quality-evidence.md"
       ],
       "guardrails": [
         "Roadmap changes are reviewed as versioned source.",
@@ -383,7 +387,10 @@
         ".architecture/ci-scale-policy.v1.schema.json",
         "tools/validate_delivery_contracts.py",
         "tests/test_delivery_contracts.py",
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        "docs/ROADMAP_GOVERNANCE_AND_CI_SCALE.md",
+        "docs/README.md",
+        "docs/clusters/quality-evidence.md"
       ],
       "guardrails": [
         "Bound matrix size, runtime, and concurrency.",
