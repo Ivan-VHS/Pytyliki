@@ -66,6 +66,12 @@ int main(void){
  assert(pl_pool_init(&pool,pool_storage,512u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
  void *p1=pl_pool_alloc(&pool),*p2=pl_pool_alloc(&pool);
  assert(p1!=NULL&&p2!=NULL&&p1!=p2&&pool.in_use==2);
+ pool.in_use=0u;
+ assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT&&pool.in_use==0u);
+ pool.in_use=2u;
+ pool.in_use=pool.block_count;
+ assert(pl_pool_alloc(&pool)==NULL&&pool.in_use==pool.block_count);
+ pool.in_use=2u;
  memset(p1,0xA5,pool.block_size);
  assert(pl_pool_free_secure(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
  for(size_t i=0u;i<pool.stride_bytes;i++)assert(((unsigned char *)p1)[i]==0u);
