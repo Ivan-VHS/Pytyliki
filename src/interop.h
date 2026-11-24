@@ -55,6 +55,38 @@ typedef struct {
     int32_t sram_fits;
 } pytyliki_embedded_budget_v1;
 
+#define PYTYLIKI_METRIC_QUERY_TEXT_CAP 257u
+#define PYTYLIKI_METRIC_NAME_CAP 64u
+#define PYTYLIKI_METRIC_CATEGORY_CAP 64u
+#define PYTYLIKI_METRIC_DESCRIPTION_CAP 192u
+#define PYTYLIKI_METRIC_COMPLEXITY_CAP 64u
+
+typedef struct {
+    char query[PYTYLIKI_METRIC_QUERY_TEXT_CAP];
+    char category[PYTYLIKI_METRIC_QUERY_TEXT_CAP];
+    uint32_t required_capabilities;
+    uint32_t excluded_capabilities;
+    uint32_t required_type_mask;
+    uint32_t excluded_type_mask;
+    uint64_t offset;
+    uint64_t limit;
+} pytyliki_metric_query_v1;
+
+typedef struct {
+    uint32_t id;
+    char name[PYTYLIKI_METRIC_NAME_CAP];
+    char category[PYTYLIKI_METRIC_CATEGORY_CAP];
+    char description[PYTYLIKI_METRIC_DESCRIPTION_CAP];
+    char complexity[PYTYLIKI_METRIC_COMPLEXITY_CAP];
+    uint32_t type_mask;
+    uint32_t capabilities;
+} pytyliki_metric_operation_v1;
+
+typedef struct {
+    uint64_t total_matches;
+    uint64_t written;
+} pytyliki_metric_search_result_v1;
+
 #define PYTYLIKI_PLUGIN_ID_CAP 32u
 #define PYTYLIKI_PLUGIN_NAME_CAP 64u
 #define PYTYLIKI_PLUGIN_DOMAIN_CAP 64u
@@ -89,6 +121,13 @@ PYTYLIKI_FFI_API int32_t pytyliki_v1_embedded_budget_evaluate(
 PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_count(uint64_t *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_at(uint64_t, pytyliki_plugin_descriptor_v1 *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_find(const char *, pytyliki_plugin_descriptor_v1 *);
+/* Typed metric catalogue query. Strings are NUL-terminated fixed buffers;
+ * limit is 1..4096 and result_capacity is caller-owned. No pointers are retained. */
+PYTYLIKI_FFI_API int32_t pytyliki_v1_metric_registry_search(
+    const pytyliki_metric_query_v1 *,
+    pytyliki_metric_operation_v1 *,
+    uint64_t,
+    pytyliki_metric_search_result_v1 *);
 #ifdef __cplusplus
 }
 #endif

@@ -51,6 +51,10 @@ Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断�
 
 ## Reaper 策略验证
 
+## 类型化指标注册表
+
+C11 指标注册表现在支持有界类型化筛选和分页，同时保留原有搜索 API。请参阅 [Java 生态能力适配](docs/JAVA_ECOSYSTEM_ADAPTATION.md)，了解查询契约和原生框架映射。
+
 FLASH/SRAM/stack 预算不变量通过独立的 CI Reaper 策略进行验证，使用固定的参考数据。该策略调用 Reaper 自身的解析器和运行时，但不会链接进工作站、不读取 MCU 实时数据，也不取代原生 C11 核心。
 
 详见 [Reaper 集成说明](docs/REAPER_INTEGRATION.md) 和 [策略程序](examples/reaper_resource_policy.rpr)。

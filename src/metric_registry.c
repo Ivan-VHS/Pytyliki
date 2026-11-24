@@ -33,12 +33,78 @@ const pl_metric_operation_t *pl_metric_registry_at(size_t i){return i<pl_metric_
 const pl_metric_operation_t *pl_metric_registry_find_id(uint32_t id){
  for(size_t i=0u;i<pl_metric_registry_count();++i)if(operations[i].id==id)return &operations[i];return NULL;
 }
-size_t pl_metric_registry_search(const char *q,const char *category,uint32_t required,const pl_metric_operation_t **results,size_t cap){
- size_t matches=0u;
- for(size_t i=0u;i<pl_metric_registry_count();++i){const pl_metric_operation_t *op=&operations[i];
-  int text_match=q==NULL||q[0]=='\0'||contains_ci(op->name,q)||contains_ci(op->category,q)||contains_ci(op->terms,q)||contains_ci(op->description,q);
-  if(!text_match||(category!=NULL&&category[0]!='\0'&&!contains_ci(op->category,category))||(op->capabilities&required)!=required)continue;
-  if(results!=NULL&&matches<cap)results[matches]=op;++matches;
- }
- return matches;
+
+static size_t bounded_length(const char *text, size_t maximum) {
+    size_t length = 0u;
+    if (text == NULL) return 0u;
+    while (length <= maximum && text[length] != '\0') ++length;
+    return length;
+}
+
+int pl_metric_registry_search_ex(
+    const pl_metric_query_t *query,
+    const pl_metric_operation_t **results,
+    size_t result_capacity,
+    pl_metric_search_result_t *out_result
+) {
+    size_t i;
+    size_t total = 0u;
+    size_t written = 0u;
+    size_t page_limit;
+    if (query == NULL || out_result == NULL
+        || (results == NULL && result_capacity != 0u)
+        || query->limit == 0u || query->limit > PL_METRIC_QUERY_MAX_PAGE
+        || bounded_length(query->query, PL_METRIC_QUERY_MAX_TEXT) > PL_METRIC_QUERY_MAX_TEXT
+        || bounded_length(query->category, PL_METRIC_QUERY_MAX_TEXT) > PL_METRIC_QUERY_MAX_TEXT
+        || (query->required_capabilities & query->excluded_capabilities) != 0u
+        || (query->required_type_mask & query->excluded_type_mask) != 0u) {
+        return PL_METRIC_QUERY_INVALID;
+    }
+
+    page_limit = query->limit < result_capacity ? query->limit : result_capacity;
+    out_result->total_matches = 0u;
+    out_result->written = 0u;
+
+    for (i = 0u; i < pl_metric_registry_count(); ++i) {
+        const pl_metric_operation_t *op = &operations[i];
+        const int text_match = query->query == NULL || query->query[0] == '\0'
+            || contains_ci(op->name, query->query)
+            || contains_ci(op->category, query->query)
+            || contains_ci(op->terms, query->query)
+            || contains_ci(op->description, query->query);
+        const int category_match = query->category == NULL || query->category[0] == '\0'
+            || contains_ci(op->category, query->category);
+        const int capabilities_match =
+            (op->capabilities & query->required_capabilities) == query->required_capabilities
+            && (op->capabilities & query->excluded_capabilities) == 0u;
+        const int type_match =
+            (op->type_mask & query->required_type_mask) == query->required_type_mask
+            && (op->type_mask & query->excluded_type_mask) == 0u;
+        if (!text_match || !category_match || !capabilities_match || !type_match) continue;
+
+        if (total >= query->offset && written < page_limit && results != NULL) {
+            results[written++] = op;
+        }
+        ++total;
+    }
+    out_result->total_matches = total;
+    out_result->written = written;
+    return PL_METRIC_QUERY_OK;
+}
+
+size_t pl_metric_registry_search(const char *q,const char *category,uint32_t required,
+                                 const pl_metric_operation_t **results,size_t cap) {
+    const size_t page_limit = cap == 0u ? 1u :
+        (cap > PL_METRIC_QUERY_MAX_PAGE ? PL_METRIC_QUERY_MAX_PAGE : cap);
+    const size_t writable_capacity = results == NULL ? 0u : cap;
+    pl_metric_query_t query = {
+        q, category, required, 0u, 0u, 0u, 0u, page_limit
+    };
+    pl_metric_search_result_t result = {0u, 0u};
+    if (pl_metric_registry_search_ex(
+            &query, results, writable_capacity, &result
+        ) != PL_METRIC_QUERY_OK) {
+        return 0u;
+    }
+    return result.total_matches;
 }
