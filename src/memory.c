@@ -172,9 +172,26 @@ pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *b
  p->bitmap=(unsigned char *)bitmap;p->storage_bytes=storage_bytes;p->bitmap_bytes=bitmap_bytes;
  p->block_size=block_size;p->stride_bytes=stride;p->block_count=blocks;return PL_STATUS_OK;
 }
+static int pool_state_valid(const pl_pool_t *p){
+ size_t required_bitmap;
+ uintptr_t storage_begin,bitmap_begin,storage_end,bitmap_end;
+ if(p==NULL||p->storage==NULL||p->bitmap==NULL||p->block_size==0u||
+    p->stride_bytes<p->block_size||p->stride_bytes==0u||p->block_count==0u||
+    p->block_count>p->storage_bytes/p->stride_bytes||p->in_use>p->block_count)
+  return 0;
+ required_bitmap=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
+ if(required_bitmap==0u||required_bitmap>p->bitmap_bytes)return 0;
+ storage_begin=(uintptr_t)p->storage;
+ bitmap_begin=(uintptr_t)p->bitmap;
+ if(p->storage_bytes>(size_t)(UINTPTR_MAX-storage_begin)||
+    required_bitmap>(size_t)(UINTPTR_MAX-bitmap_begin))return 0;
+ storage_end=storage_begin+(uintptr_t)p->storage_bytes;
+ bitmap_end=bitmap_begin+(uintptr_t)required_bitmap;
+ return !(storage_begin<bitmap_end&&bitmap_begin<storage_end);
+}
 void *pl_pool_alloc(pl_pool_t *p){
  size_t bitmap_bytes;
- if(p==NULL||p->storage==NULL||p->bitmap==NULL)return NULL;
+ if(!pool_state_valid(p)||p->in_use>=p->block_count)return NULL;
  bitmap_bytes=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
  for(size_t byte=0u;byte<bitmap_bytes;byte++){
   unsigned char occupied=p->bitmap[byte];
@@ -195,7 +212,8 @@ void *pl_pool_alloc(pl_pool_t *p){
 }
 pl_status_t pl_pool_free(pl_pool_t *p,void *block){
  uintptr_t base,address,delta;size_t index;unsigned char mask;
- if(p==NULL||block==NULL||p->storage==NULL||p->bitmap==NULL)return PL_STATUS_INVALID_ARGUMENT;
+ if(block==NULL)return PL_STATUS_INVALID_ARGUMENT;
+ if(!pool_state_valid(p)||p->in_use==0u)return PL_STATUS_INVALID_ARGUMENT;
  base=(uintptr_t)p->storage;address=(uintptr_t)block;if(address<base)return PL_STATUS_OUT_OF_RANGE;
  delta=address-base;if(delta>=p->storage_bytes||delta%p->stride_bytes!=0u)return PL_STATUS_OUT_OF_RANGE;
  index=(size_t)(delta/p->stride_bytes);if(index>=p->block_count)return PL_STATUS_OUT_OF_RANGE;
