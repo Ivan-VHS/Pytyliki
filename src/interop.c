@@ -1,5 +1,6 @@
 #include "interop.h"
 #include "metric_geometry.h"
+#include "metric_registry.h"
 #include "embedded.h"
 #include <stddef.h>
 #include <ctype.h>
@@ -82,6 +83,10 @@ int32_t pytyliki_v1_orthogonal_f64(const double *a,const double *b,uint64_t n,do
     *out=result?1:0; return PYTYLIKI_ABI_OK;
 }
 
+static int has_terminator(const char *value, size_t capacity) {
+    return value != NULL && memchr(value, '\\0', capacity) != NULL;
+}
+
 static void copy_embedded_text(char *out, size_t capacity, const char *value) {
     size_t length;
     if (out == NULL || capacity == 0u || value == NULL) return;
@@ -89,6 +94,65 @@ static void copy_embedded_text(char *out, size_t capacity, const char *value) {
     if (length >= capacity) length = capacity - 1u;
     memcpy(out, value, length);
     out[length] = '\0';
+}
+
+
+int32_t pytyliki_v1_metric_registry_search(
+    const pytyliki_metric_query_v1 *query,
+    pytyliki_metric_operation_v1 *results,
+    uint64_t result_capacity,
+    pytyliki_metric_search_result_v1 *out
+) {
+    size_t offset = 0u, limit = 0u, capacity = 0u;
+    size_t i;
+    const pl_metric_operation_t *matches[PL_METRIC_QUERY_MAX_PAGE];
+    pl_metric_search_result_t native_result = {0u, 0u};
+    pl_metric_query_t native_query;
+
+    if (query == NULL || out == NULL
+        || (results == NULL && result_capacity != 0u)
+        || !has_terminator(query->query, sizeof(query->query))
+        || !has_terminator(query->category, sizeof(query->category))
+        || count_to_size(query->offset, &offset) != PYTYLIKI_ABI_OK
+        || count_to_size(query->limit, &limit) != PYTYLIKI_ABI_OK
+        || count_to_size(result_capacity, &capacity) != PYTYLIKI_ABI_OK
+        || limit == 0u || limit > PL_METRIC_QUERY_MAX_PAGE) {
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    }
+
+    if (capacity > limit) capacity = limit;
+    native_query.query = query->query;
+    native_query.category = query->category;
+    native_query.required_capabilities = query->required_capabilities;
+    native_query.excluded_capabilities = query->excluded_capabilities;
+    native_query.required_type_mask = query->required_type_mask;
+    native_query.excluded_type_mask = query->excluded_type_mask;
+    native_query.offset = offset;
+    native_query.limit = limit;
+
+    if (pl_metric_registry_search_ex(
+            &native_query,
+            capacity == 0u ? NULL : matches,
+            capacity,
+            &native_result
+        ) != PL_METRIC_QUERY_OK) {
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    }
+
+    out->total_matches = (uint64_t)native_result.total_matches;
+    out->written = (uint64_t)native_result.written;
+    for (i = 0u; i < native_result.written; ++i) {
+        const pl_metric_operation_t *item = matches[i];
+        memset(&results[i], 0, sizeof(results[i]));
+        results[i].id = item->id;
+        copy_embedded_text(results[i].name, sizeof(results[i].name), item->name);
+        copy_embedded_text(results[i].category, sizeof(results[i].category), item->category);
+        copy_embedded_text(results[i].description, sizeof(results[i].description), item->description);
+        copy_embedded_text(results[i].complexity, sizeof(results[i].complexity), item->complexity);
+        results[i].type_mask = item->type_mask;
+        results[i].capabilities = item->capabilities;
+    }
+    return PYTYLIKI_ABI_OK;
 }
 
 int32_t pytyliki_v1_embedded_profile_count(uint64_t *out_count) {
