@@ -1,5 +1,21 @@
 # Reference-only memory budget policy for CI.
-# These values are deterministic fixtures, not live MCU telemetry.
+# Values are deterministic fixtures, not live MCU telemetry.
+
+craft allocation_fits(used, budget) {
+    yield budget > 0 and used >= 0 and used <= budget
+}
+
+craft available_budget(budget, reserved) {
+    when allocation_fits(reserved, budget) {
+        yield budget - reserved
+    }
+    yield -1
+}
+
+craft valid_layout(flash_used, flash_total, sram_used, sram_total, stack_used, stack_total) {
+    yield allocation_fits(flash_used, flash_total) and allocation_fits(sram_used, sram_total) and allocation_fits(stack_used, stack_total) and stack_used <= sram_used
+}
+
 make flash_budget := 524288
 make flash_reserved := 131072
 make sram_budget := 131072
@@ -7,7 +23,33 @@ make sram_reserved := 65536
 make stack_budget := 8192
 make stack_reserved := 4096
 
-when flash_reserved <= flash_budget and sram_reserved <= sram_budget and stack_reserved <= stack_budget {
+make available := [
+    available_budget(flash_budget, flash_reserved),
+    available_budget(sram_budget, sram_reserved),
+    available_budget(stack_budget, stack_reserved)
+]
+
+assert(available[0] == 393216, "flash headroom must be deterministic")
+assert(available[1] == 65536, "SRAM headroom must be deterministic")
+assert(available[2] == 4096, "stack headroom must be deterministic")
+assert(allocation_fits(0, flash_budget), "zero-byte allocation must fit")
+assert(not allocation_fits(1, 0), "zero budget must reject allocation")
+assert(not allocation_fits(-1, sram_budget), "negative allocation must be rejected")
+assert(not allocation_fits(sram_budget + 1, sram_budget), "over-budget allocation must be rejected")
+
+make layout_ok := valid_layout(
+    flash_reserved, flash_budget,
+    sram_reserved, sram_budget,
+    stack_reserved, stack_budget
+)
+assert(layout_ok, "reference memory layout must satisfy all budgets")
+assert(not valid_layout(
+    flash_budget + 1, flash_budget,
+    sram_reserved, sram_budget,
+    stack_reserved, stack_budget
+), "overcommitted flash layout must fail")
+
+when layout_ok {
     emit "PYTYLIKI_REAPER_POLICY:PASS"
 } otherwise {
     emit "PYTYLIKI_REAPER_POLICY:FAIL"

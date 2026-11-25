@@ -1,0 +1,33 @@
+# Deterministic balanced work distribution for native compute jobs.
+# This is a planning contract; it does not launch threads or touch hardware.
+
+craft split_work(total_items, worker_count) {
+    when total_items < 0 or worker_count <= 0 {
+        yield []
+    }
+    make base_size := total_items // worker_count
+    make remainder := total_items % worker_count
+    vary allocations := []
+    each worker in range(0, worker_count) {
+        vary assigned := base_size
+        when worker < remainder {
+            change assigned := assigned + 1
+        }
+        change allocations := push(allocations, assigned)
+    }
+    yield allocations
+}
+
+make six_workers := split_work(100, 6)
+make uneven_workers := split_work(17, 4)
+make no_workers := split_work(17, 0)
+make negative_work := split_work(-1, 4)
+
+assert(six_workers == [17, 17, 17, 17, 16, 16], "100 tasks must split deterministically across six workers")
+assert(sum(six_workers) == 100, "balanced allocation must conserve all work")
+assert(uneven_workers == [5, 4, 4, 4], "remainder must be assigned in stable worker order")
+assert(sum(uneven_workers) == 17, "uneven allocation must conserve all work")
+assert(size(no_workers) == 0, "zero workers must be rejected")
+assert(size(negative_work) == 0, "negative work must be rejected")
+
+emit "PYTYLIKI_REAPER_COMPUTE:PASS"
