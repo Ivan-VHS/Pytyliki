@@ -27,7 +27,7 @@ These projects share selected engineering conventions, not a single runtime or i
 - [Reaper documentation map](https://github.com/Ivan-VHS/Reaper/blob/main/docs/INFORMATION_ARCHITECTURE.md) — language, compiler and runtime contracts.
 - [OPlague documentation map](https://github.com/Ivan-VHS/OPlague/blob/main/docs/INFORMATION_ARCHITECTURE.md) — device and driver inspection contracts.
 - [VentuSample documentation map](https://github.com/Ivan-VHS/VentuSample/blob/main/docs/INFORMATION_ARCHITECTURE.md) — audio and DSP contracts.
-- [DuckOS documentation map](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/INFORMATION_ARCHITECTURE.md) — repository entry-point map.
+- [DAK documentation map](https://github.com/Ivan-VHS/DAK/blob/main/docs/INFORMATION_ARCHITECTURE.md) — repository entry-point map.
 
 ## Full document catalog
 
@@ -40,7 +40,7 @@ The catalog gives each Markdown document a direct inbound path in addition to it
 - [ARCHITECTURE](ARCHITECTURE.md)
 - [Clinical Safety Architecture](clinical-safety-architecture.md)
 - [COMPUTE KERNEL](COMPUTE_KERNEL.md)
-- [CONSTITUTION 666 PROFILE](CONSTITUTION_666_PROFILE.md)
+- [ENGINEERING CONSTITUTION PROFILE](ENGINEERING_CONSTITUTION_PROFILE.md)
 - [DISTRIBUTED SYSTEMS ENGINEERING STANDARD](DISTRIBUTED_SYSTEMS_ENGINEERING_STANDARD.md)
 - [DIVISION ENGINE](DIVISION_ENGINE.md)
 - [MEMORY ARENA](MEMORY_ARENA.md)

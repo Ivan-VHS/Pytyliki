@@ -1,0 +1,14 @@
+# Engineering Constitution Implementation Profile
+
+This profile maps the engineering constitution to evidence-backed implementation status. It does not claim that every capability is implemented.
+
+| Rule range | Domain | State vocabulary |
+|---|---|---|
+| 1–111 | compute and execution | implemented / partial / planned / not applicable |
+| 112–222 | transparency and evidence | same |
+| 223–333 | types and contracts | same |
+| 334–444 | effects and safety | same |
+| 445–555 | concurrency | same |
+| 556–666 | ergonomics and governance | same |
+
+Promotion requires source/tests and an exact PR head. Planned work must not be described as shipped.
