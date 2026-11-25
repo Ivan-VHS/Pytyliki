@@ -2,73 +2,27 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
-<p align="center"><img src="assets/readme/dashboard.svg" alt="Обзор проекта Pytyliki" width="100%"></p>
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Сборка Windows](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
-[Исходный код](https://github.com/Ivan-VHS/Pytyliki) · [C11 CI](.github/workflows/ci.yml) · [Сборка Windows](.github/workflows/desktop-build.yml) · [Индекс документации](docs/README.md) · [MIT](LICENSE)
+<p align="center"><img src="assets/readme/dashboard.svg" alt="Обзор Pytyliki" width="100%"></p>
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki в Windows" width="100%"></a></p>
 
-## Реальный снимок приложения
+Pytyliki — локальная рабочая станция для анализа процессорных систем на базе ограниченного ядра C11, интерфейса Windows и переносимых CLI-инструментов.
 
-<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Реальный снимок Pytyliki в Windows" width="100%"></a></p>
-<p align="center"><sub>1920×1080 · Нажмите на изображение, чтобы открыть исходный PNG.</sub></p>
+**Границы:** инвентаризация процессора и файлов, локальный анализ с заданными лимитами и диагностические отчёты. Обнаружение оборудования работает только на чтение: приложение не меняет планирование ОС, affinity, частоты, напряжение или прошивку.
 
-Настоящий снимок запущенного Windows desktop-приложения, полученный в build workflow этого репозитория. Баннер и схема процесса выше — авторские SVG-иллюстрации, а не скриншоты.
+## Возможности
 
-### Архитектура с первого взгляда
+- Топология CPU, ISA и память; ограниченные измерения CPU/памяти и примеры распределения нагрузки.
+- Импорт и анализ профилей, folded stacks и SVG flamegraphs.
+- Диагностика исходников, синтаксический анализ QCS и справочные оценки FLASH/SRAM для MCU.
+- Версионированный C ABI и структурированные отчёты с происхождением данных и ограничениями.
 
-<p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
+Подробнее: [Возможности](docs/FEATURES.md) · [Архитектура](docs/ARCHITECTURE.md) · [Статистика бенчмарков](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md).
 
-Реальный путь: локальные данные хоста и файлы → ограниченное ядро C11 → проверка и анализ → доказательства и локальный результат.
+## Сборка и тесты
 
-
-[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
-
-
-> **Назначение:** локальная рабочая станция на C11 с графическим интерфейсом Windows и переносными CLI-инструментами. В репозитории **нет** опубликованного веб-демо, браузерного sandbox, API-сервиса или промышленного контура управления. Команды сборки README и точки входа репозитория проверены по ветке `main` **24.11.2026**.
-
-## Назначение и границы
-
-Pytyliki объединяет инвентаризацию процессора, планирование ограниченных нагрузок, диагностику исходного кода, численные инструменты  в одном нативном ядре C11. Проект предназначен для системных разработчиков, исследователей оборудования, QA-инженеров и ревьюеров, которым нужны проверяемые локальные результаты.
-
-Приложение показывает доступные для наблюдения данные и формирует рекомендательные планы. Оно не меняет планировщик ОС, CPU affinity, частоту или напряжение процессора; не прошивает firmware и не обещает ускорение, которое не было измерено. Данные MCU/MMIO носят справочный или симуляционный характер. QCS выполняет синтаксический анализ, а не произвольное исполнение исходного кода.
-
-### Реализованные возможности
-
-| Область | Что можно делать | Важная граница |
-|---|---|---|
-| Инвентаризация CPU | смотреть модель, топологию, память, доступные ISA/XCR0 | локальное обнаружение только для чтения |
-| CPU и memory suite | запускать ограниченные локальные измерения и примеры разделения нагрузки | результат зависит от хоста; это не универсальный рейтинг |
-| Статистика бенчмарков | анализировать переданные временные выборки: процентили, вариативность и MAD | только анализ; не запускает и не повторяет нагрузки |
-| Импорт профилей | импорт collapsed stacks и Speedscope; экспорт folded stacks и SVG flamegraph | профиль разбирается как текст/JSON; профилировщик не запускается |
-| Снимок датчиков Linux | чтение CPU frequency, governor, температур и счётчиков энергии с указанием источника | только чтение sysfs/procfs; отсутствующие датчики не подменяются догадками |
-| Проверка исходников | анализировать исходный текст и формировать диагностику/отчёты | проверяемый код не собирается и не выполняется |
-| Embedded C | просматривать профили MCU и оценивать расход FLASH/SRAM | справочные оценки, не развёртывание firmware |
-| QCS | токенизировать/разбирать код, просматривать AST и диагностику | только синтаксический анализ |
-| Interop | собирать версионированную библиотеку C ABI v1 | потребитель должен явно выбрать доверенную библиотеку |
-| Atomic-Quantum | запускать ограниченную классическую модель state-vector | только симуляция, без доступа к квантовому оборудованию |
-
-Скриншот ниже — снимок desktop-приложения, а не интерактивное браузерное превью.
-
-
-## Проверка политик Reaper
-
-Проверка бюджетных инвариантов FLASH/SRAM/stack вынесена в отдельную CI-политику Reaper на фиксированных справочных значениях. Она использует штатный парсер и runtime Reaper, но не встраивается в рабочую станцию, не считывает живые данные MCU и не заменяет нативное ядро C11.
-
-Подробнее: [интеграция Reaper](docs/REAPER_INTEGRATION.md) и [программа политики](examples/reaper_resource_policy.rpr).
-
-## Быстрый старт
-
-### Требования
-
-- CMake **3.16 или новее**.
-- Компилятор C11: MSVC, GCC или Clang.
-- Git.
-- Python 3 необязателен — он нужен только для дополнительной проверки контракта plugin-federation; C/C++ runtime не использует Python.
-
-Цель Win32 GUI собирается только в Windows. Общее ядро C11 и CLI предназначены для переносимой сборки; реальные возможности всё равно зависят от API конкретной ОС.
-
-### Сборка и тесты
-
-Выполняйте из корня репозитория:
+Требуются CMake 3.16+, компилятор C11 (MSVC, GCC или Clang) и Git. Win32 GUI доступен только в Windows; ядро и CLI переносимы. Python необязателен и нужен только отдельным проверкам контрактов, не среде C11.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
@@ -76,9 +30,7 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-В Windows CMake размещает Release-файлы в `build/Release/`. В типичной одноконфигурационной сборке Linux они находятся в `build/`.
-
-### Первые smoke-проверки
+Первые проверки:
 
 ```sh
 ./build/pytyliki --profile
@@ -87,130 +39,10 @@ ctest --test-dir build -C Release --output-on-failure
 ./build/pytyliki-metrics --demo
 ```
 
-В Windows используйте `build\Release\pytyliki.exe` и `build\Release\pytyliki-metrics.exe`. GUI: `build\Release\pytyliki-gui.exe`.
+## Спецификации и интеграция
 
-Другие локальные примеры:
+- [Индекс документации](docs/README.md) · [Релизы](docs/RELEASE.md) · [Формат отчёта](docs/REPORT_ENVELOPE.md)
+- [Интеграция с Reaper](docs/REAPER_INTEGRATION.md) — необязательная CI-проверка политик, не runtime-зависимость приложения.
+- [Общие стандарты экосистемы](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/SHARED_STANDARDS.md)
 
-```sh
-pytyliki --systems
-pytyliki --embedded profiles
-pytyliki --divide -17 5
-```
-
-Полный список параметров выводит `pytyliki --help`. Команды работают локально; стандартного HTTP-порта или URL localhost нет.
-
-### Необязательная сборка с sanitizer
-
-Для GCC и Clang можно включить AddressSanitizer и UndefinedBehaviorSanitizer:
-
-```sh
-cmake -S . -B build-sanitized -DBUILD_TESTING=ON -DPYTYLIKI_ENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=Debug
-cmake --build build-sanitized --parallel
-ctest --test-dir build-sanitized --output-on-failure
-```
-
-Этот параметр не поддерживается MSVC.
-
-## Данные, тестовые сценарии и состояние
-
-Рабочая станция не подключается к удалённой базе данных и не имеет входа, демо-аккаунтов, mock API или браузерного хранилища. Сведения о процессоре берутся с локального хоста там, где реализован соответствующий платформенный probe. Режим метрик `--demo` использует иллюстративный набор данных; его нельзя выдавать за телеметрию реального процессора.
-
-Проверьте следующие сценарии:
-
-1. **Профиль хоста:** запустите `pytyliki --profile` и просмотрите сведения о текущей машине.
-2. **Ограниченный план:** запустите `pytyliki --partition 10000 8 256` и проверьте детерминированные диапазоны. План не запускает потоки.
-3. **Деление:** запустите `pytyliki --divide -17 5` и сравните результат с тестами Euclidean division.
-4. **Пример метрик:** запустите `pytyliki-metrics --demo`; это демонстрационные данные, а не измерение хоста.
-5. **Проверка кода:** запустите `pytyliki --review-processor path/to/source.c`; диагностика не исполняет исходный файл.
-
-Рабочие данные остаются в процессе и в файлах, которые оператор выбирает для чтения или сохранения. После закрытия приложения текущая оперативная сессия завершается; отчёты автоматически не удаляются. Кнопки «Сбросить демо» и общего серверного состояния нет. Настройки внешнего вида и движения обрабатываются desktop-интерфейсом, а не cookies, localStorage, sessionStorage или IndexedDB.
-
-## Конфигурация и доступ
-
-В обычном режиме рабочей станции нет `.env.example`, Docker Compose, веб-прокси, CORS, HTTPS-сертификатов, аутентификации или API-токенов. Тестовые учётные записи не нужны; секреты не следует добавлять в репозиторий.
-
-Параметры сборки из `CMakeLists.txt`:
-
-| Параметр | Значение по умолчанию | Назначение |
-|---|---:|---|
-| `BUILD_TESTING` | стандарт CMake/CTest | включить нативные тесты и необязательную Python-проверку контракта |
-| `PYTYLIKI_ENABLE_SANITIZERS` | `OFF` | включить ASan/UBSan для GCC или Clang |
-
-Отсутствующий C-компилятор или несовместимый sanitizer toolchain — ошибка конфигурации сборки, а не пропущенная переменная веб-окружения. Проверьте первое сообщение CMake и соответствие компилятора платформе.
-
-## Архитектура и структура репозитория
-
-Локальный поток: **входные данные → проверка → ограниченный модуль → структурированный результат → необязательный экспорт в файл**.
-
-| Путь | Содержимое |
-|---|---|
-| `src/` | ядро C11, Win32 GUI, CLI, processor probes, QCS и interop |
-| `tests/` | CTest unit, regression, boundary и CLI smoke-тесты |
-| `tools/` | утилиты проверки и инструменты репозитория |
-| `scripts/` | проверки архитектурных и инженерных контрактов |
-| `docs/` | архитектура, границы функций, UI-поведение и контракты модулей |
-| `assets/screenshots/` | снимки desktop-приложения |
-| `security/` | машиночитаемая политика Beelzebul |
-| `.github/workflows/` | CI, Windows-пакетирование и автоматизация релизов |
-
-Ядро написано на C11. GUI использует Windows Win32 API и собирается только в Windows. Здесь нет разделения frontend/backend, web server, mock server, browser bundle, привязки к порту или развёрнутого превью. Поддержка браузеров, cookies, CORS, viewport breakpoints и HTTPS неприменима.
-
-## Артефакты, CI и релизы
-
-- [C11 CI](.github/workflows/ci.yml) собирает и тестирует проект на Ubuntu и Windows и включает Linux sanitizer job.
-- [Desktop build](.github/workflows/desktop-build.yml) собирает GUI и CLI для Windows, запускает CTest, делает снимок приложения и создаёт `Pytyliki-windows-x64.zip`.
-- Windows-архив загружается как workflow artifact со сроком хранения 30 дней.
-- Git-тег формата `v*` собирает Windows-архив, проверяет его SHA-256 sidecar и создаёт черновой GitHub Release за барьером `release-review`. Черновик должен вручную опубликовать сопровождающий; push в `main` сам по себе не является вебдеплоем.
-
-Артефакты создаются в build/dist-каталогах workflow. Для отката распространяемой desktop-версии используйте предыдущий известный рабочий GitHub Release/архив. Сервиса, который нужно было бы откатывать, нет.
-
-## Устранение проблем
-
-| Симптом | Что проверить |
-|---|---|
-| CMake не находит C-компилятор | установите toolchain C11 и запускайте конфигурацию из подходящего developer environment |
-| Нет `pytyliki-gui` | GUI-цель доступна только в Windows |
-| CTest падает на отдельном хосте | сохраните имя теста и полный вывод; probes могут различаться между ОС и CPU |
-| Не работают sanitizer-параметры | `PYTYLIKI_ENABLE_SANITIZERS` требует GCC или Clang |
-| Оценка Embedded воспринимается как развёртывание | это только справочный расчёт; проект не прошивает и не программирует оборудование |
-
-Логи CI доступны в соответствующих GitHub Actions workflow. README и тестовый набор являются источником истины для поддерживаемых команд; изменение параметра CLI должно сопровождаться обновлением примеров и всех локализованных README.
-
-## Известные ограничения, вклад и лицензия
-
-Известные границы указаны прямо: GUI работает только в Windows, проверка кода статическая, Embedded-значения рекомендательные, а квантовые процедуры — классическая симуляция. Правила разработки, проверки изменений и оформления Pull Request описаны в [CONTRIBUTING.md](CONTRIBUTING.md). Для предложения изменений откройте GitHub Issue или Pull Request с платформой, точной командой, ожидаемым и фактическим результатом; перед предложением выполните сборку и CTest.
-
-Поддержка и сообщения о дефектах: [GitHub Issues](https://github.com/Ivan-VHS/Pytyliki/issues). Лицензия: [MIT](LICENSE).
-
-## Соответствие 66 правилам README
-
-Стандарт из 66 правил для вебстендов применён к документации без выдумывания веб-приложения:
-
-| Правила | Как это отражено в README |
-|---|---|
-| 1–11 · назначение и границы | определены локальная рабочая станция, аудитория, сценарии, ограничения, происхождение данных, дата сверки с `main` и отсутствие hosted demo |
-| 12–22 · быстрый старт | точный toolchain, команды сборки, тестов, smoke-check и запуска GUI; без скрытого шага с вебсервером или портом |
-| 23–33 · конфигурация и доступ | описаны реальные параметры CMake; ENV, учётные данные, CORS, proxy и HTTPS отмечены как неприменимые |
-| 34–44 · данные и поведение | объяснены host data и demo metrics, ограничения файлов, воспроизводимые тесты, длительность сессии и ошибки |
-| 45–55 · архитектура и сборка | приведены реальные каталоги, стек C11/Win32, CTest, выходные артефакты и границы CI |
-| 56–66 · эксплуатация и поддержка | указаны реальные workflow/release, откат desktop-архива, troubleshooting, известные границы, путь вклада и лицензия |
-
-**Публичного URL вебстенда для этого проекта нет.** Desktop-скриншот и GitHub Actions artifacts не являются интерактивным вебстендом.
-
-## Единый формат оболочки отчёта
-
-JSON-вывод можно обернуть в общий формат метаданных ivan-vhs.report.v1, не меняя данные самого инструмента:
-
-    python tools/report_envelope.py --tool TOOL_NAME --version VERSION < result.json
-
-См. docs/REPORT_ENVELOPE.md и schemas/ivan-vhs.report.v1.schema.json. Оболочка фиксирует происхождение и ограничения результата; она не является криптографической подписью или подтверждением совместимости.
-
-
-## Карта документации
-
-Начните с [индекса документации](docs/README.md), а для тематических кластеров, связанных страниц и границ между репозиториями используйте [карту информационной архитектуры](docs/INFORMATION_ARCHITECTURE.md). Тематические хабы ведут к подробным контрактам; статус реализации подтверждается соответствующим кодом, тестами и схемами.
-
-
-## Интеграция с рабочим столом Mora
-
-Pytyliki входит в общий каталог Mora. Запуск нативного окна доступен в Windows после сборки существующего Win32 GUI target; переносимое ядро C11 и CLI остаются независимыми. См. [интеграцию Mora](docs/MORA_DESKTOP_INTEGRATION.md) и [контракт DuckOS](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md).
+[Вклад в проект](CONTRIBUTING.md) · [Безопасность](SECURITY.md) · [MIT](LICENSE)
