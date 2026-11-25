@@ -1,6 +1,6 @@
-<p align="center">[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)</p>
+# 🧮 Pytyliki — Processor Systems Workstation
 
-<h1 align="center"><strong>🧮 Pytyliki — Processor Systems Workstation</strong></h1>
+<p align="center">[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)</p>
 
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
@@ -119,7 +119,7 @@ Cross-project integrations use documented versioned interfaces and explicit adap
 
 ## Contributing
 
-Read CONTRIBUTING.md before changing code or contracts. Keep changes reviewable, add deterministic tests and use Conventional Commits where required by the repository guide.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before changing code or contracts. Keep changes reviewable, add deterministic tests and use Conventional Commits where required by the repository guide.
 
 ## License & legal
 
