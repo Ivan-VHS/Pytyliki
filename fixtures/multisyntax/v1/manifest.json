@@ -1,0 +1,61 @@
+{
+  "schema": "pytyliki.reaper-syntax-conformance.v1",
+  "cases": [
+    {
+      "id": "reaper-native-basic",
+      "syntax": "reaper",
+      "source": "reaper/basic.rpr",
+      "expected_valid": true
+    },
+    {
+      "id": "python-safe-subset",
+      "syntax": "python",
+      "source": "python/basic.py",
+      "expected_valid": true
+    },
+    {
+      "id": "pipeline-dataflow",
+      "syntax": "pipeline",
+      "source": "pipeline/chain.pipe",
+      "expected_valid": true
+    },
+    {
+      "id": "lisp-homoiconic",
+      "syntax": "lisp",
+      "source": "lisp/lists.lisp",
+      "expected_valid": true
+    },
+    {
+      "id": "forth-concatenative",
+      "syntax": "forth",
+      "source": "forth/stack.forth",
+      "expected_valid": true
+    },
+    {
+      "id": "brainfuck-balanced",
+      "syntax": "brainfuck",
+      "source": "brainfuck/balanced.bf",
+      "expected_valid": true
+    },
+    {
+      "id": "brainfuck-unmatched",
+      "syntax": "brainfuck",
+      "source": "brainfuck/unmatched.bf",
+      "expected_valid": false,
+      "expected_error": "unmatched"
+    },
+    {
+      "id": "befunge-two-dimensional",
+      "syntax": "befunge93",
+      "source": "befunge/program.bf93",
+      "expected_valid": true
+    },
+    {
+      "id": "polyglot-ordered-blocks",
+      "syntax": "reaper",
+      "source": "polyglot/project.polyglot",
+      "polyglot": true,
+      "expected_valid": true
+    }
+  ]
+}
