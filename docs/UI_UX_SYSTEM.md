@@ -1,5 +1,7 @@
 # UI/UX system
 
+**Maintainer:** Ivan-VHS · **Project:** Pytyliki
+
 | Area | Contract |
 |---|---|
 | Product | processor workstation; task-first, not marketing dashboard |
@@ -13,8 +15,9 @@ No color-only status signals. GUI claims remain Windows-only unless a separate p
 
 ## UI/UX 2026 convergence
 
-See [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md) for shared semantic tokens, accessibility, responsive behavior and motion budgets. Native Win32 and product-specific constraints above remain authoritative.
+See [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md) for the current shared semantic tokens, accessibility, responsive behavior, high-DPI requirements and motion budgets. Native Win32 and product-specific constraints above remain authoritative.
 
-## UI/UX Codex 40026
+## Motion contract
 
-See [UI/UX Codex 40026](UI_UX_CODEX_40026.md) for the six-cycle / 666-rule engineering contract. The Win32 workstation now has a UI-only text contrast policy with a 4.5:1 ordinary-text and 3:1 large-text threshold, a preferred 44 px action target, contrast-safe text fallback, and Escape/keyboard-containment support in Motion Settings. The helper is deliberately not linked into the DSP/FFI/processing core.
+See [UI_MOTION.md](UI_MOTION.md) for the motion implementation contract. Reduced Motion and Eco remain authoritative; motion must not enter processor benchmarks, C11 workers, FFI or DSP execution.
+
