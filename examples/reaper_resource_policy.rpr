@@ -13,10 +13,7 @@ craft available_budget(budget, reserved) {
 }
 
 craft valid_layout(flash_used, flash_total, sram_used, sram_total, stack_used, stack_total) {
-    yield allocation_fits(flash_used, flash_total)
-        and allocation_fits(sram_used, sram_total)
-        and allocation_fits(stack_used, stack_total)
-        and stack_used <= sram_used
+    yield allocation_fits(flash_used, flash_total) and allocation_fits(sram_used, sram_total) and allocation_fits(stack_used, stack_total) and stack_used <= sram_used
 }
 
 make flash_budget := 524288
