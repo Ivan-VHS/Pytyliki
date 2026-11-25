@@ -216,7 +216,7 @@ static void print_improvement_plan(void) {
     printf("Evidence-gated iteration target: %llu (maximum %llu)\n",
            (unsigned long long)PL_IMPROVEMENT_DEFAULT_ITERATIONS,
            (unsigned long long)PL_IMPROVEMENT_MAX_ITERATIONS);
-    puts("The 66,666,666x ambition is not a guaranteed multiplier; progress requires measured evidence.");
+    puts("The performance ambition is not a guaranteed multiplier; progress requires measured evidence.");
     puts("Integration requires human approval. This command displays the plan; it does not rewrite or merge code.");
 }
 static void print_system_enhancements(void) {
