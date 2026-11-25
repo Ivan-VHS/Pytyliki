@@ -1,0 +1,102 @@
+{
+  "schema": "pytyliki.i18n-manifest/v1",
+  "project": "Pytyliki",
+  "sourceLocale": "en",
+  "catalogSet": "catalogs.v1.json",
+  "languageTags": {
+    "standard": "BCP-47",
+    "acceptAnyWellFormedTag": true,
+    "canonicalization": "Use the platform locale implementation; preserve the user's requested tag for persistence."
+  },
+  "fallback": [
+    "exact-tag",
+    "script-parent",
+    "language-parent",
+    "en"
+  ],
+  "unicode": {
+    "encoding": "UTF-8",
+    "targetVersion": "18.0.0",
+    "normalization": "NFC at text boundaries; preserve original source bytes and identifiers where normalization would change identity.",
+    "graphemeAwareEditing": true,
+    "bidirectionalText": true,
+    "fontFallback": true
+  },
+  "localeData": {
+    "standard": "Unicode CLDR",
+    "referenceVersion": "49",
+    "runtime": "Use the newest compatible OS/ICU/CLDR data available; do not hand-maintain locale rules."
+  },
+  "formatting": [
+    "numbers",
+    "dates",
+    "times",
+    "currencies",
+    "units",
+    "plural-rules",
+    "lists",
+    "collation",
+    "relative-time",
+    "calendar"
+  ],
+  "scripts": [
+    "Latin",
+    "Cyrillic",
+    "Greek",
+    "Arabic",
+    "Hebrew",
+    "Devanagari",
+    "Bengali",
+    "Thai",
+    "Lao",
+    "Khmer",
+    "Han",
+    "Hiragana",
+    "Katakana",
+    "Hangul",
+    "Ethiopic",
+    "Georgian",
+    "Armenian",
+    "Mongolian",
+    "and any script supported by the installed Unicode/font stack"
+  ],
+  "catalogs": {
+    "en": {
+      "file": "en",
+      "status": "source"
+    },
+    "ru": {
+      "file": "ru",
+      "status": "complete"
+    },
+    "uk": {
+      "file": "uk",
+      "status": "complete"
+    },
+    "zh-Hans": {
+      "file": "zh-Hans",
+      "status": "complete"
+    },
+    "ar": {
+      "file": "ar",
+      "status": "complete"
+    }
+  },
+  "dynamicLanguagePacks": {
+    "enabled": true,
+    "allowUnlistedValidTags": true,
+    "installation": "explicit, local-first, versioned; never fetch or translate text automatically",
+    "missingTranslation": "fallback without hiding the source message id"
+  },
+  "rules": {
+    "stableMessageIds": true,
+    "stableDiagnosticCodes": true,
+    "neverTranslateProtocolKeys": true,
+    "neverLocaleFormatSerializedNumbers": true,
+    "preserveUserContent": true,
+    "noCloudTranslation": true,
+    "directionFromLocaleMetadata": true
+  },
+  "runtimeAdapter": "C11 core strings are UTF-8. Win32 HWND/control boundaries convert UTF-8 to UTF-16 explicitly. CLI, JSON report field names and C ABI identifiers remain stable and locale-independent.",
+  "author": "Ivan-VHS"
+}
