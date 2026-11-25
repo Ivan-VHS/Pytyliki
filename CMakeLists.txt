@@ -27,7 +27,7 @@ target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Stable C11 ABI for explicitly configured FFI consumers.
 set_target_properties(pytyliki_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
-add_library(pytyliki_ffi SHARED src/interop.c)
+add_library(pytyliki_ffi SHARED src/interop.c src/diagnostics_abi.c)
 target_link_libraries(pytyliki_ffi PRIVATE pytyliki_core)
 target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
@@ -81,6 +81,10 @@ if(BUILD_TESTING)
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
   add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
+
+  add_executable(pytyliki-diagnostics-abi-tests tests/test_diagnostics_abi.c)
+  target_link_libraries(pytyliki-diagnostics-abi-tests PRIVATE pytyliki_ffi)
+  add_test(NAME diagnostics-abi-v1-tests COMMAND pytyliki-diagnostics-abi-tests)
 
   add_executable(pytyliki-self-product-tests tests/test_self_product.c)
   target_link_libraries(pytyliki-self-product-tests PRIVATE pytyliki_core)
