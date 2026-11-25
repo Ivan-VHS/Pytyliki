@@ -3,6 +3,7 @@
 Start with the [project README](../README.md) for the product overview, build and tests. Use the [documentation map](INFORMATION_ARCHITECTURE.md) for the full catalogue.
 
 ## Key pages
+- [NEXUS system-service boundaries](NEXUS_SYSTEM_SERVICE_BOUNDARIES_V1.md) — service ownership and evidence limits.
 
 - [Features](FEATURES.md) — supported tools and their boundaries.
 - [Architecture](ARCHITECTURE.md) — core components and data flow.
