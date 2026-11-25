@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Ivan-VHS/DuckOS/blob/main/i18n/catalog-set.v1.schema.json",
-  "title": "Duck ecosystem i18n catalog set",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/i18n/catalog-set.v1.schema.json",
+  "title": "Pytyliki i18n catalog set",
   "type": "object",
   "required": [
     "schema",
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "duck.i18n-catalog-set/v1"
+      "const": "pytyliki.i18n-catalog-set/v1"
     },
     "sourceLocale": {
       "type": "string",
