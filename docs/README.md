@@ -8,6 +8,7 @@ Start with the [project README](../README.md) for the product overview, build an
 - [Architecture](ARCHITECTURE.md) — core components and data flow.
 - [Engineering gates](ENGINEERING.md) — quality and safety checks.
 - [Reaper integration](REAPER_INTEGRATION.md) — the optional policy-validation boundary.
+- [NEXUS diagnostics profile](NEXUS_DIAGNOSTICS_PROFILE_V1.md) — C11 ownership, evidence exports and read-only consumers.
 
 ## Browse by topic
 
