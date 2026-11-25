@@ -82,17 +82,19 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: ctest --test-dir build-sanitized --output-on-failure
 
-  assurance:
-    name: All pull-request workflows green
+  auto-merge:
+    name: Enable native GitHub auto-merge
     needs: [validate, sanitizer]
     if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
+    timeout-minutes: 10
     permissions:
       actions: read
-      contents: read
+      contents: write
+      pull-requests: write
     steps:
-      - name: Wait for every same-commit pull-request workflow
+      - name: Wait for all pull-request workflows on this exact commit
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -100,7 +102,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 60); do
+          for attempt in $(seq 1 54); do
             payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${PR_HEAD_SHA}&per_page=100")"
             state="$(jq -r \
               --arg self "${GITHUB_WORKFLOW}" \
@@ -124,26 +126,16 @@ jobs:
                   else "ready"
                   end
               ' <<< "$payload")"
-            echo "PR assurance attempt ${attempt}/60: ${state}"
+            echo "PR assurance attempt ${attempt}/54: ${state}"
             case "$state" in
               ready) exit 0 ;;
               failed:*) echo "::error::A pull-request workflow failed: ${state}"; exit 1 ;;
-              *) sleep 15 ;;
+              *) sleep 10 ;;
             esac
           done
-          echo "::error::Timed out waiting for all pull-request workflows to finish."
+          echo "::error::Timed out waiting for all pull-request assurance workflows."
           exit 1
 
-  auto-merge:
-    name: Enable native GitHub auto-merge
-    needs: [validate, sanitizer, assurance]
-    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
       - name: Confirm validated PR head is unchanged
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
