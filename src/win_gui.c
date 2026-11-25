@@ -534,7 +534,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_HOTKEY_SCAN: show_profile(); return 0;
             case ID_HOTKEY_SUITE: run_suite(); return 0;
             case ID_HOTKEY_SAVE: save_report(); return 0;
-            case ID_HOTKEY_CLEAR: SetWindowTextA(g_log,"Session log cleared.\\r\\n"); return 0;
+            case ID_HOTKEY_CLEAR: SetWindowTextA(g_log,"Session log cleared.\r\n"); return 0;
             case ID_HOTKEY_MOTION: show_motion_settings(); return 0;
             case ID_HOTKEY_ZOOM_IN: set_log_font_size(g_log_font_size+1); return 0;
             case ID_HOTKEY_ZOOM_OUT: set_log_font_size(g_log_font_size-1); return 0;
