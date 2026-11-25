@@ -1,0 +1,50 @@
+{
+  "schema": "ivan-vhs.ecosystem-cloud-adapter.v1",
+  "version": 1,
+  "project": "pytyliki",
+  "project_key": "pytyliki",
+  "shared_contract": "ivan-vhs.ecosystem-cloud.v1",
+  "shared_contract_version": 1,
+  "status": "contract-only",
+  "runtime": {
+    "default_network_mode": "disabled",
+    "user_opt_in_required": true,
+    "core_requires_network": false,
+    "supabase_transport": "not-implemented",
+    "secret_source": "external-secret-store-only"
+  },
+  "publish_allowlist": [
+    "user-selected-aggregate-profiles",
+    "sanitized-performance-summaries",
+    "user-selected-device-class-labels"
+  ],
+  "denylist": [
+    "raw-device-serial-numbers",
+    "raw-pnp-instance-ids",
+    "mac-addresses",
+    "motherboard-serials",
+    "raw-hardware-identifiers",
+    "full-hardware-inventory",
+    "local-device-paths",
+    "access-tokens",
+    "service-role-keys"
+  ],
+  "privacy": {
+    "device_fingerprint": "never-derived-or-exported",
+    "telemetry": "disabled-by-default",
+    "aggregation": "explicit-user-selected"
+  },
+  "synchronization": {
+    "local_source_of_truth": true,
+    "upload_requires_user_action": true,
+    "retry": "bounded-idempotent",
+    "idempotency": "actor_id+client_instance_id+event_id",
+    "conflicts": "profile-domain-specific"
+  },
+  "compatibility": {
+    "native_language": "C11",
+    "tooling": "existing-local-Python-tools",
+    "sdk_dependency": false,
+    "existing_c_abi_unchanged": true
+  }
+}
