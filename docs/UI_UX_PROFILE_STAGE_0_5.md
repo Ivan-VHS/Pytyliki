@@ -1,6 +1,9 @@
-# Pytyliki — UI/UX implementation profile
+# Pytyliki — UI/UX Profile — Stage 0.5
 
-**Shared standard:** [UI/UX Codex 40026](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/UI_UX_CODEX_40026.md).
+**Author:** Ivan-VHS
+
+**Stage convention:** Ivan-VHS ten-stage engineering maturity model; Stage 0.5 is a UI/UX readiness profile, not a completed product maturity stage.  
+**Shared standard:** [DAK UI/UX Codex 40026](https://github.com/Ivan-VHS/DAK/blob/main/docs/UI_UX_CODEX_40026.md).
 
 This file keeps only the Win32 toolkit notes and implementation evidence. Common interaction rules, accessibility budgets, theme/component contracts and the definition of done live in the shared specification.
 

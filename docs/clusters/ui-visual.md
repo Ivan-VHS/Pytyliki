@@ -10,7 +10,6 @@ This hub is the topic-level entry point for the pages below. Use the linked spec
 
 - [UI MOTION](../UI_MOTION.md)
 - [UI UX 2026 CONVERGENCE](../UI_UX_2026_CONVERGENCE.md)
-- [UI UX CODEX 40026](../UI_UX_CODEX_40026.md)
 - [UI UX SYSTEM](../UI_UX_SYSTEM.md)
 - [VISUAL DOCUMENTATION](../VISUAL_DOCUMENTATION.md)
 

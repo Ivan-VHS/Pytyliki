@@ -27,7 +27,7 @@ These projects share selected engineering conventions, not a single runtime or i
 - [Reaper documentation map](https://github.com/Ivan-VHS/Reaper/blob/main/docs/INFORMATION_ARCHITECTURE.md) — language, compiler and runtime contracts.
 - [OPlague documentation map](https://github.com/Ivan-VHS/OPlague/blob/main/docs/INFORMATION_ARCHITECTURE.md) — device and driver inspection contracts.
 - [VentuSample documentation map](https://github.com/Ivan-VHS/VentuSample/blob/main/docs/INFORMATION_ARCHITECTURE.md) — audio and DSP contracts.
-- [DuckOS documentation map](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/INFORMATION_ARCHITECTURE.md) — repository entry-point map.
+- [DAK documentation map](https://github.com/Ivan-VHS/DAK/blob/main/docs/INFORMATION_ARCHITECTURE.md) — kernel, platform, service and implementation contracts.
 
 ## Full document catalog
 
@@ -87,7 +87,7 @@ The catalog gives each Markdown document a direct inbound path in addition to it
 
 - [UI MOTION](UI_MOTION.md)
 - [UI UX 2026 CONVERGENCE](UI_UX_2026_CONVERGENCE.md)
-- [UI UX CODEX 40026](UI_UX_CODEX_40026.md)
+- [UI/UX Profile — Stage 0.5](UI_UX_PROFILE_STAGE_0_5.md)
 - [UI UX SYSTEM](UI_UX_SYSTEM.md)
 - [VISUAL DOCUMENTATION](VISUAL_DOCUMENTATION.md)
 
