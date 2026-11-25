@@ -59,7 +59,7 @@ pl_status_t pl_view_init(pl_view_t *out,void *data,size_t count,pl_data_type_t t
   if(mul_overflow_size(count-1u,stride,&offset)||add_overflow_size(offset,elem,&required))return PL_STATUS_OVERFLOW;
   if(required>extent)return PL_STATUS_OUT_OF_RANGE;
   /* Validate the numeric address range before constructing any view pointer. */
-  if(required>(size_t)(UINTPTR_MAX-(uintptr_t)data))return PL_STATUS_OVERFLOW;
+  if((uintmax_t)extent>(uintmax_t)(UINTPTR_MAX-(uintptr_t)data))return PL_STATUS_OVERFLOW;
  }
  out->data=data;out->count=count;out->elem_size=elem;out->stride_bytes=stride;
  out->extent_bytes=extent;out->type=type;out->flags=flags;return PL_STATUS_OK;
@@ -100,6 +100,8 @@ pl_status_t pl_chunk_init(pl_chunk_t *out,const pl_view_t *v,uint64_t offset,uin
 }
 pl_status_t pl_arena_init(pl_arena_t *a,void *storage,size_t capacity){
  if(a==NULL||(capacity!=0u&&storage==NULL))return PL_STATUS_INVALID_ARGUMENT;
+ if(capacity!=0u&&(uintmax_t)capacity>(uintmax_t)(UINTPTR_MAX-(uintptr_t)storage))
+  return PL_STATUS_OVERFLOW;
  memset(a,0,sizeof(*a));a->memory=(unsigned char *)storage;a->capacity=capacity;return PL_STATUS_OK;
 }
 pl_status_t pl_arena_create(pl_arena_t *a,size_t capacity,const pl_allocator_t *allocator){
@@ -143,9 +145,25 @@ pl_status_t pl_arena_get_stats(const pl_arena_t *a,pl_arena_stats_t *out){
  out->peak_used=a->peak_used;out->allocation_count=a->allocation_count;return PL_STATUS_OK;
 }
 void pl_arena_reset(pl_arena_t *a){if(a!=NULL){a->used=0u;a->allocation_count=0u;}}
+void pl_arena_reset_secure(pl_arena_t *a){
+ volatile unsigned char *bytes;
+ if(a==NULL||a->used>a->capacity||a->peak_used>a->capacity||
+    (a->capacity!=0u&&a->memory==NULL))return;
+ bytes=(volatile unsigned char *)a->memory;
+ /* Rewind without clearing can leave secrets above used; erase the high-water range. */
+ for(size_t i=0u;i<a->peak_used;i++)bytes[i]=0u;
+ a->used=0u;
+ a->allocation_count=0u;
+}
 void pl_arena_destroy(pl_arena_t *a){
  if(a==NULL)return;if(a->owns_memory&&a->allocator.deallocate!=NULL)a->allocator.deallocate(a->allocator.user_data,a->memory);
  memset(a,0,sizeof(*a));
+}
+void pl_arena_destroy_secure(pl_arena_t *a){
+ if(a==NULL||a->used>a->capacity||a->peak_used>a->capacity||
+    (a->capacity!=0u&&a->memory==NULL))return;
+ pl_arena_reset_secure(a);
+ pl_arena_destroy(a);
 }
 pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *bitmap,
                          size_t bitmap_bytes,size_t block_size,size_t alignment){
@@ -174,9 +192,26 @@ pl_status_t pl_pool_init(pl_pool_t *p,void *storage,size_t storage_bytes,void *b
  p->bitmap=(unsigned char *)bitmap;p->storage_bytes=storage_bytes;p->bitmap_bytes=bitmap_bytes;
  p->block_size=block_size;p->stride_bytes=stride;p->block_count=blocks;return PL_STATUS_OK;
 }
+static int pool_state_valid(const pl_pool_t *p){
+ size_t required_bitmap;
+ uintptr_t storage_begin,bitmap_begin,storage_end,bitmap_end;
+ if(p==NULL||p->storage==NULL||p->bitmap==NULL||p->block_size==0u||
+    p->stride_bytes<p->block_size||p->stride_bytes==0u||p->block_count==0u||
+    p->block_count>p->storage_bytes/p->stride_bytes||p->in_use>p->block_count)
+  return 0;
+ required_bitmap=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
+ if(required_bitmap==0u||required_bitmap>p->bitmap_bytes)return 0;
+ storage_begin=(uintptr_t)p->storage;
+ bitmap_begin=(uintptr_t)p->bitmap;
+ if((uintmax_t)p->storage_bytes>(uintmax_t)(UINTPTR_MAX-storage_begin)||
+    (uintmax_t)required_bitmap>(uintmax_t)(UINTPTR_MAX-bitmap_begin))return 0;
+ storage_end=storage_begin+(uintptr_t)p->storage_bytes;
+ bitmap_end=bitmap_begin+(uintptr_t)required_bitmap;
+ return !(storage_begin<bitmap_end&&bitmap_begin<storage_end);
+}
 void *pl_pool_alloc(pl_pool_t *p){
  size_t bitmap_bytes;
- if(p==NULL||p->storage==NULL||p->bitmap==NULL)return NULL;
+ if(!pool_state_valid(p)||p->in_use>=p->block_count)return NULL;
  bitmap_bytes=p->block_count/8u+(p->block_count%8u!=0u?1u:0u);
  for(size_t byte=0u;byte<bitmap_bytes;byte++){
   unsigned char occupied=p->bitmap[byte];
@@ -197,10 +232,41 @@ void *pl_pool_alloc(pl_pool_t *p){
 }
 pl_status_t pl_pool_free(pl_pool_t *p,void *block){
  uintptr_t base,address,delta;size_t index;unsigned char mask;
- if(p==NULL||block==NULL||p->storage==NULL||p->bitmap==NULL)return PL_STATUS_INVALID_ARGUMENT;
+ if(block==NULL)return PL_STATUS_INVALID_ARGUMENT;
+ if(!pool_state_valid(p)||p->in_use==0u)return PL_STATUS_INVALID_ARGUMENT;
  base=(uintptr_t)p->storage;address=(uintptr_t)block;if(address<base)return PL_STATUS_OUT_OF_RANGE;
- delta=address-base;if(delta>=p->storage_bytes||delta%p->stride_bytes!=0u)return PL_STATUS_OUT_OF_RANGE;
- index=(size_t)(delta/p->stride_bytes);if(index>=p->block_count)return PL_STATUS_OUT_OF_RANGE;
- mask=(unsigned char)(1u<<(index&7u));if((p->bitmap[index>>3u]&mask)==0u)return PL_STATUS_INVALID_ARGUMENT;
- p->bitmap[index>>3u]=(unsigned char)(p->bitmap[index>>3u]&(unsigned char)~mask);--p->in_use;return PL_STATUS_OK;
+ delta=address-base;
+ if(delta>=p->storage_bytes||delta%p->stride_bytes!=0u)return PL_STATUS_OUT_OF_RANGE;
+ index=(size_t)(delta/p->stride_bytes);
+ if(index>=p->block_count||p->stride_bytes>p->storage_bytes-(size_t)delta)
+  return PL_STATUS_OUT_OF_RANGE;
+ mask=(unsigned char)(1u<<(index&7u));
+ if((p->bitmap[index>>3u]&mask)==0u)return PL_STATUS_INVALID_ARGUMENT;
+ p->bitmap[index>>3u]=(unsigned char)(p->bitmap[index>>3u]&(unsigned char)~mask);
+ --p->in_use;
+ return PL_STATUS_OK;
+}
+pl_status_t pl_pool_free_secure(pl_pool_t *p,void *block){
+ uintptr_t base,address,delta;
+ size_t index;
+ unsigned char mask;
+ volatile unsigned char *payload;
+ if(block==NULL)return PL_STATUS_INVALID_ARGUMENT;
+ if(!pool_state_valid(p)||p->in_use==0u)return PL_STATUS_INVALID_ARGUMENT;
+ base=(uintptr_t)p->storage;
+ address=(uintptr_t)block;
+ if(address<base)return PL_STATUS_OUT_OF_RANGE;
+ delta=address-base;
+ if(delta>=p->storage_bytes||delta%p->stride_bytes!=0u)return PL_STATUS_OUT_OF_RANGE;
+ index=(size_t)(delta/p->stride_bytes);
+ if(index>=p->block_count||p->stride_bytes>p->storage_bytes-(size_t)delta)
+  return PL_STATUS_OUT_OF_RANGE;
+ mask=(unsigned char)(1u<<(index&7u));
+ if((p->bitmap[index>>3u]&mask)==0u)return PL_STATUS_INVALID_ARGUMENT;
+ /* Wipe the full slot, including alignment padding, before releasing its bitmap bit. */
+ payload=(volatile unsigned char *)p->storage+(size_t)delta;
+ for(size_t i=0u;i<p->stride_bytes;i++)payload[i]=0u;
+ p->bitmap[index>>3u]=(unsigned char)(p->bitmap[index>>3u]&(unsigned char)~mask);
+ --p->in_use;
+ return PL_STATUS_OK;
 }
