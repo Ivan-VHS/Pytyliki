@@ -23,6 +23,8 @@ int main(void){
  void *near_address_end=(void *)(uintptr_t)(UINTPTR_MAX-3u);
  assert(pl_view_init(&address_overflow,near_address_end,1u,PL_TYPE_F64,
                      sizeof(double),sizeof(double),0u)==PL_STATUS_OVERFLOW);
+ pl_arena_t address_overflow_arena;
+ assert(pl_arena_init(&address_overflow_arena,near_address_end,16u)==PL_STATUS_OVERFLOW);
 
  unsigned char scratch[160];pl_arena_t arena;
  assert(pl_arena_init(&arena,scratch+1,sizeof(scratch)-1)==PL_STATUS_OK);
@@ -44,6 +46,35 @@ int main(void){
  assert(pl_arena_get_stats(&arena,&stats)==PL_STATUS_OK&&stats.peak_used>0);
  pl_arena_destroy(&arena);
 
+ unsigned char secure_storage[32];pl_arena_t secure_arena;
+ assert(pl_arena_init(&secure_arena,secure_storage,sizeof(secure_storage))==PL_STATUS_OK);
+ void *secret=pl_arena_alloc(&secure_arena,13u,1u);assert(secret!=NULL);
+ memset(secret,0xA5,13u);
+ pl_arena_reset_secure(&secure_arena);
+ assert(secure_arena.used==0u&&secure_arena.allocation_count==0u);
+ for(size_t i=0u;i<13u;i++)assert(secure_storage[i]==0u);
+
+ /* A non-clearing rewind must not hide previously used bytes from secure reset. */
+ unsigned char rewind_storage[64];pl_arena_t rewind_arena;pl_arena_mark_t rewind_mark;
+ assert(pl_arena_init(&rewind_arena,rewind_storage,sizeof(rewind_storage))==PL_STATUS_OK);
+ void *rewind_secret=pl_arena_alloc(&rewind_arena,24u,1u);assert(rewind_secret!=NULL);
+ memset(rewind_secret,0xD3,24u);
+ assert(pl_arena_mark(&rewind_arena,&rewind_mark)==PL_STATUS_OK);
+ void *later_secret=pl_arena_alloc(&rewind_arena,24u,1u);assert(later_secret!=NULL);
+ memset(later_secret,0xE4,24u);
+ assert(pl_arena_rewind(&rewind_arena,rewind_mark,0)==PL_STATUS_OK);
+ assert(rewind_arena.used==rewind_mark.used&&rewind_arena.peak_used>=48u);
+ pl_arena_reset_secure(&rewind_arena);
+ for(size_t i=0u;i<48u;i++)assert(rewind_storage[i]==0u);
+
+ unsigned char destroy_storage[24];pl_arena_t destroy_arena;
+ assert(pl_arena_init(&destroy_arena,destroy_storage,sizeof(destroy_storage))==PL_STATUS_OK);
+ void *destroy_secret=pl_arena_alloc(&destroy_arena,17u,1u);assert(destroy_secret!=NULL);
+ memset(destroy_secret,0x5Au,17u);
+ pl_arena_destroy_secure(&destroy_arena);
+ assert(destroy_arena.memory==NULL&&destroy_arena.capacity==0u);
+ for(size_t i=0u;i<17u;i++)assert(destroy_storage[i]==0u);
+
  pl_arena_t owned;assert(pl_arena_create(&owned,256,NULL)==PL_STATUS_OK);
  assert(pl_arena_alloc(&owned,32,16)!=NULL);pl_arena_destroy(&owned);assert(owned.memory==NULL);
  /* Pool payload and bitmap metadata must never alias. */
@@ -56,7 +87,17 @@ int main(void){
  assert(pl_pool_init(&pool,pool_storage,512u,bitmap,sizeof(bitmap),24u,16u)==PL_STATUS_OK);
  void *p1=pl_pool_alloc(&pool),*p2=pl_pool_alloc(&pool);
  assert(p1!=NULL&&p2!=NULL&&p1!=p2&&pool.in_use==2);
- assert(pl_pool_free(&pool,p1)==PL_STATUS_OK&&pool.in_use==1);
+ pool.in_use=0u;
+ assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT&&pool.in_use==0u);
+ pool.in_use=2u;
+ pool.in_use=pool.block_count;
+ assert(pl_pool_alloc(&pool)==NULL&&pool.in_use==pool.block_count);
+ pool.in_use=2u;
+ memset(p1,0xA5,pool.block_size);
+ assert(pl_pool_free_secure(&pool,p1)==PL_STATUS_OK&&pool.in_use==1u);
+ for(size_t i=0u;i<pool.stride_bytes;i++)assert(((unsigned char *)p1)[i]==0u);
+ assert(pl_pool_free_secure(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
+ assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_pool_free(&pool,p1)==PL_STATUS_INVALID_ARGUMENT);
  assert(pl_pool_free(&pool,(unsigned char *)p2+1)==PL_STATUS_OUT_OF_RANGE);
  assert(pl_pool_free(&pool,p2)==PL_STATUS_OK&&pool.in_use==0);
@@ -67,6 +108,14 @@ int main(void){
  assert(pl_pool_alloc(&pool)==blocks[8]&&pool.in_use==16u);
  for(size_t i=0u;i<16u;i++)assert(pl_pool_free(&pool,blocks[i])==PL_STATUS_OK);
  assert(pool.in_use==0u);
+ pl_pool_t corrupted=pool;
+ corrupted.stride_bytes=0u;
+ assert(pl_pool_alloc(&corrupted)==NULL);
+ assert(pl_pool_free(&corrupted,pool_storage)==PL_STATUS_INVALID_ARGUMENT);
+ corrupted=pool;
+ corrupted.block_count=SIZE_MAX;
+ assert(pl_pool_alloc(&corrupted)==NULL);
+ assert(pl_pool_free(&corrupted,pool_storage)==PL_STATUS_INVALID_ARGUMENT);
  pl_aligned_free(pool_storage);
  pl_chunk_t chunk;assert(pl_view_init(&view,values,5,PL_TYPE_F64,sizeof(double),sizeof(values),0)==PL_STATUS_OK);
  assert(pl_chunk_init(&chunk,&view,4096,7)==PL_STATUS_OK&&chunk.source_offset==4096&&chunk.sequence==7);

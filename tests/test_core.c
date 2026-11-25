@@ -17,6 +17,8 @@ int main(void) {
     pl_processor_snapshot snapshot;
     assert(pl_processor_scan(&snapshot) == 0);
     assert(snapshot.architecture[0] != '\0');
+    assert(snapshot.available_memory_mib == 0u || snapshot.physical_memory_mib == 0u
+           || snapshot.available_memory_mib <= snapshot.physical_memory_mib);
     /* AVX usability includes hardware and OS-managed vector-state prerequisites. */
     assert(!snapshot.avx || (snapshot.avx_hw && snapshot.osxsave && snapshot.avx_os_state));
     assert(!snapshot.avx2 || snapshot.avx);
