@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded analysis, memory and DSP operations, source diagnostics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation for read-only discovery, bounded analysis, memory management, source diagnostics, and versioned native interoperability.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -47,15 +47,6 @@
       "evidence": [
         "src/core.c",
         "src/cli.c"
-      ]
-    },
-    {
-      "id": "audio.pcm16-dsp",
-      "status": "implemented",
-      "summary": "PCM16 WAV processing, test-tone generation, metering and bounded DSP operations.",
-      "evidence": [
-        "src/dsp.c",
-        "src/dsp_engine.c"
       ]
     },
     {
@@ -189,7 +180,7 @@
       "mode": "native-ffi",
       "status": "planned",
       "opt_in": true,
-      "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+      "summary": "A direct VentuSample-to-Pytyliki native metrics adapter is planned; Pytyliki does not implement PCM audio rendering or DSP, which remains in VentuSample."
     }
   ],
   "safety_boundaries": [
@@ -203,6 +194,7 @@
     "CMake library boundaries for adding independently tested C11 modules.",
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
-    "Bounded saturating matrix self-product for repeated vertical architecture analysis."
+    "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
+    "Audio DSP is outside Pytyliki's current implementation scope and remains owned by VentuSample."
   ]
 }
