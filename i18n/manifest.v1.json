@@ -1,5 +1,5 @@
 {
-  "schema": "duck.i18n-manifest/v1",
+  "schema": "pytyliki.i18n-manifest/v1",
   "project": "Pytyliki",
   "sourceLocale": "en",
   "catalogSet": "catalogs.v1.json",
@@ -97,5 +97,6 @@
     "noCloudTranslation": true,
     "directionFromLocaleMetadata": true
   },
-  "runtimeAdapter": "C11 core strings are UTF-8. Win32 HWND/control boundaries convert UTF-8 to UTF-16 explicitly. CLI, JSON report field names and C ABI identifiers remain stable and locale-independent."
+  "runtimeAdapter": "C11 core strings are UTF-8. Win32 HWND/control boundaries convert UTF-8 to UTF-16 explicitly. CLI, JSON report field names and C ABI identifiers remain stable and locale-independent.",
+  "author": "Ivan-VHS"
 }
