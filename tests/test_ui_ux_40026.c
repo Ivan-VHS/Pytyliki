@@ -17,6 +17,9 @@ int main(void) {
     assert(pl_ui_contrast_ratio_rgb(255,243,226,182,74,64) >= 4.5);
     assert(pl_ui_contrast_ratio_rgb(255,243,226,82,99,71) >= 4.5);
     assert(pl_ui_preferred_target_px() == 44u);
+    assert(pl_ui_clamp_font_size(14) == 14);
+    assert(pl_ui_clamp_font_size(5) == 10);
+    assert(pl_ui_clamp_font_size(50) == 20);
     assert(isfinite(pl_ui_contrast_ratio_rgb(0,0,0,0,0,0)));
     return 0;
 }
