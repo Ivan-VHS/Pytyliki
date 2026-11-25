@@ -44,5 +44,6 @@ First checks:
 - [Documentation index](docs/README.md) · [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
 - [Reaper policy integration](docs/REAPER_INTEGRATION.md) is an optional CI validation example, not an application runtime dependency.
 - [Shared ecosystem standards](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/SHARED_STANDARDS.md)
+- [Project Evolution Ladder](docs/PROJECT_LADDER.md) · [Machine-readable rung](.github/project-ladder.v1.json)
 
 [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [MIT License](LICENSE)
