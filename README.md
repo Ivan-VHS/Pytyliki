@@ -18,9 +18,7 @@
   [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 </p>
 
-<p align="center">
-  [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
-</p>
+[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
 **Scope:** processor and file inspection, bounded local analysis and advisory reports. Hardware discovery is read-only; Pytyliki does not change OS scheduling, affinity, voltage, frequency or firmware.
 
