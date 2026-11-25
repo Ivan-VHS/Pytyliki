@@ -44,5 +44,6 @@ ctest --test-dir build -C Release --output-on-failure
 - [Індекс документації](docs/README.md) · [Релізи](docs/RELEASE.md) · [Формат звіту](docs/REPORT_ENVELOPE.md)
 - [Інтеграція з Reaper](docs/REAPER_INTEGRATION.md) — необов’язкова CI-перевірка політик, а не runtime-залежність застосунку.
 - [Спільні стандарти екосистеми](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/SHARED_STANDARDS.md)
+- [Сходи еволюції проєкту](docs/PROJECT_LADDER.md) · [Поточний рівень](.github/project-ladder.v1.json)
 
 [Внесок у проєкт](CONTRIBUTING.md) · [Безпека](SECURITY.md) · [MIT](LICENSE)
