@@ -1,29 +1,37 @@
 # Pytyliki documentation
 
-Start with the [project README](../README.md) for the product overview, build and tests. Use the [documentation map](INFORMATION_ARCHITECTURE.md) for the full catalogue.
+> **Psychoporter 666 documentation profile v1.0** · Reviewed 2026-11-25 (UTC)
 
-## Key pages
-- [NEXUS system-service boundaries](NEXUS_SYSTEM_SERVICE_BOUNDARIES_V1.md) — service ownership and evidence limits.
+[Project overview](../README.md) · [Source](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md)
 
-- [Features](FEATURES.md) — supported tools and their boundaries.
-- [Architecture](ARCHITECTURE.md) — core components and data flow.
-- [Engineering gates](ENGINEERING.md) — quality and safety checks.
-- [Reaper integration](REAPER_INTEGRATION.md) — the optional policy-validation boundary.
-- [NEXUS diagnostics profile](NEXUS_DIAGNOSTICS_PROFILE_V1.md) — C11 ownership, evidence exports and read-only consumers.
+Start with the [project README](../README.md) for product scope, build steps, first checks and limitations.
+
+## Key references
+
+- [Feature matrix](FEATURES.md) — implemented behavior and explicit limits.
+- [Architecture](ARCHITECTURE.md) — components, ownership and data flow.
+- [Engineering gates](ENGINEERING.md) — build, quality and safety checks.
+- [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
+- [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
+- [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
 
 ## Browse by topic
 
-- [Architecture and contracts](clusters/architecture.md)
-- [Processor and computational labs](clusters/processor-labs.md)
-- [Quality and evidence](clusters/quality-evidence.md)
-- [UI and visual system](clusters/ui-visual.md)
-- [Integrations and federation](clusters/federation.md)
-- [Planning and governance](clusters/governance-planning.md)
+- [architecture](clusters/architecture.md)
+- [processor labs](clusters/processor-labs.md)
+- [quality evidence](clusters/quality-evidence.md)
+- [ui visual](clusters/ui-visual.md)
+- [federation](clusters/federation.md)
+- [governance planning](clusters/governance-planning.md)
 
-## Shared rules
+## Shared engineering rules
 
-- [Documentation standard](UNIFIED_DOCUMENTATION_STANDARD.md)
+- [Unified documentation standard](UNIFIED_DOCUMENTATION_STANDARD.md)
 - [Engineering evolution framework](ENGINEERING_EVOLUTION_FRAMEWORK.md)
 - [Repository evolution directives](REPOSITORY_EVOLUTION_DIRECTIVES.md)
 
-**Source, tests, schemas and CI define verified behavior.** Roadmap entries and design documents describe plans, not shipped capabilities.
+## Evidence and maturity
+
+Describe behavior from source, build configuration, schemas, tests and CI evidence. Mark proposals and roadmap items as planned. Do not invent benchmarks, security certifications, platform support, API surfaces or release status.
+
+**The index is navigation, not proof of implementation.**
