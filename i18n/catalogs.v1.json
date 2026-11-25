@@ -1,5 +1,5 @@
 {
-  "schema": "duck.i18n-catalog-set/v1",
+  "schema": "pytyliki.i18n-catalog-set/v1",
   "sourceLocale": "en",
   "locales": {
     "en": {
