@@ -43,6 +43,12 @@ static inline int pl_ui_text_contrast_meets(
 
 static inline unsigned int pl_ui_preferred_target_px(void) { return 44u; }
 
+static inline int pl_ui_clamp_font_size(int value) {
+    if (value < 10) return 10;
+    if (value > 20) return 20;
+    return value;
+}
+
 #ifdef __cplusplus
 }
 #endif

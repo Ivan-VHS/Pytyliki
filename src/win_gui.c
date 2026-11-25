@@ -33,11 +33,20 @@
 #define ID_MOTION_SAVE 1304
 #define ID_MOTION_CANCEL 1305
 #define ID_MOTION_MODE 1306
+#define ID_HOTKEY_SCAN 1401
+#define ID_HOTKEY_SUITE 1402
+#define ID_HOTKEY_SAVE 1403
+#define ID_HOTKEY_CLEAR 1404
+#define ID_HOTKEY_MOTION 1405
+#define ID_HOTKEY_ZOOM_IN 1406
+#define ID_HOTKEY_ZOOM_OUT 1407
+#define ID_HOTKEY_ZOOM_RESET 1408
 
 static HWND g_log;
 static HWND g_main;
 static HFONT g_font;
 static HFONT g_log_font;
+static int g_log_font_size = 14;
 static HFONT g_brand_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
@@ -49,6 +58,20 @@ static HWND g_motion_dialog = NULL;
 static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
+static void set_log_font_size(int next_size) {
+    HFONT next_font;
+    if (next_size < 10) next_size = 10;
+    if (next_size > 20) next_size = 20;
+    if (next_size == g_log_font_size) return;
+    next_font = CreateFontA(-next_size,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
+        DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,
+        FIXED_PITCH|FF_MODERN,"Consolas");
+    if (!next_font) return;
+    if (g_log && g_log_font) SendMessageA(g_log,WM_SETFONT,(WPARAM)next_font,TRUE);
+    if (g_log_font) DeleteObject(g_log_font);
+    g_log_font = next_font;
+    g_log_font_size = next_size;
+}
 static COLORREF page_color(void) {
     if (g_mora_theme) return MORA_AMBER_PAGE;
     return g_dark_mode ? MORA_DARK_PAGE : MORA_LIGHT_PAGE;
@@ -442,7 +465,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     }
     case WM_GETMINMAXINFO: {
         MINMAXINFO *limits=(MINMAXINFO *)l;
-        limits->ptMinTrackSize.x=760; limits->ptMinTrackSize.y=680;
+        limits->ptMinTrackSize.x=720; limits->ptMinTrackSize.y=560;
         return 0;
     }
     case WM_SIZE: layout(w); return 0;
@@ -500,14 +523,22 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         RECT title={22,8,190,42}; DrawTextA(dc,"PYTYLIKI",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,g_font);
         SetTextColor(dc,g_mora_theme?MORA_AMBER_TEXT:RGB(255,255,255));
-        RECT product={190,10,r.right-20,42}; DrawTextA(dc,"PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&product,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        RECT product={190,10,r.right-20,42}; DrawTextA(dc,"PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&product,DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS);
         SetTextColor(dc,g_mora_theme?MORA_AMBER_SECONDARY:RGB(218,231,245));
-        RECT sub={23,43,r.right-20,70}; DrawTextA(dc,g_mora_theme ? "MORA AMBER    CPU diagnostics | metrics | source review | embedded tools" : "WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        RECT sub={23,43,r.right-20,70}; DrawTextA(dc,g_mora_theme ? "MORA AMBER    F5 scan | F6 suite | Ctrl+S report | Ctrl+M motion | Ctrl +/- text" : "WHITE / BLUE / RED    F5 scan | F6 suite | Ctrl+S report | Ctrl+M motion | Ctrl +/- text",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
     case WM_COMMAND:
         switch(LOWORD(p)) {
+            case ID_HOTKEY_SCAN: show_profile(); return 0;
+            case ID_HOTKEY_SUITE: run_suite(); return 0;
+            case ID_HOTKEY_SAVE: save_report(); return 0;
+            case ID_HOTKEY_CLEAR: SetWindowTextA(g_log,"Session log cleared.\r\n"); return 0;
+            case ID_HOTKEY_MOTION: show_motion_settings(); return 0;
+            case ID_HOTKEY_ZOOM_IN: set_log_font_size(g_log_font_size+1); return 0;
+            case ID_HOTKEY_ZOOM_OUT: set_log_font_size(g_log_font_size-1); return 0;
+            case ID_HOTKEY_ZOOM_RESET: set_log_font_size(14); return 0;
             case ID_PROFILE: show_profile(); break;
             case ID_SUITE: run_suite(); break;
             case ID_REVIEW: review_source(); break;
@@ -573,5 +604,25 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     } else {
         ShowWindow(w,show);
     }
-    UpdateWindow(w); MSG msg; while(GetMessageA(&msg,NULL,0,0)>0){TranslateMessage(&msg);DispatchMessageA(&msg);} return (int)msg.wParam;
+    ACCEL shortcuts[] = {
+        { FVIRTKEY, VK_F5, ID_HOTKEY_SCAN },
+        { FVIRTKEY, VK_F6, ID_HOTKEY_SUITE },
+        { FVIRTKEY|FCONTROL, 'S', ID_HOTKEY_SAVE },
+        { FVIRTKEY|FCONTROL, 'L', ID_HOTKEY_CLEAR },
+        { FVIRTKEY|FCONTROL, 'M', ID_HOTKEY_MOTION },
+        { FVIRTKEY|FCONTROL, VK_OEM_PLUS, ID_HOTKEY_ZOOM_IN },
+        { FVIRTKEY|FCONTROL, VK_OEM_MINUS, ID_HOTKEY_ZOOM_OUT },
+        { FVIRTKEY|FCONTROL, '0', ID_HOTKEY_ZOOM_RESET }
+    };
+    HACCEL accelerator = CreateAcceleratorTableA(shortcuts, (int)(sizeof(shortcuts)/sizeof(shortcuts[0])));
+    UpdateWindow(w);
+    MSG msg;
+    while(GetMessageA(&msg,NULL,0,0)>0) {
+        if (!accelerator || !TranslateAcceleratorA(w,accelerator,&msg)) {
+            TranslateMessage(&msg);
+            DispatchMessageA(&msg);
+        }
+    }
+    if (accelerator) DestroyAcceleratorTable(accelerator);
+    return (int)msg.wParam;
 }
