@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - "examples/reaper_resource_policy.rpr"
+      - "examples/reaper_compute_contract.rpr"
       - "docs/REAPER_INTEGRATION.md"
       - ".github/workflows/reaper-policy.yml"
   workflow_dispatch:
