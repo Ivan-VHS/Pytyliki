@@ -17,4 +17,4 @@ See [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md) for shared semantic t
 
 ## UI/UX Codex 40026
 
-See [UI/UX Codex 40026](UI_UX_CODEX_40026.md) for the six-cycle / 666-rule engineering contract. The Win32 workstation now has a UI-only text contrast policy with a 4.5:1 ordinary-text and 3:1 large-text threshold, a preferred 44 px action target, contrast-safe text fallback, and Escape/keyboard-containment support in Motion Settings. The helper is deliberately not linked into the DSP/FFI/processing core.
+See [UI/UX Codex 40026](UI_UX_CODEX_40026.md) for the six-cycle / engineering constitution. The Win32 workstation now has a UI-only text contrast policy with a 4.5:1 ordinary-text and 3:1 large-text threshold, a preferred 44 px action target, contrast-safe text fallback, and Escape/keyboard-containment support in Motion Settings. The helper is deliberately not linked into the DSP/FFI/processing core.

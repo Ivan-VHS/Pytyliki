@@ -43,6 +43,6 @@ ctest --test-dir build -C Release --output-on-failure
 
 - [Индекс документации](docs/README.md) · [Релизы](docs/RELEASE.md) · [Формат отчёта](docs/REPORT_ENVELOPE.md)
 - [Интеграция с Reaper](docs/REAPER_INTEGRATION.md) — необязательная CI-проверка политик, не runtime-зависимость приложения.
-- [Общие стандарты экосистемы](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/SHARED_STANDARDS.md)
+- [Общие стандарты экосистемы](https://github.com/Ivan-VHS/DAK/blob/main/docs/SHARED_STANDARDS.md)
 
 [Вклад в проект](CONTRIBUTING.md) · [Безопасность](SECURITY.md) · [MIT](LICENSE)

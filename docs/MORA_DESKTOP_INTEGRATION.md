@@ -12,7 +12,7 @@ Pytyliki joins Mora as the processor-systems workstation. Mora supplies a shared
 
 Mora only enables the launch action when it finds a built Windows GUI target. On Linux and macOS it may still list the project and its portable tools, but it does not pretend that the Windows GUI is available.
 
-The shared application schema and local launcher are maintained in [DuckOS / Mora](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md).
+The shared application schema and local launcher are maintained in [DAK / Mora](https://github.com/Ivan-VHS/DAK/blob/main/docs/MORA_DESKTOP.md).
 
 ## Shared appearance
 
