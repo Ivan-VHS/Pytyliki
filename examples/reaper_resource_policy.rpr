@@ -1,5 +1,29 @@
-# Reference-only memory budget policy for CI.
-# These values are deterministic fixtures, not live MCU telemetry.
+# Reference-only Reaper policy for Pytyliki's native C11 diagnostics.
+# These fixtures are deterministic and are not live CPU or memory telemetry.
+
+craft resource_budget_valid(budget, reserved) {
+    when budget <= 0 or reserved < 0 { yield false }
+    yield reserved <= budget
+}
+
+craft metric_evidence_valid(metric) {
+    # [provider, metric_id, unit, value, minimum, maximum, sample_count, workload_id]
+    when size(metric) != 8 { yield false }
+    when metric[0] != "pytyliki.c11" { yield false }
+    when metric[1] == "" or metric[2] == "" or metric[7] == "" { yield false }
+    when metric[4] > metric[5] { yield false }
+    when metric[3] < metric[4] or metric[3] > metric[5] { yield false }
+    when metric[6] <= 0 or metric[6] > 1000000 { yield false }
+    yield true
+}
+
+craft metrics_comparable(left, right) {
+    when not metric_evidence_valid(left) or not metric_evidence_valid(right) {
+        yield false
+    }
+    yield left[1] == right[1] and left[2] == right[2] and left[7] == right[7]
+}
+
 make flash_budget := 524288
 make flash_reserved := 131072
 make sram_budget := 131072
@@ -7,7 +31,15 @@ make sram_reserved := 65536
 make stack_budget := 8192
 make stack_reserved := 4096
 
-when flash_reserved <= flash_budget and sram_reserved <= sram_budget and stack_reserved <= stack_budget {
+make cpu_sample := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-a"]
+make memory_sample := ["pytyliki.c11", "memory.used", "bytes", 32768, 0, 131072, 8, "fixture/workload-a"]
+make other_workload := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-b"]
+
+make budgets_valid := resource_budget_valid(flash_budget, flash_reserved) and resource_budget_valid(sram_budget, sram_reserved) and resource_budget_valid(stack_budget, stack_reserved)
+make metrics_valid := metric_evidence_valid(cpu_sample) and metric_evidence_valid(memory_sample)
+make workload_isolated := not metrics_comparable(cpu_sample, other_workload)
+
+when budgets_valid and metrics_valid and workload_isolated {
     emit "PYTYLIKI_REAPER_POLICY:PASS"
 } otherwise {
     emit "PYTYLIKI_REAPER_POLICY:FAIL"
