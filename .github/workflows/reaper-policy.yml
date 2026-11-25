@@ -5,6 +5,7 @@ on:
     branches: [main, "feat/**", "integration/**"]
     paths:
       - "examples/reaper_resource_policy.rpr"
+      - "examples/reaper_compute_contract.rpr"
       - "docs/REAPER_INTEGRATION.md"
       - ".github/workflows/reaper-policy.yml"
   pull_request:
@@ -49,3 +50,6 @@ jobs:
           set -euo pipefail
           python -m reaper examples/reaper_resource_policy.rpr | tee reaper-policy.txt
           grep -qx "PYTYLIKI_REAPER_POLICY:PASS" reaper-policy.txt
+          python -m reaper --check examples/reaper_compute_contract.rpr
+          python -m reaper examples/reaper_compute_contract.rpr | tee reaper-compute.txt
+          grep -qx "PYTYLIKI_REAPER_COMPUTE:PASS" reaper-compute.txt
