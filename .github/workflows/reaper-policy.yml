@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Reaper
-          ref: e48fb2a38384da75292b948ae18f69f3d80bcd08
+          ref: 23642e50beef68db63ccc5573735fddf885533c8
           path: _deps/Reaper
 
       - name: Set up Python
