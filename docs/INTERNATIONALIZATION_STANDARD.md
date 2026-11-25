@@ -1,5 +1,7 @@
 # Internationalization and language support
 
+**Maintainer:** Ivan-VHS · **Project:** Pytyliki
+
 **Status:** shared i18n contract v1 and starter catalogs. This establishes runtime-independent language negotiation and CI coverage; it does not claim that every screen or every human language has already been professionally translated.
 
 ## Goal
@@ -52,7 +54,7 @@ C11 core and report formats stay locale-independent. The Windows GUI is the pres
 
 | Project | Native integration contract |
 |---|---|
-| DuckOS | Reaper-owned native locale service; Mora host shell uses browser `Intl` and the same catalog ids |
+| DAK | Reaper-owned native locale contract; DAK system and application clients consume stable catalog ids |
 | Reaper | Locale-aware diagnostics/editor UI; language grammar, canonical IR, ABI and diagnostics codes remain stable |
 | Pytyliki | UTF-8 C11 core; explicit UTF-16 Win32 boundary; locale-neutral CLI and JSON |
 | VentuSample | Qt 6 `QLocale`/`QTranslator`; real-time audio and preset serialization remain locale-neutral |
