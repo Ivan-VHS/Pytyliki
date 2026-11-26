@@ -16,6 +16,7 @@
 | Desktop platform | Windows (Win32) |
 | Tooling | Python 3 tooling is auxiliary, not a core runtime |
 | License | [MIT](LICENSE) |
+| Code of Conduct | Not published (no root `CODE_OF_CONDUCT.md`) |
 | Last documentation review | 2026-11-26 |
 
 <p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki processor systems workstation" width="100%"></p>
