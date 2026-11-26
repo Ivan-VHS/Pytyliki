@@ -4,6 +4,8 @@
 
 **语言：** [English](README.md) · 简体中文 · [Русский](README.ru.md) · [Українська](README.uk.md)
 
+**架构规范：** [66 条自主性与模块化规则](docs/ARCHITECTURE_66.md)及[666 条宪章实施纲要](docs/CONSTITUTION_666_PROFILE.md)。明确区分已实现、部分实现、计划中和不适用的要求。**AETHER-ANAS：**[C11 核心、DSP、能力边界与验证门槛的分阶段集成方案](docs/AETHER_ANAS_INTEGRATION.md)。 **鸭子宪章：**[Pytyliki 工程实施配置](docs/ANATIDAE_ENGINEERING_PROFILE.md)，将原则映射到现有 C11 工作站，并明确区分计划与已实现功能。
+
 <p align="center">
 
 **探测 · 分析 · 规划 · 验证**

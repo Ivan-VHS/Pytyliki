@@ -1,4 +1,5 @@
 #include "cpu_suite.h"
+#include "processor.h"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -21,5 +22,21 @@ int main(void) {
  }
  assert(domains_seen==((1u<<7u)-1u));
  {pl_cpu_suite_module m;pl_cpu_suite_plan p;assert(pl_cpu_suite_get(count,&m)!=0);assert(pl_cpu_suite_find_id(0u,&m)!=0);assert(pl_cpu_suite_find_id(79u,&m)!=0);assert(pl_cpu_suite_find_name(NULL,&m)!=0);assert(pl_cpu_suite_find_name("",&m)!=0);assert(pl_cpu_suite_plan_module(79u,&p)!=0);assert(pl_cpu_suite_domain_name((pl_cpu_suite_domain)99)!=NULL);}
- puts("CPU Suite Pro 78 catalogue tests passed.");return 0;
+ {
+  pl_processor_snapshot snapshot;
+  assert(pl_processor_scan(&snapshot)==0);
+#if defined(__e2k__)
+  assert(snapshot.is_e2k_target==1u);
+  assert(strcmp(snapshot.architecture,"e2k")==0);
+#else
+  assert(snapshot.is_e2k_target==0u);
+#endif
+#if defined(__e2k__) && defined(__LCC__)
+  assert(snapshot.mcst_lcc==1u);
+  assert(snapshot.lcc_major==(unsigned)__LCC__);
+#else
+  assert(snapshot.mcst_lcc==0u);
+#endif
+ }
+ puts("CPU Suite Pro 78 and target profile tests passed.");return 0;
 }

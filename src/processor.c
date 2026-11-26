@@ -29,7 +29,14 @@ int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,
  long avail=sysconf(_SC_AVPHYS_PAGES);if(avail>0&&size>0)out->available_memory_mib=((uint64_t)avail*(uint64_t)size)/(1024u*1024u);
 # endif
 #endif
-#if defined(_M_X64)||defined(__x86_64__)
+#if defined(__e2k__)
+ snprintf(out->architecture,sizeof(out->architecture),"e2k");
+ out->is_e2k_target=1u;
+# if defined(__LCC__)
+ out->mcst_lcc=1u;
+ out->lcc_major=(unsigned)__LCC__;
+# endif
+#elif defined(_M_X64)||defined(__x86_64__)
  snprintf(out->architecture,sizeof(out->architecture),"x86-64");
 #elif defined(_M_IX86)||defined(__i386__)
  snprintf(out->architecture,sizeof(out->architecture),"x86");
