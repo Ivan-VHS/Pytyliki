@@ -92,7 +92,11 @@ typedef struct PYTYLIKI_ABI_ALIGN8 {
 #  define PYTYLIKI_ABI_ALIGNOF(type) alignof(type)
 #else
 #  define PYTYLIKI_ABI_STATIC_ASSERT(condition, message) _Static_assert((condition), message)
-#  define PYTYLIKI_ABI_ALIGNOF(type) _Alignof(type)
+#  if defined(_MSC_VER)
+#    define PYTYLIKI_ABI_ALIGNOF(type) __alignof(type)
+#  else
+#    define PYTYLIKI_ABI_ALIGNOF(type) _Alignof(type)
+#  endif
 #endif
 PYTYLIKI_ABI_STATIC_ASSERT(sizeof(pytyliki_diagnostic_v1) == PYTYLIKI_DIAGNOSTIC_V1_SIZE,
                            "pytyliki_diagnostic_v1 size changed");
