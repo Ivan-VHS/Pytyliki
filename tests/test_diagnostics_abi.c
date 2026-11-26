@@ -95,7 +95,9 @@ int main(void) {
     assert(memcmp(&diagnostic, &unchanged, sizeof(diagnostic)) == 0);
 
     diagnostic = unchanged;
+    diagnostic.struct_size = (uint32_t)sizeof(diagnostic);
     diagnostic.abi_version = 2u;
+    unchanged.struct_size = (uint32_t)sizeof(unchanged);
     unchanged.abi_version = 2u;
     assert(pytyliki_v1_distance_f64_ex(
         left, right, 2u, &output, (uint32_t)sizeof(diagnostic), &diagnostic) ==
