@@ -1,53 +1,62 @@
-# 🧮 Pytyliki — 处理器系统工作站
+# Pytyliki — 处理器系统工作站
 
-<p align="center">[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)</p>
+[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
-[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
+> 基于受限 C11 核心的本地工作站，用于只读处理器发现、机器相关测量、内存/DSP 工具、静态诊断和显式原生互操作。
 
-> **有界处理器分析。原生测量。以证据代替猜测。**
+**规格**
 
-**项目状态:** 开发中 · 有界 C11 核心 · **版本:** 0.8.0 · CMake project · **License:** [MIT](LICENSE) · **README 标准:** Psychoporter 666 v1.0 · **审阅日期:** 2026-11-25 · UTC · **Source:** [Ivan-VHS/Pytyliki](https://github.com/Ivan-VHS/Pytyliki)
+| 字段 | 当前记录 |
+|---|---|
+| 仓库 | [Ivan-VHS/Pytyliki](https://github.com/Ivan-VHS/Pytyliki) |
+| 项目状态 | 开发中；受限原生 C11 核心 |
+| 产品版本 | 项目契约未声明统一版本 |
+| 核心语言 | C11 / CMake 3.16+ |
+| 运行平台 | Windows、Linux |
+| 桌面平台 | Windows（Win32） |
+| 工具 | Python 仅用于辅助工具，不是核心运行时 |
+| 许可证 | [MIT](LICENSE) |
+| 文档审核日期 | 2026-11-26 |
 
-<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — 处理器系统工作站 — project overview" width="100%"></p>
-<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki — 处理器系统工作站 — application screenshot" width="100%"></a></p>
+<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki 处理器系统工作站" width="100%"></p>
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki 工作站截图" width="100%"></a></p>
 
-## 快速导航
+## 目录
+- [用途与范围](#用途与范围)
+- [架构与数据流](#架构与数据流)
+- [构建与首次检查](#构建与首次检查)
+- [接口与契约](#接口与契约)
+- [限制与安全](#限制与安全)
+- [文档与历史](#文档与历史)
 
-[🚀 Demo: workstation screenshot](assets/screenshots/pytyliki-workstation.png) · [Documentation](docs/README.md) · [Source repository](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues)
+## 用途与范围
 
-## 目标与范围
+Pytyliki 是一款本地处理器系统工作站。其 C11 核心提供只读硬件发现、受限的机器相关测量、内存和 DSP 操作、静态源码诊断以及版本化 C ABI。Win32 图形界面仅支持 Windows；CLI/core 声明支持 Windows 和 Linux。
 
-本地处理器系统工作站，采用有界 C11 核心、仅适用于 Windows 的 Win32 桌面界面和可移植命令行工具。硬件发现只读；源码静态审查不会编译、执行或改写被检查文件。
-
-## 功能
-
-- 只读采集 CPU 拓扑、ISA 与内存信息。
-- 对 CPU、内存和矩阵执行有界负载及计时统计；结果取决于主机。
-- 导入性能分析数据、折叠堆栈和 SVG 火焰图。
-- 源码静态诊断、QCS 语法检查，以及 MCU FLASH/SRAM 参考估算。
-- 采用调用方拥有缓冲区的版本化 C ABI v1，并生成带数据来源的结构化报告。
+应用输出观察结果和受限计算结果。它不会调整 CPU 时钟或电压、写入固件、安装驱动、访问物理 MMIO 寄存器，也不会改写被检查的源文件。
 
 ## 架构与数据流
 
 ~~~mermaid
 flowchart LR
-  U["User / CLI / Win32 UI"] --> C["C11 core"]
-  C --> D["Read-only discovery"]
-  C --> B["Bounded measurements"]
-  C --> S["Static source and QCS checks"]
-  D --> R["Structured evidence report"]
+  U["CLI / Win32 界面"] --> V["参数与输入验证"]
+  V --> C["C11 核心"]
+  C --> D["只读 CPU / 内存发现"]
+  C --> B["受限本地工作负载"]
+  C --> S["静态源码 / QCS 检查"]
+  C --> M["内存、DSP 与指标模块"]
+  D --> R["带来源信息的结构化报告"]
   B --> R
   S --> R
-  C --> A["Versioned C ABI v1"]
+  M --> R
+  C --> A["版本化 C ABI v1"]
 ~~~
 
-源码、架构模式、构建配置、测试和 CI 是已实现行为的依据。路线图与目录仅描述计划或清单，不代表已交付功能。
+每个操作都经过输入验证、受限模块、结构化结果和可选的显式导出。硬件清单和源码检查均为只读。基准值取决于主机 CPU、操作系统、构建配置和热状态。
 
-## 环境要求
+## 构建与首次检查
 
-需要 CMake 3.16+、C11 编译器（MSVC、GCC 或 Clang）和 Git。核心与 CLI 面向已声明的 Windows/Linux 运行平台；Win32 GUI 仅支持 Windows。Python 是可选测试工具，不是运行时要求。
-
-## 构建
+需要 CMake 3.16+ 和 C11 编译器（MSVC、GCC 或 Clang）。
 
 ~~~sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
@@ -55,9 +64,7 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ~~~
 
-Win32 图形界面仅适用于 Windows。C11 核心和 CLI 是可移植入口。
-
-## 首次检查
+首次本地检查：
 
 ~~~sh
 ./build/pytyliki --profile
@@ -66,67 +73,47 @@ Win32 图形界面仅适用于 Windows。C11 核心和 CLI 是可移植入口。
 ./build/pytyliki-metrics --demo
 ~~~
 
-这些命令输出依赖本机硬件的结果，不会修改操作系统设置。
+命令仅提供本地、依赖机器环境的观察结果，不会调整系统。在 Windows 上，请使用当前 CMake 配置生成的可执行文件路径（多配置生成器通常位于 Release 配置目录）。
 
-## 运行
+## 接口与契约
 
-本地检查请使用可移植 CLI；Win32 图形界面可在 Windows 构建中使用。
-
-## 接口
-
-| 接口 | 契约 / 入口 | 边界 |
+| 接口 | 契约 | 边界 |
 |---|---|---|
-| CLI | `pytyliki / pytyliki-metrics / pytyliki-qcs` | 本地命令；请通过 `--help` 和功能文档查看用法。 |
-| Native FFI | `pytyliki_ffi / C ABI v1` | 必须显式选择库；缓冲区由调用方管理。 |
-| 报告 | 版本化 JSON/text | 报告契约包含数据来源与限制。 |
+| CLI | `pytyliki`、metrics 和 QCS 工具 | 本地执行；参阅命令帮助 |
+| Native FFI | `pytyliki.c-abi.v1` | 显式可信库路径；缓冲区由调用方拥有 |
+| 报告 | 带 provenance 的版本化 JSON/text | 未知值必须明确保留 |
+| Embedded C | MCU 参考配置与 MMIO 掩码 | 仅模拟/参考 |
+| OCTA-8 | 版本化 peer 拓扑契约 | 仓库联邦，不是集中式运行时 |
 
-若仓库中没有版本化实现和测试，则不将 REST/GraphQL、WebSocket、OAuth、云部署或 Cookie 机制描述为现有功能。
+可选集成必须显式启用。Reaper 和 OPlague 可以通过调用方提供的可信库路径调用 C ABI v1。VentuSample 的直接 C ABI 集成仍属计划；当前 pack 元数据交换是独立机制。参阅 [Federated Integration](docs/FEDERATED_INTEGRATION.md)。
 
-## 安全与信任边界
+## 限制与安全
 
-不会写入固件、BIOS/UEFI、微码、频率、电压、驱动程序或设备寄存器。Embedded C 的 MMIO 描述仅用于模拟/参考。原生 FFI 必须显式指定可信库路径。
+> 测量结果依赖主机环境；硬件参考模型不会执行真实设备操作。
 
-安全策略：[SECURITY.md](SECURITY.md)。请勿在公开问题中发布密钥、设备标识符或私人日志。
+处理器发现是只读的。基准工作负载有资源上限，不保证不同机器之间的结果可直接比较。静态源码诊断不会编译、执行或改写被检查文件。QCS 执行语法和结构验证，不负责通用程序执行。
 
-## 质量验证
+Embedded C 工作台提供 MCU 内存参考配置和模拟 MMIO 掩码；它不是物理地址映射器、固件烧录器或实时调试器。Native FFI 会在进程内执行可信代码，只应加载显式选定且 ABI 兼容的库。不会写入 firmware、BIOS/UEFI、microcode、时钟、电压、驱动或设备寄存器。
 
-CTest 测试集通过“构建”章节中的命令运行；无需额外的验证命令。
+清单数量和语言目录不是认证或性能证明。项目契约未声明统一产品版本，不应从旧 README 或目录中推断版本。
 
-测试范围由已注册的 CTest/unittest 目标和工作流定义。没有公开报告时，不声明覆盖率百分比、模糊测试结果或负载测试报告。
+## 文档与贡献
 
-## 性能证据
+从[文档索引](docs/README.md)和[信息架构图](docs/INFORMATION_ARCHITECTURE.md)开始。
 
-基准结果取决于主机，仅用于本地比较。仓库记录了统计方法和样本归档；不承诺通用延迟、内存占用或跨机器评分。
+- [功能矩阵](docs/FEATURES.md)
+- [架构](docs/ARCHITECTURE.md)
+- [基准统计](docs/BENCHMARK_STATISTICS.md)
+- [内存 arena](docs/MEMORY_ARENA.md)
+- [Embedded C 参考工作台](docs/EMBEDDED_C.md)
+- [QCS 验证](docs/QCS_NATIVE.md)
+- [报告封装](docs/REPORT_ENVELOPE.md)
+- [Pytyliki/Reaper 集成](docs/REAPER_INTEGRATION.md)
 
-## 兼容性
+修改 C ABI、报告格式或输入边界前，请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题报告请遵循 [SECURITY.md](SECURITY.md)。本仓库采用 [MIT](LICENSE)；请保留第三方许可证声明和归属信息。
 
-声明的运行平台为 Windows 和 Linux；Win32 GUI 仅支持 Windows。C11 核心和 CLI 是可移植入口。
+## 文档与历史
 
-## 文档与生态
+当前项目契约定义了能力和集成边界，但未声明统一的产品 semantic version。仓库仍处于开发阶段。发布、分支支持和兼容性历史必须有真实 Git 标签、发行制品或迁移文档作为依据；没有证据时应明确标记为未声明。
 
-- [Feature matrix](docs/FEATURES.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Benchmark statistics](docs/BENCHMARK_STATISTICS.md)
-- [Report envelope](docs/REPORT_ENVELOPE.md)
-- [Embedded C](docs/EMBEDDED_C.md)
-- [QCS](docs/QCS_NATIVE.md)
-- [Documentation index](docs/README.md)
-- [Reaper integration](docs/REAPER_INTEGRATION.md)
-
-主要技术参考包括功能矩阵、架构、基准统计和报告封装规范。
-
-跨项目集成使用有文档说明的版本化接口和显式适配器。可选适配器不会授予其他项目运行时权限或硬件访问权限。
-
-## 参与贡献
-
-修改代码或契约前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。保持改动可审查，添加确定性测试，并按贡献指南使用 Conventional Commits。
-
-## 许可证与法律说明
-
-本项目依据 [MIT](LICENSE) 许可。软件按许可条款以“按现状”方式提供。第三方项目名称与商标归其各自权利人所有。
-
-本仓库记录的是本地软件接口。除非另行引入并记录托管服务，否则云服务条款、Cookie 同意、OAuth 和 CORS 均不适用于上述本地运行组件。
-
----
-
-<p align="center"><sub>Psychoporter 666 README Standard v1.0 · Ivan-VHS · 2026-11-25 · UTC</sub></p>
+基准结果应记录在 [Benchmark Statistics](docs/BENCHMARK_STATISTICS.md) 中，并提供主机、编译器、构建标志、工作负载、样本数和统计方法。不承诺通用延迟、内存占用或跨机器排名.
