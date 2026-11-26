@@ -85,6 +85,7 @@ int main(void) {
         PYTYLIKI_ABI_NUMERIC_OVERFLOW);
     assert(diagnostic.code == PYTYLIKI_DIAG_NUMERIC_OVERFLOW);
     assert(isfinite(output));
+    assert(output == -17.0);
 
     memset(&unchanged, 0x5a, sizeof(unchanged));
     diagnostic = unchanged;
