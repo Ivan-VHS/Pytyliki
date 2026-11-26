@@ -16,6 +16,7 @@
 | 桌面平台 | Windows（Win32） |
 | 工具 | Python 仅用于辅助工具，不是核心运行时 |
 | 许可证 | [MIT](LICENSE) |
+| 行为准则 | 尚未发布根目录 `CODE_OF_CONDUCT.md` |
 | 文档审核日期 | 2026-11-26 |
 
 <p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki 处理器系统工作站" width="100%"></p>
