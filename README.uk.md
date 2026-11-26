@@ -16,6 +16,7 @@
 | Desktop | Windows (Win32) |
 | Інструменти | Python використовується як допоміжний інструментарій, не як core runtime |
 | Ліцензія | [MIT](LICENSE) |
+| Кодекс поведінки | Окремий `CODE_OF_CONDUCT.md` не опубліковано |
 | Перевірка документації | 2026-11-26 |
 
 <p align="center"><img src="assets/pytyliki-hero.svg" alt="Робоча станція Pytyliki" width="100%"></p>
