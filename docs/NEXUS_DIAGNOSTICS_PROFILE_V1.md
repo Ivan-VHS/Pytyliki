@@ -41,4 +41,4 @@ These application concepts do not authorize new hardware access or alter Pytylik
 
 ## Acceptance
 
-A NEXUS consumer must pass schema/version checks, reject oversized or malformed reports, preserve source provenance, handle a missing provider and keep the operation read-only. Any new ABI function requires a separate versioned API proposal and C11 tests.
+A NEXUS consumer must pass schema/version checks, reject oversized or malformed reports, preserve source provenance, handle a missing provider and keep the operation read-only. The additive diagnostics envelope proposal is specified in [DIAGNOSTICS_C_ABI_V1.md](DIAGNOSTICS_C_ABI_V1.md). Its C11 implementation and layout/error-path tests are reviewed in PR #264; downstream native-toolchain verification is still required before the cross-project contract can be called proven.
