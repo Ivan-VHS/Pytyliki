@@ -1,132 +1,132 @@
-# Pytyliki
+# 🧮 Pytyliki — робоча станція процесорних систем
 
-Pytyliki — локальна робоча станція на C11 для дослідження процесорів, обмеженого аналізу навантажень, перегляду профілів і числових інструментів для системних розробників та QA-інженерів.
+<p align="center">[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)</p>
 
-[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/dashboard.svg">
-  <img src="assets/readme/dashboard-light.svg" alt="Огляд Pytyliki: локальні дані процесора, обмежена обробка C11 та звіти з підтвердженнями" width="100%">
-</picture>
+> **Аналіз процесора з чіткими обмеженнями. Нативні вимірювання. Докази замість здогадів.**
 
-[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&style=flat-square&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Останній коміт](https://img.shields.io/github/last-commit/Ivan-VHS/Pytyliki?style=flat-square)](https://github.com/Ivan-VHS/Pytyliki/commits/main) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki?style=flat-square)](LICENSE)
+**Стан:** Розробка · обмежене ядро C11 · **Версія:** 0.8.0 · CMake project · **License:** [MIT](LICENSE) · **Стандарт README:** Psychoporter 666 v1.0 · **Дата перевірки:** 2026-11-25 · UTC · **Source:** [Ivan-VHS/Pytyliki](https://github.com/Ivan-VHS/Pytyliki)
 
-[Швидкий старт](#швидкий-старт) · [Знімки екрана](#знімки-екрана) · [Архітектура](#архітектура) · [План розвитку](#план-розвитку) · [Документація](docs/README.md) · [Коміти](https://github.com/Ivan-VHS/Pytyliki/commits/main)
+<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — робоча станція процесорних систем — project overview" width="100%"></p>
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki — робоча станція процесорних систем — application screenshot" width="100%"></a></p>
 
-> **Статус:** активна розробка. У репозиторії є ядро C11, CLI-утиліти, тести та ціль Windows desktop. GUI працює лише у Windows; доступність системних проб залежить від платформи.
->
-> **Платформи:** шляхи збирання й тестування Windows та Linux представлені в CI. macOS наразі не заявляється як перевірена ціль.
+## Швидка навігація
 
-## Швидкий старт
+[🚀 Demo: workstation screenshot](assets/screenshots/pytyliki-workstation.png) · [Documentation](docs/README.md) · [Source repository](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues)
 
-**Вимоги:** CMake 3.16+, компілятор C11 (MSVC, GCC або Clang) і Git. Win32 GUI збирається у Windows; переносні ядро та CLI — основні точки входу для інших середовищ збирання.
+## Призначення та межі
 
-```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
-cmake --build build --config Release --parallel
-ctest --test-dir build -C Release --output-on-failure
-```
-
-Приклад обмеженого розподілу задач:
-
-```sh
-./build/pytyliki --partition 10000 8 256
-./build/pytyliki --profile
-./build/pytyliki-metrics --demo
-```
-
-У Windows виконувані файли Release зазвичай містяться в `build\\Release\\`. Повний перелік параметрів показує `pytyliki --help`.
+Локальна робоча станція процесорних систем на основі обмеженого ядра C11, графічного інтерфейсу Win32 лише для Windows і переносних CLI-інструментів. Виявлення обладнання працює тільки на читання. Статичний аналіз коду не компілює, не запускає й не переписує перевірювані файли.
 
 ## Можливості
 
-| Напрям | Реалізована поведінка | Межа |
-|---|---|---|
-| Інвентаризація процесора | Читання моделі CPU, топології, пам’яті та доступної інформації ISA/XCR0 | Лише читання локального хоста |
-| CPU та пам’ять | Обмежені локальні вимірювання й приклади поділу навантаження | Результати залежать від обладнання |
-| Статистика бенчмарків | Перцентилі, варіативність і MAD для переданих вибірок | Не запускає та не повторює навантаження |
-| Імпорт профілів | Collapsed stacks і Speedscope; експорт folded stacks та SVG flamegraph | Не запускає профайлер |
-| Датчики Linux | Доступні лічильники частоти, governor, температури та енергії | Лише читання sysfs/procfs |
-| Аналіз коду та QCS | Розбір джерела й синтаксична діагностика | Не збирає та не виконує перевірений код |
-| Embedded C | Профілі MCU та оцінювання FLASH/SRAM | Довідкові оцінки, не прошивання |
-| C ABI та Atomic-Quantum | Версіонована C ABI v1 і обмежена класична симуляція стан-вектора | Без довільного завантаження бібліотек чи квантового обладнання |
+- Інвентаризація топології CPU, ISA та пам’яті в режимі читання.
+- Обмежені навантаження CPU, пам’яті й матриць зі статистикою часу; результати залежать від машини.
+- Імпорт профілів, folded stacks і SVG flamegraphs.
+- Статична діагностика вихідного коду, синтаксичний аналіз QCS і довідкові оцінки FLASH/SRAM для MCU.
+- Версіонований C ABI v1 із буферами сторони-викликача та звітами з походженням даних.
 
-Pytyliki надає перевірювані спостереження та рекомендаційні плани. Програма не змінює планувальник ОС, CPU affinity, частоту чи напругу; не прошиває обладнання й не обіцяє виміряного прискорення від запропонованого розподілу.
+## Архітектура та потік даних
 
-## Навіщо Pytyliki
-
-- Одне обмежене нативне ядро C11 обслуговує системні утиліти та локальний CLI.
-- Дані хоста, передані користувачем вимірювання й демонстраційні приклади чітко розділені.
-- Звіти зберігають походження даних і невідомі значення, а не вигадують показники датчиків.
-- Перевірка коду та embedded-розрахунки мають рекомендаційний характер і не виконують та не розгортають код.
-- Windows GUI та переносний CLI використовують спільні межі проєкту й тести.
-
-## Знімки екрана
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/workflow-dark.svg">
-  <img src="assets/readme/workflow.svg" alt="Потік Pytyliki: локальні дані проходять через обмежені модулі C11 до структурованого результату" width="100%">
-</picture>
-
-<p align="center">
-  <a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Справжній знімок інтерфейсу Pytyliki у Windows із робочою станцією процесорних систем" width="100%"></a>
-</p>
-<sub>Реальний знімок застосунку Windows 1920×1080, створений workflow збирання desktop-версії. SVG вище — схема архітектури, а не скриншот.</sub>
-
-## Архітектура
-
-```mermaid
+~~~mermaid
 flowchart LR
-    A[Локальний хост або файл] --> B[Перевірка та ліміти]
-    B --> C[Ядро процесора C11]
-    C --> D[Інспекція й аналіз]
-    D --> E[Звіт або явний експорт]
-```
+  U["User / CLI / Win32 UI"] --> C["C11 core"]
+  C --> D["Read-only discovery"]
+  C --> B["Bounded measurements"]
+  C --> S["Static source and QCS checks"]
+  D --> R["Structured evidence report"]
+  B --> R
+  S --> R
+  C --> A["Versioned C ABI v1"]
+~~~
 
-| Шлях | Відповідальність |
-|---|---|
-| `src/` | Ядро C11, Win32 GUI, CLI, проби процесора, QCS та interop |
-| `tests/` | Нативні, регресійні, граничні й CLI smoke-тести |
-| `tools/` та `scripts/` | Утиліти профілів/датчиків і інженерні перевірки |
-| `docs/` | Контракти функцій, архітектури, безпеки та UI |
-| `assets/screenshots/` | Знімки справжнього desktop-застосунку |
-| `.github/workflows/` | CI, збирання Windows і автоматизація релізів |
+Вихідний код, схеми, конфігурація збирання, тести та CI підтверджують реалізовану поведінку. Дорожня карта й каталоги описують плани та переліки, а не готові функції.
+
+## Вимоги
+
+CMake 3.16+, компілятор C11 (MSVC, GCC або Clang) і Git. Ядро та CLI переносні в межах заявленої підтримки Windows/Linux; Win32 GUI працює лише у Windows. Python — необов’язковий інструмент тестування, а не вимога середовища виконання.
+
+## Збирання
+
+~~~sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+~~~
+
+Графічний інтерфейс Win32 працює лише у Windows. Переносними точками входу залишаються ядро C11 та CLI.
+
+## Перші перевірки
+
+~~~sh
+./build/pytyliki --profile
+./build/pytyliki --suite
+./build/pytyliki --partition 10000 8 256
+./build/pytyliki-metrics --demo
+~~~
+
+Команди виводять локальні результати, залежні від обладнання; налаштування ОС не змінюються.
+
+## Запуск
+
+Для локальної перевірки використовуйте переносний CLI; графічний інтерфейс Win32 доступний у збірках для Windows.
+
+## Інтерфейси
+
+| Інтерфейс | Контракт / точка входу | Обмеження |
+|---|---|---|
+| CLI | `pytyliki / pytyliki-metrics / pytyliki-qcs` | Локальні команди; довідка доступна через `--help` і документацію можливостей. |
+| Native FFI | `pytyliki_ffi / C ABI v1` | Бібліотека обирається явно; буфери належать стороні-викликачу. |
+| Звіти | Версіонований JSON/text | Контракт звіту містить походження даних та обмеження. |
+
+REST/GraphQL, WebSocket, OAuth, хмарний deployment і cookie-механізми не описуються як можливості, якщо в репозиторії немає версіонованої реалізації та тестів.
+
+## Безпека та межі довіри
+
+Запис до прошивки, BIOS/UEFI, мікрокоду, частот, напруги, драйверів або регістрів пристроїв не виконується. MMIO-описи Embedded C є лише симуляцією/довідковою моделлю. Для Native FFI потрібен явно заданий довірений шлях до бібліотеки.
+
+Політика безпеки: [SECURITY.md](SECURITY.md). Не публікуйте секрети, ідентифікатори пристроїв і приватні журнали у відкритих задачах.
+
+## Перевірка якості
+
+Набір CTest запускається командою з розділу «Збирання»; окрема команда перевірки не потрібна.
+
+Склад тестів визначається зареєстрованими CTest/unittest цілями та workflow. Відсоток покриття, fuzz-результат і звіт навантаження не заявляються без опублікованого артефакту.
+
+## Докази продуктивності
+
+Результати бенчмарків залежать від хоста й призначені для локального порівняння. Методи статистики та архіви результатів описані в документації; універсальні значення затримки, споживання пам’яті чи міжмашинного рейтингу не заявляються.
 
 ## Сумісність
 
-| Ціль | Інструментарій | Поточний обсяг |
-|---|---|---|
-| Windows | CMake 3.16+, MSVC або інший сумісний компілятор C11 | Ядро, CLI та Win32 GUI |
-| Linux | CMake 3.16+, GCC або Clang | Ядро/CLI та Linux-проби хоста |
-| macOS | Наразі не перевіряється матрицею CI | Підтримка не заявлена |
+Заявлено runtime-цілі Windows і Linux; Win32 GUI працює лише у Windows. Переносними точками входу є ядро C11 та CLI.
 
-Санітизатори вмикаються через `-DPYTYLIKI_ENABLE_SANITIZERS=ON` у GCC або Clang; MSVC цей параметр не підтримує.
+## Документація та екосистема
 
-## Що змінилося в README Revival
+- [Feature matrix](docs/FEATURES.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Benchmark statistics](docs/BENCHMARK_STATISTICS.md)
+- [Report envelope](docs/REPORT_ENVELOPE.md)
+- [Embedded C](docs/EMBEDDED_C.md)
+- [QCS](docs/QCS_NATIVE.md)
+- [Documentation index](docs/README.md)
+- [Reaper integration](docs/REAPER_INTEGRATION.md)
 
-- На першому екрані є призначення, статус, платформи та робоча команда збирання.
-- Реальний знімок Windows відокремлено від редагованої SVG-схеми.
-- Світлі й темні SVG-версії мають однакові розміри та зберігаються в репозиторії.
-- Межі функцій, походження даних хоста й відсутність вебсервісу описані прямо.
+Основні технічні джерела — матриця можливостей, архітектура, статистика бенчмарків і формат звітів.
 
-| Було | Стало |
-|---|---|
-| Довгий огляд перед запуском | Команди збирання й тестування на початку |
-| Схема з фіксованою темою | Пара SVG для світлої та темної тем |
-| Повторювані описи функцій | Компактна таблиця можливостей і меж |
-| Неочевидні припущення про платформи | Явні цілі, докази й обмеження |
+Інтеграції між проєктами використовують документовані версіоновані інтерфейси та явні адаптери. Необов’язковий адаптер не надає іншому проєкту доступу до обладнання або привілеїв середовища виконання.
 
-## План розвитку
+## Участь у розробці
 
-- [x] Ядро C11, CLI-утиліти та нативні тестові цілі.
-- [x] Ціль Windows desktop і CI-збирання.
-- [x] Документовані межі read-only виявлення та обмеженого аналізу.
-- [ ] Розширювати платформні проби лише разом із платформними тестовими даними та CI; це пропозиція, а не реалізована функція.
+Ознайомтеся з [CONTRIBUTING.md](CONTRIBUTING.md) перед зміною коду або контрактів. Робіть зміни невеликими й перевірними, додавайте детерміновані тести та використовуйте Conventional Commits, якщо цього вимагає посібник.
 
-## Екосистема
+## Ліцензія та правові умови
 
-- [DuckOS](https://github.com/Ivan-VHS/DuckOS) — операційна система та робочий простір Mora.
-- [Reaper](https://github.com/Ivan-VHS/Reaper) — системна мова програмування й середовище розробника.
-- [OPlague](https://github.com/Ivan-VHS/OPlague) — read-only аналіз пристроїв і доказів щодо драйверів.
-- [VentuSample](https://github.com/Ivan-VHS/VentuSample) — процедурна генерація семплів та офлайн DSP.
+Поширюється за ліцензією [MIT](LICENSE). Програмне забезпечення надається «ЯК Є» в межах умов ліцензії. Назви сторонніх проєктів і торговельні марки належать їхнім правовласникам.
 
-Дивіться [індекс документації](docs/README.md), [архітектуру](docs/ARCHITECTURE.md) та [правила внеску](CONTRIBUTING.md). Ліцензія: [MIT](LICENSE).
+Цей репозиторій описує локальні програмні інтерфейси. Умови хмарного сервісу, згода на cookies, OAuth і CORS не стосуються зазначених локальних компонентів, доки окремо не буде впроваджено й задокументовано мережевий сервіс.
+
+---
+
+<p align="center"><sub>Psychoporter 666 README Standard v1.0 · Ivan-VHS · 2026-11-25 · UTC</sub></p>

@@ -1,28 +1,37 @@
 # Pytyliki documentation
 
-The root [README](../README.md) is the entry point for product scope, supported targets, build commands and current evidence. This directory contains the detailed engineering contracts.
+> **Psychoporter 666 documentation profile v1.0** · Reviewed 2026-11-25 (UTC)
 
-## Topic hubs
+[Project overview](../README.md) · [Source](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md)
 
-| Hub | Covers |
-|---|---|
-| [Architecture and system contracts](clusters/architecture.md) | Runtime layers, data flow, bounded execution, memory and processor models |
-| [Processor and computational labs](clusters/processor-labs.md) | CPU capabilities, numerical tools, embedded reference models and lab workflows |
-| [Quality, safety and evidence](clusters/quality-evidence.md) | Validation, repeatability, provenance, reporting and safety boundaries |
-| [UI, motion and visual documentation](clusters/ui-visual.md) | Native desktop interaction, accessibility, motion and documentation assets |
-| [Integrations and project federation](clusters/federation.md) | Plugins, external interfaces and cross-project contracts |
-| [Governance and planning](clusters/governance-planning.md) | Ownership, decisions, roadmaps and reference material |
+Start with the [project README](../README.md) for product scope, build steps, first checks and limitations.
 
-## Core references
+## Key references
 
-- [Architecture](ARCHITECTURE.md) — implemented runtime and data flow.
-- [Features](FEATURES.md) — module inventory and capability boundaries.
-- [Unified documentation standard](UNIFIED_DOCUMENTATION_STANDARD.md) — maturity labels, evidence rules and terminology.
-- [Engineering](ENGINEERING.md) — validation and safety gates.
-- [Information architecture](INFORMATION_ARCHITECTURE.md) — complete topic map.
+- [Feature matrix](FEATURES.md) — implemented behavior and explicit limits.
+- [Architecture](ARCHITECTURE.md) — components, ownership and data flow.
+- [Engineering gates](ENGINEERING.md) — build, quality and safety checks.
+- [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
+- [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
+- [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
 
-## Repository boundaries
+## Browse by topic
 
-Source code, tests and schemas define executable behavior. A proposal, registry entry or architecture contract does not by itself prove implementation. The root README distinguishes local host observations from example data and states which operations are read-only.
+- [architecture](clusters/architecture.md)
+- [processor labs](clusters/processor-labs.md)
+- [quality evidence](clusters/quality-evidence.md)
+- [ui visual](clusters/ui-visual.md)
+- [federation](clusters/federation.md)
+- [governance planning](clusters/governance-planning.md)
 
-For changes, update the owning specification, relevant topic hub and this index when navigation or ownership changes. Run the native build and CTest suite; see [CONTRIBUTING.md](../CONTRIBUTING.md) for the repository workflow.
+## Shared engineering rules
+
+- [Unified documentation standard](UNIFIED_DOCUMENTATION_STANDARD.md)
+- [Engineering evolution framework](ENGINEERING_EVOLUTION_FRAMEWORK.md)
+- [Repository evolution directives](REPOSITORY_EVOLUTION_DIRECTIVES.md)
+
+## Evidence and maturity
+
+Describe behavior from source, build configuration, schemas, tests and CI evidence. Mark proposals and roadmap items as planned. Do not invent benchmarks, security certifications, platform support, API surfaces or release status.
+
+**The index is navigation, not proof of implementation.**

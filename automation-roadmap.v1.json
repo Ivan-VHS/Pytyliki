@@ -433,9 +433,9 @@
         "Автоматическое масштабирование"
       ],
       "priority": "P2",
-      "status": "not_applicable",
-      "objective": "Keep production-service deployment out of scope for this local desktop/CLI workstation.",
-      "target": "No production deployment workflow is maintained because the repository has no hosted service, production environment or remote control plane. Local desktop packaging is handled by the separate release workstream.",
+      "status": "planned",
+      "objective": "Define environment-aware deployment and scaling only where the repository has a real deployable target.",
+      "target": "Require protected environments and an explicit human approval before external deployment.",
       "trigger": [
         "workflow_dispatch",
         "protected-release-review"
@@ -448,8 +448,7 @@
         "External deployment requires a protected environment and human approval.",
         "No production rollout is enabled by this roadmap."
       ],
-      "acceptance": "The not_applicable status is valid only while the product remains a local desktop/CLI tool without a hosted runtime. Any approved hosted-service target must replace this status with planned or extend and provide a versioned deployment design, least-privilege permissions, protected approval, health checks and rollback evidence.",
-      "not_applicable_reason": "This project is a local desktop/CLI workstation with bounded local processing and no hosted production service or remote runtime to deploy. Distributing a desktop archive is not production-service deployment. Reconsider only after an approved product decision defines a real deployable target, owner, threat model, rollback path and protected environment."
+      "acceptance": "A deployment workflow is added only with a documented target, rollback path, permissions, and approval gate."
     },
     {
       "id": "15-consolidate-test-matrix",
@@ -602,25 +601,22 @@
         "Авторазвертывание"
       ],
       "priority": "P2",
-      "status": "extend",
-      "objective": "Build a reproducible Windows distribution and make publication explicitly reviewable.",
-      "target": "On a reviewed v-prefixed tag, build and test the Windows archive, publish its SHA-256 checksum, verify it and create only a draft GitHub Release for human publication.",
+      "status": "planned",
+      "objective": "Prepare reproducible release packaging and publication after release criteria are explicitly defined.",
+      "target": "No unattended publication, signing, firmware installation, or production release.",
       "trigger": [
         "workflow_dispatch",
         "protected-release-review"
       ],
       "current_controls": [
-        ".github/workflows/desktop-build.yml",
-        "docs/RELEASE.md",
+        ".github/workflows/verified-auto-merge.yml",
         "project-contract.json"
       ],
       "guardrails": [
-        "Release job uses the release-review GitHub Environment; repository administrators must configure required reviewers.",
-        "Release automation creates a draft only; a maintainer must inspect and publish it manually.",
-        "SHA-256 is an integrity checksum, not a publisher signature.",
-        "Release packaging must not install drivers, flash firmware or mutate processor settings."
+        "Publishing requires a protected release ref and explicit approval.",
+        "No unattended signing, external publication, or deployment."
       ],
-      "acceptance": "A tag build passes CTest, uploads the Windows archive and SHA-256 sidecar, verifies the checksum before creating a draft release, and requires the configured release-review environment before the release job starts. Promote to active only after required reviewers are configured and the gate is verified."
+      "acceptance": "Publication runs only from a protected release ref with verified artifacts and an approved release gate."
     }
   ]
 }

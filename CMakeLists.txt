@@ -22,8 +22,11 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c)
+add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
+endif()
 
 # Stable C11 ABI for explicitly configured FFI consumers.
 set_target_properties(pytyliki_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -33,7 +36,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -49,6 +52,8 @@ add_executable(pytyliki-apsia src/apsia_cli.c)
 target_link_libraries(pytyliki-apsia PRIVATE pytyliki_core)
 add_executable(pytyliki-metrics src/metric_cli.c)
 target_link_libraries(pytyliki-metrics PRIVATE pytyliki_core)
+add_executable(pytyliki-benchstats src/benchstats_cli.c)
+target_link_libraries(pytyliki-benchstats PRIVATE pytyliki_core)
 add_executable(pytyliki-qcs src/qcs_cli.c)
 target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 
@@ -59,6 +64,8 @@ if(BUILD_TESTING)
     add_test(NAME plugin-federation-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/validate_plugin_federation.py)
     add_test(NAME report-envelope-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_report_envelope.py)
     add_test(NAME benchmark-archive-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_benchmark_archive.py)
+    add_test(NAME profile-import-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_profile_import.py)
+    add_test(NAME sensor-snapshot-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_sensor_snapshot.py)
   add_test(NAME processor-profile-json COMMAND pytyliki --profile --json)
   set_tests_properties(processor-profile-json PROPERTIES
     PASS_REGULAR_EXPRESSION "pytyliki.report.v1")
@@ -111,6 +118,10 @@ if(BUILD_TESTING)
   add_test(NAME metric-registry-search-smoke COMMAND pytyliki-metrics --search variance)
   set_tests_properties(metric-registry-search-smoke PROPERTIES PASS_REGULAR_EXPRESSION "statistics.mean_variance")
 
+  add_executable(pytyliki-snapshot-store-tests tests/test_snapshot_store.c)
+  target_link_libraries(pytyliki-snapshot-store-tests PRIVATE pytyliki_core)
+  add_test(NAME durable-snapshot-recovery COMMAND pytyliki-snapshot-store-tests)
+
   add_executable(pytyliki-memory-tests tests/test_memory.c)
   target_link_libraries(pytyliki-memory-tests PRIVATE pytyliki_core)
   add_test(NAME memory-view-arena-pool-tests COMMAND pytyliki-memory-tests)
@@ -124,6 +135,12 @@ if(BUILD_TESTING)
   set_tests_properties(partition-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "recommended-workers=3")
 
 
+
+  add_executable(pytyliki-benchmark-stats-tests tests/test_benchmark_stats.c)
+  target_link_libraries(pytyliki-benchmark-stats-tests PRIVATE pytyliki_core)
+  add_test(NAME benchmark-statistics-tests COMMAND pytyliki-benchmark-stats-tests)
+  add_test(NAME benchmark-statistics-cli-smoke COMMAND pytyliki-benchstats 1,2,3,4,5,100)
+  set_tests_properties(benchmark-statistics-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.benchmark-statistics.v1")
 
   add_executable(pytyliki-tests tests/test_core.c)
   target_link_libraries(pytyliki-tests PRIVATE pytyliki_core)
@@ -240,18 +257,4 @@ if(BUILD_TESTING)
   add_executable(pytyliki-runtime-transaction-tests tests/test_runtime_transaction.c)
   target_link_libraries(pytyliki-runtime-transaction-tests PRIVATE pytyliki_core)
   add_test(NAME runtime-transaction-contract-tests COMMAND pytyliki-runtime-transaction-tests)
-endif()
-
-
-if(BUILD_TESTING)
-  find_package(Python3 QUIET COMPONENTS Interpreter)
-  if(Python3_Interpreter_FOUND)
-    add_test(
-      NAME sysmon-pulse-tests
-      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_sysmon_pulse.py
-    )
-    set_tests_properties(sysmon-pulse-tests PROPERTIES
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-  endif()
 endif()

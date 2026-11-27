@@ -100,7 +100,7 @@ int pl_cpu_suite_find_id(uint16_t id, pl_cpu_suite_module *out) {
 }
 
 int pl_cpu_suite_find_name(const char *name, pl_cpu_suite_module *out) {
-    if (name == NULL || name[0] == '\\0' || out == NULL) return -1;
+    if (name == NULL || name[0] == '\0' || out == NULL) return -1;
 
     for (size_t i = 0u; i < PL_CPU_SUITE_MODULE_COUNT; ++i) {
         if (strcmp(g_modules[i].name, name) == 0) {

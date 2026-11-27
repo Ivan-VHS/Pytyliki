@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 #define PYTYLIKI_ABI_VERSION 1u
-enum { PYTYLIKI_ABI_OK = 0, PYTYLIKI_ABI_INVALID_ARGUMENT = -1, PYTYLIKI_ABI_UNSUPPORTED_ABI = -2, PYTYLIKI_ABI_BACKEND_UNAVAILABLE = -3, PYTYLIKI_ABI_REAPER_ERROR = -4, PYTYLIKI_ABI_NOT_FOUND = -5 };
+enum { PYTYLIKI_ABI_OK = 0, PYTYLIKI_ABI_INVALID_ARGUMENT = -1, PYTYLIKI_ABI_UNSUPPORTED_ABI = -2 };
 
 #define PYTYLIKI_EMBEDDED_PROFILE_ID_CAP 40u
 #define PYTYLIKI_EMBEDDED_ARCH_CAP 24u
@@ -54,6 +54,53 @@ typedef struct {
     int32_t flash_fits;
     int32_t sram_fits;
 } pytyliki_embedded_budget_v1;
+
+#define PYTYLIKI_METRIC_QUERY_TEXT_CAP 257u
+#define PYTYLIKI_METRIC_NAME_CAP 64u
+#define PYTYLIKI_METRIC_CATEGORY_CAP 64u
+#define PYTYLIKI_METRIC_DESCRIPTION_CAP 192u
+#define PYTYLIKI_METRIC_COMPLEXITY_CAP 64u
+
+typedef struct {
+    char query[PYTYLIKI_METRIC_QUERY_TEXT_CAP];
+    char category[PYTYLIKI_METRIC_QUERY_TEXT_CAP];
+    uint32_t required_capabilities;
+    uint32_t excluded_capabilities;
+    uint32_t required_type_mask;
+    uint32_t excluded_type_mask;
+    uint64_t offset;
+    uint64_t limit;
+} pytyliki_metric_query_v1;
+
+typedef struct {
+    uint32_t id;
+    char name[PYTYLIKI_METRIC_NAME_CAP];
+    char category[PYTYLIKI_METRIC_CATEGORY_CAP];
+    char description[PYTYLIKI_METRIC_DESCRIPTION_CAP];
+    char complexity[PYTYLIKI_METRIC_COMPLEXITY_CAP];
+    uint32_t type_mask;
+    uint32_t capabilities;
+} pytyliki_metric_operation_v1;
+
+typedef struct {
+    uint64_t total_matches;
+    uint64_t written;
+} pytyliki_metric_search_result_v1;
+
+#define PYTYLIKI_PLUGIN_ID_CAP 32u
+#define PYTYLIKI_PLUGIN_NAME_CAP 64u
+#define PYTYLIKI_PLUGIN_DOMAIN_CAP 64u
+#define PYTYLIKI_PLUGIN_SERVICE_CAP 48u
+#define PYTYLIKI_PLUGIN_CAPABILITIES_CAP 256u
+
+typedef struct {
+    char id[PYTYLIKI_PLUGIN_ID_CAP];
+    char name[PYTYLIKI_PLUGIN_NAME_CAP];
+    char domain[PYTYLIKI_PLUGIN_DOMAIN_CAP];
+    char service[PYTYLIKI_PLUGIN_SERVICE_CAP];
+    char capabilities[PYTYLIKI_PLUGIN_CAPABILITIES_CAP];
+} pytyliki_plugin_descriptor_v1;
+
 /* Contiguous float64 buffers, fixed-width uint64 counts, synchronous calls.
  * Implementations never retain caller pointers or allocate caller-owned data. */
 PYTYLIKI_FFI_API uint32_t pytyliki_abi_version(void);
@@ -62,18 +109,25 @@ PYTYLIKI_FFI_API int32_t pytyliki_v1_norm_f64(const double *, uint64_t, double *
 PYTYLIKI_FFI_API int32_t pytyliki_v1_distance_f64(const double *, const double *, uint64_t, double *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_orthogonal_f64(const double *, const double *, uint64_t, double, int32_t *);
 
-/* Optional Reaper C17 expression bridge. Unavailable unless REAPER_SOURCE_DIR
- * is explicitly configured at CMake time. No runtime library discovery occurs. */
-PYTYLIKI_FFI_API int32_t pytyliki_v1_reaper_available(int32_t *);
-PYTYLIKI_FFI_API int32_t pytyliki_v1_reaper_eval_i64(const char *, uint64_t, int64_t *, char *, uint64_t);
-PYTYLIKI_FFI_API int32_t pytyliki_v1_reaper_selfhood_lookup(const char *, uint64_t *);
-
 /* Embedded C metadata and host-side FLASH/SRAM budget evaluation.
  * All calls are synchronous and never access physical MCU addresses. */
 PYTYLIKI_FFI_API int32_t pytyliki_v1_embedded_profile_count(uint64_t *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_embedded_profile_at(uint64_t, pytyliki_embedded_profile_v1 *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_embedded_budget_evaluate(
     const char *, const pytyliki_embedded_sections_v1 *, pytyliki_embedded_budget_v1 *);
+
+/* Cross-repository plugin catalogue discovery. These functions return bounded
+ * metadata only; they do not load or execute plugin code. */
+PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_count(uint64_t *);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_at(uint64_t, pytyliki_plugin_descriptor_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_find(const char *, pytyliki_plugin_descriptor_v1 *);
+/* Typed metric catalogue query. Strings are NUL-terminated fixed buffers;
+ * limit is 1..4096 and result_capacity is caller-owned. No pointers are retained. */
+PYTYLIKI_FFI_API int32_t pytyliki_v1_metric_registry_search(
+    const pytyliki_metric_query_v1 *,
+    pytyliki_metric_operation_v1 *,
+    uint64_t,
+    pytyliki_metric_search_result_v1 *);
 #ifdef __cplusplus
 }
 #endif

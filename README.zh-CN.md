@@ -1,132 +1,132 @@
-# Pytyliki
+# 🧮 Pytyliki — 处理器系统工作站
 
-Pytyliki 是面向系统开发者和 QA 工程师的本地 C11 工作站，用于处理器信息检查、有界工作负载分析、性能剖析数据审阅和数值工具。
+<p align="center">[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)</p>
 
-[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
+[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/dashboard.svg">
-  <img src="assets/readme/dashboard-light.svg" alt="Pytyliki 概览：本机处理器输入、有界 C11 处理与证据报告" width="100%">
-</picture>
+> **有界处理器分析。原生测量。以证据代替猜测。**
 
-[![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&style=flat-square&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![最近提交](https://img.shields.io/github/last-commit/Ivan-VHS/Pytyliki?style=flat-square)](https://github.com/Ivan-VHS/Pytyliki/commits/main) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki?style=flat-square)](LICENSE)
+**项目状态:** 开发中 · 有界 C11 核心 · **版本:** 0.8.0 · CMake project · **License:** [MIT](LICENSE) · **README 标准:** Psychoporter 666 v1.0 · **审阅日期:** 2026-11-25 · UTC · **Source:** [Ivan-VHS/Pytyliki](https://github.com/Ivan-VHS/Pytyliki)
 
-[快速开始](#快速开始) · [截图](#截图) · [架构](#架构) · [路线图](#路线图) · [文档](docs/README.md) · [提交记录](https://github.com/Ivan-VHS/Pytyliki/commits/main)
+<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — 处理器系统工作站 — project overview" width="100%"></p>
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki — 处理器系统工作站 — application screenshot" width="100%"></a></p>
 
-> **状态：** 活跃开发。仓库包含 C11 核心、CLI 工具、测试和 Windows 桌面目标。GUI 仅面向 Windows；系统探测能力取决于平台。
->
-> **平台：** CI 中包含 Windows 与 Linux 的构建/测试路径。当前不宣称 macOS 已通过验证。
+## 快速导航
 
-## 快速开始
+[🚀 Demo: workstation screenshot](assets/screenshots/pytyliki-workstation.png) · [Documentation](docs/README.md) · [Source repository](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues)
 
-**要求：** CMake 3.16+、C11 编译器（MSVC、GCC 或 Clang）和 Git。Win32 GUI 在 Windows 上构建；可移植核心和 CLI 是其他构建环境的入口。
+## 目标与范围
 
-```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
-cmake --build build --config Release --parallel
-ctest --test-dir build -C Release --output-on-failure
-```
-
-运行一个有界任务分区示例：
-
-```sh
-./build/pytyliki --partition 10000 8 256
-./build/pytyliki --profile
-./build/pytyliki-metrics --demo
-```
-
-Windows Release 可执行文件通常位于 `build\\Release\\`。可用参数见 `pytyliki --help`。
+本地处理器系统工作站，采用有界 C11 核心、仅适用于 Windows 的 Win32 桌面界面和可移植命令行工具。硬件发现只读；源码静态审查不会编译、执行或改写被检查文件。
 
 ## 功能
 
-| 领域 | 当前行为 | 边界 |
-|---|---|---|
-| 处理器清单 | 读取本机 CPU 型号、拓扑、内存和可用 ISA/XCR0 信息 | 只读本机探测 |
-| CPU 与内存 | 运行有界本地测量和工作负载分区示例 | 结果取决于当前主机 |
-| 基准统计 | 汇总调用方提供的样本，包括百分位数、变异度和 MAD | 不会启动或重复执行负载 |
-| 性能剖析导入 | 读取 collapsed stacks 与 Speedscope；导出 folded stacks 和 SVG 火焰图 | 不会启动 profiler |
-| Linux 传感器 | 读取可用频率、governor、热量和能耗计数器 | 只读 sysfs/procfs |
-| 源码审阅与 QCS | 解析源码并提供语法诊断 | 不构建或执行被审阅源码 |
-| Embedded C | 浏览 MCU 配置并估算 FLASH/SRAM 使用量 | 参考估算，不会部署固件 |
-| C ABI 与 Atomic-Quantum | 构建版本化 C ABI v1 库，并运行有界经典状态向量子集 | 不加载任意库，也不访问量子硬件 |
+- 只读采集 CPU 拓扑、ISA 与内存信息。
+- 对 CPU、内存和矩阵执行有界负载及计时统计；结果取决于主机。
+- 导入性能分析数据、折叠堆栈和 SVG 火焰图。
+- 源码静态诊断、QCS 语法检查，以及 MCU FLASH/SRAM 参考估算。
+- 采用调用方拥有缓冲区的版本化 C ABI v1，并生成带数据来源的结构化报告。
 
-Pytyliki 提供可检查的观测结果和建议性计划。它不会更改操作系统调度、CPU affinity、频率或电压，不会刷写固件，也不会声称计划分区带来已测得的性能提升。
+## 架构与数据流
 
-## Pytyliki 的用途
-
-- 一个有界的原生 C11 核心为系统工具和本地 CLI 提供能力。
-- 本机观测、用户提供的计时样本和演示数据明确区分。
-- 报告保留数据来源与未知值，不会虚构传感器读数。
-- 源码审阅和嵌入式计算仅提供建议，不会执行或部署代码。
-- Windows GUI 和可移植 CLI 共享项目边界与测试套件。
-
-## 截图
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/workflow-dark.svg">
-  <img src="assets/readme/workflow.svg" alt="Pytyliki 数据流：本地输入经过有界 C11 模块并生成结构化结果" width="100%">
-</picture>
-
-<p align="center">
-  <a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki Windows 处理器系统工作站的真实界面截图" width="100%"></a>
-</p>
-<sub>由桌面构建 workflow 捕获的真实 1920×1080 Windows 应用截图。上方 SVG 是架构图，不是截图。</sub>
-
-## 架构
-
-```mermaid
+~~~mermaid
 flowchart LR
-    A[本机或文件输入] --> B[验证与边界检查]
-    B --> C[C11 处理器核心]
-    C --> D[检查与分析]
-    D --> E[报告或显式文件导出]
-```
+  U["User / CLI / Win32 UI"] --> C["C11 core"]
+  C --> D["Read-only discovery"]
+  C --> B["Bounded measurements"]
+  C --> S["Static source and QCS checks"]
+  D --> R["Structured evidence report"]
+  B --> R
+  S --> R
+  C --> A["Versioned C ABI v1"]
+~~~
 
-| 路径 | 职责 |
-|---|---|
-| `src/` | C11 核心、Win32 GUI、CLI 入口、处理器探测、QCS 与互操作 |
-| `tests/` | 原生、回归、边界和 CLI smoke 测试 |
-| `tools/` 与 `scripts/` | 性能剖析/传感器工具和工程检查 |
-| `docs/` | 功能、架构、安全与 UI 契约 |
-| `assets/screenshots/` | 真实桌面应用截图 |
-| `.github/workflows/` | CI、Windows 打包与发布自动化 |
+源码、架构模式、构建配置、测试和 CI 是已实现行为的依据。路线图与目录仅描述计划或清单，不代表已交付功能。
+
+## 环境要求
+
+需要 CMake 3.16+、C11 编译器（MSVC、GCC 或 Clang）和 Git。核心与 CLI 面向已声明的 Windows/Linux 运行平台；Win32 GUI 仅支持 Windows。Python 是可选测试工具，不是运行时要求。
+
+## 构建
+
+~~~sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+~~~
+
+Win32 图形界面仅适用于 Windows。C11 核心和 CLI 是可移植入口。
+
+## 首次检查
+
+~~~sh
+./build/pytyliki --profile
+./build/pytyliki --suite
+./build/pytyliki --partition 10000 8 256
+./build/pytyliki-metrics --demo
+~~~
+
+这些命令输出依赖本机硬件的结果，不会修改操作系统设置。
+
+## 运行
+
+本地检查请使用可移植 CLI；Win32 图形界面可在 Windows 构建中使用。
+
+## 接口
+
+| 接口 | 契约 / 入口 | 边界 |
+|---|---|---|
+| CLI | `pytyliki / pytyliki-metrics / pytyliki-qcs` | 本地命令；请通过 `--help` 和功能文档查看用法。 |
+| Native FFI | `pytyliki_ffi / C ABI v1` | 必须显式选择库；缓冲区由调用方管理。 |
+| 报告 | 版本化 JSON/text | 报告契约包含数据来源与限制。 |
+
+若仓库中没有版本化实现和测试，则不将 REST/GraphQL、WebSocket、OAuth、云部署或 Cookie 机制描述为现有功能。
+
+## 安全与信任边界
+
+不会写入固件、BIOS/UEFI、微码、频率、电压、驱动程序或设备寄存器。Embedded C 的 MMIO 描述仅用于模拟/参考。原生 FFI 必须显式指定可信库路径。
+
+安全策略：[SECURITY.md](SECURITY.md)。请勿在公开问题中发布密钥、设备标识符或私人日志。
+
+## 质量验证
+
+CTest 测试集通过“构建”章节中的命令运行；无需额外的验证命令。
+
+测试范围由已注册的 CTest/unittest 目标和工作流定义。没有公开报告时，不声明覆盖率百分比、模糊测试结果或负载测试报告。
+
+## 性能证据
+
+基准结果取决于主机，仅用于本地比较。仓库记录了统计方法和样本归档；不承诺通用延迟、内存占用或跨机器评分。
 
 ## 兼容性
 
-| 目标 | 工具链 | 当前范围 |
-|---|---|---|
-| Windows | CMake 3.16+、MSVC 或其他兼容 C11 编译器 | 核心、CLI 和 Win32 GUI |
-| Linux | CMake 3.16+、GCC 或 Clang | 核心/CLI 与 Linux 主机探测 |
-| macOS | 尚未纳入 CI 验证矩阵 | 不宣称已支持 |
+声明的运行平台为 Windows 和 Linux；Win32 GUI 仅支持 Windows。C11 核心和 CLI 是可移植入口。
 
-在 GCC 或 Clang 中可通过 `-DPYTYLIKI_ENABLE_SANITIZERS=ON` 启用 sanitizer；MSVC 不支持该选项。
+## 文档与生态
 
-## README Revival 更新
+- [Feature matrix](docs/FEATURES.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Benchmark statistics](docs/BENCHMARK_STATISTICS.md)
+- [Report envelope](docs/REPORT_ENVELOPE.md)
+- [Embedded C](docs/EMBEDDED_C.md)
+- [QCS](docs/QCS_NATIVE.md)
+- [Documentation index](docs/README.md)
+- [Reaper integration](docs/REAPER_INTEGRATION.md)
 
-- 首屏展示项目用途、成熟度、平台和可执行的构建命令。
-- 真实 Windows 截图与可编辑 SVG 架构图分开呈现。
-- 浅色和深色 SVG 版本尺寸一致，并保存在仓库中。
-- 明确说明功能边界、本机数据来源以及项目不提供托管 Web 服务。
+主要技术参考包括功能矩阵、架构、基准统计和报告封装规范。
 
-| 旧版阅读流程 | 更新后的阅读流程 |
-|---|---|
-| 先读长篇概述再找命令 | 构建和测试命令提前 |
-| 只有固定主题的图表 | 浅色/深色 SVG 配对 |
-| 重复描述功能范围 | 精简的功能与边界表 |
-| 平台支持不够直观 | 明确列出目标、证据与限制 |
+跨项目集成使用有文档说明的版本化接口和显式适配器。可选适配器不会授予其他项目运行时权限或硬件访问权限。
 
-## 路线图
+## 参与贡献
 
-- [x] C11 核心、CLI 工具和原生测试目标。
-- [x] Windows 桌面目标与 CI 打包路径。
-- [x] 文档化只读探测和有界分析边界。
-- [ ] 仅在具备平台专用测试夹具和 CI 证据后扩展平台探测；这是建议方向，不代表已实现。
+修改代码或契约前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。保持改动可审查，添加确定性测试，并按贡献指南使用 Conventional Commits。
 
-## 生态
+## 许可证与法律说明
 
-- [DuckOS](https://github.com/Ivan-VHS/DuckOS) — 操作系统项目与 Mora 桌面工作区。
-- [Reaper](https://github.com/Ivan-VHS/Reaper) — 系统编程语言与开发工作台。
-- [OPlague](https://github.com/Ivan-VHS/OPlague) — 只读设备与驱动证据工作台。
-- [VentuSample](https://github.com/Ivan-VHS/VentuSample) — 程序化采样生成与离线 DSP。
+本项目依据 [MIT](LICENSE) 许可。软件按许可条款以“按现状”方式提供。第三方项目名称与商标归其各自权利人所有。
 
-参阅[文档索引](docs/README.md)、[架构说明](docs/ARCHITECTURE.md)和[贡献指南](CONTRIBUTING.md)。许可证：[MIT](LICENSE)。
+本仓库记录的是本地软件接口。除非另行引入并记录托管服务，否则云服务条款、Cookie 同意、OAuth 和 CORS 均不适用于上述本地运行组件。
+
+---
+
+<p align="center"><sub>Psychoporter 666 README Standard v1.0 · Ivan-VHS · 2026-11-25 · UTC</sub></p>
