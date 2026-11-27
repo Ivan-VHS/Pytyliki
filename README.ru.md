@@ -68,6 +68,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 - [Обзор возможностей](docs/FEATURES.md) · [Архитектура](docs/ARCHITECTURE.md)
 - [Статистика бенчмарков](docs/BENCHMARK_STATISTICS.md) · [Справочная Embedded C-среда](docs/EMBEDDED_C.md)
+- [Рабочая среда языков процессора](docs/PROCESSOR_LANGUAGE_WORKBENCH.md) — 66 уникальных профилей, статический анализ и планы сборки без запуска инструментов.
 - [Нативная проверка QCS](docs/QCS_NATIVE.md) · [Индекс документации](docs/README.md)
 - [Процесс релиза](docs/RELEASE.md) · [Формат отчётов](docs/REPORT_ENVELOPE.md)
 - [Интеграция с Reaper](docs/REAPER_INTEGRATION.md) · [Общие стандарты экосистемы](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
