@@ -23,7 +23,7 @@ typedef enum {
     PL_APSIA_LANG_GO,
     PL_APSIA_LANG_ELIXIR,
     PL_APSIA_LANG_SQL,
-    PL_APSIA_LANG_DUCKDB,
+    PL_APSIA_LANG_DAKDB,
     PL_APSIA_LANG_LUA,
     PL_APSIA_LANG_PYTHON
 } pl_apsia_language;
