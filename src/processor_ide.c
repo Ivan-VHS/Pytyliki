@@ -4,7 +4,7 @@
 
 #define PL_IDE_KNOWN_FLAGS (PL_IDE_FLAG_TARGET_PROVIDER | \
                             PL_IDE_FLAG_DEBUG_PROVIDER | \
-                            PL_IDE_FLAG_TARGET_CAPABILITY | \
+                            PL_IDE_FLAG_TARGET_AUTHORIZATION_DECLARED | \
                             PL_IDE_FLAG_OPERATOR_APPROVED)
 
 static int identifier_copy(char *destination, size_t capacity,
@@ -88,7 +88,7 @@ pl_ide_status pl_ide_session_validate(const pl_ide_session *session) {
     if ((unsigned)session->mode >= (unsigned)PL_IDE_MODE_DEBUG) {
         if ((session->flags & PL_IDE_FLAG_TARGET_PROVIDER) == 0u)
             return PL_IDE_PROVIDER_REQUIRED;
-        if ((session->flags & PL_IDE_FLAG_TARGET_CAPABILITY) == 0u)
+        if ((session->flags & PL_IDE_FLAG_TARGET_AUTHORIZATION_DECLARED) == 0u)
             return PL_IDE_CAPABILITY_REQUIRED;
         if ((session->flags & PL_IDE_FLAG_OPERATOR_APPROVED) == 0u)
             return PL_IDE_OPERATOR_APPROVAL_REQUIRED;
