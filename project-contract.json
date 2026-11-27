@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and target-described low-level hardware contracts.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and target-described low-level hardware contracts. Optional reciprocal PytyRe integration links the Reaper native C17 expression ABI at build time.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -188,6 +188,30 @@
         "src/low_level_contract.c",
         "tests/test_low_level_contract.c"
       ]
+    },
+    {
+      "id": "reaper.c-abi.v1",
+      "format": "Versioned native C17 Reaper ABI linked into the Pytyliki C ABI at build time",
+      "direction": "consumes",
+      "status": "optional",
+      "evidence": [
+        "CMakeLists.txt",
+        "src/interop.h",
+        "src/interop.c",
+        "tests/test_interop.c",
+        "docs/REAPER_RUNTIME_INTEGRATION.md"
+      ]
+    },
+    {
+      "id": "pytyre.reciprocal-development.v1",
+      "format": "Shared versioned JSON architecture, ownership, integration and compatibility contract",
+      "direction": "both",
+      "status": "implemented",
+      "evidence": [
+        "contracts/pytyre.reciprocal.v1.json",
+        "docs/PYTYRE_UNIFIED_ARCHITECTURE.md",
+        "tests/test_pytyre_contract.py"
+      ]
     }
   ],
   "integrations": [
@@ -230,6 +254,14 @@
       "status": "planned",
       "opt_in": true,
       "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+    },
+    {
+      "project": "reaper",
+      "interface": "reaper.c-abi.v1",
+      "mode": "native-build-link",
+      "status": "optional",
+      "opt_in": true,
+      "summary": "When a trusted local Reaper checkout is supplied via REAPER_SOURCE_DIR, Pytyliki links Reaper's C17 reaper_ffi target and exposes bounded i64 expression evaluation and exact lookup through pytyliki_ffi. Default builds remain self-contained."
     }
   ],
   "safety_boundaries": [
@@ -240,7 +272,8 @@
     "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
     "The low-level hardware contract has no default physical backend; device access requires explicit capabilities, a declared region and trusted target callbacks.",
     "MMIO reads/writes require device-region permissions and backend fences; a post-write fence failure means completion may be uncertain.",
-    "Clock and power-state operations are bounded platform requests, not raw voltage or pin writes; physical target adapters need board-specific qualification."
+    "Clock and power-state operations are bounded platform requests, not raw voltage or pin writes; physical target adapters need board-specific qualification.",
+    "The optional Pytyliki-to-Reaper bridge compiles and links only from an explicitly supplied local Reaper source checkout; it does not download or load Reaper at runtime."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
@@ -250,6 +283,7 @@
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
     "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
     "Versioned target and memory-region descriptors plus capability-gated bus/IRQ adapter contracts for future x86-64, ARM, RISC-V and MCU backends.",
-    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements."
+    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements.",
+    "PytyRe reciprocal development contract with paired ABI tests, pinned source revisions and coordinated cross-repository review."
   ]
 }

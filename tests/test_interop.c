@@ -20,6 +20,33 @@ int main(void) {
     pytyliki_metric_operation_v1 metric_results[2];
     pytyliki_metric_search_result_v1 metric_result;
     assert(pytyliki_abi_version()==PYTYLIKI_ABI_VERSION);
+
+    /* The reverse Reaper bridge is optional, explicit and ABI-versioned. */
+    if (pytyliki_v1_reaper_available() == 1) {
+        const char expression[] = "1 + 2 * 3";
+        char reaper_diagnostic[128] = {0};
+        int64_t reaper_value = 0;
+        uint64_t selfhood_ordinal = 0u;
+        assert(pytyliki_v1_reaper_abi_version() == 1u);
+        assert(pytyliki_v1_reaper_eval_i64(
+            expression, (uint64_t)(sizeof expression - 1u),
+            &reaper_value, reaper_diagnostic, sizeof reaper_diagnostic
+        ) == 0);
+        assert(reaper_value == 7);
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &selfhood_ordinal) == 0);
+        assert(selfhood_ordinal == 2u);
+    } else {
+        const char expression[] = "1 + 2";
+        int64_t reaper_value = 0;
+        assert(pytyliki_v1_reaper_abi_version() == 0u);
+        assert(pytyliki_v1_reaper_eval_i64(
+            expression, (uint64_t)(sizeof expression - 1u),
+            &reaper_value, NULL, 0u
+        ) == PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
+        uint64_t selfhood_ordinal = 0u;
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &selfhood_ordinal) ==
+               PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
+    }
     assert(pytyliki_v1_norm_f64(a,2u,&value)==0&&fabs(value-5.0)<1e-12);
     assert(pytyliki_v1_dot_f64(a,y,2u,&value)==0&&fabs(value-4.0)<1e-12);
     assert(pytyliki_v1_distance_f64(a,b,2u,&value)==0&&fabs(value-5.0)<1e-12);

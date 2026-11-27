@@ -82,3 +82,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Report securit
 
 ---
 <p align="center"><sub>Pytyliki · README review 2026-11-27 UTC</sub></p>
+## PytyRe
+
+Pytyliki and Reaper are one reciprocal development system. Pytyliki owns processor engineering, architecture models, ISA and target validation; Reaper owns canonical language semantics, typed IR, compiler/runtime and language ABI. Shared ownership and bidirectional native integration are defined in [PytyRe unified architecture](docs/PYTYRE_UNIFIED_ARCHITECTURE.md).

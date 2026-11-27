@@ -5,6 +5,28 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+# Optional reciprocal PytyRe link. The user supplies a trusted local Reaper
+# source checkout; this build never fetches or searches for a peer repository.
+set(REAPER_SOURCE_DIR "" CACHE PATH
+  "Optional local Reaper source checkout for the PytyRe native C17 bridge")
+if(REAPER_SOURCE_DIR)
+  get_filename_component(_pytyre_reaper_source "${REAPER_SOURCE_DIR}" REALPATH)
+  if(NOT EXISTS "${_pytyre_reaper_source}/CMakeLists.txt")
+    message(FATAL_ERROR
+      "REAPER_SOURCE_DIR must point to a local Reaper source checkout with CMakeLists.txt")
+  endif()
+  if(NOT TARGET reaper_ffi)
+    add_subdirectory(
+      "${_pytyre_reaper_source}"
+      "${CMAKE_CURRENT_BINARY_DIR}/_deps/reaper"
+      EXCLUDE_FROM_ALL)
+  endif()
+  if(NOT TARGET reaper_ffi)
+    message(FATAL_ERROR
+      "The supplied Reaper checkout does not define the required reaper_ffi target")
+  endif()
+endif()
+
 option(PYTYLIKI_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer (GCC/Clang)" OFF)
 
 if(MSVC)
@@ -34,6 +56,10 @@ add_library(pytyliki_ffi SHARED src/interop.c)
 target_link_libraries(pytyliki_ffi PRIVATE pytyliki_core)
 target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
+if(REAPER_SOURCE_DIR)
+  target_link_libraries(pytyliki_ffi PRIVATE reaper_ffi)
+  target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_WITH_REAPER=1)
+endif()
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/system_array.h src/low_level_contract.h DESTINATION include/pytyliki)
@@ -64,6 +90,7 @@ if(BUILD_TESTING)
   find_package(Python3 QUIET COMPONENTS Interpreter)
   if(Python3_Interpreter_FOUND)
     add_test(NAME plugin-federation-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/validate_plugin_federation.py)
+    add_test(NAME pytyre-reciprocal-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_pytyre_contract.py)
     add_test(NAME report-envelope-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_report_envelope.py)
     add_test(NAME benchmark-archive-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_benchmark_archive.py)
     add_test(NAME profile-import-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_profile_import.py)
