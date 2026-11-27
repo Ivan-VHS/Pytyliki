@@ -207,7 +207,11 @@ int pl_thread_recovery_cli(const char *path) {
         fputs("PTFR: an event CSV path is required\n", stderr);
         return 2;
     }
+#if defined(_MSC_VER)
+    if (fopen_s(&input, path, "rb") != 0) input = NULL;
+#else
     input = fopen(path, "rb");
+#endif
     if (input == NULL) {
         fprintf(stderr, "PTFR: cannot open %s\n", path);
         return 2;
