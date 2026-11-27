@@ -51,6 +51,22 @@ const pl_system_enhancement *pl_ide_workspace_find(unsigned id) {
     return NULL;
 }
 
+static int identifier_valid(const char *value, size_t capacity) {
+    size_t index;
+
+    if (value == NULL || capacity < 2u) return 0;
+    for (index = 0u; index < capacity; ++index) {
+        const unsigned char ch = (unsigned char)value[index];
+        if (ch == '\\0') return index > 0u;
+        if (!((ch >= (unsigned char)'a' && ch <= (unsigned char)'z') ||
+              (ch >= (unsigned char)'A' && ch <= (unsigned char)'Z') ||
+              (ch >= (unsigned char)'0' && ch <= (unsigned char)'9') ||
+              ch == (unsigned char)'-' || ch == (unsigned char)'_' ||
+              ch == (unsigned char)'.')) return 0;
+    }
+    return 0;
+}
+
 static int mode_valid(pl_ide_mode mode) {
     return mode >= PL_IDE_MODE_INSPECT &&
            mode <= PL_IDE_MODE_PRIVILEGED;
