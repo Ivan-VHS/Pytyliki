@@ -26,7 +26,7 @@ Pytyliki's existing Processor Control model validates caller-supplied logical CP
 
 The v2 evidence envelope in schemas/pytyliki.processor-topology-evidence.v2.schema.json closes the data-contract gap:
 
-- every logical processor keeps its OS identifier and optional processor-group identifier;
+- every logical processor keeps its OS identifier, optional processor-group identifier and hardware-thread ordinal within its observed physical core;
 - package, die, core and NUMA identifiers are nullable; null means not observed, not zero;
 - cache descriptors preserve level, type, capacity, line size and the observed sharing set;
 - ISA reports separate hardware_present from os_usable; unknown is distinct from false;
