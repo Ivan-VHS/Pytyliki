@@ -1,4 +1,7 @@
 #include "interop.h"
+#if defined(PYTYLIKI_WITH_REAPER)
+#include "reaper/ffi.h"
+#endif
 #include "metric_geometry.h"
 #include "metric_registry.h"
 #include "embedded.h"
@@ -57,6 +60,53 @@ static const plugin_entry *plugin_catalog_find(const char *name) {
     return NULL;
 }
 uint32_t pytyliki_abi_version(void) { return PYTYLIKI_ABI_VERSION; }
+
+int32_t pytyliki_v1_reaper_available(void) {
+#if defined(PYTYLIKI_WITH_REAPER)
+    return reaper_abi_version() == REAPER_ABI_VERSION ? 1 : 0;
+#else
+    return 0;
+#endif
+}
+
+uint32_t pytyliki_v1_reaper_abi_version(void) {
+#if defined(PYTYLIKI_WITH_REAPER)
+    return reaper_abi_version();
+#else
+    return 0u;
+#endif
+}
+
+int32_t pytyliki_v1_reaper_eval_i64(
+    const char *source, uint64_t source_size, int64_t *result,
+    char *diagnostic, uint64_t diagnostic_capacity
+) {
+#if defined(PYTYLIKI_WITH_REAPER)
+    if (reaper_abi_version() != REAPER_ABI_VERSION)
+        return PYTYLIKI_ABI_UNSUPPORTED_ABI;
+    return reaper_v1_eval_i64(source, source_size, result,
+                              diagnostic, diagnostic_capacity);
+#else
+    (void)source;
+    (void)source_size;
+    (void)result;
+    (void)diagnostic;
+    (void)diagnostic_capacity;
+    return PYTYLIKI_ABI_BACKEND_UNAVAILABLE;
+#endif
+}
+
+int32_t pytyliki_v1_reaper_selfhood_lookup(const char *identity, uint64_t *ordinal) {
+#if defined(PYTYLIKI_WITH_REAPER)
+    if (reaper_abi_version() != REAPER_ABI_VERSION)
+        return PYTYLIKI_ABI_UNSUPPORTED_ABI;
+    return reaper_v1_selfhood_lookup(identity, ordinal);
+#else
+    (void)identity;
+    (void)ordinal;
+    return PYTYLIKI_ABI_BACKEND_UNAVAILABLE;
+#endif
+}
 static int count_to_size(uint64_t count, size_t *out) {
     if (out == NULL || count > (uint64_t)SIZE_MAX) return PYTYLIKI_ABI_INVALID_ARGUMENT;
     *out = (size_t)count; return PYTYLIKI_ABI_OK;

@@ -1,23 +1,36 @@
 # Reaper native runtime integration
 
-Pytyliki remains a standalone C11 processor, metric, memory and DSP library. Its Reaper integration is optional and never replaces those native subsystems.
+Pytyliki can optionally link Reaper's native C17 ABI into the Pytyliki C11 shared ABI. This is the reverse native direction of Reaper's explicit-path `pytyliki.c-abi.v1` adapter.
 
-To link a sibling Reaper source checkout:
+## Build the reciprocal native bridge
+
+Provide a trusted local Reaper source checkout explicitly:
 
 ```sh
 cmake -S . -B build -DREAPER_SOURCE_DIR=/absolute/path/to/Reaper
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+cmake --build build --parallel --target pytyliki-interop-tests
+ctest --test-dir build --output-on-failure -R '^interop-abi-tests$'
 ```
 
-CMake adds Reaper's native C17 target and links the versioned `reaper_ffi` shared ABI into `pytyliki_ffi`. The integration exposes three optional calls from `src/interop.h`:
+When `REAPER_SOURCE_DIR` is set, CMake adds the supplied Reaper project as an excluded subdirectory, links its `reaper_ffi` C17 target into `pytyliki_ffi`, and defines `PYTYLIKI_WITH_REAPER`. There is no network fetch, PATH search or implicit sibling-directory discovery.
 
-- `pytyliki_v1_reaper_available` — report whether this build contains the optional bridge.
-- `pytyliki_v1_reaper_eval_i64` — evaluate a bounded Reaper integer expression.
-- `pytyliki_v1_reaper_selfhood_lookup` — exact lookup of the Reaper selfhood/autonomy catalogue.
+The optional functions in `src/interop.h` are:
 
-Without `REAPER_SOURCE_DIR`, default builds remain self-contained. The functions report `PYTYLIKI_ABI_BACKEND_UNAVAILABLE`; they do not search PATH, load a dynamic library at runtime, access a sibling directory implicitly or download a dependency.
+- `pytyliki_v1_reaper_available` — returns 1 only when the linked Reaper ABI version is supported.
+- `pytyliki_v1_reaper_abi_version` — returns the Reaper ABI version, or 0 when unavailable.
+- `pytyliki_v1_reaper_eval_i64` — forwards a bounded signed-i64 expression to Reaper's lexer, expression parser, checked IR and evaluator.
+- `pytyliki_v1_reaper_selfhood_lookup` — forwards an exact identity lookup to Reaper.
 
-When available, the Reaper evaluator receives explicit UTF-8 source bytes and uses the native lexer, parser, checked IR, optimizer and signed-i64 execution pipeline. It does not gain filesystem, process, network, device or plugin capabilities. This is an expression engine bridge, not a sandbox.
+Reaper status codes are forwarded unchanged for evaluation and lookup. A build without `REAPER_SOURCE_DIR` remains self-contained: availability is 0, the version is 0 and bridge calls return `PYTYLIKI_ABI_BACKEND_UNAVAILABLE`.
 
-Existing Pytyliki metric, C11 compute, embedded-memory and DSP APIs are unchanged. Reaper is an additional optional language/control runtime, not a replacement for the product's specialist C implementation.
+## Reciprocal direction
+
+Reaper consumes the Pytyliki C ABI only when a caller supplies an absolute library path and explicitly enables native FFI. See [Reaper's native language integration](REAPER_LANGUAGE_INTEGRATION.md) and the shared [PytyRe architecture contract](PYTYRE_UNIFIED_ARCHITECTURE.md).
+
+## Boundaries
+
+- This is an expression ABI bridge, not full Reaper .rpr program execution inside Pytyliki.
+- The vendored `vendor/reaper_frontend` remains a bounded expression-only frontend snapshot; it is not the full Reaper compiler or runtime.
+- The bridge does not add filesystem, process, network, plugin, device or hardware privileges.
+- Pytyliki's processor discovery, measurements, low-level C11 contracts and DSP/metric ownership remain native to Pytyliki.
+- A Reaper API update must update the shared PytyRe contract, both repository integration tests and the pinned cross-repository CI workflow.
