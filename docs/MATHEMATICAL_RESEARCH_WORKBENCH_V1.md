@@ -60,7 +60,7 @@ The trajectory is limited by uint64 arithmetic and an explicit fuel bound. Overf
 | `pl_math_grid3d_vorticity` | Computes finite-difference vorticity on a rectangular 3D grid |
 | `pl_math_navier_stokes_cfl_dt` | Returns a conservative grid/time-step estimate from speed, spacing and viscosity inputs |
 
-The grid routines use one-sided differences at boundaries and centered differences in the interior. They do not integrate the full nonlinear PDE system, prove convergence, or establish global regularity or blow-up.
+The grid routines use one-sided differences at boundaries and centered differences in the interior, and cap the field at 1,000,000 cells. They do not integrate the full nonlinear PDE system, prove convergence, or establish global regularity or blow-up.
 
 ### 05. Birch–Swinnerton-Dyer
 
@@ -157,7 +157,7 @@ A witness is exact for one n. Finite successes do not prove the statement for al
 | Function | Contract |
 |---|---|
 | `pl_math_beal_power_sum_check` | Compares checked uint64 values of Aˣ + Bʸ and Cᶻ |
-| `pl_math_beal_common_prime_divisor` | Finds a prime divisor common to three positive integer bases, if one exists |
+| `pl_math_beal_common_prime_divisor` | Searches for a common prime divisor using trial factors through 1,000,000, then a deterministic uint64 primality check; returns LIMIT if a composite common divisor has no factor in that bounded trial range |
 | `pl_math_beal_counterexample_screen` | Screens one candidate with x,y,z > 2 for equality and absence of a common prime divisor |
 
 Power overflow is reported rather than wrapped. The screen covers only supplied uint64-representable candidates.
@@ -202,6 +202,7 @@ The public limits are compile-time constants in `research_math.h`:
 - Finite-field matrices: at most 64 dimensions.
 - Unit-distance graph: at most 128 vertices.
 - Polygonal curve sample buffer: at most 128 points.
+- Finite-difference grid: at most 1,000,000 cells.
 - Elliptic point count: prime p ≤ 1,000,003.
 - Perfect-cuboid bounded search: maximum edge ≤ 100,000, plus explicit node budget.
 
