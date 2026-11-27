@@ -13,6 +13,8 @@ extern "C" {
 #define PL_SYSTEM_SIGIL_COUNT 13u
 #define PL_SYSTEM_SIGIL_SCHEMA "pytyliki.system-sigil-ast.v1"
 #define PL_SYSTEM_SIGIL_CATALOG_SCHEMA "pytyliki.system-sigil-catalog.v1"
+#define PL_SYSTEM_SIGIL_CANONICAL_SOURCE "system::array"
+#define PL_SYSTEM_SIGIL_LEGACY_AST_NAME "system(array)"
 
 typedef enum {
     PL_SYSTEM_SIGIL_ROTATE_LEFT = 1,
