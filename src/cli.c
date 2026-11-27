@@ -15,6 +15,7 @@
 #include "systems_accel.h"
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
+#include "processor_thread_recovery_cli.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -154,6 +155,7 @@ static void usage(void) {
          "           [--budget-set food|transport|household|digital|leisure|reserve UAH]\n"
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
+         "  pytyliki --thread-recovery FILE.csv | --thread-recovery-demo\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }
@@ -345,6 +347,10 @@ int main(int argc,char **argv) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;
     }
+    if (argc == 2 && strcmp(argv[1], "--thread-recovery-demo") == 0)
+        return pl_thread_recovery_demo_cli();
+    if (argc == 3 && strcmp(argv[1], "--thread-recovery") == 0)
+        return pl_thread_recovery_cli(argv[2]);
     if (argc > 1 && strcmp(argv[1], "--embedded") == 0)
         return pl_embedded_cli(argc - 1, argv + 1);
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,systems_lab=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;
