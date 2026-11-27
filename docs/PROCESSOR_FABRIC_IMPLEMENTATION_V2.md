@@ -44,7 +44,9 @@ The PPF entry point `pl_processor_fabric_place_v2()` requires descriptors to ref
 CLI for a bounded advisory cost report:
 
 ```sh
-./build/pytyliki-placement --task 1,10,0,1200,1048576,25000000,1,0x4,1
+./build/pytyliki-placement --task 1,10,unknown,1200,1048576,25000000,1,0,0,0x4,0,0
+
+The affinity tuple contains four 64-bit words (`AFFINITY0..3`); for example, `AFFINITY2=0x4` selects logical CPU 130. All four words set to zero means unrestricted.
 ```
 
 Repeat `--task` to add tasks. The fields are task ID, priority, preferred NUMA node (or `unknown`), requested load in basis points, working set in bytes, bandwidth demand in bytes/second, ISA feature mask, first 64-bit affinity word (zero across all four words means unrestricted), and require-local-NUMA (0/1).
