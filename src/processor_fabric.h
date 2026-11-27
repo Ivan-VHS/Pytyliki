@@ -105,6 +105,10 @@ typedef struct {
     uint32_t capacity_basis_points;
     uint32_t reserved_basis_points;
     uint32_t requested_load_basis_points;
+    uint64_t resource_capacity_bytes;
+    uint64_t resource_available_bytes;
+    uint32_t resource_level;
+    uint32_t resource_type;
     uint8_t priority;
 } pl_processor_fabric_node;
 
