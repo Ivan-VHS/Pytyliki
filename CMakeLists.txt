@@ -398,3 +398,13 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-processor-fabric-topology-tests PRIVATE pytyliki_core)
   add_test(NAME processor-fabric-topology-evidence-bridge COMMAND pytyliki-processor-fabric-topology-tests)
 endif()
+
+add_executable(pytyliki-placement src/processor_placement_cli.c)
+target_link_libraries(pytyliki-placement PRIVATE pytyliki_core)
+
+if(BUILD_TESTING)
+  add_test(NAME processor-placement-report-cli COMMAND pytyliki-placement
+    --task 1,1,unknown,100,1024,0,0,0,0)
+  set_tests_properties(processor-placement-report-cli PROPERTIES
+    PASS_REGULAR_EXPRESSION "processor-placement-report.v2.*execution_performed")
+endif()
