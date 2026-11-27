@@ -57,6 +57,26 @@ The Reaper source defines the requested uppercase typed operands as ordinary val
 
 `SCENARIO` accepts explicit caller-supplied timestamps and fault classifications. The checked-in fixture data is synthetic. A CI pass proves that the Reaper policy behaves as specified for those inputs; it does not prove that a sensor backend or a hardware correction path is installed.
 
+## Command-line use
+
+The native CLI exposes the same bounded planner for caller-exported evidence:
+
+```sh
+pytyliki --thread-recovery path/to/processor-faults.csv
+pytyliki --thread-recovery-demo
+```
+
+The CSV reader is deliberately offline and read-only. It accepts at most 4,096 records and 16 independent event series. Each row has six unquoted decimal/text fields:
+
+```text
+worker_id,timestamp_ns,cpu_id,fault_code,fault_kind,task_flags
+7,1000000000,2,65,corrected_hardware,4
+```
+
+Supported fault kinds are `transient`, `corrected_hardware`, `uncorrected_hardware`, `watchdog` and `fatal`. The final bitmask is the OR of `IDEMPOTENT=1`, `CHECKPOINTED=2` and `MANAGED_POOL=4`. Timestamps must be monotonic within each worker/fault/kind series. The CLI rejects malformed rows, zero identifiers, overflow, inconsistent task flags and out-of-order timestamps.
+
+The demo and checked-in CSV fixture are synthetic conformance inputs. An imported CSV does not become a hardware event merely because it uses a hardware fault-kind label; retain the exporting provider, original record identifier, machine identity, clock domain and attribution quality in the upstream evidence system. The current CLI reports the recovery plan only and cannot apply it to the host scheduler.
+
 ## Hardware evidence and platform integration
 
 The event provider is deliberately separate from the monitor. A future Windows provider can consume WHEA event records and ETW notifications. WHEA distinguishes corrected from uncorrected errors and supports user-mode monitoring through event records and ETW; low-level capture and recovery are coordinated by the operating system and platform-specific components. A future Linux provider can consume RAS/EDAC reports and the corresponding kernel interfaces. EDAC exposes corrected and uncorrected error observations; a rise in corrected errors can justify preventive service, but is not by itself proof that an uncorrected error will occur.
