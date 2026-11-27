@@ -100,7 +100,7 @@
       "required": [
         "pytyliki",
         "reaper",
-        "duck_os",
+        "dak_os",
         "board_backend",
         "joint"
       ],
@@ -113,7 +113,7 @@
           "type": "string",
           "minLength": 20
         },
-        "duck_os": {
+        "dak_os": {
           "type": "string",
           "minLength": 20
         },
@@ -250,7 +250,7 @@
             "enum": [
               "pytyliki",
               "reaper",
-              "duck-os",
+              "dak-os",
               "board-backend",
               "joint"
             ]
@@ -331,7 +331,7 @@
             "enum": [
               "pytyliki",
               "reaper",
-              "duck-os",
+              "dak-os",
               "board-backend",
               "joint"
             ]
