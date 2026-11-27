@@ -89,6 +89,8 @@ Successful parsing produces \`pytyliki.system-array-ast.v1\`:
 }
 \`\`\`
 
+The original parser treats the suffix marker as syntax metadata. The opt-in hardware extension adds a separate [SystemArray sigil registry](SYSTEM_SIGIL_OPERATORS.md): it maps the same stable suffix-marker IDs to thirteen semantic operator identities. This mapping is also metadata-only; it does not perform overload resolution, evaluation or hardware access.
+
 The AST preserves the original alias family and framing markers for tooling,
 while semantic identity is always \`system.array\`. Marker metadata must not be
 interpreted as a capability or an execution instruction.
