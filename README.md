@@ -70,7 +70,7 @@ Integrations do not grant hardware privileges or broaden the workstation's read-
 - [Benchmark statistics](docs/BENCHMARK_STATISTICS.md) · [Embedded C reference workbench](docs/EMBEDDED_C.md)
 - [QCS native inspection](docs/QCS_NATIVE.md) · [Documentation index](docs/README.md)
 - [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
-- [Reaper integration](docs/REAPER_INTEGRATION.md) · [Shared ecosystem standards](https://github.com/Ivan-VHS/DAK/blob/main/docs/SHARED_STANDARDS.md)
+- [Reaper integration](docs/REAPER_INTEGRATION.md) · [Shared ecosystem standards](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
 
 ## Security and contribution
 
