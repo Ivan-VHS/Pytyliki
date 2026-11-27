@@ -350,9 +350,9 @@ static pl_topology_status scan_linux_caches(pl_processor_topology_snapshot *out)
             }
             if (cache == NULL) {
                 if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) {
-                free(records);
-                return PL_TOPOLOGY_LIMIT_EXCEEDED;
-            }
+                    (void)closedir(directory);
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                }
                 cache = &out->caches[out->cache_count];
                 memset(cache, 0, sizeof(*cache));
                 cache->cache_id = out->cache_count;
