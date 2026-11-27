@@ -124,29 +124,32 @@ pl_placement_status pl_processor_placement_plan(
         input->numa_capacity_count > PL_TOPOLOGY_MAX_NUMA_NODES)
         return PL_PLACEMENT_LIMIT_EXCEEDED;
     if (result_capacity < input->task_count) return PL_PLACEMENT_OUTPUT_TOO_SMALL;
-    for (i = 0u; i < input->worker_count; ++i) {
-        const pl_placement_worker *worker = &input->workers[i];
+    {
+    size_t validation_index;
+    for (validation_index = 0u; validation_index < input->worker_count; ++validation_index) {
+        const pl_placement_worker *worker = &input->workers[validation_index];
         size_t other;
         if (worker->logical_id >= PL_PLACEMENT_MAX_WORKERS ||
-            worker->online > 1u || worker->capacity_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS ||
-            worker->current_load_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS ||
-            worker->interrupt_load_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS ||
+            worker->online > 1u || worker->capacity_basis_points > PL_PLACEMENT_MAX_LOAD_BASIS_POINTS ||
+            worker->current_load_basis_points > PL_PLACEMENT_MAX_LOAD_BASIS_POINTS ||
+            worker->interrupt_load_basis_points > PL_PLACEMENT_MAX_LOAD_BASIS_POINTS ||
             worker->current_load_basis_points >
-                PL_PROCESSOR_FABRIC_BASIS_POINTS - worker->interrupt_load_basis_points)
+                PL_PLACEMENT_MAX_LOAD_BASIS_POINTS - worker->interrupt_load_basis_points)
             return PL_PLACEMENT_INVALID_LOAD;
-        for (other = 0u; other < i; ++other)
+        for (other = 0u; other < validation_index; ++other)
             if (input->workers[other].logical_id == worker->logical_id)
                 return PL_PLACEMENT_INVALID_ARGUMENT;
     }
-    for (i = 0u; i < input->task_count; ++i) {
+    for (validation_index = 0u; validation_index < input->task_count; ++validation_index) {
         size_t other;
-        const pl_placement_task *task = &input->tasks[i];
+        const pl_placement_task *task = &input->tasks[validation_index];
         if (task->locality_required > 1u || task->dependencies_ready > 1u ||
-            task->requested_load_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS)
+            task->requested_load_basis_points > PL_PLACEMENT_MAX_LOAD_BASIS_POINTS)
             return PL_PLACEMENT_INVALID_LOAD;
-        for (other = 0u; other < i; ++other)
+        for (other = 0u; other < validation_index; ++other)
             if (input->tasks[other].task_id == task->task_id)
                 return PL_PLACEMENT_INVALID_ARGUMENT;
+    }
     }
     memset(assigned, 0, sizeof(assigned));
     memset(task_done, 0, sizeof(task_done));
@@ -243,10 +246,6 @@ pl_placement_status pl_processor_placement_plan(
                         candidate.smt_cost = add_saturating(candidate.smt_cost, 1800u);
                     }
                 }
-            }
-            if (task->working_set_bytes != 0u && input->cache_count == 0u) {
-                reasons |= PL_PLACEMENT_REASON_CACHE_UNKNOWN;
-                candidate.cache_cost = 700u;
             }
             {
                 int cache_evidence_seen = 0;
