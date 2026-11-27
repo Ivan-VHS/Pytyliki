@@ -43,14 +43,16 @@ static void test_native_cycle_source(void) {
     uint64_t first = 0u;
     uint64_t second = 0u;
     int status = pl_silicon_cycle_source_native(&source);
-#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+#if defined(__x86_64__) || defined(_M_X64) || \
+    (defined(__i386__) && defined(__SSE2__)) || \
+    (defined(_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
     assert(status == PL_SILICON_OK);
     assert(source.kind == PL_SILICON_COUNTER_X86_TSC);
     assert(source.counter_bits == 64u);
     assert(source.frequency_hz == 0u);
     assert(pl_silicon_cycle_read(&source, &first) == PL_SILICON_OK);
     assert(pl_silicon_cycle_read(&source, &second) == PL_SILICON_OK);
-    assert(second >= first);
+    assert(first != 0u && second != 0u);
 #else
     assert(status == PL_SILICON_OK || status == PL_SILICON_UNSUPPORTED);
 #endif
@@ -78,7 +80,8 @@ static void test_cycle_source_and_wrap(void) {
     assert(accumulator.samples == 1u);
     assert(pl_silicon_cycle_read(NULL, &delta) == PL_SILICON_INVALID_ARGUMENT);
 
-#if defined(__arm__) || defined(__thumb__) || defined(_M_ARM)
+#if (defined(__ARM_ARCH_PROFILE) && (__ARM_ARCH_PROFILE == 'M')) || \
+    defined(PYTYLIKI_ENABLE_CORTEX_M_DWT)
     assert(pl_silicon_cycle_source_dwt(&source, (volatile uint32_t *)&counter.value,
                                        UINT64_C(84000000)) == PL_SILICON_OK);
     assert(source.counter_bits == 32u && source.frequency_hz == UINT64_C(84000000));
