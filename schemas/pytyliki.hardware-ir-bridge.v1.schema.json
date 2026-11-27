@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pytyliki.dev/schemas/pytyliki.hardware-ir-bridge.v1.schema.json",
+  "title": "Pytyliki Hardware AST to Reaper IR Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "generation",
+    "source",
+    "construct",
+    "graph",
+    "semantic_status",
+    "reaper"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.hardware-ir-bridge.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit_id",
+        "digest",
+        "byte_length"
+      ],
+      "properties": {
+        "unit_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "byte_length": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        }
+      }
+    },
+    "construct": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "semantic_id",
+        "kind",
+        "name",
+        "body_kind",
+        "source_span",
+        "body_span"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semantic_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 96
+        },
+        "body_kind": {
+          "enum": [
+            "block",
+            "pipeline",
+            "expression",
+            "assembly"
+          ]
+        },
+        "source_span": {
+          "$ref": "#/$defs/span"
+        },
+        "body_span": {
+          "$ref": "#/$defs/span"
+        }
+      }
+    },
+    "graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "process_id",
+        "resource_refs",
+        "dependency_refs"
+      ],
+      "properties": {
+        "process_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "resource_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 256,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "dependency_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 256,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "semantic_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name_resolution",
+        "typing",
+        "effects",
+        "ownership",
+        "capabilities"
+      ],
+      "properties": {
+        "name_resolution": {
+          "enum": [
+            "pending",
+            "verified",
+            "rejected"
+          ]
+        },
+        "typing": {
+          "enum": [
+            "pending",
+            "verified",
+            "rejected"
+          ]
+        },
+        "effects": {
+          "enum": [
+            "pending",
+            "verified",
+            "rejected"
+          ]
+        },
+        "ownership": {
+          "enum": [
+            "pending",
+            "verified",
+            "rejected"
+          ]
+        },
+        "capabilities": {
+          "enum": [
+            "pending",
+            "verified",
+            "rejected"
+          ]
+        }
+      }
+    },
+    "reaper": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_ir_emitted",
+        "typed_ir_schema",
+        "span_source_map_required",
+        "validation_required"
+      ],
+      "properties": {
+        "canonical_ir_emitted": {
+          "const": false
+        },
+        "typed_ir_schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "span_source_map_required": {
+          "const": true
+        },
+        "validation_required": {
+          "const": true
+        }
+      }
+    },
+    "execution_performed": {
+      "const": false
+    },
+    "hardware_access_performed": {
+      "const": false
+    }
+  },
+  "$defs": {
+    "span": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "length"
+      ],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
