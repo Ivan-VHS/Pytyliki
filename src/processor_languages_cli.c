@@ -22,6 +22,7 @@ static int read_source_file(const char *path, char **contents, size_t *length) {
     long file_size;
     char *buffer;
     size_t bytes_read;
+    int close_status;
 
     if (path == NULL || contents == NULL || length == NULL) return -1;
     *contents = NULL;
@@ -40,7 +41,8 @@ static int read_source_file(const char *path, char **contents, size_t *length) {
         return -1;
     }
     bytes_read = fread(buffer, 1u, (size_t)file_size, input);
-    if (bytes_read != (size_t)file_size || ferror(input) || fclose(input) != 0) {
+    close_status = fclose(input);
+    if (bytes_read != (size_t)file_size || close_status != 0) {
         free(buffer);
         return -1;
     }
@@ -108,7 +110,7 @@ static int command_detect(const char *path) {
 static int command_inspect(const char *id, const char *path) {
     char *source = NULL;
     size_t length = 0u;
-    pl_language_report report;
+    pl_language_report report = {0};
     int result;
 
     if (read_source_file(path, &source, &length) != 0) {
