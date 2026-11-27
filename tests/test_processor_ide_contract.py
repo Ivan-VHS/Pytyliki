@@ -1,0 +1,90 @@
+"""Regression tests for the Processor IDE machine-readable contract."""
+
+from __future__ import annotations
+
+import copy
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+
+from validate_processor_ide import validate_contract, validate_data  # noqa: E402
+
+
+class ProcessorIDEContractTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        errors, data = validate_contract(ROOT)
+        if errors:
+            raise AssertionError("\n".join(errors))
+        assert data is not None
+        cls.data = data
+
+    def test_contract_has_two_ordered_fifty_rule_groups(self) -> None:
+        rules = self.data["rules"]
+        self.assertEqual(len(rules), 100)
+        self.assertEqual([rule["id"] for rule in rules], [f"PIDE-{n:03d}" for n in range(1, 101)])
+        self.assertEqual(sum(rule["group"] == "IDE_CORE" for rule in rules), 50)
+        self.assertEqual(sum(rule["group"] == "SILICON_DEPTH" for rule in rules), 50)
+
+    def test_reuses_the_existing_twenty_workspace_registry(self) -> None:
+        registry = self.data["related_contracts"]["system_workspace_registry"]
+        self.assertEqual(registry["existing_count"], 20)
+        for key in ("header", "source", "tests"):
+            self.assertTrue((ROOT / registry[key]).is_file())
+        self.assertEqual(len(self.data["workspaces"]), 20)
+        self.assertEqual(len({workspace["id"] for workspace in self.data["workspaces"]}), 20)
+
+    def test_every_rule_uses_a_known_workspace(self) -> None:
+        workspaces = {item["id"] for item in self.data["workspaces"]}
+        for rule in self.data["rules"]:
+            with self.subTest(rule=rule["id"]):
+                self.assertIn(rule["workspace"], workspaces)
+
+    def test_partial_status_is_backed_by_existing_evidence(self) -> None:
+        errors = validate_data(copy.deepcopy(self.data), ROOT)
+        self.assertEqual(errors, [])
+        for rule in self.data["rules"]:
+            if rule["status"] in {"partial", "implemented"}:
+                self.assertTrue(rule["evidence"])
+
+    def test_default_mode_is_inspect_and_hardware_access_is_deny_by_default(self) -> None:
+        self.assertEqual(self.data["shell"]["default_mode"], "inspect")
+        safety = self.data["safety"]
+        self.assertTrue(safety["deny_by_default"])
+        self.assertTrue(safety["no_implicit_hardware_access"])
+        self.assertTrue(safety["no_unreviewed_mmio_or_privileged_write"])
+
+    def test_machine_facts_are_target_specific(self) -> None:
+        adjustments = " ".join(self.data["safety_adjustments"]).lower()
+        self.assertIn("endianness", adjustments)
+        self.assertIn("cache line", adjustments)
+        self.assertIn("instruction width", adjustments)
+        self.assertIn("privilege", adjustments)
+
+    def test_exact_cycles_require_a_declared_model(self) -> None:
+        rule = next(item for item in self.data["rules"] if item["id"] == "PIDE-090")
+        self.assertEqual(rule["status"], "research")
+        self.assertIn("declared microarchitecture", rule["requirement"].lower())
+
+    def test_unknown_workspace_is_rejected(self) -> None:
+        broken = copy.deepcopy(self.data)
+        broken["rules"][0]["workspace"] = "unlisted-workspace"
+        self.assertTrue(any("unknown workspace" in error for error in validate_data(broken, ROOT)))
+
+    def test_missing_evidence_for_partial_rule_is_rejected(self) -> None:
+        broken = copy.deepcopy(self.data)
+        partial = next(item for item in broken["rules"] if item["status"] == "partial")
+        partial["evidence"] = []
+        self.assertTrue(any("requires evidence" in error for error in validate_data(broken, ROOT)))
+
+    def test_silent_hardware_mutation_is_rejected(self) -> None:
+        broken = copy.deepcopy(self.data)
+        broken["safety"]["no_implicit_hardware_access"] = False
+        self.assertTrue(any("no_implicit_hardware_access" in error for error in validate_data(broken, ROOT)))
+
+
+if __name__ == "__main__":
+    unittest.main()
