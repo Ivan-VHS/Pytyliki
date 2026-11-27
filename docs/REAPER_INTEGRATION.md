@@ -4,7 +4,7 @@ Pytyliki remains a native C11 processor-systems workstation. Its processor disco
 
 Reaper is adopted as a **CI policy language**, not as an application runtime or replacement for C11. The checked-in [examples/reaper_resource_policy.rpr](../examples/reaper_resource_policy.rpr) evaluates deterministic FLASH/SRAM/stack budgets and bounded metric-evidence envelopes. Metric fixtures include provider identity, metric ID, unit, range, sample count and workload ID; results from different workloads or incompatible units must not be compared.
 
-The pinned Reaper toolchain also runs its [Processor Reliability Core v1](https://github.com/Ivan-VHS/Reaper/blob/a66be1e18b4e36e981373463002c9248434b744f/docs/PROCESSOR_RELIABILITY_CORE_V1.md) conformance fixture. That fixture verifies the 5 × 4 execution matrix, checked RPR-BC decoding, repair-budget transitions, simulated silicon/Cu-Mesh/nanochip models, signed phase correction and deterministic Pytyliki trace replay. Its `pytyliki.processor-reliability.v1` report is model evidence only; Pytyliki does not ingest it as observed hardware telemetry.
+The pinned Reaper toolchain also runs its [Processor Reliability Core v1](https://github.com/Ivan-VHS/Reaper/blob/3dd72e3b9aeb32b02fb4bfd0cea688625a55bff9/docs/PROCESSOR_RELIABILITY_CORE_V1.md) conformance fixture. That fixture verifies the 5 × 4 execution matrix, checked RPR-BC decoding, repair-budget transitions, simulated silicon/Cu-Mesh/nanochip models, signed phase correction and deterministic Pytyliki trace replay. Its `pytyliki.processor-reliability.v1` report is model evidence only; Pytyliki does not ingest it as observed hardware telemetry.
 
 ## Verification
 
