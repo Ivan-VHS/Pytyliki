@@ -27,8 +27,13 @@ static int read_source_file(const char *path, char **contents, size_t *length) {
     if (path == NULL || contents == NULL || length == NULL) return -1;
     *contents = NULL;
     *length = 0u;
+    input = NULL;
+#if defined(_MSC_VER)
+    if (fopen_s(&input, path, "rb") != 0 || input == NULL) return -1;
+#else
     input = fopen(path, "rb");
     if (input == NULL) return -1;
+#endif
     if (fseek(input, 0L, SEEK_END) != 0 || (file_size = ftell(input)) < 0L ||
         (unsigned long)file_size > (unsigned long)PL_LANGUAGE_SOURCE_MAX ||
         fseek(input, 0L, SEEK_SET) != 0) {
