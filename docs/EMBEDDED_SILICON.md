@@ -43,10 +43,10 @@ Cycle backends are DWT CYCCNT (opt-in Cortex-M), `rdcycle` (RISC-V), and seriali
 
 State changes are policy decisions only. `pl_silicon_wait()` invokes the HAL wait callback only after an explicit transition to `STANDBY_WFI`; `SAFE_HALT` requires an unrecoverable condition. No x86 `HLT` path is provided.
 
-The event ring is single-producer/single-consumer. Check `atomic_is_lock_free()` before using its atomics from an ISR, and do not use it with nested/multiple producers. The thread-budget API is admission control for an existing scheduler, not an OS scheduler or affinity controller.
+The event ring is single-producer/single-consumer. Check `atomic_is_lock_free()` before using its atomics from an ISR, and do not use it with nested/multiple producers. `pl_silicon_fault_record()` mutates the shared portrait and calls the HAL clock callback, so it is not an ISR-safe API; an ISR should capture a minimal snapshot and call only `pl_silicon_fault_ring_push()` when the target SPSC/lock-free contract has been verified. The thread-budget API is admission control for an existing scheduler, not an OS scheduler or affinity controller.
 
 The Thumb-16 and RV32I verifiers accept only a small arithmetic whitelist and reject control-flow/system/memory instructions. Thumb-2 32-bit instructions are outside v1. x86/x86_64 validation returns unsupported until a reviewed full decoder is integrated. A successful whitelist check is not a proof of ABI, memory or control-flow safety.
 
-RPR32 is a separate fixed 32-bit virtual instruction format. `VERIFY_ONLY` has no peripheral side effects; `RPR32_INTERPRET` updates shadow registers and uses allowlisted MMIO. `NATIVE_ASM` and `JIT_TRAMPOLINE` are intentionally rejected. Patch slots are in-memory data staging, not executable live patching.
+RPR32 is a separate fixed 32-bit virtual instruction format. `VERIFY_ONLY` has no peripheral side effects; `RPR32_INTERPRET` updates shadow registers and uses allowlisted MMIO. `NATIVE_ASM` and `JIT_TRAMPOLINE` are intentionally rejected. Patch slots are in-memory data staging, not executable live patching. CRC-16 detects accidental corruption but does not authenticate a patch or prevent malicious replacement; authenticity requires a separate trusted signature-verification mechanism.
 
 For the full board bring-up checklist, counter caveats, SPSC rules, MMIO semantics and fixed-point contract, see the [Russian implementation guide](EMBEDDED_SILICON_RU.md).
