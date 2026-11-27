@@ -358,7 +358,10 @@ static void scan_linux_caches(pl_processor_topology_snapshot *out) {
                 cache->line_bytes = line_bytes;
                 memcpy(cache->sharing_mask, mask, sizeof(mask));
                 cache->sharing_count = sharing_count;
-                cache->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+                cache->evidence = (size_bytes != 0u && line_bytes != PL_TOPOLOGY_UNKNOWN &&
+                                   kind != PL_TOPOLOGY_CACHE_UNKNOWN)
+                                      ? PL_TOPOLOGY_EVIDENCE_OBSERVED
+                                      : PL_TOPOLOGY_EVIDENCE_PARTIAL;
                 ++out->cache_count;
             }
         }
@@ -587,8 +590,10 @@ pl_topology_status pl_processor_topology_validate(
         snapshot->logical_cpu_count > PL_TOPOLOGY_MAX_LOGICAL_CPUS ||
         snapshot->online_logical_cpu_count > snapshot->logical_cpu_count ||
         snapshot->cache_count > PL_TOPOLOGY_MAX_CACHES ||
-        snapshot->numa_node_count > PL_TOPOLOGY_MAX_NUMA_NODES)
+        snapshot->numa_node_count > PL_TOPOLOGY_MAX_NUMA_NODES ||
+        snapshot->completeness > PL_TOPOLOGY_UNKNOWN_STATE)
         return PL_TOPOLOGY_LIMIT_EXCEEDED;
+
     for (uint32_t i = 0u; i < snapshot->logical_cpu_count; ++i) {
         const pl_topology_logical_cpu *cpu = &snapshot->logical_cpus[i];
         if (cpu->logical_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS || cpu->online > 1u ||
@@ -601,6 +606,17 @@ pl_topology_status pl_processor_topology_validate(
                  cpu->os_id == snapshot->logical_cpus[j].os_id))
                 return PL_TOPOLOGY_DUPLICATE_CPU;
         }
+        if (cpu->numa_node_id != PL_TOPOLOGY_UNKNOWN) {
+            int found = 0;
+            for (uint32_t n = 0u; n < snapshot->numa_node_count; ++n) {
+                const pl_topology_numa_node *node = &snapshot->numa_nodes[n];
+                if (node->node_id == cpu->numa_node_id &&
+                    (node->logical_mask[cpu->logical_id / 64u] &
+                     (UINT64_C(1) << (cpu->logical_id % 64u))) != 0u)
+                    found = 1;
+            }
+            if (!found) return PL_TOPOLOGY_INVALID_REFERENCE;
+        }
     }
     if (online != snapshot->online_logical_cpu_count)
         return PL_TOPOLOGY_INVALID_REFERENCE;
@@ -608,13 +624,16 @@ pl_topology_status pl_processor_topology_validate(
     for (uint32_t i = 0u; i < snapshot->cache_count; ++i) {
         const pl_topology_cache *cache = &snapshot->caches[i];
         uint32_t count = 0u;
+        if (cache->cache_id != i || cache->level == 0u || cache->level > 4u ||
+            (unsigned)cache->kind > (unsigned)PL_TOPOLOGY_CACHE_UNKNOWN ||
+            cache->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            return PL_TOPOLOGY_INVALID_MASK;
         for (size_t word = 0u; word < PL_TOPOLOGY_MASK_WORDS; ++word) {
             uint64_t bits = cache->sharing_mask[word];
             while (bits != 0u) { count += (uint32_t)(bits & 1u); bits >>= 1u; }
         }
-        if (cache->cache_id != i || count != cache->sharing_count ||
-            cache->level == 0u || cache->level > 4u ||
-            cache->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED)
+        if (count != cache->sharing_count ||
+            (cache->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED && count == 0u))
             return PL_TOPOLOGY_INVALID_MASK;
         for (uint32_t id = 0u; id < PL_TOPOLOGY_MAX_LOGICAL_CPUS; ++id) {
             if ((cache->sharing_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u) {
@@ -625,6 +644,7 @@ pl_topology_status pl_processor_topology_validate(
             }
         }
     }
+
     for (uint32_t i = 0u; i < snapshot->numa_node_count; ++i) {
         const pl_topology_numa_node *node = &snapshot->numa_nodes[i];
         uint32_t count = 0u;
@@ -633,7 +653,11 @@ pl_topology_status pl_processor_topology_validate(
             while (bits != 0u) { count += (uint32_t)(bits & 1u); bits >>= 1u; }
         }
         if (count != node->logical_count ||
-            node->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            node->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED ||
+            (node->memory_total_bytes != 0u &&
+             node->memory_available_bytes > node->memory_total_bytes))
+            return PL_TOPOLOGY_INVALID_MASK;
+        if (node->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED && count == 0u)
             return PL_TOPOLOGY_INVALID_MASK;
         for (uint32_t j = i + 1u; j < snapshot->numa_node_count; ++j)
             if (node->node_id == snapshot->numa_nodes[j].node_id)
@@ -641,11 +665,22 @@ pl_topology_status pl_processor_topology_validate(
         for (uint32_t id = 0u; id < PL_TOPOLOGY_MAX_LOGICAL_CPUS; ++id) {
             if ((node->logical_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u) {
                 int found = 0;
-                for (uint32_t cpu = 0u; cpu < snapshot->logical_cpu_count; ++cpu)
-                    if (snapshot->logical_cpus[cpu].logical_id == id) found = 1;
+                for (uint32_t cpu = 0u; cpu < snapshot->logical_cpu_count; ++cpu) {
+                    if (snapshot->logical_cpus[cpu].logical_id == id &&
+                        snapshot->logical_cpus[cpu].numa_node_id == node->node_id)
+                        found = 1;
+                }
                 if (!found) return PL_TOPOLOGY_INVALID_MASK;
             }
         }
+    }
+
+    for (size_t i = 0u; i < PL_TOPOLOGY_ISA_FEATURE_COUNT; ++i) {
+        const pl_topology_isa_state *isa = &snapshot->isa[i];
+        if (isa->hardware_present < -1 || isa->hardware_present > 1 ||
+            isa->os_usable < -1 || isa->os_usable > 1 || isa->evidence > 2u ||
+            (isa->os_usable == 1 && isa->hardware_present != 1))
+            return PL_TOPOLOGY_INVALID_REFERENCE;
     }
     return PL_TOPOLOGY_OK;
 }
@@ -689,6 +724,12 @@ pl_topology_status pl_processor_topology_scan(pl_processor_topology_snapshot *ou
     out->completeness = PL_TOPOLOGY_COMPLETE;
     if (out->cache_count == 0u || out->numa_node_count == 0u)
         out->completeness = PL_TOPOLOGY_PARTIAL;
+    for (uint32_t i = 0u; i < out->cache_count; ++i)
+        if (out->caches[i].evidence != PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            out->completeness = PL_TOPOLOGY_PARTIAL;
+    for (uint32_t i = 0u; i < out->numa_node_count; ++i)
+        if (out->numa_nodes[i].evidence != PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            out->completeness = PL_TOPOLOGY_PARTIAL;
     for (uint32_t i = 0u; i < out->logical_cpu_count; ++i) {
         const pl_topology_logical_cpu *cpu = &out->logical_cpus[i];
         if (cpu->package_id == PL_TOPOLOGY_UNKNOWN ||
