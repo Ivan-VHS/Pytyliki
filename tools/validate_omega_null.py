@@ -117,6 +117,29 @@ def validate_data(data: dict[str, Any]) -> list[str]:
     if "consent" not in bci_constraints:
         errors.append("bci.capture must require informed user consent")
 
+    research_domains = data.get("research_domains", [])
+    if len(research_domains) < 9:
+        errors.append("research_domains must map at least nine exploratory domains")
+    domain_ids = [item.get("id") for item in research_domains]
+    if len(domain_ids) != len(set(domain_ids)):
+        errors.append("research domain IDs must be unique")
+    allowed_modules = {
+        "pyty.quantum", "pyty.bci", "pyty.material", "pyty.field",
+        "pyty.time", "pyty.power", "pyty.experiment", "pyty.sim"
+    }
+    for item in research_domains:
+        if item.get("module") not in allowed_modules:
+            errors.append(f"research domain {item.get('id')} references an unknown Omega module")
+
+    practices = data.get("engineering_practices", {})
+    gates = practices.get("verification_gates", [])
+    gate_ids = [item.get("id") for item in gates]
+    if gate_ids != ["syntax_type_effect", "model_invariants", "physical_target_qualification"]:
+        errors.append("engineering_practices must define the three ordered verification gates")
+    for key in ("resource_control", "state_backup", "forecast_policy"):
+        if not isinstance(practices.get(key), str) or len(practices[key]) < 30:
+            errors.append(f"engineering_practices.{key} must be explicit")
+
     frameworks = data.get("frameworks", [])
     framework_ids = [item.get("id") for item in frameworks]
     if set(framework_ids) != EXPECTED_FRAMEWORKS or len(framework_ids) != len(EXPECTED_FRAMEWORKS):
