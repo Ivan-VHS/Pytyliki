@@ -41,6 +41,9 @@ if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
 
+target_sources(pytyliki_core PRIVATE src/silicon_runtime.c src/silicon_runtime_integrity.c)
+install(FILES src/silicon_runtime.h DESTINATION include/pytyliki)
+
 if(WIN32)
   add_executable(pytyliki-gui WIN32 src/win_gui.c)
   target_link_libraries(pytyliki-gui PRIVATE pytyliki_core comdlg32 advapi32)
@@ -226,6 +229,13 @@ if(BUILD_TESTING)
   add_executable(pytyliki-embedded-tests tests/test_embedded.c)
   target_link_libraries(pytyliki-embedded-tests PRIVATE pytyliki_core)
   add_test(NAME embedded-c-core-tests COMMAND pytyliki-embedded-tests)
+  add_test(NAME embedded-silicon-cli-smoke COMMAND pytyliki --embedded silicon)
+  set_tests_properties(embedded-silicon-cli-smoke PROPERTIES
+    PASS_REGULAR_EXPRESSION "Native/JIT execution: disabled")
+
+  add_executable(pytyliki-silicon-runtime-tests tests/test_silicon_runtime.c)
+  target_link_libraries(pytyliki-silicon-runtime-tests PRIVATE pytyliki_core)
+  add_test(NAME silicon-runtime-contract-tests COMMAND pytyliki-silicon-runtime-tests)
 
   add_executable(pytyliki-systems-accel-tests tests/test_systems_accel.c)
   target_link_libraries(pytyliki-systems-accel-tests PRIVATE pytyliki_core)
