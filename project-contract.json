@@ -130,6 +130,19 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "processor.report-envelope.v1",
+      "status": "implemented",
+      "summary": "Produces a versioned pytyliki.report.v1 JSON envelope combining a read-only host CPU/usable-ISA/memory profile with bounded processor, memory and matrix benchmark runs and timing statistics. Report output includes provenance limits; measurements are host-dependent and are not performance guarantees.",
+      "evidence": [
+        "src/cli.c",
+        "src/processor.c",
+        "src/cpu_suite.c",
+        "schemas/pytyliki.report.v1.schema.json",
+        "tools/validate_processor_report.mjs",
+        ".github/workflows/processor-report-contract.yml"
+      ]
     }
   ],
   "interfaces": [
@@ -152,6 +165,17 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "pytyliki.processor-report.v1",
+      "format": "pytyliki.report.v1 JSON envelope containing profile and suite objects, validated by JSON Schema 2020-12",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "src/cli.c",
+        "schemas/pytyliki.report.v1.schema.json",
+        "tools/validate_processor_report.mjs"
       ]
     }
   ],
@@ -195,19 +219,29 @@
       "status": "planned",
       "opt_in": true,
       "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+    },
+    {
+      "project": "reaper",
+      "interface": "pytyliki.processor-report.v1",
+      "mode": "versioned-json-file",
+      "status": "planned",
+      "opt_in": true,
+      "summary": "Reaper's processor workbench consumes the caller-selected Pytyliki profile/suite report as read-only host evidence; it does not infer unsupported ISA features or claim a benchmark guarantee."
     }
   ],
   "safety_boundaries": [
     "Processor and hardware inspection is read-only; no firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.",
     "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
-    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable."
+    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
+    "The pytyliki.report.v1 profile/suite envelope is evidence from the machine that ran the CLI; ISA usability is OS-state-aware, benchmark timings are host-dependent, and the report does not grant hardware control or certify another target."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
     "CMake library boundaries for adding independently tested C11 modules.",
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
-    "Bounded saturating matrix self-product for repeated vertical architecture analysis."
+    "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
+    "Versioned CPU/ISA profile and bounded benchmark JSON report for explicit Reaper processor-workbench and other local consumers."
   ]
 }
