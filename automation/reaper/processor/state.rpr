@@ -95,11 +95,11 @@ export fn apply_action(snapshot, action) {
     }
 
     let accepted = permits_transition(snapshot.phase, action.target)
-    let next_phase = snapshot.phase
-    let next_state_version = snapshot.state_version
-    let next_accepted_count = snapshot.accepted_count
-    let next_rejected_count = snapshot.rejected_count
-    let reason = "transition-denied"
+    mut next_phase = snapshot.phase
+    mut next_state_version = snapshot.state_version
+    mut next_accepted_count = snapshot.accepted_count
+    mut next_rejected_count = snapshot.rejected_count
+    mut reason = "transition-denied"
 
     if accepted {
         next_phase = action.target

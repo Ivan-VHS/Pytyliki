@@ -194,7 +194,7 @@ let report = {
 write_json("build/processor-kernel-report.json", report)
 emit "PYTYLIKI_REAPER_PROCESSOR_KERNEL:PASS"
 emit "state actions = " ++ text(report.action_pulse.total_actions)
-emit "logical lanes = " ++ text(report.scheduler_execution.worker_count)
+emit "logical lanes = " ++ text(report.scheduler_plan.worker_count)
 emit "completed logical jobs = " ++ text(report.scheduler_execution.completed_jobs)
 emit "state graph = " ++ text(report.state_graph.node_count) ++
     " nodes / " ++ text(report.state_graph.edge_count) ++ " edges"

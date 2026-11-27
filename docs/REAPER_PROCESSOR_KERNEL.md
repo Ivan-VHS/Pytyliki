@@ -46,8 +46,8 @@ counters, and rejects both illegal accepted transitions and state mutation by
 rejected operations. The graph exporter collapses repeated edges while
 preserving their occurrence counts and self-loops.
 
-Running the same action sequence twice must produce byte-for-byte equivalent
-Reaper values for the final snapshot and event stream. The report contains no
+Running the same action sequence twice must produce equal Reaper values
+for the final snapshot and event stream. The report contains no
 wall-clock timestamp or host-specific random value.
 
 ## Logical multithreading and processor pulse

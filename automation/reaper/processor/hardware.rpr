@@ -36,8 +36,8 @@ export fn validate_profile(profile) {
         return {"schema": "pytyliki.cpu-evidence-validation.v1", "valid": false, "reason": "profile-fields-missing"}
     }
 
-    let valid = true
-    let reason = "valid"
+    mut valid = true
+    mut reason = "valid"
     if profile.schema != "pytyliki.cpu-evidence.v1" {
         valid = false
         reason = "profile-schema-mismatch"

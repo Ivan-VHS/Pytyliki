@@ -29,7 +29,7 @@ export fn create_plan(total_jobs, worker_count) {
     mut lanes = []
     for index in range(0, worker_count) {
         let assigned = allocations[index]
-        let lane_state = "queued"
+        mut lane_state = "queued"
         if assigned == 0 {
             lane_state = "idle"
         }
@@ -71,7 +71,7 @@ export fn verify_plan(plan) {
         return false
     }
 
-    let assigned_total = 0
+    mut assigned_total = 0
     for index in range(0, plan.worker_count) {
         let allocation = plan.allocations[index]
         let lane = plan.lanes[index]
@@ -115,15 +115,15 @@ export fn advance(plan, rounds) {
     }
 
     mut next_lanes = []
-    let completed_jobs = 0
-    let active_lanes = 0
+    mut completed_jobs = 0
+    mut active_lanes = 0
     for lane in plan.lanes {
-        let completed = rounds
+        mut completed = rounds
         if completed > lane.assigned {
             completed = lane.assigned
         }
 
-        let lane_state = "running"
+        mut lane_state = "running"
         if lane.assigned == 0 {
             lane_state = "idle"
         } else if completed >= lane.assigned {
@@ -145,7 +145,7 @@ export fn advance(plan, rounds) {
         })
     }
 
-    let overall_state = "running"
+    mut overall_state = "running"
     if completed_jobs == plan.total_jobs {
         overall_state = "complete"
     } else if completed_jobs == 0 {
