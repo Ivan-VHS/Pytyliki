@@ -1,0 +1,6 @@
+stream cpu_pulse from telemetry.ring<RingSample>
+    |> filter(sample => sample.temperature_c < 88.0)
+    |> map(sample => sample.ipc)
+    |> tap(trace::record_bounded)
+    |> sink(telemetry.output, capacity: 1024, overflow: drop_oldest);
+
