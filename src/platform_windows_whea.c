@@ -41,16 +41,16 @@ static int render_event(EVT_HANDLE handle,pl_tr_platform_event *out) {
                   values,&buffer_used,&property_count) ||
        property_count<=EvtSystemEventRecordId) return -1;
 
-    if(values[EvtSystemEventRecordId].Type==EvtVariantTypeUInt64)
+    if(values[EvtSystemEventRecordId].Type==EvtVarTypeUInt64)
         record_id=values[EvtSystemEventRecordId].UInt64Val;
-    else if(values[EvtSystemEventRecordId].Type==EvtVariantTypeInt64 &&
+    else if(values[EvtSystemEventRecordId].Type==EvtVarTypeInt64 &&
             values[EvtSystemEventRecordId].Int64Val>=0)
         record_id=(ULONGLONG)values[EvtSystemEventRecordId].Int64Val;
-    if(values[EvtSystemEventID].Type==EvtVariantTypeUInt16)
+    if(values[EvtSystemEventID].Type==EvtVarTypeUInt16)
         event_id=values[EvtSystemEventID].UInt16Val;
-    if(values[EvtSystemLevel].Type==EvtVariantTypeByte)
+    if(values[EvtSystemLevel].Type==EvtVarTypeByte)
         level=values[EvtSystemLevel].ByteVal;
-    if(values[EvtSystemTimeCreated].Type==EvtVariantTypeFileTime)
+    if(values[EvtSystemTimeCreated].Type==EvtVarTypeFileTime)
         system_time=values[EvtSystemTimeCreated].FileTimeVal;
 
     if(EvtRender(NULL,handle,EvtRenderEventXml,0,NULL,&xml_bytes,&xml_props) ||

@@ -138,7 +138,7 @@ int pl_tr_evidence_ingest_worker_fault(
     observation.kind=kind;
     {
         int record_status=pl_tr_record(monitor,&observation);
-        if(record_status!=PL_TR_OK) return PL_TR_LINK_MONITOR_ERROR;
+        if(record_status!=PL_TR_OK) return PL_TR_LINK_INVALID;
     }
     links->entries[links->count]=candidate;
     memcpy(links->chain_head,candidate.chain_sha256,

@@ -10,7 +10,9 @@ extern "C" {
 
 #define PL_TR_AFFINITY_TOKEN_BYTES 256u
 typedef union {
-    max_align_t alignment;
+    void *pointer_alignment;
+    uint64_t integer_alignment;
+    long double floating_alignment;
     unsigned char bytes[PL_TR_AFFINITY_TOKEN_BYTES];
 } pl_tr_affinity_storage;
 typedef struct {

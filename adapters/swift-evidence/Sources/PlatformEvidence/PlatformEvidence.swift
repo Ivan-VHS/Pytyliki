@@ -64,9 +64,12 @@ public enum EvidenceReader {
             }) else {
                 throw EvidenceReaderError.invalidDigest(lineNumber)
             }
+            let pathComponents = event.source_identity.split(
+                separator: "/", omittingEmptySubsequences: false
+            )
             guard !event.source_identity.isEmpty,
                   event.source_identity.range(of: "^[A-Za-z0-9._/-]+$", options: .regularExpression) != nil,
-                  !event.source_identity.contains("..") else {
+                  pathComponents.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." }) else {
                 throw EvidenceReaderError.unsafeIdentity(lineNumber)
             }
             events.append(event)
