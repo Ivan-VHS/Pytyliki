@@ -118,6 +118,24 @@ static void test_constant_zero_division_and_tampered_hir_are_rejected(void) {
     assert(strcmp(error.code, "RPR-SH-V003") == 0);
 }
 
+static void test_fixed_width_integer_and_negative_unit_initializers(void) {
+    const char *fractional = "module bad; target host; input mask: u32 = 1.5;";
+    const char *overflow = "module bad; target host; input mask: u32 = 4294967296;";
+    const char *negative_quantity = "module sample; target host; input offset: cm = -120;";
+    pl_sh_module module; pl_sh_error error;
+    assert(!pl_sh_compile(fractional, "fractional.shw", &module, &error));
+    assert(strcmp(error.code, "RPR-SH-E049") == 0);
+    assert(!pl_sh_compile(overflow, "overflow.shw", &module, &error));
+    assert(strcmp(error.code, "RPR-SH-E049") == 0);
+    assert(pl_sh_compile(negative_quantity, "negative.shw", &module, &error));
+    {
+        uint32_t literal = module.last_value;
+        if (module.values[literal].opcode == PL_SH_OP_NEG) literal = module.values[literal].lhs;
+        assert(module.values[literal].immediate < -1.199999999 &&
+               module.values[literal].immediate > -1.200000001);
+    }
+}
+
 static void test_malformed_source_and_limits(void) {
     pl_sh_module module; pl_sh_error error;
     assert(!pl_sh_compile("module bad target host;", "bad.shw", &module, &error));
@@ -134,6 +152,7 @@ int main(void) {
     test_ir_and_reaper_envelopes();
     test_c17_emission_is_pure_and_compilable();
     test_constant_zero_division_and_tampered_hir_are_rejected();
+    test_fixed_width_integer_and_negative_unit_initializers();
     test_malformed_source_and_limits();
     puts("Pytyliki semantic hardware compiler tests passed");
     return 0;
