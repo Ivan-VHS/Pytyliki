@@ -1,6 +1,6 @@
 # Pytyliki MOS Switch-Level Model v1
 
-**Schema:** \`pytyliki.mos-switch-model.v1\`  
+**Schema:** `pytyliki.mos-switch-model.v1`  
 **Implementation:** bounded native C11  
 **Status:** first deterministic switch-level evaluator
 
@@ -23,11 +23,11 @@ The evaluator computes definite and possible connectivity from both supply rails
 
 | State | Meaning |
 |---|---|
-| \`high\` | Definitely connected to VDD, with no possible VSS path |
-| \`low\` | Definitely connected to VSS, with no possible VDD path |
-| \`contended\` | Definitely connected to both rails |
-| \`floating\` | Has no definite or possible path to either rail |
-| \`indeterminate\` | An UNKNOWN-controlled device may connect the node to a rail |
+| `high` | Definitely connected to VDD, with no possible VSS path |
+| `low` | Definitely connected to VSS, with no possible VDD path |
+| `contended` | Definitely connected to both rails |
+| `floating` | Has no definite or possible path to either rail |
+| `indeterminate` | An UNKNOWN-controlled device may connect the node to a rail |
 
 An unknown gate therefore cannot silently turn into a zero or one. A possible short to the opposite rail prevents a false HIGH/LOW result.
 
@@ -51,11 +51,11 @@ With input LOW, the output is HIGH. With input HIGH, the output is LOW. With an 
 
 Run the native demonstration:
 
-\`\`\`sh
+```sh
 pytyliki-mos --inverter low
 pytyliki-mos --inverter high
 pytyliki-mos --inverter unknown
-\`\`\`
+```
 
 The output is a model result, never a measurement from a physical chip.
 
@@ -81,7 +81,7 @@ Version 1 does not calculate:
 - temperature, process corners, noise, metastability or analog feedback;
 - dynamic circuit fixed points or arbitrary sequential behavior.
 
-Gate levels are supplied by the caller. The model resolves one switch network from those levels; it does not infer internal gate voltages by solving a complete circuit.
+Gate levels are supplied by the caller. The model resolves one switch network from those levels; it does not infer internal gate voltages by solving a complete circuit. The interchange envelope is described by `schemas/pytyliki.mos-switch-model.v1.schema.json`; no JSON importer or exporter is shipped in v1. Consumers must additionally ensure that `gate_levels` has exactly `node_count` entries, every node index is below `node_count`, and VDD and VSS are distinct.
 
 It does not access MMIO, physical memory, CPU registers, DMA, firmware or connected devices.
 
