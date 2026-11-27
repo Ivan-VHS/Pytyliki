@@ -12,6 +12,12 @@
 #include <time.h>
 
 #if defined(_WIN32)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00
+#endif
+#ifndef WINVER
+#define WINVER 0x0A00
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #elif defined(__linux__)
@@ -356,8 +362,11 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
             !isdigit((unsigned char)entry->d_name[3])) continue;
         errno = 0;
         os_id = strtoul(entry->d_name + 3u, &end, 10);
-        if (errno != 0 || end == entry->d_name + 3u || *end != '\0' ||
-            os_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS) continue;
+        if (errno != 0 || end == entry->d_name + 3u || *end != '\0') continue;
+        if (os_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS) {
+            (void)closedir(directory);
+            return PL_TOPOLOGY_LIMIT_EXCEEDED;
+        }
         index = add_cpu(out, 0u, (uint32_t)os_id, 1);
         if (index == SIZE_MAX) { (void)closedir(directory); return PL_TOPOLOGY_LIMIT_EXCEEDED; }
         cpu = &out->logical_cpus[index];
@@ -471,7 +480,7 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
     SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *records = NULL;
     uint32_t core_id = 0u;
     uint32_t package_id = 0u;
-    uint32_t numa_id = 0u;
+    uint32_t die_id = 0u;
     if (!GetLogicalProcessorInformationEx(RelationAll, NULL, &bytes) &&
         GetLastError() != ERROR_INSUFFICIENT_BUFFER) return PL_TOPOLOGY_IO_ERROR;
     if (bytes == 0u || bytes > 16u * 1024u * 1024u) return PL_TOPOLOGY_LIMIT_EXCEEDED;
@@ -497,6 +506,15 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
                     0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
             }
             ++package_id;
+        } else if (item->Relationship == RelationProcessorDie) {
+            for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
+                (void)find_or_add_windows_mask(out,
+                    item->Processor.GroupMask[i].Group,
+                    item->Processor.GroupMask[i].Mask,
+                    PL_TOPOLOGY_UNKNOWN, die_id, PL_TOPOLOGY_UNKNOWN,
+                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+            }
+            ++die_id;
         } else if (item->Relationship == RelationProcessorCore) {
             for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
                 (void)find_or_add_windows_mask(out,
