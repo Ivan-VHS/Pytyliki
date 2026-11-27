@@ -140,9 +140,6 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
     contract_path = low_level.get("path")
     if not isinstance(contract_path, str) or not (root / contract_path).is_file():
         errors.append("low-level contract source path is missing")
-    schema_path = low_level.get("schema_path")
-    if not isinstance(schema_path, str) or not (root / schema_path).is_file():
-        errors.append("low-level contract schema path is missing")
     else:
         try:
             low_level_data = json.loads((root / contract_path).read_text(encoding="utf-8"))
@@ -151,6 +148,11 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
                 errors.append("low-level source contract must contain 100 unique PLL rules")
         except (OSError, json.JSONDecodeError):
             errors.append("low-level source contract is not valid JSON")
+
+    schema_path = low_level.get("schema_path")
+    if not isinstance(schema_path, str) or not (root / schema_path).is_file():
+        errors.append("low-level contract schema path is missing")
+
     for evidence_path in low_level.get("implementation", []):
         if not (root / evidence_path).is_file():
             errors.append(f"low-level implementation evidence path does not exist: {evidence_path}")
