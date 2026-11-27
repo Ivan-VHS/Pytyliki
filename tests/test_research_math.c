@@ -173,7 +173,7 @@ static void test_inscribed_square(void) {
 
 static void test_legendre_beal_and_cuboid(void) {
     uint64_t lower = 0u, upper = 0u, prime = 0u, checked = 0u, common_factor = 0u;
-    uint64_t diagonals[3];
+    uint64_t diagonals[3], edges[3];
     int valid = 0, equal = 0, candidate = 0, all_integer = 0, perfect = 0;
     CHECK_OK(pl_math_legendre_interval(3u, &lower, &upper));
     assert(lower == 9u && upper == 16u);
@@ -185,12 +185,19 @@ static void test_legendre_beal_and_cuboid(void) {
     assert(equal == 1);
     CHECK_OK(pl_math_beal_common_prime_divisor(6u, 12u, 18u, &common_factor));
     assert(common_factor == 2u);
+    assert(pl_math_beal_common_prime_divisor(1000003u * 1000033u,
+                                             2u * 1000003u * 1000033u,
+                                             3u * 1000003u * 1000033u,
+                                             &common_factor) == PL_MATH_LIMIT);
     CHECK_OK(pl_math_beal_counterexample_screen(2u, 3u, 3u, 3u, 5u, 3u, &candidate));
     assert(candidate == 0);
     CHECK_OK(pl_math_cuboid_face_diagonals(1u, 2u, 2u, diagonals, &all_integer));
     assert(all_integer == 0);
     CHECK_OK(pl_math_perfect_cuboid_verify(1u, 2u, 2u, &perfect));
     assert(perfect == 0);
+    assert(pl_math_perfect_cuboid_search_bounded(100000u, 1u, edges, &checked) == PL_MATH_LIMIT);
+    assert(checked == 1u);
+    assert(pl_math_cnf_validate(1u, NULL, 0u, (const size_t[]){0u}, PL_MATH_MAX_TERMS + 1u) == PL_MATH_INVALID);
 }
 
 static void test_matrix_multiplication(void) {
