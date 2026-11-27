@@ -54,7 +54,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   endif()
 
   if(PYTYLIKI_ENABLE_RUST_EDAC)
-    find_program(CARGO_EXECUTABLE cargo REQUIRED)
+    find_program(CARGO_EXECUTABLE cargo)
+    if(NOT CARGO_EXECUTABLE)
+      message(FATAL_ERROR "PYTYLIKI_ENABLE_RUST_EDAC requires Rust stable and Cargo on PATH")
+    endif()
     set(PTFR_RUST_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/rust-edac")
     set(PTFR_RUST_EDAC_LIBRARY "${PTFR_RUST_TARGET_DIR}/release/libpytyliki_edac.a")
     add_custom_command(
