@@ -1828,5 +1828,227 @@
     "Endianness, register names, address width, instruction length, cache geometry and privilege levels are target properties, not global constants.",
     "Required stalls, synchronization, speculation barriers and interrupt events cannot be removed for visual neatness.",
     "Physical target writes, fault injection, power gating and debug register writes require named target capabilities and explicit operator approval."
+  ],
+  "perspectives": [
+    {
+      "id": "machine-oriented-studio",
+      "display_name": "Окружение — Машинно-ориентированная — Студия разработки процессоров",
+      "category": "Окружение",
+      "qualifier": "Машинно-ориентированная",
+      "focus": "Target-bound project entry, source/IR/ASM navigation and build session.",
+      "workspace": "crimson-overdrive",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "hardware-engineering-lab",
+      "display_name": "Пространство — Аппаратно-ориентированная — Лаборатория процессорной инженерии",
+      "category": "Пространство",
+      "qualifier": "Аппаратно-ориентированная",
+      "focus": "Waveforms, bus capture, signal phases and measurement provenance.",
+      "workspace": "reactor-afterglow",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "machine-processor-design-center",
+      "display_name": "Платформа — Машинная — Центр проектирования процессоров",
+      "category": "Платформа",
+      "qualifier": "Машинная",
+      "focus": "Target profile, register map, bus map, clock and timing configuration.",
+      "workspace": "horizon-spectral",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "hardware-technology-workshop",
+      "display_name": "Экосистема — Аппаратная — Мастерская процессорных технологий",
+      "category": "Экосистема",
+      "qualifier": "Аппаратная",
+      "focus": "Simulator, timing analyzer, compiler and backend adapter integration.",
+      "workspace": "eclipse-outlaw",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "native-microprocessor-bureau",
+      "display_name": "Инфраструктура — Нативная — Бюро разработки микропроцессоров",
+      "category": "Инфраструктура",
+      "qualifier": "Нативная",
+      "focus": "Reproducible native builds, memory images and descriptor generation.",
+      "workspace": "scarlet-avalanche",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "assembly-systems-institute",
+      "display_name": "Оболочка — Ассемблерная — Институт процессорных систем",
+      "category": "Оболочка",
+      "qualifier": "Ассемблерная",
+      "focus": "Assembly editor, instruction encodings, flags and source provenance.",
+      "workspace": "crimson-overdrive",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "processor-development-complex",
+      "display_name": "Система — Процессорная — Комплекс процессорной разработки",
+      "category": "Система",
+      "qualifier": "Процессорная",
+      "focus": "Unified simulation timeline for pipeline, caches, memory and interrupts.",
+      "workspace": "reactor-afterglow",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "microarchitecture-atelier",
+      "display_name": "Контекст — Микропроцессорная — Ателье микроархитектуры",
+      "category": "Контекст",
+      "qualifier": "Микропроцессорная",
+      "focus": "Core/thread context, execution mode, pipeline model and target capabilities.",
+      "workspace": "quantum-paradox",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "register-design-lab",
+      "display_name": "Прослойка — Регистровая — Лаборатория проектирования CPU",
+      "category": "Прослойка",
+      "qualifier": "Регистровая",
+      "focus": "Architecture-specific register bank, flags and per-step register diff.",
+      "workspace": "circuit-cobalt",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "bit-construction-center",
+      "display_name": "Интерфейс — Битовая — Центр процессорного конструирования",
+      "category": "Интерфейс",
+      "qualifier": "Битовая",
+      "focus": "Bitfields, shifts, rotates, masks, descriptors and endian-aware views.",
+      "workspace": "titanium-riptide",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "instruction-engineering-studio",
+      "display_name": "Рабочее пространство — Инструкционная — Студия микроэлектронной инженерии",
+      "category": "Рабочее пространство",
+      "qualifier": "Инструкционная",
+      "focus": "Source-to-IR-to-assembly-to-byte correlation and cost evidence.",
+      "workspace": "crimson-overdrive",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "address-architecture-workshop",
+      "display_name": "Исполнительная площадка — Адресная — Мастерская аппаратных архитектур",
+      "category": "Исполнительная площадка",
+      "qualifier": "Адресная",
+      "focus": "Virtual, physical, bus, I/O and MMIO address spaces with page boundaries.",
+      "workspace": "titanium-riptide",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "microarchitecture-technology-center",
+      "display_name": "Технологическая база — Микроархитектурная — Центр разработки микропроцессорных систем",
+      "category": "Технологическая база",
+      "qualifier": "Микроархитектурная",
+      "focus": "Versioned pipeline, branch, queue, cache and execution-unit models.",
+      "workspace": "quantum-paradox",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "processor-modeling-lab",
+      "display_name": "Программная платформа — Системная — Лаборатория процессорного моделирования",
+      "category": "Программная платформа",
+      "qualifier": "Системная",
+      "focus": "Scenario execution on reference models and emulators before target execution.",
+      "workspace": "shadow-nemesis",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "computer-architecture-bureau",
+      "display_name": "Операционная среда — Фундаментальная — Бюро архитектуры вычислительных систем",
+      "category": "Операционная среда",
+      "qualifier": "Фундаментальная",
+      "focus": "Privilege, reset, interrupt-vector and address-space isolation review.",
+      "workspace": "voltage-citadel",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "hardware-programming-studio",
+      "display_name": "Инструментальная система — Базовая — Студия аппаратного программирования",
+      "category": "Инструментальная система",
+      "qualifier": "Базовая",
+      "focus": "Quick tests, register snapshots, trace diff, diagnostics and breakpoints.",
+      "workspace": "raven-vortex",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "compute-core-engineering-center",
+      "display_name": "Вычислительное окружение — Железно-ориентированная — Центр инженерии вычислительных ядер",
+      "category": "Вычислительное окружение",
+      "qualifier": "Железно-ориентированная",
+      "focus": "Core load, locks, synchronization barriers and memory-order events.",
+      "workspace": "thunder-phantom",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "digital-logic-lab",
+      "display_name": "Функциональное пространство — Машинно-приближённая — Лаборатория цифровой логики",
+      "category": "Функциональное пространство",
+      "qualifier": "Машинно-приближённая",
+      "focus": "Boolean logic, sequential logic, FSM reachability and transition verification.",
+      "workspace": "quantum-paradox",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "cpu-hardware-software-workshop",
+      "display_name": "Аппаратно-программный комплекс — Аппаратно-зависимая — Мастерская разработки CPU",
+      "category": "Аппаратно-программный комплекс",
+      "qualifier": "Аппаратно-зависимая",
+      "focus": "Stepping-, board-, bus- and silicon-specific dependency inspection.",
+      "workspace": "circuit-cobalt",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    },
+    {
+      "id": "near-machine-runtime-center",
+      "display_name": "Среда выполнения — Близкая к машинному коду — Инжиниринговый центр процессорных технологий",
+      "category": "Среда выполнения",
+      "qualifier": "Близкая к машинному коду",
+      "focus": "No-alloc/bare-metal profiles, execution traces, artifact inspection and runtime boundary.",
+      "workspace": "crimson-overdrive",
+      "scope_kind": "workspace_perspective",
+      "authority": "no_privilege_elevation",
+      "status": "planned"
+    }
   ]
 }
