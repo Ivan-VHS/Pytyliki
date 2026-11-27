@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - "iron/**"
+      - "omega-null/**"
+      - "schemas/omega-null.v0.schema.json"
+      - "docs/OMEGA_NULL.md"
+      - "tools/validate_omega_null.py"
+      - "tests/test_omega_null_contract.py"
       - "schemas/iron-core.v1.schema.json"
       - "docs/IRON_CORE.md"
       - "docs/clusters/processor-labs.md"
@@ -36,5 +41,7 @@ jobs:
           cache: false
       - name: Validate machine-readable IRON contract
         run: python tools/validate_iron_core.py
-      - name: Run IRON contract regression tests
-        run: python -m unittest discover -s tests -p "test_iron_core_contract.py" -v
+      - name: Validate Omega-Null research profile
+        run: python tools/validate_omega_null.py
+      - name: Run IRON and Omega-Null contract regression tests
+        run: python -m unittest discover -s tests -p "test_*contract.py" -v
