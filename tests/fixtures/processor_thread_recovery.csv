@@ -1,0 +1,7 @@
+# worker_id,timestamp_ns,cpu_id,fault_code,fault_kind,task_flags
+7,1000000000,2,65,corrected_hardware,4
+7,2000000000,2,65,corrected_hardware,4
+7,3000000000,2,65,corrected_hardware,4
+7,4000000000,2,65,corrected_hardware,4
+7,5000000000,2,65,corrected_hardware,4
+7,6000000000,2,65,corrected_hardware,4
