@@ -17,6 +17,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
 - [Pytyliki hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty hardware construct families, structural parser and safety contracts.
 - [MOS switch-level model v1](PHYSICAL_SWITCH_MODEL_V1.md) — bounded N/P MOS topology evaluation and five-state node resolution; not an analog solver.
+- [Processor Fabric v1](PROCESSOR_FABRIC_V1.md) — bounded processor hierarchy, catalogue aggregation, dependency graph validation and deterministic advisory process-pool planning.
 - [Pytyliki Hardware Language Extension 0.4](PYTYLIKI_HARDWARE_LANGUAGE_SPEC_0.4.md) — target profiles, memory/capability model, ISA, microarchitecture, RTL, simulation and Reaper IR boundary.
 - [SystemArray sigil operators](SYSTEM_SIGIL_OPERATORS.md) — thirteen reserved operators, type signatures, effects and metadata-only frontend.
 - [2026 processor systems programming trends](SYSTEM_PROGRAMMING_TRENDS_2026.md) — design rationale and external standards/tooling references.
