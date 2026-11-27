@@ -1,0 +1,19 @@
+device dma_ring_worker(channel: DmaChannel) {
+    state idle;
+
+    on ready {
+        let descriptor = channel.ring.acquire_next()?;
+        pin_for_dma(descriptor.buffer)?;
+        dma::sync_for_device(descriptor.buffer)?;
+        channel.submit(descriptor)?;
+        transition_to(transfer_active);
+    }
+
+    on complete(descriptor) {
+        dma::sync_for_cpu(descriptor.buffer)?;
+        channel.ring.complete(descriptor)?;
+        acknowledge_interrupt(channel.irq)?;
+        transition_to(idle);
+    }
+}
+
