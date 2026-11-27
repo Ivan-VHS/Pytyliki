@@ -70,7 +70,7 @@ ctest --test-dir build -C Release --output-on-failure
 - [Статистика бенчмарків](docs/BENCHMARK_STATISTICS.md) · [Довідкова Embedded C-система](docs/EMBEDDED_C.md)
 - [Нативна перевірка QCS](docs/QCS_NATIVE.md) · [Індекс документації](docs/README.md)
 - [Процес релізу](docs/RELEASE.md) · [Формат звітів](docs/REPORT_ENVELOPE.md)
-- [Інтеграція з Reaper](docs/REAPER_INTEGRATION.md) · [Спільні стандарти екосистеми](https://github.com/Ivan-VHS/DAK/blob/main/docs/SHARED_STANDARDS.md)
+- [Інтеграція з Reaper](docs/REAPER_INTEGRATION.md) · [Спільні стандарти екосистеми](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
 
 ## Безпека та внесок
 
