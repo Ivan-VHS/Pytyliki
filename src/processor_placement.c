@@ -180,7 +180,7 @@ pl_placement_status pl_processor_placement_plan(
             if (task->preferred_numa_node_id != PL_TOPOLOGY_UNKNOWN_ID) {
                 if (worker->numa_node_id == PL_TOPOLOGY_UNKNOWN_ID) {
                     reasons |= PL_PLACEMENT_REASON_NUMA_UNKNOWN;
-                    if (task->locality_required) continue;
+                    if (task->locality_required) { results[output_count].reasons |= reasons; continue; }
                     candidate.numa_cost = 2500u;
                 } else if (worker->numa_node_id != task->preferred_numa_node_id) {
                     reasons |= PL_PLACEMENT_REASON_NUMA_REMOTE;
@@ -196,7 +196,7 @@ pl_placement_status pl_processor_placement_plan(
                 }
             }
             if (task->working_set_bytes != 0u && input->cache_count == 0u) {
-                reasons |= PL_PLACEMENT_REASON_SHARED_CACHE;
+                reasons |= PL_PLACEMENT_REASON_CACHE_UNKNOWN;
                 candidate.cache_cost = 700u;
             }
             for (previous = 0u; previous < input->cache_count; ++previous) {
