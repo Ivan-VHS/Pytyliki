@@ -73,7 +73,7 @@ Integer widths are represented explicitly (`i64`, `u32`, `u64`). `f64` is the fl
 | V | [2, 1, -3, -1, 0, 0, 0, 0] |
 | count/s | [0, 0, -1, 0, 0, 0, 0, 1] |
 
-Supported base/scaled units include m/cm/mm/km, kg/g, s/ms/us/ns, A, K, mol, cd, count, Hz, N, J, W, C and V. Scale prefixes normalize input literals to canonical base units before HIR is emitted. Unit exponents are bounded to [-16, 16].
+Supported base/scaled units include m/cm/mm/km, kg/g, s/ms/us/ns, A, K, mol, cd, count, Hz, N, J, W, C and V. Scale prefixes normalize input literals to canonical base units before HIR is emitted. Unit exponents are bounded to [-16, 16]. Fixed-width integer literals are conservatively limited to exactly representable values in the v1 double-backed constant representation (up to 2^53-1; u32 retains its full range).
 
 Type rules are strict: addition/subtraction require identical types and dimensions; multiplication adds dimension exponents; division subtracts dimension exponents; scalar operations retain only documented numeric types; implicit integer/floating conversions are rejected; known zero divisors and non-finite literals/results are rejected.
 
