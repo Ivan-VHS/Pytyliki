@@ -1,10 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
 #include "core.h"
-#include "clock.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #if defined(_WIN32)
 #include <windows.h>
 #include <intrin.h>
@@ -94,6 +94,9 @@ int pl_cpu_profile(pl_cpu_info *out) {
         trim_spaces(brand);
         copy_text(out->model, sizeof(out->model), brand);
     }
+#elif defined(__e2k__)
+    copy_text(out->vendor, sizeof(out->vendor), "MCST");
+    copy_text(out->model, sizeof(out->model), "Elbrus E2K");
 #else
     copy_text(out->vendor, sizeof(out->vendor), "not-available");
 #endif
@@ -101,14 +104,25 @@ int pl_cpu_profile(pl_cpu_info *out) {
     if (!out->model[0]) copy_text(out->model, sizeof(out->model), "CPU brand string unavailable on this build");
     return 0;
 }
+static double now_ms(void) {
+#if defined(_WIN32)
+    LARGE_INTEGER frequency, counter;
+    if (!QueryPerformanceFrequency(&frequency) || !QueryPerformanceCounter(&counter)) return 0.0;
+    return 1000.0 * (double)counter.QuadPart / (double)frequency.QuadPart;
+#else
+    struct timespec t;
+    if (clock_gettime(CLOCK_MONOTONIC, &t) != 0) return (double)clock() / ((double)CLOCKS_PER_SEC / 1000.0);
+    return 1000.0 * (double)t.tv_sec + (double)t.tv_nsec / 1000000.0;
+#endif
+}
 int pl_run_benchmark(uint64_t iterations, pl_benchmark *out) {
     if (!out || iterations == 0 || iterations > UINT64_C(500000000)) return -1;
     volatile uint64_t x = UINT64_C(0x9e3779b97f4a7c15);
-    double start = pl_monotonic_now_ms();
+    double start = now_ms();
     for (uint64_t i = 0; i < iterations; ++i) {
         x ^= x >> 12; x ^= x << 25; x ^= x >> 27; x *= UINT64_C(2685821657736338717);
     }
-    double elapsed = pl_monotonic_now_ms() - start;
+    double elapsed = now_ms() - start;
     if (x == 0) fputc(' ', stdout);
     out->iterations = iterations; out->elapsed_ms = elapsed;
     out->score = elapsed > 0.0 ? (double)iterations / elapsed : 0.0;

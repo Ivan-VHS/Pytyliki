@@ -2,61 +2,109 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
-**基于 C11 的模块化工作站，用于本地处理器检查、受限基准测试、源代码诊断以及 PCM16 音频/DSP。** 项目包含原生 Win32 桌面界面和命令行工具。
+[CI](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) · [Windows 桌面构建](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) · C11 · Windows/Linux · MIT
+**开发者：** [Ivan-VHS](https://github.com/Ivan-VHS)
 
-## 当前功能
+Pytyliki 是一个模块化原生工作站，用于处理器信息发现、有界工作负载规划、源代码静态诊断、数值工具和本地 DSP。Windows 桌面程序与命令行工具共享同一个 C11 核心。
 
-- **处理器信息：** CPU 型号与厂商、逻辑处理器、内存和可用 ISA 能力，并检查操作系统的向量状态支持。
-- **基准测试：** 有界 CPU、内存和矩阵工作负载，用于本机比较；结果取决于硬件、编译器和操作系统。
-- **源代码诊断：** 检查受支持的源文件，不执行或改写文件；可导出 JSON 报告。
-- **音频/DSP：** PCM16 WAV 导入/导出、测试音生成、低通滤波、压缩、饱和、增益和电平计量。
-- **规划目录：** Syntax-pie、改进矩阵、HyperFusion 和 APSIA 路由方案。这些是辅助规划模型，并非自主优化器或编译器。
-- **桌面界面：** Windows 原生 GUI，支持处理器扫描、源代码审查和音频控制。
+工作站报告读取到的处理器信息；建议性计划不会修改操作系统调度、CPU 亲和性、频率或电压设置。
 
-## 截图
+## Windows 实际运行截图
 
-当前仓库尚无经过验证的运行中应用截图。此前的界面示意图不再冒充真实截图。待实际构建并运行 Win32 应用后，可在此添加现场截屏。
+<p align="center"><img src="assets/screenshots/pytyliki-workstation.png" alt="Windows 中运行的 Pytyliki 工作站" width="100%"></p>
+
+## 功能数据流
+
+该图概述项目输入来源、处理阶段和生成结果之间已经实现的数据流转。
+
+```mermaid
+flowchart TD
+    A[主机处理器] --> B[只读清单]
+    B --> C[处理器配置]
+    C --> D[有界任务规划器]
+    D --> E[确定性区间计划]
+    F[源代码文本] --> G[静态诊断]
+    G --> H[结构化报告]
+    I[PCM16 WAV] --> J[本地 DSP]
+    J --> K[处理后的音频与测量结果]
+```
+
+## 执行路径与输出
+
+第二张图将当前可执行路径和受支持输出与仅登记在目录中或尚不可用的行为区分开。
+
+```mermaid
+flowchart LR
+    A[CLI 参数] --> B[验证与边界检查]
+    B --> C[数值操作]
+    C --> D[结果或报告]
+    E[CPU / MCU 配置] --> F[参考估算]
+    G[QCS 源代码] --> H[词法分析与解析]
+    H --> I[AST 与诊断]
+```
+
+<sub>应用实际截屏 · 原始图像为 1920×1080 · 保留原始像素，不进行人为放大。</sub>
+
+## 功能范围
+
+| 模块 | 当前功能 | 安全边界 |
+|---|---|---|
+| CPU | 型号、拓扑、内存、ISA/XCR0 与处理器配置 | 只读检测 |
+| 测试 | CPU、内存、矩阵及经过检查的工作负载分区 | 有界本地测量 |
+| 源码 | 静态诊断和结构化报告 | 不构建或执行被检查的源码 |
+| DSP | PCM16 WAV、滤波、压缩、饱和和电平测量 | 本地缓冲区；验证 RIFF 分块边界 |
+| 内存 | 类型化 views、checked slices、arena 和 pool | 固定限制并检查范围 |
+| Embedded C | MCU 配置、FLASH/SRAM 估算和 MMIO 模型 | 仅模拟与参考数据 |
+| Rules / APSIA / TRACE | 负载建议、任务规划和测量溯源 | 证据记录，不是认证 |
+| QCS | lexer、parser、AST 和诊断 | 仅语法分析 |
+| Interop | 版本化 C ABI v1 | 显式选择可信库 |
 
 ## 构建与测试
 
-要求：CMake 3.16+、C11 编译器、Git，以及 Windows 或 Linux。
+需要 CMake 3.16+、C11 编译器和 Git。
 
-```bash
-git clone https://github.com/Ivan-VHS/Pytyliki.git
-cd Pytyliki
+```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Windows 构建还会生成 `pytyliki-gui.exe`。CLI 示例：
+Windows 工作流会构建 GUI 和 CLI 工具、运行 CTest，并发布 Windows x64 压缩包。当前归档包含 `pytyliki-gui.exe`、`pytyliki.exe`、`pytyliki-apsia.exe` 和 `pytyliki-metrics.exe`。
 
-```bash
-./build/pytyliki --profile
-./build/pytyliki --suite
-./build/pytyliki --improvement-plan
-./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
-./build/pytyliki --json report.json
+## CLI 示例
+
+```sh
+pytyliki --profile
+pytyliki --suite
+pytyliki --systems
+pytyliki --embedded profiles
+pytyliki-metrics --demo
+
+pytyliki --divide -17 5
+pytyliki --partition 10000 8 256
+pytyliki --partition-auto 10000 256
 ```
 
-典型 Windows 多配置构建的可执行文件位于 `build/Release/pytyliki.exe`。
+分区计划是确定性的、有界的建议。它描述连续工作区间，但不会创建线程、修改 CPU affinity 或声称未经测量的性能提升。
 
-## 架构与安全
+## 目录规模
 
-项目使用 ISO C11、CMake 和 CTest。GitHub Actions 验证 Windows 与 Linux 构建；独立 Linux 任务运行 AddressSanitizer 和 UndefinedBehaviorSanitizer。
+| 目录 | 条目 |
+|---|---:|
+| 系统语言能力 | 66 |
+| CPU / MCU / 虚拟 ISA 配置 | 14 |
+| 系统实验室功能 | 33 |
 
-处理器发现仅执行只读操作。应用不会写入固件、BIOS/UEFI、微码、频率、电压、电源限制、内核设置、驱动或设备寄存器。源代码检查不会执行被扫描文件。基准分数不代表认证，也不保证性能提升。规划目录仅用于辅助决策，并不证明已经完成优化。
+[功能](docs/FEATURES.md) · [UI motion](docs/UI_MOTION.md) · [架构](docs/ARCHITECTURE.md) · [除法与分区](docs/DIVISION_ENGINE.md) · [TRACE 溯源](docs/TRACE_MEASUREMENT_PROVENANCE.md) · [文档索引](docs/README.md)
 
-## 文档
+[English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Releases](https://github.com/Ivan-VHS/Pytyliki/releases) · [MIT](LICENSE)
 
-- [架构](docs/ARCHITECTURE.md)
-- [APSIA 路由设计](docs/APSIA_2.0.md)
-- [硬件规则引擎](docs/HARDWARE_RULE_ENGINE.md)
-- [处理器分类](docs/PROCESSOR_TAXONOMY.md)
-- [平台验证政策](docs/PLATFORM_VALIDATION_POLICY.md)
 
-## 许可证
+## 预算分配参考
+这是一个 500 UAH 预算模型示例，包含 JSON 契约和离线模拟器。它属于文档示例，并非宿主应用运行时功能。
 
-[MIT](LICENSE)。
+[多语言指南](docs/RESOURCE_ALLOCATION_500_UAH.md) · [交互式模拟器](docs/resource-allocation-500-uah.html) · [JSON 示例](examples/resource-allocation-500-uah.json) · [JSON Schema](schemas/resource-allocation.v1.schema.json)
 
-> 千里之行，始于足下。
+## 安全文档
+
+[信任边界与安全操作](docs/SECURITY_AND_TRUST_BOUNDARIES.md) · [Beelzebul AppGuard 666 目录](docs/BEELZEBUL_APPGUARD_666.md) · [完整文档索引](docs/README.md)

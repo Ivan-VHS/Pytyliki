@@ -1,12 +1,13 @@
-name: CodeQL
+name: CodeQL Security Analysis
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/mental-wellbeing-code-safety-v1
   pull_request:
-    branches: [main]
   schedule:
-    - cron: '23 4 * * 1'
+    - cron: "23 4 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -16,18 +17,20 @@ permissions:
 
 jobs:
   analyze:
-    name: Analyze C/C++ and Python
+    name: CodeQL source analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        uses: github/codeql-action/init@v4
         with:
-          languages: cpp, python
-      - name: Build C targets
-        uses: github/codeql-action/autobuild@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
-      - name: Upload analysis
-        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+          languages: "c-cpp, actions"
+          build-mode: none
+          queries: security-extended
+
+      - name: Analyze source code and publish SARIF results
+        uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:cpp-python"
+          category: "/language:mixed"

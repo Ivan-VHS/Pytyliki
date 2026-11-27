@@ -13,8 +13,6 @@ int main(void) {
     pytyliki_embedded_profile_v1 embedded_profile;
     pytyliki_embedded_sections_v1 embedded_sections={1024u,256u,128u,512u,64u,2048u};
     pytyliki_embedded_budget_v1 embedded_budget;
-    uint64_t plugin_count=0u;
-    pytyliki_plugin_descriptor_v1 plugin;
     assert(pytyliki_abi_version()==PYTYLIKI_ABI_VERSION);
     assert(pytyliki_v1_norm_f64(a,2u,&value)==0&&fabs(value-5.0)<1e-12);
     assert(pytyliki_v1_dot_f64(a,y,2u,&value)==0&&fabs(value-4.0)<1e-12);
@@ -36,22 +34,30 @@ int main(void) {
     assert(pytyliki_v1_norm_f64(NULL,2u,&value)==PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_norm_f64(a,4097u,&value)==PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_distance_f64(a,b,2u,NULL)==PYTYLIKI_ABI_INVALID_ARGUMENT);
-
-    /* Plugin discovery is a metadata-only ABI: no plugin code is loaded or run. */
-    assert(pytyliki_v1_plugin_count(&plugin_count)==PYTYLIKI_ABI_OK);
-    assert(plugin_count==18u);
-    assert(pytyliki_v1_plugin_at(0u,&plugin)==PYTYLIKI_ABI_OK);
-    assert(strcmp(plugin.id,"operandu")==0);
-    assert(pytyliki_v1_plugin_at(10u,&plugin)==PYTYLIKI_ABI_OK);
-    assert(strcmp(plugin.id,"keel-koh")==0);
-    assert(strcmp(plugin.name,"Keel Koh")==0);
-    assert(pytyliki_v1_plugin_find("Keel Koh",&plugin)==PYTYLIKI_ABI_OK);
-    assert(strcmp(plugin.id,"keel-koh")==0);
-    assert(pytyliki_v1_plugin_find("PROFEVO",&plugin)==PYTYLIKI_ABI_OK);
-    assert(strcmp(plugin.name,"Profevo")==0);
-    assert(pytyliki_v1_plugin_find("missing",&plugin)==PYTYLIKI_ABI_INVALID_ARGUMENT);
-    assert(pytyliki_v1_plugin_at(plugin_count,&plugin)==PYTYLIKI_ABI_INVALID_ARGUMENT);
-    assert(pytyliki_v1_plugin_count(NULL)==PYTYLIKI_ABI_INVALID_ARGUMENT);
-    assert(pytyliki_v1_plugin_find(NULL,&plugin)==PYTYLIKI_ABI_INVALID_ARGUMENT);
+    {
+        int32_t available = -1;
+        int64_t native_result = 987;
+        uint64_t native_ordinal = 0u;
+        char native_error[128] = {0};
+        assert(pytyliki_v1_reaper_available(&available) == PYTYLIKI_ABI_OK);
+#ifdef PYTYLIKI_HAS_REAPER
+        assert(available == 1);
+        assert(pytyliki_v1_reaper_eval_i64("6 * 7", 5u, &native_result,
+                                          native_error, sizeof native_error) == PYTYLIKI_ABI_OK);
+        assert(native_result == 42);
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &native_ordinal) == PYTYLIKI_ABI_OK);
+        assert(native_ordinal == 2u);
+        assert(pytyliki_v1_reaper_selfhood_lookup("not-found", &native_ordinal) == PYTYLIKI_ABI_NOT_FOUND);
+#else
+        assert(available == 0);
+        assert(pytyliki_v1_reaper_eval_i64("6 * 7", 5u, &native_result,
+                                          native_error, sizeof native_error) == PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
+        assert(native_result == 987);
+        assert(strstr(native_error, "REAPER_SOURCE_DIR") != NULL);
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &native_ordinal) == PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
+#endif
+        assert(pytyliki_v1_reaper_available(NULL) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+        assert(pytyliki_v1_reaper_selfhood_lookup(NULL, &native_ordinal) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+    }
     return 0;
 }

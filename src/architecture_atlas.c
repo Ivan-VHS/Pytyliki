@@ -12,7 +12,7 @@ static const pl_architecture_profile profiles[PL_ARCH_ATLAS_COUNT] = {
     {5u, "riscv64", "RISC-V", "open ISA / embedded-server", 64u, "target-defined", "modular load/store RISC", "GCC, LLVM, vendor toolchains", "ISA extension set, privilege modes, vector extension and ABI string"},
     {6u, "riscv32", "RISC-V", "microcontroller/embedded", 32u, "target-defined", "modular load/store RISC", "GCC, LLVM, vendor toolchains", "XLEN, extension set, interrupt controller and memory map"},
     {7u, "loongarch64", "LoongArch", "desktop/server", 64u, "little (common profile)", "load/store RISC", "GCC, LLVM and platform toolchains", "ISA feature flags, ABI variant, kernel/userspace boundary"},
-    {8u, "e2k", "Elbrus", "VLIW desktop/server", 64u, "target-defined", "explicitly scheduled VLIW", "MCST LCC / platform compiler", "compiler version, VLIW scheduling, ABI and platform-specific counters"},
+    {8u, "e2k", "Elbrus", "VLIW desktop/server", 64u, "little", "VLIW with compiler-managed instruction scheduling", "MCST LCC / platform compiler", "compiler version, VLIW scheduling, ABI and platform-specific counters"},
     {9u, "ppc64le", "Power ISA", "server/accelerator", 64u, "little", "load/store RISC", "GCC, LLVM, IBM XL where available", "VSX/AltiVec capabilities, endian ABI, cache and NUMA topology"},
     {10u, "s390x", "IBM Z", "mainframe", 64u, "big", "register-rich CISC", "GCC, LLVM, IBM toolchains", "big-endian data layout, vector facility, ABI and processor facilities"},
     {11u, "avr", "AVR", "8-bit microcontroller", 8u, "little", "Harvard-style MCU", "avr-gcc, LLVM-based toolchains where supported", "program/data address spaces, flash/RAM limits, interrupt vectors"},

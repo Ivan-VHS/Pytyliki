@@ -74,7 +74,35 @@ int main(void) {
     assert(pl_audio_load_wav(path, &audio) != 0);
     pl_audio_free(&audio);
 
+    /* Deterministic malformed-input fuzz corpus for the production WAV loader. */
+    uint32_t state = UINT32_C(0x5AFE2026);
+    unsigned char bytes[256];
+    for (size_t round = 0u; round < 256u; ++round) {
+        state ^= state << 13;
+        state ^= state >> 17;
+        state ^= state << 5;
+        size_t length = (size_t)(state % (uint32_t)sizeof(bytes));
+        for (size_t i = 0u; i < length; ++i) {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            bytes[i] = (unsigned char)(state & 0xffu);
+        }
+        /* Bias part of the corpus toward RIFF-shaped but inconsistent headers. */
+        if (round % 3u == 0u && length >= 12u) {
+            bytes[0] = 'R'; bytes[1] = 'I'; bytes[2] = 'F'; bytes[3] = 'F';
+            bytes[8] = 'W'; bytes[9] = 'A'; bytes[10] = 'V'; bytes[11] = 'E';
+        }
+        FILE *fuzz_file = open_fixture(path);
+        assert(fuzz_file != NULL);
+        assert(fwrite(bytes, 1u, length, fuzz_file) == length);
+        assert(fclose(fuzz_file) == 0);
+        pl_audio_buffer fuzzed = {0};
+        (void)pl_audio_load_wav(path, &fuzzed);
+        pl_audio_free(&fuzzed);
+    }
+
     remove(path);
-    puts("WAV RIFF container boundary tests passed.");
+    puts("WAV RIFF boundary and deterministic fuzz-smoke tests passed.");
     return 0;
 }
