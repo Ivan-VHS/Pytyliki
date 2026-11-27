@@ -38,6 +38,30 @@ static void test_documented_spellings(void) {
     }
 }
 
+static void test_prefix_marker_identity(void) {
+    static const struct {
+        const char *prefix;
+        unsigned marker_id;
+    } cases[] = {
+        {"{]+/*+?$", 1u}, {"{]+/*", 2u}, {"*/+?", 3u},
+        {"{]/*", 4u}, {"$+?/", 5u}, {"*]+$", 6u},
+        {"{+/*?", 7u}, {"?+$}", 8u}, {"[/+*]", 9u},
+        {"{?$+*", 10u}, {"*?{/+", 11u}, {"{/*+?$", 12u},
+        {"]+?*/", 13u}, {"$/*+}", 14u}, {"{]?$+", 15u}
+    };
+    size_t index;
+    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        char source[80];
+        pl_system_array_directive directive;
+        pl_system_array_error error;
+        (void)snprintf(source, sizeof(source), "%s system(array) ^>", cases[index].prefix);
+        assert(pl_system_array_parse(source, &directive, &error));
+        assert(directive.prefix_marker == cases[index].marker_id);
+        assert(strcmp(pl_system_array_prefix_marker(directive.prefix_marker),
+                      cases[index].prefix) == 0);
+    }
+}
+
 static void test_suffix_marker_identity(void) {
     static const struct {
         const char *suffix;
@@ -140,6 +164,7 @@ static void test_json_contract(void) {
 
 int main(void) {
     test_documented_spellings();
+    test_prefix_marker_identity();
     test_suffix_marker_identity();
     test_alias_normalization();
     test_rejects_unknown_or_ambiguous_input();
