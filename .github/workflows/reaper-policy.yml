@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Reaper
-          ref: 3dd72e3b9aeb32b02fb4bfd0cea688625a55bff9
+          ref: a6b986ebd263b1b3651da2bf0a3dcf69c0ca67cd
           path: _deps/Reaper
 
       - name: Set up Python
@@ -62,3 +62,7 @@ jobs:
           grep -qx "REAPER_PROCESSOR_RELIABILITY:PASS" processor-reliability.txt
           grep -qx "TYPE_ROLE_COVERAGE:20/20" processor-reliability.txt
           grep -qx "PYTYLIKI_REPLAY:PASS" processor-reliability.txt
+          python -m reaper --engine vm examples/processor_reliability.rpr | tee processor-reliability-vm.txt
+          grep -qx "REAPER_PROCESSOR_RELIABILITY:PASS" processor-reliability-vm.txt
+          grep -qx "TYPE_ROLE_COVERAGE:20/20" processor-reliability-vm.txt
+          grep -qx "PYTYLIKI_REPLAY:PASS" processor-reliability-vm.txt
