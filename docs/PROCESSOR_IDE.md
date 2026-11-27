@@ -278,6 +278,19 @@ These are not reductions in ambition. They are guardrails that make the results 
 
 Current status is not overstated: register editing, machine-code disassembly, pipeline simulation, live JTAG/SWD sessions, hardware logic-analyzer transport, physical design and cycle-accurate real-silicon equivalence are not shipped by this contract.
 
+### First native session foundation in this change
+
+This PR also adds a small C11 API:
+
+- `src/processor_ide.h/.c` — `pl_ide_session_init`, `pl_ide_session_validate`, status strings and workspace lookup.
+- `pl_ide_session` binds project/session IDs, one of the twenty existing workspace IDs, a validated `pl_ll_target` and an explicit mode.
+- `PL_IDE_MODE_DEFAULT` resolves to `PL_IDE_MODE_INSPECT`.
+- Inspect, plan, static and simulation sessions are metadata-only. Debug, hardware-in-loop and privileged modes require the relevant target provider, capability and operator approval flags.
+- The session validator performs no device access, tool invocation, MMIO operation or hardware mutation.
+- `tests/test_processor_ide.c` and CTest target `processor-ide-session-tests` cover workspace reuse, mode admission, invalid identifiers, target validation and denied-by-default behavior.
+
+This is the first native core slice, not a graphical IDE. The UI, assembler/disassembler, live register/debug providers, pipeline simulator and waveform integration remain separate implementation gates.
+
 ## 11. Implementation layers
 
 | Layer | Scope | Acceptance gate |
