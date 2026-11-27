@@ -364,3 +364,9 @@ The validator checks rule cardinality and IDs, references, evidence paths, owner
 Pytyliki's ambition is to provide unusually broad, explicit and verifiable coverage from bit representation through processor architecture and physical hardware engineering. "The lowest-level language in history" is a research/engineering goal, not a fact established by this specification.
 
 That claim can be evaluated only with a public capability matrix, comparable independent systems, working implementations, target-specific tests, simulator evidence and physical qualification where claimed. Breadth of vocabulary, number of module names or access to privileged instructions alone does not establish it.
+
+## 15. Omega-Null research profile
+
+Omega-Null is an experimental physics-inspired profile within IRON CORE, not a replacement for Reaper and not a claim of control beneath physical law. It preserves 20 resonance markers but normalizes them into typed operations with explicit targets, modes, effects and evidence. Its four framework concepts are mapped to process/model isolation, deterministic checkpoints and replay, materials/CAD/fabrication workflows, and consent-based BCI adapters.
+
+The profile defines 12 research/planned operations and explicitly excludes physical reality mutation, forced quantum outcomes, spacetime manipulation, physical time reversal, matter-from-thought and thought-reading claims. The complete mapping, operation catalogue and acceptance boundaries are in [Omega-Null](OMEGA_NULL.md), with the source contract at [omega-null/omega-null.v0.json](../omega-null/omega-null.v0.json).
