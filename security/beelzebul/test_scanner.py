@@ -34,11 +34,26 @@ class ScannerRegressionTests(unittest.TestCase):
     def test_correlations_ignore_scanner_and_policy_metadata(self):
         findings = []
         sources = {
-            "security/beelzebul/scanner.py": "password token sha1 logger.info(value)",
+            "security/beelzebul/scanner.py": (
+                "password token sha1 "
+                "logger.info(value)"
+            ),
             ".beelzebul/policy.v1.json": '{"password": "token", "sha1": "auth"}',
         }
         correlate(findings, sources, set(sources))
         self.assertFalse([item for item in findings if item["rule_id"].startswith("Q")])
+
+    def test_secret_log_correlation_requires_same_line_evidence(self):
+        unrelated = []
+        correlate(
+            unrelated,
+            {"src/module.py": "token = read_token()\\nlogger.info('request complete')"},
+        )
+        self.assertFalse([item for item in unrelated if item["rule_id"] == "Q05"])
+
+        direct = []
+        correlate(direct, {"src/module.py": "logger.info('token=%s', token)"})
+        self.assertTrue([item for item in direct if item["rule_id"] == "Q05"])
 
     def test_repository_correlation_uses_only_changed_files(self):
         findings = [
