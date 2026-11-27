@@ -1,8 +1,8 @@
 {
   "schema": "systems-language-matrix/v1",
   "count": 66,
-  "canonical_entries": 64,
-  "source_note": "Preserves all 66 supplied list positions. The repeated Clay entry and Nimrod-as-early-Nim entry are explicit aliases. This catalogue discovers candidate toolchains and maps capabilities; it does not implement 66 compilers.",
+  "canonical_entries": 66,
+  "source_note": "Exactly 66 unique systems-language, assembly, VM, IR, and hardware-oriented profiles. Every slot has a distinct identity; aliases and repeated historical names are excluded. The catalogue discovers candidate toolchains and maps capabilities; it does not implement 66 compilers.",
   "profiles": {
     "pytyliki": [
       "native",
@@ -1053,36 +1053,37 @@
     {
       "index": 62,
       "id": "lang-62",
-      "name": "Clay (generic programming model)",
-      "family": "experimental-research",
-      "status": "research",
-      "commands": [],
+      "name": "RISC-V Assembly (GNU as)",
+      "family": "architecture-assembly",
+      "status": "modern",
+      "commands": [
+        "riscv64-unknown-elf-as"
+      ],
       "tags": [
         "native",
-        "static-types",
-        "compile-time",
-        "metaprogramming",
-        "zero-cost"
-      ],
-      "alias_of": "lang-22"
+        "assembly",
+        "bare-metal",
+        "machine-code",
+        "no-runtime"
+      ]
     },
     {
       "index": 63,
       "id": "lang-63",
-      "name": "Nimrod (early Nim)",
-      "family": "experimental-research",
-      "status": "legacy-alias",
+      "name": "eBPF Assembly",
+      "family": "architecture-assembly",
+      "status": "modern",
       "commands": [
-        "nim"
+        "llvm-mc"
       ],
       "tags": [
         "native",
-        "static-types",
-        "arc-orc",
-        "compile-time",
-        "metaprogramming"
-      ],
-      "alias_of": "lang-18"
+        "assembly",
+        "machine-code",
+        "sandboxed",
+        "verifier",
+        "no-runtime"
+      ]
     },
     {
       "index": 64,
