@@ -1,6 +1,6 @@
 # Pytyliki hardware constructs and syntax families
 
-**Specification:** draft 0.1  
+**Specification:** draft 0.2 / integrated extension 0.4  
 **Frontend:** native C11 structural parser  
 **Canonical language owner:** Pytyliki  
 **Compiler foundation:** Reaper  
@@ -21,6 +21,8 @@ The five syntax families are:
 | Runtime instrumentation | \`hot_patch\`, \`trace_script\` |
 
 A construct keyword selects a typed node kind. It does not grant permissions, select a physical device, or execute hardware actions merely by appearing in source.
+
+The hardware construct frontend is complemented by the [SystemArray sigil operator registry](SYSTEM_SIGIL_OPERATORS.md). The registry defines stable semantic IDs, scalar/array type signatures and effect metadata for thirteen suffix operators. It remains metadata-only: it does not parse full expressions, resolve overloads, evaluate plans or touch hardware. The consolidated [Hardware Language Extension 0.4](PYTYLIKI_HARDWARE_LANGUAGE_SPEC_0.4.md) defines how these pieces fit with target profiles and Reaper IR.
 
 ## 2. Implemented structural subset
 
