@@ -1,0 +1,6 @@
+module kinematics;
+target host;
+input distance: cm = 120;
+input elapsed: s = 4;
+derive speed: m/s = distance / elapsed;
+derive travelled: m = speed * elapsed;

@@ -1,0 +1,5 @@
+module mmio_probe;
+target sim;
+register status: u32 access read_only;
+allow mmio.read;
+operation status_value: u32 = mmio.read(status);
