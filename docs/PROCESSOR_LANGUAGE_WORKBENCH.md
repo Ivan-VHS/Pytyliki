@@ -9,7 +9,7 @@ This is a profile and tooling integration layer. It does not claim that 66 compi
 ## Five core functions
 
 1. **Registry** — pl_language_catalog enumerates the immutable 66-entry table; pl_language_find resolves an ID or case-insensitive display name.
-2. **Detection** — pl_language_detect identifies one profile from a unique file extension, then checks a small number of unmistakable text signatures. Ambiguous and unknown inputs are reported separately.
+2. **Detection** — pl_language_detect identifies one profile from a unique file extension, then checks a small number of unmistakable text signatures. Ambiguous and unknown inputs are reported separately. Generic .asm and .s suffixes return an ambiguity result because they do not identify an assembler dialect.
 3. **Inspection** — pl_language_inspect performs a bounded structural scan: byte/line counts, tokens, comments, quoted strings, delimiter balance and maximum delimiter nesting. Input is capped at 1 MiB and nesting at 128 delimiters.
 4. **Target validation** — pl_language_check_target checks whether a profile's declared architecture/VM target mask includes the requested target alias. It is a catalogue compatibility check, not a compiler-feature or ABI proof.
 5. **Build planning** — pl_language_build_plan_create returns an executable name and a bounded argv array for a small set of known toolchain routes. The result is data only: this library never launches the executable, concatenates a shell command, installs a compiler, links an image or writes hardware.
