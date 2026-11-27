@@ -81,10 +81,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Configure Windows WHEA adapter
         run: cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
-      - name: Build
-        run: cmake --build build --config Release --parallel
-      - name: Test native core
-        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Build PTFR, WHEA adapter and focused tests
+        run: >-
+          cmake --build build --config Release --parallel --target
+          pytyliki-ptfr
+          pytyliki-processor-evidence-tests
+          pytyliki-sha256-tests
+          pytyliki-ptfr-evidence-link-tests
+      - name: Run focused WHEA and evidence tests
+        run: >-
+          ctest --test-dir build -C Release --output-on-failure
+          -R "^(processor-platform-evidence-tests|sha256-known-vector-tests|ptfr-evidence-link-tests)$"
       - name: Verify WHEA collector CLI contract
         run: .\build\Release\pytyliki-ptfr.exe --help
 

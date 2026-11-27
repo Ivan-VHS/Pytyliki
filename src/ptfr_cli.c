@@ -78,7 +78,11 @@ int main(int argc,char **argv) {
         fprintf(stderr,"PTFR platform collection failed: %d\n",status);
         return 1;
     }
+#if defined(_WIN32)
+    if(fopen_s(&output,output_path,"wb")!=0) output=NULL;
+#else
     output=fopen(output_path,"wb");
+#endif
     if(output==NULL) {
         fprintf(stderr,"Cannot open evidence output: %s\n",output_path);
         return 1;

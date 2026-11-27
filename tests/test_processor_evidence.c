@@ -17,7 +17,7 @@ static pl_tr_platform_event make_event(uint64_t timestamp,uint32_t cpu,uint32_t 
     event.cpu_id=cpu;
     event.severity=PL_TR_SEVERITY_WARNING;
     event.kind=PL_TR_EVIDENCE_CORRECTED;
-    strcpy(event.source_identity,"mc0/ce_count");
+    memcpy(event.source_identity,"mc0/ce_count",sizeof "mc0/ce_count");
     return event;
 }
 static void test_sha256(void) {
@@ -39,7 +39,11 @@ static void test_append_verify_export_and_tamper(void) {
     assert(pl_tr_evidence_find_cpu_window(&ledger,2u,1000u,1500u,matches,4u)==1u);
     assert(matches[0]==1u);
     assert(pl_tr_evidence_find_cpu_window(&ledger,PL_TR_UNKNOWN_CPU,1u,3000u,NULL,0u)==0u);
+#if defined(_WIN32)
+    assert(tmpfile_s(&file)==0);
+#else
     file=tmpfile();
+#endif
     assert(file!=NULL);
     assert(pl_tr_evidence_export_jsonl(&ledger,file)==PL_TR_EVIDENCE_OK);
     rewind(file);

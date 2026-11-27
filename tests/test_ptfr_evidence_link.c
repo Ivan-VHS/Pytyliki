@@ -15,7 +15,8 @@ static pl_tr_platform_event event_make(uint64_t timestamp) {
     event.cpu_id=2u;
     event.severity=PL_TR_SEVERITY_WARNING;
     event.kind=PL_TR_EVIDENCE_CORRECTED;
-    strcpy(event.source_identity,"Microsoft-Windows-WHEA-Logger");
+    memcpy(event.source_identity,"Microsoft-Windows-WHEA-Logger",
+           sizeof "Microsoft-Windows-WHEA-Logger");
     return event;
 }
 static void test_verified_link_reaches_ptfr(void) {
@@ -57,7 +58,11 @@ static void test_verified_link_reaches_ptfr(void) {
             &policy,&decision)==PL_TR_OK);
         assert(decision.action==PL_TR_ACTION_OBSERVE);
     }
+#if defined(_WIN32)
+    assert(tmpfile_s(&file)==0);
+#else
     file=tmpfile();
+#endif
     assert(file!=NULL);
     assert(pl_tr_worker_links_export_jsonl(&links,file)==PL_TR_LINK_OK);
     rewind(file);
