@@ -60,7 +60,7 @@ class ProcessorIDEContractTests(unittest.TestCase):
     def test_machine_facts_are_target_specific(self) -> None:
         adjustments = " ".join(self.data["safety_adjustments"]).lower()
         self.assertIn("endianness", adjustments)
-        self.assertIn("cache line", adjustments)
+        self.assertIn("cache geometry", adjustments)
         self.assertIn("instruction width", adjustments)
         self.assertIn("privilege", adjustments)
 
