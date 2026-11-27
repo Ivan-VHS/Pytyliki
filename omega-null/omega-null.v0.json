@@ -235,7 +235,9 @@
       "constraints": [
         "No arbitrary selection of a desired measurement result.",
         "Hardware execution requires a named device, calibration and explicit capability."
-      ]
+      ],
+      "required_capability": "quantum.device.execute",
+      "operator_approval_required": true
     },
     {
       "id": "quantum.gate.apply",
@@ -253,7 +255,9 @@
       "status": "research",
       "constraints": [
         "Gate set, connectivity, noise and compilation constraints are target-specific."
-      ]
+      ],
+      "required_capability": "quantum.device.execute",
+      "operator_approval_required": true
     },
     {
       "id": "quantum.measure",
@@ -273,7 +277,9 @@
       "constraints": [
         "Outcome is governed by the declared model or device behavior.",
         "The operation cannot force a chosen outcome or recover arbitrary classical secrets from superposition."
-      ]
+      ],
+      "required_capability": "quantum.device.measure",
+      "operator_approval_required": true
     },
     {
       "id": "field.solve",
@@ -291,7 +297,9 @@
       "status": "research",
       "constraints": [
         "Does not alter physical spacetime or slow real-world time."
-      ]
+      ],
+      "required_capability": "none",
+      "operator_approval_required": false
     },
     {
       "id": "experiment.tournament",
@@ -311,7 +319,9 @@
       "constraints": [
         "Only actual compute resources and explicitly named simulations are used.",
         "Candidate score and confidence are reported; no future or alternate reality is accessed."
-      ]
+      ],
+      "required_capability": "none",
+      "operator_approval_required": false
     },
     {
       "id": "sandbox.create",
@@ -332,7 +342,9 @@
       "constraints": [
         "Isolation strength must name the actual platform mechanism.",
         "A simulator sandbox is not a physically separate universe."
-      ]
+      ],
+      "required_capability": "process.sandbox",
+      "operator_approval_required": false
     },
     {
       "id": "chrono.checkpoint",
@@ -350,7 +362,9 @@
       "status": "planned",
       "constraints": [
         "Checkpoint is not a backup of the physical world."
-      ]
+      ],
+      "required_capability": "state.checkpoint",
+      "operator_approval_required": false
     },
     {
       "id": "chrono.replay",
@@ -367,7 +381,9 @@
       "status": "planned",
       "constraints": [
         "Replay does not reverse external physical events or restore an earlier real time."
-      ]
+      ],
+      "required_capability": "none",
+      "operator_approval_required": false
     },
     {
       "id": "material.structure.build",
@@ -385,7 +401,9 @@
       "status": "research",
       "constraints": [
         "The result is a model/design artifact unless separately fabricated and measured."
-      ]
+      ],
+      "required_capability": "none",
+      "operator_approval_required": false
     },
     {
       "id": "fabrication.plan",
@@ -404,7 +422,9 @@
       "constraints": [
         "Physical fabrication requires suitable equipment, feedstock, safety controls and operator approval.",
         "No claim of creating matter from vacuum or thought."
-      ]
+      ],
+      "required_capability": "fabrication.submit",
+      "operator_approval_required": true
     },
     {
       "id": "bci.capture",
@@ -423,7 +443,9 @@
       "constraints": [
         "Requires informed consent, visible activation, data minimization and local-first handling.",
         "No emotion inference or direct thought-to-code guarantee."
-      ]
+      ],
+      "required_capability": "bci.capture",
+      "operator_approval_required": true
     },
     {
       "id": "bci.intent.decode",
@@ -441,7 +463,9 @@
       "status": "research",
       "constraints": [
         "Output is a probabilistic hypothesis, not direct access to thoughts or mental state."
-      ]
+      ],
+      "required_capability": "none",
+      "operator_approval_required": false
     }
   ],
   "frameworks": [
