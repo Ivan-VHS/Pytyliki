@@ -18,6 +18,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
 - [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
+- [Mathematical research workbench v1](MATHEMATICAL_RESEARCH_WORKBENCH_V1.md) — 51 bounded C11 kernels for 17 open mathematical problem areas; experimental evidence only.
 - [Reaper integration](REAPER_INTEGRATION.md)
 - [IRON CORE v1](IRON_CORE.md) — 100 hardware-engineering rules and evidence gates.
 - [Omega-Null](OMEGA_NULL.md) — experimental physics-inspired profile and physical capability boundaries. — opt-in policy and C ABI boundaries.
