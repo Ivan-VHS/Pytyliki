@@ -665,7 +665,7 @@
     },
     {
       "id": "neuro.point",
-      "module": "pyty.bci",
+      "module": "pyty.neuro",
       "meaning": "Neuromorphic neuron/network models and consented neural signal adapters; no unmediated brain access."
     },
     {
