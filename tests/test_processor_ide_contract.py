@@ -43,6 +43,17 @@ class ProcessorIDEContractTests(unittest.TestCase):
             with self.subTest(rule=rule["id"]):
                 self.assertIn(rule["workspace"], workspaces)
 
+    def test_twenty_named_engineering_perspectives_are_preserved(self) -> None:
+        perspectives = self.data["perspectives"]
+        self.assertEqual(len(perspectives), 20)
+        self.assertEqual(len({item["id"] for item in perspectives}), 20)
+        workspaces = {item["id"] for item in self.data["workspaces"]}
+        for perspective in perspectives:
+            with self.subTest(perspective=perspective["id"]):
+                self.assertIn(perspective["workspace"], workspaces)
+                self.assertEqual(perspective["authority"], "no_privilege_elevation")
+                self.assertEqual(perspective["scope_kind"], "workspace_perspective")
+
     def test_partial_status_is_backed_by_existing_evidence(self) -> None:
         errors = validate_data(copy.deepcopy(self.data), ROOT)
         self.assertEqual(errors, [])
