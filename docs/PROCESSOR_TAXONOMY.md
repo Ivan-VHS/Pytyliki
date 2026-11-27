@@ -8,3 +8,5 @@
 | Unknown field | preserve unknown; never infer support |
 
 Catalogue counts are not certification. Host and OS determine usable features.
+
+For real embedded register access, counter sources, architecture barriers, ISA layout checks and fault snapshots, see [Processor Silicon Runtime](PROCESSOR_SILICON.md). The native layer reports unsupported hardware semantics instead of approximating them.
