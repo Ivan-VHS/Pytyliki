@@ -41,6 +41,9 @@ static void test_language_detection(void) {
     assert(profile == pl_language_find("asm-x86_64-nasm"));
     assert(pl_language_detect("module.unknown", wat, sizeof(wat) - 1u, &profile) == 0);
     assert(profile == pl_language_find("vm-wasm-text"));
+    assert(pl_language_detect("source.asm", NULL, 0u, &profile) == 2);
+    assert(profile == NULL);
+    assert(pl_language_detect("source.s", NULL, 0u, &profile) == 2);
     assert(pl_language_detect("module.unknown", "unknown", 7u, &profile) == 1);
     assert(profile == NULL);
     assert(pl_language_detect("module.unknown", NULL, 0u, &profile) == 1);
