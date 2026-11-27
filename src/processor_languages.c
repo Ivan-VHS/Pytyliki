@@ -83,7 +83,7 @@ static const pl_language_profile profiles[PL_LANGUAGE_COUNT] = {
     PROFILE("sys-c", "C", "systems programming", PL_LANGUAGE_SYSTEMS, ".c", "clang", TARGET_PORTABLE, C_SLASH | C_BLOCK, PL_LANGUAGE_ROUTE_CLANG, "Clang object-build plan is available; sysroot and linker remain external."),
     PROFILE("sys-cpp", "C++", "systems programming", PL_LANGUAGE_SYSTEMS, ".cpp", "clang++", TARGET_PORTABLE, C_SLASH | C_BLOCK, PL_LANGUAGE_ROUTE_CLANGXX, "Clang++ object-build plan is available; standard library and sysroot remain external."),
     PROFILE("sys-rust", "Rust", "systems programming", PL_LANGUAGE_SYSTEMS, ".rs", "rustc", TARGET_PORTABLE, C_SLASH | C_BLOCK, PL_LANGUAGE_ROUTE_RUSTC, "Rust object-build plan is available; target standard library must be installed separately."),
-    PROFILE("sys-d-betterc", "D (BetterC)", "systems programming", PL_LANGUAGE_SYSTEMS, ".d", "ldc2", TARGET_CPU, C_SLASH | C_BLOCK, PL_LANGUAGE_ROUTE_LDC, "LDC object-build plan is available; BetterC restrictions are not compiler-enforced here."),
+    PROFILE("sys-d-betterc", "D (BetterC)", "systems programming", PL_LANGUAGE_SYSTEMS, ".d", "ldc2", TARGET_CPU, C_SLASH | C_BLOCK, PL_LANGUAGE_ROUTE_LDC, "LDC object-build plan passes -betterC; source-level API restrictions still require compiler diagnostics and review."),
     PROFILE("sys-zig", "Zig", "systems programming", PL_LANGUAGE_SYSTEMS, ".zig", "zig", TARGET_PORTABLE, C_SLASH, PL_LANGUAGE_ROUTE_ZIG, "Zig object-build plan is available; target support depends on the installed compiler."),
     PROFILE("sys-ada-spark", "Ada / SPARK", "verified systems programming", PL_LANGUAGE_SYSTEMS, ".adb", "gnatmake", TARGET_CPU, C_DASH, PL_LANGUAGE_ROUTE_NONE, "Ada/SPARK profile; proof and compiler checks require a configured GNAT/SPARK toolchain."),
     PROFILE("sys-modula-2", "Modula-2", "systems programming", PL_LANGUAGE_SYSTEMS, ".mod2", "m2c", TARGET_CPU, C_SLASH, PL_LANGUAGE_ROUTE_NONE, "Historical systems language profile; dialect and compiler are implementation-specific."),
@@ -107,7 +107,7 @@ static const pl_language_profile profiles[PL_LANGUAGE_COUNT] = {
     PROFILE("vm-wasm-text", "WebAssembly text (WAT)", "virtual instruction set", PL_LANGUAGE_BYTECODE, ".wat", "wat2wasm", TARGET_WASM, C_SEMI, PL_LANGUAGE_ROUTE_WAT2WASM, "WAT-to-Wasm planning is available; runtime and WASI policy are separate."),
     PROFILE("ir-llvm", "LLVM IR", "compiler intermediate representation", PL_LANGUAGE_INTERMEDIATE, ".ll", "llc", TARGET_PORTABLE, C_SEMI, PL_LANGUAGE_ROUTE_LLC, "LLVM object-build plan is available; backend target support is external."),
     PROFILE("ir-spirv", "SPIR-V assembly", "GPU intermediate representation", PL_LANGUAGE_INTERMEDIATE, ".spvasm", "spirv-as", TARGET_GPU, C_SEMI, PL_LANGUAGE_ROUTE_SPIRV_AS, "SPIR-V assembly planning targets Vulkan 1.2; validation is a separate step."),
-    PROFILE("ir-qbe", "QBE IL", "compiler intermediate representation", PL_LANGUAGE_INTERMEDIATE, ".ssa", "qbe", TARGET_CPU, C_SEMI, PL_LANGUAGE_ROUTE_QBE, "QBE object-build plan is available for supported host backends."),
+    PROFILE("ir-qbe", "QBE IL", "compiler intermediate representation", PL_LANGUAGE_INTERMEDIATE, ".ssa", "qbe", TARGET_X64, C_SEMI, PL_LANGUAGE_ROUTE_QBE, "QBE object-build plan is available for supported host backends."),
     PROFILE("vm-jasmin", "JVM bytecode (Jasmin)", "virtual machine bytecode", PL_LANGUAGE_BYTECODE, ".j", "jasmin", TARGET_JVM, C_SEMI, PL_LANGUAGE_ROUTE_NONE, "Assembler profile for JVM class files; verifier and runtime are separate."),
     PROFILE("vm-dotnet-il", ".NET CIL (ILAsm)", "virtual machine bytecode", PL_LANGUAGE_BYTECODE, ".il", "ilasm", TARGET_CLR, C_SEMI, PL_LANGUAGE_ROUTE_NONE, "Assembler profile for CLR assemblies; verification and runtime are separate."),
     PROFILE("sys-opencl-c", "OpenCL C", "heterogeneous systems programming", PL_LANGUAGE_SYSTEMS, ".cl", "clang", TARGET_GPU | TARGET_CPU, C_SLASH | C_BLOCK, PL_LANGUAGE_ROUTE_NONE, "Kernel source profile; device compilation options are vendor/runtime-specific."),
@@ -512,7 +512,8 @@ int pl_language_build_plan_create(const char *id_or_name, const char *target,
                 add_formatted_argument(out, "-femit-bin=", output_path) != 0) return -1;
             break;
         case PL_LANGUAGE_ROUTE_LDC:
-            if (add_argument(out, "-c") != 0 ||
+            if (add_argument(out, "-betterC") != 0 ||
+                add_argument(out, "-c") != 0 ||
                 add_argument(out, source_path) != 0 ||
                 add_formatted_argument(out, "-of=", output_path) != 0) return -1;
             break;
@@ -551,7 +552,9 @@ int pl_language_build_plan_create(const char *id_or_name, const char *target,
                 add_argument(out, output_path) != 0) return -1;
             break;
         case PL_LANGUAGE_ROUTE_QBE:
-            if (add_argument(out, "-o") != 0 ||
+            if (add_argument(out, "-t") != 0 ||
+                add_argument(out, "amd64_sysv") != 0 ||
+                add_argument(out, "-o") != 0 ||
                 add_argument(out, output_path) != 0 ||
                 add_argument(out, source_path) != 0) return -1;
             break;
