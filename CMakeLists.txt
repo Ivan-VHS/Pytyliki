@@ -290,8 +290,6 @@ if(BUILD_TESTING)
     18_hardware_sanity
     19_cpu_window_layout
     20_step_debugger
-    21_hyper_switch_reality_synthesizer
-    22_epoch_4m_vacuum_lattice
   )
   foreach(example IN LISTS PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES)
     add_test(
@@ -300,6 +298,17 @@ if(BUILD_TESTING)
         ${CMAKE_CURRENT_SOURCE_DIR}/examples/hardware-constructs/${example}.syntax
     )
   endforeach()
+
+  add_test(
+    NAME hardware-syntax-profile-hyper-switch
+    COMMAND pytyliki-hw-syntax --check
+      ${CMAKE_CURRENT_SOURCE_DIR}/examples/profiles/01_hyper_switch_reality_synthesizer.syntax
+  )
+  add_test(
+    NAME hardware-syntax-profile-epoch-4m
+    COMMAND pytyliki-hw-syntax --check
+      ${CMAKE_CURRENT_SOURCE_DIR}/examples/profiles/02_epoch_4m_vacuum_lattice.syntax
+  )
 
 endif()
 
