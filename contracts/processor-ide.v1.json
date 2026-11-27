@@ -544,8 +544,8 @@
       "group": "IDE_CORE",
       "title": "Live and simulated register inspector",
       "workspace": "circuit-cobalt",
-      "requirement": "Display the target's documented architectural register set, aliases, flags and register classes, including R0-R7 when defined, PC and status registers.",
-      "acceptance": "Register names, widths, access classes and read/write effects derive from the selected ISA/target descriptor; changed values are diffed per trace event.",
+      "requirement": "Display the target's documented architectural register set, aliases and flags, including R0–R7 when defined, PC, FLAGS and the project-defined regit view when explicitly declared.",
+      "acceptance": "Register names, widths, access classes and read/write effects derive from the selected ISA/target descriptor. regit is shown only as a declared project/debugger view, never fabricated as a universal architectural register; changed values are diffed per trace event.",
       "interpretation_adjustment": "Do not invent universal registers such as regit or assume all architectures expose R0-R7; hardware watch may be sampled or disruptive.",
       "status": "planned",
       "evidence": []
