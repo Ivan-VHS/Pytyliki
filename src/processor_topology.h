@@ -76,6 +76,8 @@ typedef struct {
     uint32_t logical_count;
     uint64_t memory_total_bytes;
     uint64_t memory_available_bytes;
+    uint8_t memory_total_observed;
+    uint8_t memory_available_observed;
     pl_topology_evidence evidence;
 } pl_topology_numa_node;
 
