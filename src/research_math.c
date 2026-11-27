@@ -250,6 +250,7 @@ static int validate_grid(const double *u, const double *v, const double *w,
         !finite_double(dx) || !finite_double(dy) || !finite_double(dz) || dx <= 0.0 || dy <= 0.0 || dz <= 0.0)
         return PL_MATH_INVALID;
     if (!checked_product_size(nx, ny, count) || !checked_product_size(*count, nz, count)) return PL_MATH_OVERFLOW;
+    if (*count > PL_MATH_MAX_GRID_CELLS) return PL_MATH_LIMIT;
     for (size_t i = 0u; i < *count; ++i)
         if (!finite_double(u[i]) || !finite_double(v[i]) || !finite_double(w[i])) return PL_MATH_INVALID;
     return PL_MATH_OK;
