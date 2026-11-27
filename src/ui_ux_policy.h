@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {
