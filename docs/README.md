@@ -14,6 +14,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
+- [Processor Language Workbench](PROCESSOR_LANGUAGE_WORKBENCH.md) — exactly 66 unique assembly, systems-language, VM, IR and HDL profiles.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
 - [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.

@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and a syntax-only system-array frontend.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, a 66-profile native processor-language workbench, source diagnostics, numerical metrics, system-array syntax, and versioned native interoperability.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -142,6 +142,18 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "languages.processor-workbench",
+      "status": "implemented",
+      "summary": "Native C11 registry of 66 unique assembly, systems-language, bytecode, IR and HDL profiles with detection, bounded structural inspection, target-mask checks and inert toolchain argument plans.",
+      "evidence": [
+        "src/processor_languages.h",
+        "src/processor_languages.c",
+        "src/processor_languages_cli.c",
+        "tests/test_processor_languages.c",
+        "docs/PROCESSOR_LANGUAGE_WORKBENCH.md"
+      ]
     }
   ],
   "interfaces": [
@@ -222,6 +234,7 @@
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
-    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration."
+    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
+    "Versioned profile records and bounded native language analysis/build-plan adapters; external tool execution remains a separate opt-in future integration."
   ]
 }

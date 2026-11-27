@@ -1,4 +1,4 @@
-"""Read-only 66-slot systems-language and toolchain capability matrix."""
+"""Read-only, unique 66-entry systems-language and toolchain capability matrix."""
 from __future__ import annotations
 import argparse, json, shutil, sys
 from pathlib import Path
@@ -24,7 +24,7 @@ def validate_matrix(data: Any) -> int:
         raise ValueError("catalogue must contain exactly 66 entries")
     if not isinstance(profiles, dict) or not profiles:
         raise ValueError("profiles must be a non-empty object")
-    ids, indices = set(), set()
+    ids, indices, names = set(), set(), set()
     for item in languages:
         if not isinstance(item, dict): raise ValueError("language entries must be objects")
         identifier, index = item.get("id"), item.get("index")
@@ -35,6 +35,10 @@ def validate_matrix(data: Any) -> int:
         for field in ("name", "family", "status"):
             if not isinstance(item.get(field), str) or not item[field]:
                 raise ValueError(f"{identifier}: missing {field}")
+        normalized_name = item["name"].strip().casefold()
+        if normalized_name in names:
+            raise ValueError(f"{identifier}: duplicate language name {item['name']!r}")
+        names.add(normalized_name)
         for field in ("commands", "tags"):
             values = item.get(field)
             if not isinstance(values, list) or (field == "tags" and not values) or not all(isinstance(v, str) and v for v in values):
@@ -42,9 +46,8 @@ def validate_matrix(data: Any) -> int:
         ids.add(identifier); indices.add(index)
     if indices != set(range(1, 67)): raise ValueError("source indices must cover 1..66")
     for item in languages:
-        alias = item.get("alias_of")
-        if alias is not None and alias not in ids:
-            raise ValueError(f"{item['id']}: alias points to unknown id {alias!r}")
+        if item.get("alias_of") is not None:
+            raise ValueError(f"{item['id']}: aliases are not valid catalogue entries")
     for name, tags in profiles.items():
         if not isinstance(name, str) or not isinstance(tags, list) or not tags:
             raise ValueError(f"invalid profile {name!r}")
@@ -85,7 +88,7 @@ def render_text(items: list[dict[str, Any]]) -> str:
 
 def main(argv: list[str] | None = None, matrix_path: str | Path | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inspect systems-language toolchains and rank capability profiles.")
-    parser.add_argument("--verify", action="store_true", help="validate all 66 catalogue positions")
+    parser.add_argument("--verify", action="store_true", help="validate all 66 unique catalogue entries")
     parser.add_argument("--profile", choices=("pytyliki", "reaper", "oplague"))
     parser.add_argument("--tag", help="comma-separated capability tags")
     parser.add_argument("--available-only", action="store_true")
@@ -94,8 +97,7 @@ def main(argv: list[str] | None = None, matrix_path: str | Path | None = None) -
     try:
         data = load_matrix(matrix_path)
         if args.verify:
-            aliases = sum(bool(item.get("alias_of")) for item in data["languages"])
-            print(f"Systems language matrix: PASS ({len(data['languages'])} slots; {66-aliases} canonical entries; {aliases} aliases)")
+            print(f"Systems language matrix: PASS ({len(data['languages'])} unique entries)")
             return 0
         tags = {part.strip() for part in args.tag.split(",") if part.strip()} if args.tag else None
         if args.tag and not tags: parser.error("--tag requires a non-empty tag")

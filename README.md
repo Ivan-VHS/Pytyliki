@@ -28,6 +28,7 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 - **Native interoperability:** versioned C ABI v1 with caller-owned buffers; consumers must explicitly select a trusted library.
 - **Embedded references:** MCU profiles, memory estimates, starter generation and simulated MMIO masks. These are reference tools, not physical memory mapping, device access or firmware flashing.
 - **Toolchain inventory:** read-only discovery of available tools; discovered programs are not installed or launched.
+- **Processor-language workbench:** 66 unique assembly, systems-language, VM/IR and HDL profiles; bounded structural checks, target compatibility and non-executing toolchain argument plans.
 
 PCM16 WAV/DSP processing is not part of the current delivered Pytyliki core. See the project contract and feature documentation before depending on partial or planned capabilities.
 
@@ -69,6 +70,7 @@ Integrations do not grant hardware privileges or broaden the workstation's read-
 
 - [Feature overview](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md)
 - [Benchmark statistics](docs/BENCHMARK_STATISTICS.md) · [Embedded C reference workbench](docs/EMBEDDED_C.md)
+- [Processor language workbench](docs/PROCESSOR_LANGUAGE_WORKBENCH.md) — 66 unique processor-facing profiles, static inspection and inert build plans.
 - [QCS native inspection](docs/QCS_NATIVE.md) · [Documentation index](docs/README.md)
 - [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
 - [Reaper integration](docs/REAPER_INTEGRATION.md) · [Shared ecosystem standards](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
