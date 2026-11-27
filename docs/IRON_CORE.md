@@ -100,6 +100,15 @@ The following names are stable design identifiers for the workstream, not claims
 | `pyty.toolchain` | Target-specific assembler, object, linker and loader adapters. | Planned | pytyliki |
 | `pyty.security` | Capability policy, unsafe contracts, privilege and artifact trust. | Partial | joint |
 | `pyty.evidence` | Versioned reports, test provenance and qualification matrix. | Partial | pytyliki |
+| `pyty.omega` | Omega-Null marker profile, semantic normalization and Reaper IR effect mapping; experimental DSL surface, not an independent compiler. | Research | joint |
+| `pyty.quantum` | Quantum circuit/state simulation, state preparation, noise models, measurement statistics and future hardware adapters. | Research | pytyliki |
+| `pyty.field` | Numerical field and spacetime-model simulation with declared equations, units, boundary conditions and discretization. | Research | pytyliki |
+| `pyty.experiment` | Reproducible candidate evaluation, parameter sweeps, branch-and-bound and resource-bounded tournaments. | Planned | pytyliki |
+| `pyty.sandbox` | Process/model isolation, resource quotas, deterministic test domains and safe failure containment. | Planned | joint |
+| `pyty.chrono` | Logical checkpoints, deterministic trace/replay and simulation-time branching; no physical time reversal. | Planned | pytyliki |
+| `pyty.material` | Atomic/molecular/material models, structure validation and material-property simulation. | Research | pytyliki |
+| `pyty.fabrication` | CAD/RTL/manufacturing job planning and external tool adapters with declared feedstock, process and machine constraints. | Research | board-backend |
+| `pyty.bci` | Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input. | Research | duck-os |
 
 ## 6. Proposed language surface
 
