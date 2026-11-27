@@ -239,6 +239,9 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
         char *end = NULL;
         char path[256];
         char text[512];
+        int cpu_list_observed = 0;
+        int memory_total_observed = 0;
+        int memory_available_observed = 0;
         pl_topology_numa_node node;
         if (strncmp(entry->d_name, "node", 4u) != 0) continue;
         errno = 0;
@@ -251,7 +254,7 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
         (void)snprintf(path, sizeof(path), "/sys/devices/system/node/%s/cpulist", entry->d_name);
         if (read_text(path, text, sizeof(text)) &&
             parse_cpu_list(text, node.logical_mask, &node.logical_count)) {
-            node.evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+            cpu_list_observed = 1;
             for (size_t i = 0u; i < out->logical_cpu_count; ++i) {
                 const uint32_t id = out->logical_cpus[i].os_id;
                 if (id < PL_TOPOLOGY_MAX_LOGICAL_CPUS &&
@@ -266,21 +269,37 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
             if (meminfo != NULL) {
                 while (fgets(line, sizeof(line), meminfo) != NULL) {
                     char *value = NULL;
-                    if (strstr(line, "MemTotal:") != NULL)
+                    uint64_t bytes;
+                    if (strstr(line, "MemTotal:") != NULL) {
                         value = strstr(line, "MemTotal:") + 9;
-                    else if (strstr(line, "MemFree:") != NULL)
+                    } else if (strstr(line, "MemAvailable:") != NULL) {
+                        value = strstr(line, "MemAvailable:") + 13;
+                    } else if (!memory_available_observed &&
+                               strstr(line, "MemFree:") != NULL) {
                         value = strstr(line, "MemFree:") + 8;
-                    if (value != NULL) {
+                    }
+                    if (value == NULL) continue;
+                    {
                         unsigned long long kib = strtoull(value, NULL, 10);
-                        if (strstr(line, "MemTotal:") != NULL)
-                            node.memory_total_bytes = (uint64_t)kib * UINT64_C(1024);
-                        else
-                            node.memory_available_bytes = (uint64_t)kib * UINT64_C(1024);
+                        if (kib > UINT64_MAX / UINT64_C(1024)) continue;
+                        bytes = (uint64_t)kib * UINT64_C(1024);
+                    }
+                    if (strstr(line, "MemTotal:") != NULL) {
+                        node.memory_total_bytes = bytes;
+                        memory_total_observed = 1;
+                    } else {
+                        node.memory_available_bytes = bytes;
+                        if (strstr(line, "MemAvailable:") != NULL)
+                            memory_available_observed = 1;
                     }
                 }
                 (void)fclose(meminfo);
             }
         }
+        if (cpu_list_observed && memory_total_observed && memory_available_observed)
+            node.evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+        else if (cpu_list_observed)
+            node.evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
         out->numa_nodes[out->numa_node_count++] = node;
     }
     (void)closedir(directory);
@@ -515,15 +534,6 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
                     0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
             }
             ++die_id;
-        } else if (item->Relationship == RelationProcessorDie) {
-            for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
-                (void)find_or_add_windows_mask(out,
-                    item->Processor.GroupMask[i].Group,
-                    item->Processor.GroupMask[i].Mask,
-                    PL_TOPOLOGY_UNKNOWN, die_id, PL_TOPOLOGY_UNKNOWN,
-                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
-            }
-            ++die_id;
         } else if (item->Relationship == RelationProcessorCore) {
             for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
                 (void)find_or_add_windows_mask(out,
@@ -554,6 +564,16 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
         offset += item->Size;
     }
     free(records);
+    for (size_t i = 0u; i < out->numa_node_count; ++i) {
+        ULONGLONG available = 0u;
+        if (out->numa_nodes[i].node_id <= UINT16_MAX &&
+            GetNumaAvailableMemoryNodeEx((USHORT)out->numa_nodes[i].node_id, &available))
+            out->numa_nodes[i].memory_available_bytes = (uint64_t)available;
+        out->numa_nodes[i].evidence =
+            out->numa_nodes[i].memory_available_bytes != 0u
+                ? PL_TOPOLOGY_EVIDENCE_PARTIAL
+                : PL_TOPOLOGY_EVIDENCE_PARTIAL;
+    }
     out->online_logical_cpu_count = out->logical_cpu_count;
     return out->logical_cpu_count == 0u ? PL_TOPOLOGY_IO_ERROR : PL_TOPOLOGY_OK;
 }
