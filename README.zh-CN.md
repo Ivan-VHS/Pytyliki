@@ -68,6 +68,7 @@ GCC/Clang 构建可通过 `-DPYTYLIKI_ENABLE_SANITIZERS=ON` 启用 AddressSaniti
 
 - [功能概览](docs/FEATURES.md) · [架构](docs/ARCHITECTURE.md)
 - [基准统计](docs/BENCHMARK_STATISTICS.md) · [Embedded C 参考工作台](docs/EMBEDDED_C.md)
+- [处理器语言工作台](docs/PROCESSOR_LANGUAGE_WORKBENCH.md) — 66 个唯一配置、静态检查和不执行工具的构建计划。
 - [QCS 原生检查](docs/QCS_NATIVE.md) · [文档索引](docs/README.md)
 - [发布流程](docs/RELEASE.md) · [报告封装格式](docs/REPORT_ENVELOPE.md)
 - [Reaper 集成](docs/REAPER_INTEGRATION.md) · [生态共享标准](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
