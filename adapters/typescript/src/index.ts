@@ -64,7 +64,11 @@ export function validateRasProviderReport(input: unknown): ValidationResult {
       report.provider.length === 0 || report.provider.length > 160 ||
       (report.status !== "ok" && report.status !== "unsupported") ||
       report.read_only !== true ||
-      report.hardware_writes === true ||
+      (report.hardware_writes !== undefined && report.hardware_writes !== false) ||
+      (report.worker_attribution !== undefined &&
+        report.worker_attribution !== "none" &&
+        report.worker_attribution !== "not_inferred") ||
+      (report.mayHaveMore !== undefined && typeof report.mayHaveMore !== "boolean") ||
       !Array.isArray(report.events) ||
       report.events.length > 32) {
     return { ok: false, error: "report header or schema is invalid" };

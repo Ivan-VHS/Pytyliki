@@ -43,7 +43,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
       COMMAND ${PYTYLIKI_CARGO_EXECUTABLE} build --release
         --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/adapters/rust/Cargo.toml"
         --target-dir "${PTFR_RAS_RUST_TARGET_DIR}"
-      DEPENDS adapters/rust/Cargo.toml adapters/rust/src/lib.rs
+      DEPENDS adapters/rust/Cargo.toml adapters/rust/src/lib.rs .cargo/config.toml
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       VERBATIM
     )

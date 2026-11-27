@@ -66,6 +66,10 @@ public enum RASReportValidator {
         if report.hardwareWrites == true {
             throw RASReportError.hardwareMutationClaimed
         }
+        if report.workerAttribution != nil &&
+            !["none", "not_inferred"].contains(report.workerAttribution!) {
+            throw RASReportError.invalidSchema
+        }
         if report.status == "unsupported" && !report.events.isEmpty {
             throw RASReportError.invalidStatus
         }
