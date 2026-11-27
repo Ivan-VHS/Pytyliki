@@ -53,7 +53,7 @@
 static const pl_language_profile profiles[PL_LANGUAGE_COUNT] = {
     PROFILE("asm-x86-masm", "x86 MASM (Intel syntax)", "x86 assembly", PL_LANGUAGE_ASSEMBLY, ".masm", "ml", TARGET_X86, C_SEMI, PL_LANGUAGE_ROUTE_MASM, "Assembler profile; the Microsoft toolchain is an external dependency."),
     PROFILE("asm-x86-gas", "x86 GNU as (AT&T syntax)", "x86 assembly", PL_LANGUAGE_ASSEMBLY, ".gas", "as", TARGET_X86, C_HASH, PL_LANGUAGE_ROUTE_GAS, "Assembler profile; the GNU assembler is an external dependency."),
-    PROFILE("asm-x86_64-nasm", "x86-64 NASM", "x86-64 assembly", PL_LANGUAGE_ASSEMBLY, ".nasm", "nasm", TARGET_X64, C_SEMI, PL_LANGUAGE_ROUTE_NASM64, "NASM object-format planning is available; NASM itself is not bundled."),
+    PROFILE("asm-x86_64-nasm", "x86-64 NASM", "x86-64 assembly", PL_LANGUAGE_ASSEMBLY, ".nasm", "nasm", TARGET_X64, C_SEMI, PL_LANGUAGE_ROUTE_NASM64, "NASM ELF64 object-format planning is available; NASM itself is not bundled."),
     PROFILE("asm-arm32-armasm", "ARM32 ARMASM", "ARM assembly", PL_LANGUAGE_ASSEMBLY, ".armasm", "armasm", TARGET_ARM32, C_SEMI, PL_LANGUAGE_ROUTE_NONE, "Vendor assembler profile; syntax and ABI depend on the selected ARM toolchain."),
     PROFILE("asm-aarch64-gas", "AArch64 GNU as", "AArch64 assembly", PL_LANGUAGE_ASSEMBLY, ".a64", "aarch64-linux-gnu-as", TARGET_ARM64, C_SLASH, PL_LANGUAGE_ROUTE_NONE, "GNU cross-assembler profile; no cross-toolchain is bundled."),
     PROFILE("asm-mips-gas", "MIPS GNU as", "MIPS assembly", PL_LANGUAGE_ASSEMBLY, ".mipsasm", "mips-linux-gnu-as", TARGET_MIPS, C_HASH, PL_LANGUAGE_ROUTE_NONE, "GNU cross-assembler profile; ABI and endianness must be selected externally."),
@@ -512,8 +512,10 @@ int pl_language_build_plan_create(const char *id_or_name, const char *target,
                 add_formatted_argument(out, "-femit-bin=", output_path) != 0) return -1;
             break;
         case PL_LANGUAGE_ROUTE_LDC:
-            if (add_argument(out, "-betterC") != 0 ||
+            if (triple == NULL ||
+                add_argument(out, "-betterC") != 0 ||
                 add_argument(out, "-c") != 0 ||
+                add_formatted_argument(out, "-mtriple=", triple) != 0 ||
                 add_argument(out, source_path) != 0 ||
                 add_formatted_argument(out, "-of=", output_path) != 0) return -1;
             break;
