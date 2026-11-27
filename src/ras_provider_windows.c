@@ -27,7 +27,8 @@ static int read_event_values(EVT_HANDLE event,
                    &buffer_used, &property_count)) {
         return 0;
     }
-    if (property_count <= (DWORD)EvtSystemTimeCreated ||\n        property_count <= (DWORD)EvtSystemEventRecordId) return 0;
+    if (property_count <= (DWORD)EvtSystemTimeCreated ||
+        property_count <= (DWORD)EvtSystemEventRecordId) return 0;
 
     if (values[EvtSystemEventRecordId].Type == EvtVarTypeUInt64) {
         record->record_id = values[EvtSystemEventRecordId].UInt64Val;
