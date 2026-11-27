@@ -46,7 +46,9 @@ class OmegaNullContractTests(unittest.TestCase):
 
     def test_time_replay_is_not_physical_time_travel(self) -> None:
         op = next(item for item in self.data["operation_catalog"] if item["id"] == "chrono.replay")
-        self.assertIn("reverse real-world time", " ".join(op["constraints"]).lower())
+        constraints = " ".join(op["constraints"]).lower()
+        self.assertIn("reverse external physical events", constraints)
+        self.assertIn("earlier real time", constraints)
 
     def test_fabrication_requires_real_process_inputs(self) -> None:
         op = next(item for item in self.data["operation_catalog"] if item["id"] == "fabrication.plan")

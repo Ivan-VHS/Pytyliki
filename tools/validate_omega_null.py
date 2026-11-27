@@ -104,8 +104,9 @@ def validate_data(data: dict[str, Any]) -> list[str]:
         errors.append("field.solve must state that it does not alter physical spacetime")
 
     chrono = operation_map.get("chrono.replay", {})
-    if "reverse real-world time" not in " ".join(chrono.get("constraints", [])).lower():
-        errors.append("chrono.replay must distinguish replay from physical time reversal")
+    chrono_constraints = " ".join(chrono.get("constraints", [])).lower()
+    if "reverse external physical events" not in chrono_constraints or "earlier real time" not in chrono_constraints:
+        errors.append("chrono.replay must distinguish logical replay from physical time reversal")
 
     fabrication = operation_map.get("fabrication.plan", {})
     fabrication_constraints = " ".join(fabrication.get("constraints", [])).lower()

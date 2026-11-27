@@ -154,6 +154,24 @@
         "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md",
         "contracts/pytyliki-low-level-rules.v1.json"
       ]
+    },
+    {
+      "id": "processor-ide.contract.v1",
+      "status": "partial",
+      "summary": "Versioned 100-rule Processor IDE architecture contract with two fifty-rule layers, twenty named engineering perspectives mapped to the existing 20-domain workspace registry, and an initial native C11 target-aware session API; the unified graphical IDE and physical debug/tool adapters are not shipped.",
+      "evidence": [
+        "contracts/processor-ide.v1.json",
+        "schemas/processor-ide.v1.schema.json",
+        "docs/PROCESSOR_IDE.md",
+        "tools/validate_processor_ide.py",
+        "tests/test_processor_ide_contract.py",
+        "src/ironclad_systems.c",
+        "tests/test_ironclad_systems.c",
+        "src/processor_ide.h",
+        "src/processor_ide.c",
+        "tests/test_processor_ide.c",
+        "CMakeLists.txt"
+      ]
     }
   ],
   "interfaces": [
@@ -187,6 +205,21 @@
         "src/low_level_contract.h",
         "src/low_level_contract.c",
         "tests/test_low_level_contract.c"
+      ]
+    },
+    {
+      "id": "processor-ide.contract.v1",
+      "format": "pytyliki.processor-ide.v1 JSON contract + JSON Schema + C11 target-aware session API",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "contracts/processor-ide.v1.json",
+        "schemas/processor-ide.v1.schema.json",
+        "tools/validate_processor_ide.py",
+        "tests/test_processor_ide_contract.py",
+        "src/processor_ide.h",
+        "src/processor_ide.c",
+        "tests/test_processor_ide.c"
       ]
     }
   ],
@@ -250,6 +283,12 @@
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
     "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
     "Versioned target and memory-region descriptors plus capability-gated bus/IRQ adapter contracts for future x86-64, ARM, RISC-V and MCU backends.",
-    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements."
+    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements.",
+    "processor-ide.workspace-provider.v1",
+    "processor-ide.target-provider.v1",
+    "processor-ide.debug-provider.v1",
+    "processor-ide.simulator-provider.v1",
+    "processor-ide.trace-provider.v1",
+    "processor-ide.waveform-provider.v1"
   ]
 }
