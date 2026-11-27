@@ -111,7 +111,7 @@ pl_placement_status pl_processor_placement_workers_from_topology(
     size_t i;
     if (worker_count == NULL) return PL_PLACEMENT_INVALID_ARGUMENT;
     *worker_count = 0u;
-    if (topology == NULL || topology->logical_processors == NULL || workers == NULL ||
+    if (topology == NULL || workers == NULL ||
         topology->generation == 0u || topology->logical_processor_count == 0u)
         return PL_PLACEMENT_INVALID_ARGUMENT;
     if (topology->logical_processor_count > 64u ||
