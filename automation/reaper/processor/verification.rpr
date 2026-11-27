@@ -1,0 +1,151 @@
+# State-trace verification and compact transition graph export.
+
+export fn verify_trace(initial_snapshot, events, final_snapshot, state_policy) {
+    if kind(initial_snapshot) != "map" or kind(final_snapshot) != "map" or
+        kind(events) != "list" or kind(state_policy) != "map" or
+        not ("permits_transition" in state_policy) {
+        return {
+            "valid": false,
+            "events_checked": 0,
+            "accepted_events": 0,
+            "rejected_events": 0,
+            "errors": ["verification-input-invalid"],
+            "final_phase": "unknown"
+        }
+    }
+
+    mut errors = []
+    mut expected_sequence = 1
+    mut previous_phase = initial_snapshot.phase
+    mut accepted_events = 0
+    mut rejected_events = 0
+
+    for event in events {
+        if kind(event) != "map" {
+            errors = push(errors, "event-is-not-a-map")
+        } else {
+            if event.sequence != expected_sequence {
+                errors = push(errors, "event-sequence-gap")
+            }
+            if event.from != previous_phase {
+                errors = push(errors, "event-source-does-not-match-previous-state")
+            }
+
+            if event.accepted {
+                accepted_events = accepted_events + 1
+                if not state_policy.permits_transition(event.from, event.requested_to) {
+                    errors = push(errors, "unpermitted-transition-was-accepted")
+                }
+                if event.to != event.requested_to {
+                    errors = push(errors, "accepted-target-was-not-applied")
+                }
+            } else {
+                rejected_events = rejected_events + 1
+                if state_policy.permits_transition(event.from, event.requested_to) {
+                    errors = push(errors, "permitted-transition-was-rejected")
+                }
+                if event.to != event.from {
+                    errors = push(errors, "rejected-transition-mutated-state")
+                }
+            }
+
+            previous_phase = event.to
+        }
+        expected_sequence = expected_sequence + 1
+    }
+
+    if final_snapshot.phase != previous_phase {
+        errors = push(errors, "final-phase-does-not-match-trace")
+    }
+    if final_snapshot.action_count != size(events) or final_snapshot.generation != size(events) {
+        errors = push(errors, "final-generation-does-not-match-trace-length")
+    }
+    if final_snapshot.accepted_count != accepted_events or
+        final_snapshot.rejected_count != rejected_events {
+        errors = push(errors, "final-action-counters-do-not-match-trace")
+    }
+
+    return {
+        "valid": size(errors) == 0,
+        "events_checked": size(events),
+        "accepted_events": accepted_events,
+        "rejected_events": rejected_events,
+        "errors": errors,
+        "final_phase": final_snapshot.phase
+    }
+}
+
+export fn simplify_graph(events) {
+    mut nodes = []
+    mut edges = []
+    mut self_loops = 0
+
+    for event in events {
+        mut source_seen = false
+        for node in nodes {
+            if node == event.from {
+                source_seen = true
+            }
+        }
+        if not source_seen {
+            nodes = push(nodes, event.from)
+        }
+
+        mut target_seen = false
+        for node in nodes {
+            if node == event.to {
+                target_seen = true
+            }
+        }
+        if not target_seen {
+            nodes = push(nodes, event.to)
+        }
+
+        let key = event.from ++ "->" ++ event.to
+        mut matching_edge = -1
+        for index in range(0, size(edges)) {
+            if edges[index].key == key {
+                matching_edge = index
+            }
+        }
+
+        if matching_edge < 0 {
+            edges = push(edges, {
+                "key": key,
+                "from": event.from,
+                "to": event.to,
+                "count": 1
+            })
+        } else {
+            mut updated_edges = []
+            for index in range(0, size(edges)) {
+                let edge = edges[index]
+                if index == matching_edge {
+                    updated_edges = push(updated_edges, {
+                        "key": edge.key,
+                        "from": edge.from,
+                        "to": edge.to,
+                        "count": edge.count + 1
+                    })
+                } else {
+                    updated_edges = push(updated_edges, edge)
+                }
+            }
+            edges = updated_edges
+        }
+
+        if event.from == event.to {
+            self_loops = self_loops + 1
+        }
+    }
+
+    return {
+        "schema": "pytyliki.processor-state-graph.v1",
+        "nodes": sorted(nodes),
+        "edges": edges,
+        "node_count": size(nodes),
+        "edge_count": size(edges),
+        "observed_events": size(events),
+        "self_loops": self_loops
+    }
+}

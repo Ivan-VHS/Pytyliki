@@ -1,0 +1,162 @@
+# Deterministic processor-state controller.
+# State changes are snapshots plus an auditable event stream; no hardware is touched.
+
+const MAX_ACTIONS = 100000
+
+fn counter_is_valid(value, maximum) {
+    return kind(value) == "number" and value % 1 == 0 and value >= 0 and value <= maximum
+}
+
+fn phase_is_known(phase) {
+    return phase == "cold" or phase == "ready" or phase == "running" or
+        phase == "blocked" or phase == "stopped" or phase == "fault"
+}
+
+export fn permits_transition(from_phase, to_phase) {
+    if not phase_is_known(from_phase) or not phase_is_known(to_phase) {
+        return false
+    }
+
+    if from_phase == "cold" {
+        return to_phase == "ready" or to_phase == "fault"
+    }
+    if from_phase == "ready" {
+        return to_phase == "running" or to_phase == "stopped" or to_phase == "fault"
+    }
+    if from_phase == "running" {
+        return to_phase == "ready" or to_phase == "blocked" or
+            to_phase == "stopped" or to_phase == "fault"
+    }
+    if from_phase == "blocked" {
+        return to_phase == "ready" or to_phase == "stopped" or to_phase == "fault"
+    }
+    if from_phase == "stopped" {
+        return to_phase == "ready"
+    }
+    if from_phase == "fault" {
+        return to_phase == "stopped"
+    }
+    return false
+}
+
+export fn initial_snapshot() {
+    return {
+        "schema": "pytyliki.processor-state.v1",
+        "schema_version": 1,
+        "state_version": 1,
+        "generation": 0,
+        "phase": "cold",
+        "action_count": 0,
+        "accepted_count": 0,
+        "rejected_count": 0,
+        "last_operation": "none"
+    }
+}
+
+export fn apply_action(snapshot, action) {
+    if kind(snapshot) != "map" {
+        return {"accepted": false, "error": "snapshot-not-map"}
+    }
+    if not ("schema" in snapshot) or snapshot.schema != "pytyliki.processor-state.v1" {
+        return {"accepted": false, "error": "snapshot-schema-mismatch"}
+    }
+    if not ("phase" in snapshot) or not phase_is_known(snapshot.phase) {
+        return {"accepted": false, "error": "snapshot-phase-invalid"}
+    }
+    if not ("action_count" in snapshot) or not counter_is_valid(snapshot.action_count, MAX_ACTIONS) {
+        return {"accepted": false, "error": "snapshot-counter-invalid"}
+    }
+    if not ("generation" in snapshot) or snapshot.generation != snapshot.action_count {
+        return {"accepted": false, "error": "snapshot-generation-mismatch"}
+    }
+    if not ("accepted_count" in snapshot) or not counter_is_valid(snapshot.accepted_count, MAX_ACTIONS) {
+        return {"accepted": false, "error": "snapshot-accepted-counter-invalid"}
+    }
+    if not ("rejected_count" in snapshot) or not counter_is_valid(snapshot.rejected_count, MAX_ACTIONS) {
+        return {"accepted": false, "error": "snapshot-rejected-counter-invalid"}
+    }
+    if snapshot.accepted_count + snapshot.rejected_count != snapshot.action_count {
+        return {"accepted": false, "error": "snapshot-ledger-inconsistent"}
+    }
+    if not ("state_version" in snapshot) or not counter_is_valid(snapshot.state_version, MAX_ACTIONS + 1) {
+        return {"accepted": false, "error": "snapshot-version-invalid"}
+    }
+    if snapshot.action_count >= MAX_ACTIONS {
+        return {"accepted": false, "error": "action-limit"}
+    }
+    if kind(action) != "map" or not ("operation" in action) or not ("target" in action) {
+        return {"accepted": false, "error": "action-shape-invalid"}
+    }
+    if kind(action.operation) != "text" or size(action.operation) == 0 or size(action.operation) > 64 {
+        return {"accepted": false, "error": "operation-name-invalid"}
+    }
+    if kind(action.target) != "text" or not phase_is_known(action.target) {
+        return {"accepted": false, "error": "target-phase-invalid"}
+    }
+
+    let accepted = permits_transition(snapshot.phase, action.target)
+    mut next_phase = snapshot.phase
+    mut next_state_version = snapshot.state_version
+    mut next_accepted_count = snapshot.accepted_count
+    mut next_rejected_count = snapshot.rejected_count
+    mut reason = "transition-denied"
+
+    if accepted {
+        next_phase = action.target
+        next_state_version = snapshot.state_version + 1
+        next_accepted_count = snapshot.accepted_count + 1
+        reason = "accepted"
+    } else {
+        next_rejected_count = snapshot.rejected_count + 1
+    }
+
+    let next_generation = snapshot.generation + 1
+    let next_action_count = snapshot.action_count + 1
+    let next_snapshot = {
+        "schema": snapshot.schema,
+        "schema_version": snapshot.schema_version,
+        "state_version": next_state_version,
+        "generation": next_generation,
+        "phase": next_phase,
+        "action_count": next_action_count,
+        "accepted_count": next_accepted_count,
+        "rejected_count": next_rejected_count,
+        "last_operation": action.operation
+    }
+    let event = {
+        "sequence": next_action_count,
+        "source_generation": snapshot.generation,
+        "generation": next_generation,
+        "state_version": next_state_version,
+        "operation": action.operation,
+        "from": snapshot.phase,
+        "requested_to": action.target,
+        "to": next_phase,
+        "accepted": accepted,
+        "reason": reason
+    }
+
+    return {"accepted": accepted, "snapshot": next_snapshot, "event": event}
+}
+
+export fn run_actions(actions) {
+    let initial = initial_snapshot()
+    mut current = initial
+    mut events = []
+
+    for action in actions {
+        let result = apply_action(current, action)
+        if not ("snapshot" in result) or not ("event" in result) {
+            return {"valid": false, "error": result.error, "events": events}
+        }
+        current = result.snapshot
+        events = push(events, result.event)
+    }
+
+    return {
+        "valid": true,
+        "initial_snapshot": initial,
+        "final_snapshot": current,
+        "events": events
+    }
+}

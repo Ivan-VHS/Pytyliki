@@ -1,0 +1,1001 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ivan-vhs:pytyliki:processor-kernel-report:v1",
+  "title": "Pytyliki Reaper Processor Kernel Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "runtime",
+    "verification",
+    "determinism",
+    "action_pulse",
+    "initial_snapshot",
+    "state_snapshot",
+    "state_event_table",
+    "state_graph",
+    "hardware_evidence",
+    "scheduler_plan",
+    "scheduler_execution",
+    "memory_resize_plan",
+    "memory_rejected_example",
+    "operation_table",
+    "thread_table",
+    "memory_table",
+    "tray_status"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.processor-kernel-report.v1"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "language_version",
+        "engine",
+        "mode",
+        "native_threads_started"
+      ],
+      "properties": {
+        "language": {
+          "const": "Reaper"
+        },
+        "language_version": {
+          "const": "0.2"
+        },
+        "engine": {
+          "const": "verified-stack-vm"
+        },
+        "mode": {
+          "const": "read-only-control-plane"
+        },
+        "native_threads_started": {
+          "const": 0
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_valid",
+        "events_checked",
+        "accepted_events",
+        "rejected_events",
+        "errors",
+        "scheduler_plan_valid",
+        "hardware_evidence_valid",
+        "memory_plan_valid",
+        "invalid_thread_plan_rejected",
+        "over_budget_memory_rejected",
+        "writable_hardware_profile_rejected",
+        "all_passed"
+      ],
+      "properties": {
+        "trace_valid": {
+          "type": "boolean"
+        },
+        "events_checked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accepted_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scheduler_plan_valid": {
+          "type": "boolean"
+        },
+        "hardware_evidence_valid": {
+          "type": "boolean"
+        },
+        "memory_plan_valid": {
+          "type": "boolean"
+        },
+        "invalid_thread_plan_rejected": {
+          "type": "boolean"
+        },
+        "over_budget_memory_rejected": {
+          "type": "boolean"
+        },
+        "writable_hardware_profile_rejected": {
+          "type": "boolean"
+        },
+        "all_passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "determinism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repeatable",
+        "event_stream_equal",
+        "final_snapshot_equal"
+      ],
+      "properties": {
+        "repeatable": {
+          "type": "boolean"
+        },
+        "event_stream_equal": {
+          "type": "boolean"
+        },
+        "final_snapshot_equal": {
+          "type": "boolean"
+        }
+      }
+    },
+    "action_pulse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_actions",
+        "accepted_actions",
+        "rejected_actions",
+        "generation",
+        "state_version"
+      ],
+      "properties": {
+        "total_actions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accepted_actions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_actions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "initial_snapshot": {
+      "$ref": "#/$defs/snapshot"
+    },
+    "state_snapshot": {
+      "$ref": "#/$defs/snapshot"
+    },
+    "state_event_table": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      },
+      "maxItems": 100000
+    },
+    "state_graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "nodes",
+        "edges",
+        "node_count",
+        "edge_count",
+        "observed_events",
+        "self_loops"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.processor-state-graph.v1"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        },
+        "node_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "edge_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "self_loops": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "hardware_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "valid",
+        "reason",
+        "source",
+        "architecture",
+        "physical_cores",
+        "logical_processors",
+        "memory_bytes",
+        "features",
+        "read_only"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.cpu-evidence-validation.v1"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "physical_cores": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "logical_processors": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "memory_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 128
+        },
+        "read_only": {
+          "const": true
+        }
+      }
+    },
+    "scheduler_plan": {
+      "$ref": "#/$defs/scheduler_plan"
+    },
+    "scheduler_execution": {
+      "$ref": "#/$defs/scheduler_execution"
+    },
+    "memory_resize_plan": {
+      "$ref": "#/$defs/memory_plan"
+    },
+    "memory_rejected_example": {
+      "$ref": "#/$defs/memory_plan"
+    },
+    "operation_table": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/operation"
+      }
+    },
+    "thread_table": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lane"
+      },
+      "maxItems": 64
+    },
+    "memory_table": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/memory_plan"
+      },
+      "maxItems": 16
+    },
+    "tray_status": {
+      "$ref": "#/$defs/tray_status"
+    }
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "schema_version",
+        "state_version",
+        "generation",
+        "phase",
+        "action_count",
+        "accepted_count",
+        "rejected_count",
+        "last_operation"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.processor-state.v1"
+        },
+        "schema_version": {
+          "const": 1
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "phase": {
+          "enum": [
+            "cold",
+            "ready",
+            "running",
+            "blocked",
+            "stopped",
+            "fault"
+          ]
+        },
+        "action_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accepted_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_operation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "source_generation",
+        "generation",
+        "state_version",
+        "operation",
+        "from",
+        "requested_to",
+        "to",
+        "accepted",
+        "reason"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "from": {
+          "type": "string"
+        },
+        "requested_to": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "from",
+        "to",
+        "count"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "state",
+        "assigned",
+        "completed",
+        "generation"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "state": {
+          "enum": [
+            "idle",
+            "queued",
+            "running",
+            "done"
+          ]
+        },
+        "assigned": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scheduler_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "valid",
+        "mode",
+        "reason",
+        "total_jobs",
+        "worker_count",
+        "allocations",
+        "lanes",
+        "actual_threads_started"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.processor-scheduler.v1"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "mode": {
+          "const": "deterministic-logical-lanes"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "total_jobs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "worker_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxItems": 64
+        },
+        "lanes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lane"
+          },
+          "maxItems": 64
+        },
+        "actual_threads_started": {
+          "const": 0
+        }
+      }
+    },
+    "scheduler_execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "valid",
+        "mode",
+        "status",
+        "rounds",
+        "completed_jobs",
+        "active_lanes",
+        "dispatch_order",
+        "lanes",
+        "actual_threads_started"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.processor-schedule-run.v1"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "mode": {
+          "const": "deterministic-logical-lanes"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "complete",
+            "rejected"
+          ]
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "completed_jobs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "active_lanes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "dispatch_order": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "lanes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lane"
+          },
+          "maxItems": 64
+        },
+        "actual_threads_started": {
+          "const": 0
+        }
+      }
+    },
+    "memory_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "mode",
+        "valid_input",
+        "accepted",
+        "status",
+        "reason",
+        "previous_bytes",
+        "requested_bytes",
+        "budget_bytes",
+        "next_bytes",
+        "delta_bytes",
+        "generation",
+        "next_generation",
+        "applied",
+        "requires_host_adapter"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.memory-resize-plan.v1"
+        },
+        "mode": {
+          "const": "plan-only"
+        },
+        "valid_input": {
+          "type": "boolean"
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "rejected",
+            "planned",
+            "no-op"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "previous_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requested_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "budget_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "next_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delta_bytes": {
+          "type": "integer"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "next_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applied": {
+          "const": false
+        },
+        "requires_host_adapter": {
+          "type": "boolean"
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "domain",
+        "effect",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "effect": {
+          "type": "string"
+        },
+        "verification": {
+          "type": "string"
+        }
+      }
+    },
+    "tray_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "valid",
+        "transport",
+        "presentation",
+        "kernel",
+        "action_pulse",
+        "scheduler",
+        "memory",
+        "hardware",
+        "menu",
+        "host_ui"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pytyliki.processor-tray-feed.v1"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "transport": {
+          "const": "versioned-json-feed"
+        },
+        "presentation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "product",
+            "label",
+            "health",
+            "indicator",
+            "notice"
+          ],
+          "properties": {
+            "product": {
+              "const": "Pytyliki"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "health": {
+              "enum": [
+                "healthy",
+                "attention",
+                "fault"
+              ]
+            },
+            "indicator": {
+              "enum": [
+                "green",
+                "yellow",
+                "red"
+              ]
+            },
+            "notice": {
+              "type": "string"
+            }
+          }
+        },
+        "kernel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "state_version",
+            "generation",
+            "phase"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "state_version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "generation": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "phase": {
+              "enum": [
+                "cold",
+                "ready",
+                "running",
+                "blocked",
+                "stopped",
+                "fault"
+              ]
+            }
+          }
+        },
+        "action_pulse": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total",
+            "accepted",
+            "rejected"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "accepted": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rejected": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "scheduler": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "status",
+            "logical_lanes",
+            "completed_jobs",
+            "native_threads_started"
+          ],
+          "properties": {
+            "mode": {
+              "const": "deterministic-logical-lanes"
+            },
+            "status": {
+              "enum": [
+                "queued",
+                "running",
+                "complete",
+                "rejected"
+              ]
+            },
+            "logical_lanes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            },
+            "completed_jobs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65536
+            },
+            "native_threads_started": {
+              "const": 0
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "status",
+            "requested_bytes",
+            "budget_bytes",
+            "applied"
+          ],
+          "properties": {
+            "mode": {
+              "const": "plan-only"
+            },
+            "status": {
+              "enum": [
+                "rejected",
+                "planned",
+                "no-op"
+              ]
+            },
+            "requested_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "budget_bytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "applied": {
+              "const": false
+            }
+          }
+        },
+        "hardware": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "valid",
+            "architecture",
+            "physical_cores",
+            "logical_processors",
+            "read_only"
+          ],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "architecture": {
+              "type": "string",
+              "minLength": 1
+            },
+            "physical_cores": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 256
+            },
+            "logical_processors": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 256
+            },
+            "read_only": {
+              "const": true
+            }
+          }
+        },
+        "menu": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "enabled"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "host_ui": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "adapter_required",
+            "system_tray_rendered",
+            "hardware_writes_enabled"
+          ],
+          "properties": {
+            "adapter_required": {
+              "const": true
+            },
+            "system_tray_rendered": {
+              "const": false
+            },
+            "hardware_writes_enabled": {
+              "const": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

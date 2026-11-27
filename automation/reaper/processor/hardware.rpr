@@ -1,0 +1,87 @@
+# Read-only processor evidence validation.
+# fixture_profile() is test data, not a live hardware probe.
+
+const MAX_PROCESSORS = 256
+const MAX_FEATURES = 128
+const MAX_EVIDENCE_MEMORY = 1099511627776
+
+fn whole_between(value, minimum, maximum) {
+    return kind(value) == "number" and value % 1 == 0 and value >= minimum and value <= maximum
+}
+
+export fn fixture_profile() {
+    return {
+        "schema": "pytyliki.cpu-evidence.v1",
+        "source": "fixture/read-only-processor-profile",
+        "architecture": "x86_64",
+        "physical_cores": 8,
+        "logical_processors": 16,
+        "memory_bytes": 34359738368,
+        "features": ["sse2", "avx2"],
+        "read_only": true
+    }
+}
+
+export fn validate_profile(profile) {
+    if kind(profile) != "map" {
+        return {"schema": "pytyliki.cpu-evidence-validation.v1", "valid": false, "reason": "profile-not-map"}
+    }
+
+    let required = "schema" in profile and "source" in profile and
+        "architecture" in profile and "physical_cores" in profile and
+        "logical_processors" in profile and "memory_bytes" in profile and
+        "features" in profile and "read_only" in profile
+
+    if not required {
+        return {"schema": "pytyliki.cpu-evidence-validation.v1", "valid": false, "reason": "profile-fields-missing"}
+    }
+
+    mut valid = true
+    mut reason = "valid"
+    if profile.schema != "pytyliki.cpu-evidence.v1" {
+        valid = false
+        reason = "profile-schema-mismatch"
+    } else if kind(profile.source) != "text" or size(profile.source) == 0 or size(profile.source) > 128 {
+        valid = false
+        reason = "source-invalid"
+    } else if kind(profile.architecture) != "text" or size(profile.architecture) == 0 or size(profile.architecture) > 64 {
+        valid = false
+        reason = "architecture-invalid"
+    } else if not whole_between(profile.physical_cores, 1, MAX_PROCESSORS) or
+        not whole_between(profile.logical_processors, 1, MAX_PROCESSORS) or
+        profile.physical_cores > profile.logical_processors {
+        valid = false
+        reason = "processor-counts-invalid"
+    } else if not whole_between(profile.memory_bytes, 1, MAX_EVIDENCE_MEMORY) {
+        valid = false
+        reason = "memory-evidence-invalid"
+    } else if kind(profile.features) != "list" or size(profile.features) > MAX_FEATURES {
+        valid = false
+        reason = "feature-list-invalid"
+    } else if profile.read_only != true {
+        valid = false
+        reason = "read-only-required"
+    }
+
+    if valid {
+        for feature in profile.features {
+            if kind(feature) != "text" or size(feature) == 0 or size(feature) > 64 {
+                valid = false
+                reason = "feature-name-invalid"
+            }
+        }
+    }
+
+    return {
+        "schema": "pytyliki.cpu-evidence-validation.v1",
+        "valid": valid,
+        "reason": reason,
+        "source": profile.source,
+        "architecture": profile.architecture,
+        "physical_cores": profile.physical_cores,
+        "logical_processors": profile.logical_processors,
+        "memory_bytes": profile.memory_bytes,
+        "features": profile.features,
+        "read_only": profile.read_only
+    }
+}

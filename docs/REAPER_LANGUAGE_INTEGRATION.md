@@ -28,3 +28,18 @@ The example expects the Linux shared-library path `build/libpytyliki_ffi.so`. On
 - Reaper's Python reference runtime and bytecode VM are both test targets; C17 Reaper remains a separate partial compiler track.
 
 The integration workflow builds the real C library and executes the `.rpr` program in the Reaper VM.
+
+
+## Deterministic processor control plane
+
+The Reaper VM also runs `automation/reaper/processor_kernel.rpr`. Its modules
+implement a versioned processor-state machine, action ledger, logical-lane
+scheduler, memory resize planner, read-only hardware-evidence validator,
+transition verifier and compact graph export. The runner checks deterministic
+replay and writes `build/processor-kernel-report.json` under the
+`pytyliki.processor-kernel-report.v1` contract.
+
+See [Reaper Processor Kernel](REAPER_PROCESSOR_KERNEL.md) for module boundaries,
+run instructions and explicit hardware/concurrency limits. The controller is
+a Reaper control-plane model; it does not start OS threads, allocate or resize
+process memory, probe physical registers, or change firmware or device state.

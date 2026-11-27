@@ -1,0 +1,167 @@
+# Bounded deterministic scheduler model.
+# Lanes describe a schedule; they do not create operating-system threads.
+
+const MAX_JOBS = 65536
+const MAX_WORKERS = 64
+const MAX_ROUNDS = 4096
+
+fn whole_number(value, minimum, maximum) {
+    return kind(value) == "number" and value % 1 == 0 and value >= minimum and value <= maximum
+}
+
+export fn create_plan(total_jobs, worker_count) {
+    if not whole_number(total_jobs, 0, MAX_JOBS) or
+        not whole_number(worker_count, 1, MAX_WORKERS) {
+        return {
+            "schema": "pytyliki.processor-scheduler.v1",
+            "valid": false,
+            "mode": "deterministic-logical-lanes",
+            "reason": "workload-out-of-bounds",
+            "total_jobs": total_jobs,
+            "worker_count": worker_count,
+            "allocations": [],
+            "lanes": [],
+            "actual_threads_started": 0
+        }
+    }
+
+    let allocations = distribute(total_jobs, worker_count)
+    mut lanes = []
+    for index in range(0, worker_count) {
+        let assigned = allocations[index]
+        mut lane_state = "queued"
+        if assigned == 0 {
+            lane_state = "idle"
+        }
+        lanes = push(lanes, {
+            "id": index,
+            "state": lane_state,
+            "assigned": assigned,
+            "completed": 0,
+            "generation": 0
+        })
+    }
+
+    return {
+        "schema": "pytyliki.processor-scheduler.v1",
+        "valid": true,
+        "mode": "deterministic-logical-lanes",
+        "reason": "balanced",
+        "total_jobs": total_jobs,
+        "worker_count": worker_count,
+        "allocations": allocations,
+        "lanes": lanes,
+        "actual_threads_started": 0
+    }
+}
+
+export fn verify_plan(plan) {
+    if kind(plan) != "map" or not ("valid" in plan) or not plan.valid {
+        return false
+    }
+    if plan.schema != "pytyliki.processor-scheduler.v1" or
+        not whole_number(plan.total_jobs, 0, MAX_JOBS) or
+        not whole_number(plan.worker_count, 1, MAX_WORKERS) {
+        return false
+    }
+    if kind(plan.allocations) != "list" or kind(plan.lanes) != "list" {
+        return false
+    }
+    if size(plan.allocations) != plan.worker_count or size(plan.lanes) != plan.worker_count {
+        return false
+    }
+
+    mut assigned_total = 0
+    for index in range(0, plan.worker_count) {
+        let allocation = plan.allocations[index]
+        let lane = plan.lanes[index]
+        if not whole_number(allocation, 0, MAX_JOBS) or
+            kind(lane) != "map" or lane.id != index or lane.assigned != allocation {
+            return false
+        }
+        if lane.completed != 0 or lane.generation != 0 {
+            return false
+        }
+        assigned_total = assigned_total + allocation
+    }
+    return assigned_total == plan.total_jobs
+}
+
+export fn advance(plan, rounds) {
+    if not verify_plan(plan) or not whole_number(rounds, 0, MAX_ROUNDS) {
+        return {
+            "schema": "pytyliki.processor-schedule-run.v1",
+            "valid": false,
+            "mode": "deterministic-logical-lanes",
+            "status": "rejected",
+            "reason": "invalid-plan-or-round-count",
+            "rounds": 0,
+            "completed_jobs": 0,
+            "active_lanes": 0,
+            "dispatch_order": [],
+            "lanes": [],
+            "actual_threads_started": 0
+        }
+    }
+
+    # Every round visits lanes in ascending id order. This fixes replay order.
+    mut dispatch_order = []
+    for round_index in range(0, rounds) {
+        for lane in plan.lanes {
+            if lane.assigned > round_index {
+                dispatch_order = push(dispatch_order, lane.id)
+            }
+        }
+    }
+
+    mut next_lanes = []
+    mut completed_jobs = 0
+    mut active_lanes = 0
+    for lane in plan.lanes {
+        mut completed = rounds
+        if completed > lane.assigned {
+            completed = lane.assigned
+        }
+
+        mut lane_state = "running"
+        if lane.assigned == 0 {
+            lane_state = "idle"
+        } else if completed >= lane.assigned {
+            lane_state = "done"
+        } else if completed == 0 {
+            lane_state = "queued"
+        }
+
+        if lane_state == "running" {
+            active_lanes = active_lanes + 1
+        }
+        completed_jobs = completed_jobs + completed
+        next_lanes = push(next_lanes, {
+            "id": lane.id,
+            "state": lane_state,
+            "assigned": lane.assigned,
+            "completed": completed,
+            "generation": rounds
+        })
+    }
+
+    mut overall_state = "running"
+    if completed_jobs == plan.total_jobs {
+        overall_state = "complete"
+    } else if completed_jobs == 0 {
+        overall_state = "queued"
+    }
+
+    return {
+        "schema": "pytyliki.processor-schedule-run.v1",
+        "valid": true,
+        "mode": "deterministic-logical-lanes",
+        "status": overall_state,
+        "rounds": rounds,
+        "completed_jobs": completed_jobs,
+        "active_lanes": active_lanes,
+        "dispatch_order": dispatch_order,
+        "lanes": next_lanes,
+        "actual_threads_started": 0
+    }
+}

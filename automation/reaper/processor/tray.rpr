@@ -1,0 +1,102 @@
+# Versioned tray feed for a future native desktop adapter.
+# Reaper owns the status model; it does not create a Windows tray icon.
+
+export fn build_status(snapshot, trace, schedule, memory, hardware) {
+    if kind(snapshot) != "map" or kind(trace) != "map" or
+        kind(schedule) != "map" or kind(memory) != "map" or
+        kind(hardware) != "map" {
+        return {
+            "schema": "pytyliki.processor-tray-feed.v1",
+            "valid": false,
+            "error": "tray-input-invalid"
+        }
+    }
+
+    let required =
+        "state_version" in snapshot and "generation" in snapshot and
+        "phase" in snapshot and "action_count" in snapshot and
+        "accepted_count" in snapshot and "rejected_count" in snapshot and
+        "valid" in trace and "valid" in schedule and
+        "accepted" in memory and "valid" in hardware
+
+    if not required {
+        return {
+            "schema": "pytyliki.processor-tray-feed.v1",
+            "valid": false,
+            "error": "tray-input-fields-missing"
+        }
+    }
+
+    mut health = "healthy"
+    mut indicator = "green"
+    mut notice = "Control-plane checks passed"
+
+    if not trace.valid or not schedule.valid or not hardware.valid {
+        health = "attention"
+        indicator = "yellow"
+        notice = "One or more control-plane checks need review"
+    }
+    if snapshot.phase == "fault" {
+        health = "fault"
+        indicator = "red"
+        notice = "Kernel state is faulted"
+    }
+
+    return {
+        "schema": "pytyliki.processor-tray-feed.v1",
+        "valid": true,
+        "transport": "versioned-json-feed",
+        "presentation": {
+            "product": "Pytyliki",
+            "label": "Processor Core",
+            "health": health,
+            "indicator": indicator,
+            "notice": notice
+        },
+        "kernel": {
+            "schema_version": snapshot.schema_version,
+            "state_version": snapshot.state_version,
+            "generation": snapshot.generation,
+            "phase": snapshot.phase
+        },
+        "action_pulse": {
+            "total": snapshot.action_count,
+            "accepted": snapshot.accepted_count,
+            "rejected": snapshot.rejected_count
+        },
+        "scheduler": {
+            "mode": schedule.mode,
+            "status": schedule.status,
+            "logical_lanes": size(schedule.lanes),
+            "completed_jobs": schedule.completed_jobs,
+            "native_threads_started": 0
+        },
+        "memory": {
+            "mode": memory.mode,
+            "status": memory.status,
+            "requested_bytes": memory.requested_bytes,
+            "budget_bytes": memory.budget_bytes,
+            "applied": false
+        },
+        "hardware": {
+            "valid": hardware.valid,
+            "architecture": hardware.architecture,
+            "physical_cores": hardware.physical_cores,
+            "logical_processors": hardware.logical_processors,
+            "read_only": true
+        },
+        "menu": [
+            {"id": "view.state", "label": "Kernel state", "enabled": true},
+            {"id": "view.audit", "label": "Action history", "enabled": true},
+            {"id": "view.threads", "label": "Logical lanes", "enabled": true},
+            {"id": "view.memory", "label": "Memory plan", "enabled": true},
+            {"id": "view.hardware", "label": "Hardware evidence", "enabled": true},
+            {"id": "open.report", "label": "Open report", "enabled": true}
+        ],
+        "host_ui": {
+            "adapter_required": true,
+            "system_tray_rendered": false,
+            "hardware_writes_enabled": false
+        }
+    }
+}
