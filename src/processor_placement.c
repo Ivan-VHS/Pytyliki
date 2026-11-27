@@ -102,6 +102,46 @@ static int better(const pl_placement_result *candidate,
     return candidate_logical < best_logical;
 }
 
+pl_placement_status pl_processor_placement_workers_from_topology(
+    const pl_processor_topology_snapshot *topology,
+    pl_placement_worker *workers,
+    size_t worker_capacity,
+    size_t *worker_count
+) {
+    size_t i;
+    if (worker_count == NULL) return PL_PLACEMENT_INVALID_ARGUMENT;
+    *worker_count = 0u;
+    if (topology == NULL || workers == NULL ||
+        topology->generation == 0u || topology->logical_processor_count == 0u)
+        return PL_PLACEMENT_INVALID_ARGUMENT;
+    if (topology->logical_processor_count > 64u ||
+        topology->logical_processor_count > worker_capacity ||
+        topology->logical_processor_count > PL_PLACEMENT_MAX_WORKERS)
+        return PL_PLACEMENT_LIMIT_EXCEEDED;
+    for (i = 0u; i < topology->logical_processor_count; ++i) {
+        const pl_topology_logical_processor *cpu = &topology->logical_processors[i];
+        pl_placement_worker *worker = &workers[i];
+        if (cpu->logical_id != i || cpu->generation != topology->generation ||
+            cpu->online > 1u)
+            return PL_PLACEMENT_INVALID_ARGUMENT;
+        memset(worker, 0, sizeof(*worker));
+        worker->logical_id = cpu->logical_id;
+        worker->core_id = cpu->core_id;
+        worker->numa_node_id = cpu->numa_node_id;
+        worker->current_load_basis_points = 0u;
+        worker->interrupt_load_basis_points = 0u;
+        worker->capacity_basis_points = cpu->online
+            ? PL_PLACEMENT_MAX_LOAD_BASIS_POINTS : 0u;
+        worker->isa_usable_mask = topology->isa_os_usable;
+        worker->online = cpu->online;
+        worker->package_id = cpu->package_id;
+        worker->die_id = cpu->die_id;
+    }
+    *worker_count = topology->logical_processor_count;
+    return PL_PLACEMENT_OK;
+}
+
+
 pl_placement_status pl_processor_placement_plan(
     const pl_placement_input *input,
     pl_placement_result *results,
