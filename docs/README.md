@@ -13,6 +13,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Engineering gates](ENGINEERING.md) — build, quality and safety checks.
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
+- [Neural Framework Suite](NEURO_SUITE.md) — six C11 model/contract frameworks and their explicit limits.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
