@@ -103,7 +103,7 @@ static void test_inventory_and_catalogue_aggregation(void) {
     assert(summary.total_nodes == 9u);
     assert(summary.total_edges == 1u);
     assert(summary.worker_count == 2u);
-    assert(summary.available_worker_count == 3u);
+    assert(summary.available_worker_count == 2u);
     assert(summary.process_count == 3u);
     assert(summary.ready_process_count == 3u);
     assert(summary.dependency_edge_count == 1u);
@@ -261,7 +261,7 @@ static void test_report_is_versioned_and_non_executing(void) {
                                            json, sizeof(json), &written) ==
            PL_PROCESSOR_FABRIC_OK);
     assert(written == strlen(json));
-    assert(strstr(json, "pytyliki.processor-fabric-report.v1") != NULL);
+    assert(strstr(json, "pytyliki.processor-fabric-report.v2") != NULL);
     assert(strstr(json, "\"cpu_suite_modules\":78") != NULL);
     assert(strstr(json, "\"hardware_access_performed\":false") != NULL);
     assert(strstr(json, "\"processor_control_changed\":false") != NULL);
@@ -276,6 +276,6 @@ int main(void) {
     test_capacity_and_feature_constraints();
     test_small_output_buffer_is_rejected();
     test_report_is_versioned_and_non_executing();
-    puts("Pytyliki Processor Fabric v1 tests passed");
+    puts("Pytyliki Processor Fabric ABI v2 tests passed");
     return 0;
 }
