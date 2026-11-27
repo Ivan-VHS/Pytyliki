@@ -5,7 +5,7 @@
 
 static void usage(FILE *stream) {
     fputs(
-        "Pytyliki Processor Fabric v1\n"
+        "Pytyliki Processor Fabric ABI v2\n"
         "Usage:\n"
         "  pytyliki-fabric --version\n"
         "  pytyliki-fabric --catalogues\n"
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     pl_processor_fabric_catalogues catalogues;
 
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        puts("Pytyliki Processor Fabric 1.0.0 (bounded advisory planner)");
+        puts("Pytyliki Processor Fabric 2.0.0 (bounded advisory planner)");
         return 0;
     }
     if (argc != 2 ||
