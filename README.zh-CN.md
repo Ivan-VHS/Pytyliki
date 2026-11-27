@@ -53,6 +53,7 @@ Linux 下可先运行：
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
 ./build/pytyliki-mos --inverter low
+./build/pytyliki-fabric --catalogues
 ~~~
 
 在 Windows 上，请使用所选 CMake 配置目录中的对应可执行文件，例如 `build/Release/pytyliki.exe`。
