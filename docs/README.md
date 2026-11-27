@@ -15,6 +15,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
+- [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and C ABI boundaries.
 
