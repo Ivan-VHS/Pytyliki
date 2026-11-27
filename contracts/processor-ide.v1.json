@@ -547,7 +547,7 @@
       "requirement": "Display the target's documented architectural register set, aliases, flags and register classes, including R0-R7 when defined, PC and status registers.",
       "acceptance": "Register names, widths, access classes and read/write effects derive from the selected ISA/target descriptor; changed values are diffed per trace event.",
       "interpretation_adjustment": "Do not invent universal registers such as regit or assume all architectures expose R0-R7; hardware watch may be sampled or disruptive.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -569,7 +569,7 @@
       "requirement": "Correlate source line, typed IR operation, assembly mnemonic, encoded bytes, decoded operands, target feature requirements and available cost evidence.",
       "acceptance": "A selected instruction shows origin, exact encoding and whether cost is static estimate, simulator result or live measurement.",
       "interpretation_adjustment": "Cycle costs must be target/model-specific and cannot be inferred universally from mnemonic alone.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -692,11 +692,11 @@
       "requirement": "Provide explicit no_alloc, no_std/bare-metal and bounded-runtime build profiles for critical code and target artifacts.",
       "acceptance": "The build report lists runtime, allocator, TLS, exception, dynamic-loader and background-service dependencies; each profile fails closed on disallowed dependencies.",
       "interpretation_adjustment": "No-runtime is an opt-in target profile, not a blanket ban on useful IDE/runtime features.",
-      "status": [
+      "status": "partial",
+      "evidence": [
         "src/embedded.c",
         "docs/EMBEDDED_C.md"
-      ],
-      "evidence": []
+      ]
     },
     {
       "id": "PIDE-021",
@@ -1108,7 +1108,7 @@
       "requirement": "The default machine view leads with decoded instructions and registers, while retaining source, Reaper IR, C, HDL and model layers as explicit navigable levels.",
       "acceptance": "Every supported source layer has a visible lowering path; target assembly and machine bytes are inspectable for built artifacts.",
       "interpretation_adjustment": "Reject the blanket ban on all languages above ASM: the IDE must expose abstractions without hiding or forbidding them.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1191,7 +1191,7 @@
       "requirement": "Represent stalls, bubbles, replay, flushes and hazard reasons in the selected pipeline model and trace.",
       "acceptance": "Every modeled stall has an explicit cause and cycle interval; optimizer changes preserve architectural behavior and the model's constraints.",
       "interpretation_adjustment": "Never delete a required stall or hazard to satisfy a cosmetic no-bubble rule.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1202,7 +1202,7 @@
       "requirement": "Describe predictor profile, branch hints and history behavior per ISA/microarchitecture.",
       "acceptance": "Static hints are explicit and benchmarked; unsupported hints are rejected or ignored only under documented target rules.",
       "interpretation_adjustment": "Do not assume every branch is taken by default; predictor behavior varies by core and workload.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1259,7 +1259,7 @@
       "requirement": "Keep human-readable source, declarative hardware models and versioned binary outputs linked through digests and reproducible build metadata.",
       "acceptance": "A clean checkout can rebuild artifacts and verify source-to-binary provenance.",
       "interpretation_adjustment": "Reject binary-only source-of-truth storage; preserve inspectable and reviewable source.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1270,10 +1270,7 @@
       "requirement": "Offer fully static/monolithic bare-metal images where target requirements demand them while allowing dynamic linking when ABI and runtime policy permit.",
       "acceptance": "Build report lists every linked module, relocation, runtime dependency, load region and reproducibility input.",
       "interpretation_adjustment": "Dynamic libraries are not inherently nondeterministic; policy is target/profile-specific.",
-      "status": [
-        "CMakeLists.txt",
-        "tests/test_core.c"
-      ],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1284,7 +1281,7 @@
       "requirement": "Use approved entropy sources and platform key providers such as TPM/secure elements where available; keep keys opaque to the IDE.",
       "acceptance": "Randomness health tests and key-provider provenance are explicit; secrets are not derived from an assumed CPU noise source.",
       "interpretation_adjustment": "Do not encrypt all code by default or claim CPU noise is a secure key generator without validated entropy conditioning.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1295,7 +1292,7 @@
       "requirement": "Expose each target ISA's canonical instruction names, encoding, aliases and disassembly spelling in a versioned registry.",
       "acceptance": "Aliases normalize to canonical semantic IDs while preserving source spelling and assembler compatibility.",
       "interpretation_adjustment": "Do not force MOV/LOAD/STORE names across unrelated ISAs or delete valid architectural aliases.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1317,7 +1314,7 @@
       "requirement": "Model target flags such as zero, carry, overflow, sign and interrupt state as typed architecture-specific state.",
       "acceptance": "Flag reads/writes and preservation are validated from instruction metadata and calling-convention rules.",
       "interpretation_adjustment": "Flags can be represented in APIs where the target ABI permits; they are not forced into ordinary function parameters.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1369,7 +1366,7 @@
       "requirement": "Expose uop decomposition and microcode metadata only when documented or provided by a supported softcore/vendor tool.",
       "acceptance": "A view records source/provenance and separates observed uops from inferred decomposition.",
       "interpretation_adjustment": "Do not promise arbitrary microcode editing on commercial CPUs; edits require a supported programmable core and vendor contract.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1380,12 +1377,12 @@
       "requirement": "Use target-described cache-line size, burst length, sector size and memory transfer granularity for visualization and warnings.",
       "acceptance": "Alignment and efficiency warnings derive from target profile and measured data; byte-granular valid operations remain valid.",
       "interpretation_adjustment": "Never hard-code 64 bytes as a universal cache line or call every sub-line access inefficient.",
-      "status": [
+      "status": "partial",
+      "evidence": [
         "src/processor.c",
         "src/processor.h",
         "tests/test_core.c"
-      ],
-      "evidence": []
+      ]
     },
     {
       "id": "PIDE-074",
@@ -1406,7 +1403,7 @@
       "requirement": "Retain canonical ISA register names while allowing contextual aliases such as ACCUMULATOR or INDEX_PTR in source/debug views.",
       "acceptance": "Aliases resolve to a canonical register identity and never obscure width, role or ABI constraints.",
       "interpretation_adjustment": "Do not rename architectural registers based only on local variable roles.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1417,7 +1414,7 @@
       "requirement": "Generate save/restore sets from ABI caller/callee-saved rules, interrupt frames, vector state and target context requirements.",
       "acceptance": "Conformance tests verify preserved state across calls, interrupts and context switches for each target ABI.",
       "interpretation_adjustment": "Do not assume only a generic minimal register set is saved; lazy vector state and nested interrupts change the contract.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1444,7 +1441,7 @@
       "requirement": "Expose whether shifts/rotates produce carry/overflow flags and how lost bits are represented according to the target ISA.",
       "acceptance": "Instruction-level tests cover each shift width, count boundary and target flag result.",
       "interpretation_adjustment": "A discarded bit is not automatically a data leak; flags and results follow ISA-defined semantics.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1455,7 +1452,7 @@
       "requirement": "Offer bitmask lowering as an optimization candidate when it is semantically correct and improves the target cost/security profile.",
       "acceptance": "Differential tests prove equivalence; benchmark evidence includes branch predictability, vectorization and side-channel constraints.",
       "interpretation_adjustment": "Do not automatically replace every conditional with a mask; inspect target/workload effects.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1466,13 +1463,13 @@
       "requirement": "Honor the declared target, ABI, device and file-format byte order, with explicit conversion at boundaries.",
       "acceptance": "Big- and little-endian fixtures decode correctly; mixed-endian device fields are explicitly documented.",
       "interpretation_adjustment": "Do not require Little-Endian globally.",
-      "status": [
+      "status": "partial",
+      "evidence": [
         "src/low_level_contract.c",
         "src/low_level_contract.h",
         "tests/test_low_level_contract.c",
         "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
-      ],
-      "evidence": []
+      ]
     },
     {
       "id": "PIDE-081",
@@ -1482,7 +1479,7 @@
       "requirement": "Decode instruction boundaries using the target ISA specification and machine-mode state.",
       "acceptance": "Golden byte streams validate length, alignment, prefixes and malformed encoding behavior.",
       "interpretation_adjustment": "Do not ban variable-length instruction sets; fixed-width rules apply only to the selected ISA.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1493,7 +1490,7 @@
       "requirement": "Insert NOP/alignment padding only when required by ISA, ABI, errata, timing or explicit layout constraints.",
       "acceptance": "The map file records every inserted NOP and its reason; generated output passes functional and timing tests.",
       "interpretation_adjustment": "Do not insert NOPs automatically merely to fill cache-line boundaries.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1515,13 +1512,13 @@
       "requirement": "Derive virtual/physical address widths, canonical forms and sign-extension rules from the selected ISA/MMU profile.",
       "acceptance": "Boundary fixtures reject noncanonical/out-of-range addresses and never silently ignore high bits.",
       "interpretation_adjustment": "Do not force 64-bit virtual addresses on 32-bit targets.",
-      "status": [
+      "status": "partial",
+      "evidence": [
         "src/low_level_contract.c",
         "src/low_level_contract.h",
         "tests/test_low_level_contract.c",
         "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
-      ],
-      "evidence": []
+      ]
     },
     {
       "id": "PIDE-085",
@@ -1559,7 +1556,7 @@
       "requirement": "Model OoO issue, reorder buffers, speculation, precise retirement and architectural program-order visibility when the selected core supports them.",
       "acceptance": "Deterministic traces distinguish issue/execute/retire order and validate architectural state against a reference model.",
       "interpretation_adjustment": "Do not assume all CPUs are OoO; in-order cores have separate profiles.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
@@ -1584,13 +1581,13 @@
       "requirement": "Describe supported clock/power domains, idle states, gating dependencies and approved control hooks for the target.",
       "acceptance": "A model validates sequencing and safety interlocks; physical control requires an exact board/vendor backend and capability.",
       "interpretation_adjustment": "Power-gating is not a portable software write to arbitrary transistors.",
-      "status": [
+      "status": "partial",
+      "evidence": [
         "src/low_level_contract.c",
         "src/low_level_contract.h",
         "tests/test_low_level_contract.c",
         "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
-      ],
-      "evidence": []
+      ]
     },
     {
       "id": "PIDE-090",
@@ -1600,7 +1597,7 @@
       "requirement": "Provide cycle-accurate simulation only for fully declared microarchitecture models with validated timing inputs.",
       "acceptance": "Golden traces match the declared model and reference tests; real silicon correlation reports measured deviation and uncertainty.",
       "interpretation_adjustment": "Do not promise exact cycle matching for undocumented commercial silicon.",
-      "status": [],
+      "status": "planned",
       "evidence": []
     },
     {
