@@ -110,6 +110,8 @@ typedef struct {
     uint64_t resource_available_bytes;
     uint32_t resource_level;
     uint32_t resource_type;
+    uint32_t resource_granularity_bytes;
+    uint32_t resource_association_count;
     uint8_t priority;
 } pl_processor_fabric_node;
 
