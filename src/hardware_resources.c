@@ -83,14 +83,14 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
         for(size_t j=i+1u;j<m->region_count;++j) {
             const pl_hw_memory_region *other=&m->regions[j];
             if(r->id==other->id) return PL_HW_RESOURCE_DUPLICATE_ID;
-            if(r->space_id==other->space_id) {
+            if(r->space_id==other->space_id && other->length!=0u &&
+               other->base<=UINT64_MAX-(other->length-1u)) {
                 uint64_t r_end=r->base+r->length-1u;
                 uint64_t o_end=other->base+other->length-1u;
                 if(r->base<=o_end && other->base<=r_end &&
                    (r->alias_group==0u || r->alias_group!=other->alias_group ||
                     r->owner!=other->owner))
-                        return PL_HW_RESOURCE_OVERLAP;
-                }
+                    return PL_HW_RESOURCE_OVERLAP;
             }
         }
     }
