@@ -78,7 +78,7 @@ class ProcessorIDEContractTests(unittest.TestCase):
         adjustments = " ".join(self.data["safety_adjustments"]).lower()
         self.assertIn("endianness", adjustments)
         self.assertIn("cache geometry", adjustments)
-        self.assertIn("instruction width", adjustments)
+        self.assertIn("instruction length", adjustments)
         self.assertIn("privilege", adjustments)
 
     def test_signal_palette_preserves_electrical_states(self) -> None:
@@ -93,7 +93,7 @@ class ProcessorIDEContractTests(unittest.TestCase):
 
     def test_exact_cycles_require_a_declared_model(self) -> None:
         rule = next(item for item in self.data["rules"] if item["id"] == "PIDE-090")
-        self.assertEqual(rule["status"], "research")
+        self.assertEqual(rule["status"], "planned")
         self.assertIn("declared microarchitecture", rule["requirement"].lower())
 
     def test_unknown_workspace_is_rejected(self) -> None:
