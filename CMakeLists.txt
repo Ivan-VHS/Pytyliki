@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/silicon_runtime.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c)
+add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/silicon_runtime.c src/silicon_runtime_integrity.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
