@@ -29,7 +29,7 @@ int main(void) {
     pl_processor_fabric_error error;
     pl_processor_fabric_model model;
     pl_processor_fabric_assignment assignments[1];
-    pl_placement_task placement_tasks[2];
+    pl_placement_task placement_tasks[3];
     pl_placement_pressure pressure;
     pl_placement_result placement;
     size_t node_count = 0u, edge_count = 0u, assignment_count = 0u;
