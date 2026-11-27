@@ -95,8 +95,8 @@ jobs:
             "  permissions: write-all",
         )
         job_write_all = safe_release.replace(
-            "  build-windows:\\n    runs-on: windows-latest",
-            "  build-windows:\\n    permissions:\\n      permissions: write-all\\n    runs-on: windows-latest",
+            "  build-windows:\n    runs-on: windows-latest",
+            "  build-windows:\n    permissions:\n      permissions: write-all\n    runs-on: windows-latest",
         )
         self.assertFalse(workflow_has_unscoped_write(safe_release))
         self.assertTrue(workflow_has_unscoped_write(broad_release))
