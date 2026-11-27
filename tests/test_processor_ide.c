@@ -69,7 +69,7 @@ static void test_debug_requires_provider_capability_and_approval(void) {
     const uint32_t complete =
         PL_IDE_FLAG_TARGET_PROVIDER |
         PL_IDE_FLAG_DEBUG_PROVIDER |
-        PL_IDE_FLAG_TARGET_CAPABILITY |
+        PL_IDE_FLAG_TARGET_AUTHORIZATION_DECLARED |
         PL_IDE_FLAG_OPERATOR_APPROVED;
 
     assert(pl_ide_session_init(&session, "pytyliki", "session-debug", 5u,
@@ -79,7 +79,7 @@ static void test_debug_requires_provider_capability_and_approval(void) {
         PL_IDE_FLAG_DEBUG_PROVIDER) == PL_IDE_CAPABILITY_REQUIRED);
     assert(pl_ide_session_init(&session, "pytyliki", "session-debug", 5u,
         PL_IDE_MODE_DEBUG, &target, PL_IDE_FLAG_TARGET_PROVIDER |
-        PL_IDE_FLAG_DEBUG_PROVIDER | PL_IDE_FLAG_TARGET_CAPABILITY) ==
+        PL_IDE_FLAG_DEBUG_PROVIDER | PL_IDE_FLAG_TARGET_AUTHORIZATION_DECLARED) ==
         PL_IDE_OPERATOR_APPROVAL_REQUIRED);
     assert(pl_ide_session_init(&session, "pytyliki", "session-debug", 5u,
         PL_IDE_MODE_DEBUG, &target, complete) == PL_IDE_OK);
@@ -90,7 +90,7 @@ static void test_physical_modes_require_capability(void) {
     pl_ide_session session;
     const uint32_t approved =
         PL_IDE_FLAG_TARGET_PROVIDER |
-        PL_IDE_FLAG_TARGET_CAPABILITY |
+        PL_IDE_FLAG_TARGET_AUTHORIZATION_DECLARED |
         PL_IDE_FLAG_OPERATOR_APPROVED;
 
     assert(pl_ide_session_init(&session, "pytyliki", "session-hil", 5u,
