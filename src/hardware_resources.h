@@ -13,6 +13,7 @@ extern "C" {
 #define PL_HW_RESOURCE_MAX_BANKS 64u
 #define PL_HW_RESOURCE_MAX_REGISTERS 512u
 #define PL_HW_RESOURCE_MAX_DMA_BUFFERS 256u
+#define PL_HW_RESOURCE_MAX_DEVICES 128u
 #define PL_HW_RESOURCE_SCHEMA "pytyliki.hardware-resource-contract.v1"
 
 typedef enum { PL_HW_SPACE_VIRTUAL=0, PL_HW_SPACE_PHYSICAL, PL_HW_SPACE_IO_PORT,
@@ -84,6 +85,11 @@ typedef struct {
 
 typedef struct {
     uint32_t id;
+    uint32_t generation;
+} pl_hw_device;
+
+typedef struct {
+    uint32_t id;
     uint32_t device_id;
     uint32_t space_id;
     uint64_t base;
@@ -108,6 +114,8 @@ typedef struct {
     const pl_hw_register_bank *banks;
     const pl_hw_register *registers;
     const pl_hw_dma_buffer *dma_buffers;
+    size_t device_count;
+    const pl_hw_device *devices;
 } pl_hw_resource_model;
 
 pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *model);
