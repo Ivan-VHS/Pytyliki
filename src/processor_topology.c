@@ -199,7 +199,7 @@ static void collect_linux_caches(pl_processor_topology_snapshot *out,
     for (cpu_index = 0u; cpu_index < out->logical_processor_count; ++cpu_index) {
         uint32_t cache_index;
         for (cache_index = 0u; cache_index < 16u; ++cache_index) {
-            char path[256], line[128];
+            char path[256], line[4096];
             uint32_t level = 0u, line_size = 0u, os_cpu_ids[PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS];
             uint64_t size_bytes = 0u, sharing[PL_TOPOLOGY_MASK_WORDS] = {0};
             size_t os_count = 0u, j;
@@ -371,22 +371,6 @@ static int find_windows_cpu(pl_processor_topology_snapshot *out,
         if (out->logical_processors[i].group_id == (uint32_t)group &&
             out->logical_processors[i].os_id == (uint32_t)number) return (int)i;
     return -1;
-}
-
-static void apply_windows_group_mask(pl_processor_topology_snapshot *out,
-                                     WORD group, KAFFINITY mask,
-                                     uint32_t *field, uint32_t value,
-                                     int set_numa) {
-    unsigned bit;
-    for (bit = 0u; bit < sizeof(KAFFINITY) * 8u; ++bit) {
-        if ((mask & ((KAFFINITY)1u << bit)) != 0u) {
-            int index = find_windows_cpu(out, group, (BYTE)bit);
-            if (index >= 0) {
-                if (set_numa) out->logical_processors[index].numa_node_id = value;
-                else *(&field[index]) = value;
-            }
-        }
-    }
 }
 
 static pl_topology_status collect_windows(pl_processor_topology_snapshot *out) {
@@ -688,13 +672,13 @@ pl_topology_status pl_processor_topology_write_json(
     fputs(",\"features\":{", output);
 #define WRITE_FEATURE(name, flag) do { \
     if (!first_feature) fputc(',', output); first_feature = 0; \
-    fprintf(output, "\\\"%s\\\":{\\\"hardware_present\\\":", name); \
+    fprintf(output, "\"%s\":{\"hardware_present\":", name); \
     if ((snapshot->isa_known & (flag)) == 0u) fputs("null", output); \
     else fputs((snapshot->isa_hardware_present & (flag)) ? "true" : "false", output); \
-    fputs(",\\\"os_usable\\\":", output); \
+    fputs(",\"os_usable\":", output); \
     if ((snapshot->isa_known & (flag)) == 0u) fputs("null", output); \
     else fputs((snapshot->isa_os_usable & (flag)) ? "true" : "false", output); \
-    fputs(",\\\"evidence\\\":\\\"cpuid\\\"}", output); \
+    fputs(",\"evidence\":\"cpuid\"}", output); \
 } while (0)
     {
         int first_feature = 1;
