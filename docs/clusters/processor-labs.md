@@ -14,6 +14,7 @@ This hub is the topic-level entry point for the pages below. Use the linked spec
 - [CPU SUITE PRO 78](../CPU_SUITE_PRO_78.md)
 - [EMBEDDED C](../EMBEDDED_C.md)
 - [HARDWARE RULE ENGINE](../HARDWARE_RULE_ENGINE.md)
+- [100 low-level engineering rules and target contract](../PYTYLIKI_LOW_LEVEL_100_RULES.md)
 - [IRON CORE v1 — 100 hardware-engineering rules](../IRON_CORE.md)
 - [Omega-Null — physics-inspired research profile](../OMEGA_NULL.md)
 - [MICROBUDGET PLANNER](../MICROBUDGET_PLANNER.md)
