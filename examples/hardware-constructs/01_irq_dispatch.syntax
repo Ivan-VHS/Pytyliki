@@ -1,0 +1,7 @@
+table irq_dispatch [core = 0..3] {
+    | IRQ_ID | PRIORITY | HANDLER             | CONTEXT |
+    | 0x01   | HIGH     | capture_irq_state   | irq_safe |
+    | 0x04   | MED      | record_privilege    | irq_safe |
+    | 0x09   | LOW      | queue_dma_flush     | deferred |
+}
+
