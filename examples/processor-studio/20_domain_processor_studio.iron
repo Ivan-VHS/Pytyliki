@@ -1,0 +1,77 @@
+verison ///. * PYTYLIKI_20_DOMAINS_PROCESSOR_STUDIO_V1
+CC based rules ^^^ STUDIO_20_DOMAIN_ROUTING_AND_ISOLATION_V1
+begin iron )
+() core --
+suite_name = "PYTYLIKI_20_DOMAINS_SILICON_STUDIO";
+domain_count = 20;
+core_id = 0xC020;
+registers = [R0, R1, R2, R3, R4, R5, R6, R7, regit, PC, FLAGS];
+stop option ;
+[ system ]-
+arena = logical_range(0x00000000C0000000, 0x00400000);
+tray = logical_range(0x00000000C0010000, 0x00001000);
+overlay = logical_range(0x00000000C0014000, 0x00004000);
+domain_table = logical_range(0x00000000C0020000, 20 * 64);
+address_semantics = "logical-only";
+stop option ;
+] level .
+privilege_ring = 0;
+isolation_root = "HARDWARE_STUDIO_ROOT";
+rights = [inspect, execute, plan, commit, trace];
+stop option ;
+< start >?
+active_domain = 1;
+domain_limit = 20;
+regit = 0;
+planned_jump_target = 0x00000000C0000400;
+stop option ;
+{ selective /
+domain_mask = 0x000FFFFF;
+fold = "per-domain xor/add/rotate-left";
+persist = "transaction-local until commit";
+stop option ;
+} operation P)-
+matrix_fold = (R3 + R4);
+regit = regit xor matrix_fold;
+stop option ;
+?? massive <>
+sweep = "xor all twenty committed domain-table values";
+trace_capacity = 64;
+stop option ;
+grown new-work >/
+worker_slots = 4;
+queue = "AXI_BUS";
+dispatch = "deterministic round-robin plan";
+actual_threads = false;
+stop option ;
+> concrete //*
+commit = "optimistic generation-checked transaction";
+rollback = "discard pending domain and register snapshots";
+stop option ;
+## utility _
+low_byte = regit and 0xFF;
+bit_parity = parity(low_byte);
+stop option ;
+# unify TAB
+columns = ["IDX", "LAYER_ROLE", "HARDWARE_FOCUS", "ORG_UNIT", "STATE"];
+tab_pitch = 4;
+stop option ;
+setup brachpass ^^
+trace_ring = "bounded sequence-numbered ring";
+trace_scope = "domain state, plan, commit, rollback, rejection";
+stop option ;
+!+ hyper tournament ^
+round_1 = max(R3, R4);
+round_2 = max(R5, round_1);
+winner_to_regit = true;
+stop option ;
+level jump to run *(
+save_return_pc = R7;
+jump_target = planned_jump_target;
+jump_execution = false;
+stop option ;
+TRUE connective *+
+assert = "regit != 0";
+assertion_effect = "report-only";
+stop option ;
+verificated /// !! PYTYLIKI_20_DOMAINS_STUDIO_SOURCE_CLAIM
