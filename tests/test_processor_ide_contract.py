@@ -74,6 +74,11 @@ class ProcessorIDEContractTests(unittest.TestCase):
         self.assertTrue(safety["no_implicit_hardware_access"])
         self.assertTrue(safety["no_unreviewed_mmio_or_privileged_write"])
 
+    def test_session_flags_do_not_grant_hardware_access(self) -> None:
+        description = self.data["related_contracts"]["native_session_foundation"]["description"].lower()
+        self.assertIn("not security tokens", description)
+        self.assertIn("pl_ll_bus capability checks", description)
+
     def test_machine_facts_are_target_specific(self) -> None:
         adjustments = " ".join(self.data["safety_adjustments"]).lower()
         self.assertIn("endianness", adjustments)
