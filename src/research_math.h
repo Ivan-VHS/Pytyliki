@@ -4,6 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define PL_MATH_RESEARCH_API_MAJOR 1u
+#define PL_MATH_RESEARCH_API_MINOR 0u
+
 #define PL_MATH_MAX_TERMS 1000000u
 #define PL_MATH_MAX_CNF_VARIABLES 24u
 #define PL_MATH_MAX_MATRIX_DIMENSION 128u
@@ -11,6 +14,16 @@
 #define PL_MATH_MAX_GRAPH_VERTICES 128u
 #define PL_MATH_MAX_GRID_CELLS 1000000u
 #define PL_MATH_MAX_CURVE_SAMPLES 128u
+
+/*
+ * Caller-owned buffer contract:
+ * - Array pointers must reference storage for the complete declared input/output shape.
+ * - Inputs are read-only; output buffers must not overlap inputs or one another unless a
+ *   function explicitly documents alias support.
+ * - No kernel allocates memory or retains caller pointers after return.
+ * - Bounded kernels report PL_MATH_LIMIT before doing work beyond their published budget.
+ * - pl_math_matrix_multiply_f64 is alias-safe for its output buffer and either input matrix.
+ */
 
 typedef enum {
     PL_MATH_OK = 0,
