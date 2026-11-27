@@ -95,6 +95,21 @@ static void test_contention_and_floating(void)
     assert(states[5] == PL_MOS_STATE_FLOATING);
 }
 
+static void test_capacity(void)
+{
+    pl_mos_switch_network network;
+    size_t i;
+
+    assert(pl_mos_switch_network_init(&network, 3u, 0u, 1u) == PL_MOS_SWITCH_OK);
+    for (i = 0u; i < PL_MOS_SWITCH_MAX_DEVICES; ++i) {
+        assert(pl_mos_switch_add(&network, PL_MOS_CHANNEL_N, 2u, 0u, 1u) ==
+               PL_MOS_SWITCH_OK);
+    }
+    assert(network.device_count == PL_MOS_SWITCH_MAX_DEVICES);
+    assert(pl_mos_switch_add(&network, PL_MOS_CHANNEL_N, 2u, 0u, 1u) ==
+           PL_MOS_SWITCH_CAPACITY);
+}
+
 static void test_invalid_inputs(void)
 {
     pl_mos_switch_network network;
@@ -137,6 +152,7 @@ int main(void)
     test_cmos_inverter();
     test_cmos_nand2_truth_table();
     test_contention_and_floating();
+    test_capacity();
     test_invalid_inputs();
     puts("Pytyliki MOS switch model tests passed.");
     return 0;
