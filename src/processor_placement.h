@@ -18,6 +18,7 @@
 #define PL_PLACEMENT_REASON_ISA_FILTERED       (UINT32_C(1) << 6)
 #define PL_PLACEMENT_REASON_AFFINITY_FILTERED  (UINT32_C(1) << 7)
 #define PL_PLACEMENT_REASON_OFFLINE_FILTERED   (UINT32_C(1) << 8)
+#define PL_PLACEMENT_REASON_CACHE_UNKNOWN      (UINT32_C(1) << 9)
 
 typedef struct {
     uint32_t logical_id;
