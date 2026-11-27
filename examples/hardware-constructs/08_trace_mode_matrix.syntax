@@ -1,0 +1,14 @@
+matrix trace_mode_matrix {
+    modes = [DRY, OVERLAY_PLUS, LOAD_SAVE_PLUS];
+    rings = [RING_0, RING_1, RING_2];
+
+    cell (DRY, RING_0) =>
+        observe_registers(R0..R3);
+
+    cell (OVERLAY_PLUS, RING_1) =>
+        configure_watchpoint(target, length: 128);
+
+    cell (LOAD_SAVE_PLUS, RING_2) =>
+        capture_snapshot(R0..R7, destination: SNAPSHOT_REGION);
+}
+
