@@ -76,7 +76,10 @@ int pl_iron_parse(const char*s,pl_iron_program*out,pl_iron_error*e){
   while(end<len&&s[end]!='\n')++end;
   if(!scan_line(s,line_start,end,&block_comment,&first,e,line))return 0;
   if(first!=NO_INDEX)for(i=0;i<PL_IRON_MARKER_COUNT;i++)if(matches(s,first,end,catalog[i].token)){m=&catalog[i];break;}
-  if(m){size_t after=first+strlen(m->token);pl_iron_marker_kind k=m->kind;++out->marker_counts[(size_t)k];
+  if(m){
+   size_t after=first+strlen(m->token);pl_iron_marker_kind k=m->kind;
+   if(final_seal)return fail(e,first,line,"marker appears after final verification claim");
+   ++out->marker_counts[(size_t)k];
    if(k==PL_IRON_BEGIN){
     if(out->root_seen)return fail(e,first,line,"duplicate begin iron root marker");
     if(depth||final_seal)return fail(e,first,line,"root marker is outside the module prelude");
