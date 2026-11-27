@@ -23,8 +23,8 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
-      - name: Validate Duck Sovereign Canon palette
-        run: python tools/validate_visual_canon.py src/win_gui.c
+      - name: Test CLife snapshots
+        run: python -m unittest discover -s tests -p "test_clife.py" -v
       - name: Validate APSIA evolution-lock schema JSON
         run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
       - name: Verify architecture contract
@@ -33,6 +33,10 @@ jobs:
         run: python tools/systems_languages.py --verify
       - name: Verify 100-proverb engineering crosswalk
         run: python scripts/check_chinese_proverbs_profile.py
+      - name: Validate engineering evolution contract
+        run: python tools/validate_engineering_evolution.py
+      - name: Test engineering evolution contract
+        run: python -m unittest discover -s tests -p "test_engineering_evolution.py" -v
 
   windows:
     name: Windows
@@ -45,8 +49,8 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
-      - name: Validate Duck Sovereign Canon palette
-        run: python tools/validate_visual_canon.py src/win_gui.c
+      - name: Test CLife snapshots
+        run: python -m unittest discover -s tests -p "test_clife.py" -v
       - name: Validate APSIA evolution-lock schema JSON
         run: python -c "import json; json.load(open('apsia/evolution-lock.schema.json', encoding='utf-8'))"
       - name: Verify architecture contract

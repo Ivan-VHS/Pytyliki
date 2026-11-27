@@ -6,13 +6,12 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "core.h"
 #include "processor.h"
-#include "dsp.h"
 #include "metric_geometry.h"
 #include "metric_registry.h"
 #include "embedded.h"
+#include "ui_ux_policy.h"
 
 #ifndef WM_DPICHANGED
 #define WM_DPICHANGED 0x02E0
@@ -21,28 +20,14 @@
 #define ID_PROFILE 1001
 #define ID_SUITE 1002
 #define ID_REVIEW 1003
-#define ID_LOAD_WAV 1004
-#define ID_TONE 1005
-#define ID_LOWPASS 1006
-#define ID_COMPRESS 1007
-#define ID_SATURATE 1008
-#define ID_MEASURE 1009
-#define ID_EXPORT 1010
-#define ID_GAIN 1011
 #define ID_CLEAR 1012
 #define ID_SAVE_REPORT 1013
 #define ID_METRIC_LAB 1014
 #define ID_EMBEDDED 1015
 #define ID_THEME 1016
 #define ID_MOTION 1017
-#define ID_CUTOFF 1101
-#define ID_THRESHOLD 1102
-#define ID_RATIO 1103
-#define ID_DRIVE 1104
-#define ID_GAIN_VALUE 1105
 #define ID_MOTION_REDUCE 1301
 #define ID_MOTION_ECO 1302
-#define ID_MOTION_SYNC 1303
 #define ID_MOTION_SAVE 1304
 #define ID_MOTION_CANCEL 1305
 #define ID_MOTION_MODE 1306
@@ -53,7 +38,6 @@ static HFONT g_font;
 static HFONT g_log_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
-static int g_atmosphere = 0; /* 0 Dawn, 1 Sunset, 2 Night */
 static int g_reduce_motion = 0;
 static int g_eco_visuals = 0;
 static int g_motion_mode = 0; /* 0 Normal, 1 Expressive, 2 Reduced Motion */
@@ -61,43 +45,34 @@ static HWND g_motion_dialog = NULL;
 static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
-static COLORREF page_color(void) {
-    if (g_atmosphere == 2) return RGB(8,21,34);
-    if (g_atmosphere == 1) return RGB(245,239,232);
-    return RGB(243,246,250);
-}
-static COLORREF header_color(void) {
-    if (g_atmosphere == 2) return RGB(5,16,28);
-    if (g_atmosphere == 1) return RGB(45,53,70);
-    return RGB(0,51,102);
+static COLORREF page_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(244,248,253); }
+static COLORREF header_color(void) { return g_dark_mode ? RGB(5,14,26) : RGB(0,51,102); }
+static COLORREF contrast_safe_text(COLORREF proposed, COLORREF background) {
+    if (pl_ui_text_contrast_meets(
+        GetRValue(proposed), GetGValue(proposed), GetBValue(proposed),
+        GetRValue(background), GetGValue(background), GetBValue(background), 0))
+        return proposed;
+    const double black_ratio = pl_ui_contrast_ratio_rgb(
+        0,0,0,GetRValue(background),GetGValue(background),GetBValue(background));
+    const double white_ratio = pl_ui_contrast_ratio_rgb(
+        255,255,255,GetRValue(background),GetGValue(background),GetBValue(background));
+    return black_ratio >= white_ratio ? RGB(0,0,0) : RGB(255,255,255);
 }
 static COLORREF text_color(void) {
-    if (g_atmosphere == 2) return RGB(237,244,250);
-    if (g_atmosphere == 1) return RGB(50,43,42);
-    return RGB(16,36,58);
+    return contrast_safe_text(
+        g_dark_mode ? RGB(232,237,242) : RGB(18,44,69), page_color()
+    );
 }
-static COLORREF input_color(void) {
-    if (g_atmosphere == 2) return RGB(16,38,59);
-    if (g_atmosphere == 1) return RGB(255,249,242);
-    return RGB(255,255,255);
-}
-static COLORREF log_color(void) {
-    if (g_atmosphere == 2) return RGB(6,16,27);
-    if (g_atmosphere == 1) return RGB(41,38,58);
-    return RGB(12,31,51);
-}
-static COLORREF blue_color(void) { return g_atmosphere == 2 ? RGB(115,183,255) : RGB(0,57,166); }
-static COLORREF blue_hover_color(void) { return g_atmosphere == 2 ? RGB(154,203,255) : RGB(10,30,70); }
-static COLORREF red_color(void) { return g_atmosphere == 2 ? RGB(255,125,120) : RGB(181,26,16); }
-static COLORREF red_hover_color(void) { return g_atmosphere == 2 ? RGB(255,163,155) : RGB(213,43,30); }
-static COLORREF border_color(void) {
-    if (g_atmosphere == 2) return RGB(49,83,107);
-    if (g_atmosphere == 1) return RGB(216,197,181);
-    return RGB(203,214,228);
-}
+static COLORREF input_color(void) { return g_dark_mode ? RGB(15,42,69) : RGB(255,255,255); }
+static COLORREF log_color(void) { return g_dark_mode ? RGB(7,26,45) : RGB(15,42,69); }
+static COLORREF blue_color(void) { return g_dark_mode ? RGB(112,165,255) : RGB(0,78,152); }
+static COLORREF blue_hover_color(void) { return g_dark_mode ? RGB(138,182,255) : RGB(26,95,219); }
+static COLORREF red_color(void) { return g_dark_mode ? RGB(255,123,134) : RGB(181,18,45); }
+static COLORREF red_hover_color(void) { return g_dark_mode ? RGB(255,154,162) : RGB(156,16,38); }
+static COLORREF border_color(void) { return g_dark_mode ? RGB(49,81,111) : RGB(202,216,232); }
 static COLORREF button_ink(int primary, int danger) {
-    if (primary) return g_atmosphere == 2 ? RGB(8,21,34) : RGB(255,255,255);
-    if (danger) return g_atmosphere == 2 ? RGB(25,11,11) : RGB(255,255,255);
+    if (primary) return g_dark_mode ? RGB(6,26,48) : RGB(255,255,255);
+    if (danger) return g_dark_mode ? RGB(43,6,16) : RGB(255,255,255);
     return blue_color();
 }
 static int primary_button(UINT id) {
@@ -120,7 +95,6 @@ static void rebuild_brushes(void) {
     g_input_brush = CreateSolidBrush(input_color());
     g_log_brush = CreateSolidBrush(log_color());
 }
-static pl_audio_buffer g_audio = {0};
 
 static void log_format(const char *fmt, ...);
 static void apply_font(HWND control);
@@ -140,10 +114,6 @@ static void load_motion_settings(void) {
     if (RegQueryValueExA(key, "MotionMode", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
         g_motion_mode = value > 2 ? 0 : (int)value;
     if (g_reduce_motion) g_motion_mode = 2;
-    value = 0; size = sizeof(value); type = REG_DWORD;
-    if (RegQueryValueExA(key, "Atmosphere", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD)
-        g_atmosphere = value > 2 ? 0 : (int)value;
-    g_dark_mode = (g_atmosphere == 2);
     RegCloseKey(key);
 }
 
@@ -160,8 +130,6 @@ static void save_motion_settings(void) {
     RegSetValueExA(key, "ReduceMotion", 0, REG_DWORD, (const BYTE*)&reduce, sizeof(reduce));
     RegSetValueExA(key, "EcoVisuals", 0, REG_DWORD, (const BYTE*)&eco, sizeof(eco));
     RegSetValueExA(key, "MotionMode", 0, REG_DWORD, (const BYTE*)&mode, sizeof(mode));
-    DWORD atmosphere = (DWORD)g_atmosphere;
-    RegSetValueExA(key, "Atmosphere", 0, REG_DWORD, (const BYTE*)&atmosphere, sizeof(atmosphere));
     RegCloseKey(key);
 }
 
@@ -184,22 +152,18 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
         SendMessageA(g_motion_mode_combo, CB_ADDSTRING, 0, (LPARAM)"Reduced Motion");
         SendMessageA(g_motion_mode_combo, CB_SETCURSEL, (WPARAM)g_motion_mode, 0);
         g_motion_eco_check = CreateWindowExA(0, "BUTTON", "Eco / Low-CPU Visuals - suppress nonessential effects",
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 82, 430, 28,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, 22, 82, 430, 44,
             dialog, (HMENU)(INT_PTR)ID_MOTION_ECO, GetModuleHandleA(NULL), NULL);
-        HWND sync = CreateWindowExA(0, "BUTTON", "Sync to Transport / BPM (unavailable: no audio transport)",
-            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 22, 116, 430, 28,
-            dialog, (HMENU)(INT_PTR)ID_MOTION_SYNC, GetModuleHandleA(NULL), NULL);
         HWND note = CreateWindowExA(0, "STATIC",
-            "Normal: balanced motion. Expressive: longer window entrance. Reduced Motion: no spatial transition. BPM sync is unavailable in this workstation.",
-            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 152, 430, 46, dialog, NULL, GetModuleHandleA(NULL), NULL);
+            "Normal: balanced motion. Expressive: longer window entrance. Reduced Motion: no spatial transition.",
+            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 136, 430, 48, dialog, NULL, GetModuleHandleA(NULL), NULL);
         HWND save = CreateWindowExA(0, "BUTTON", "Save", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
-            270, 216, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
+            270, 202, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
         HWND cancel = CreateWindowExA(0, "BUTTON", "Cancel", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-            362, 216, 82, 30, dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
+            362, 202, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
         apply_font(mode_label); apply_font(g_motion_mode_combo); apply_font(g_motion_eco_check);
-        apply_font(sync); apply_font(note); apply_font(save); apply_font(cancel);
+        apply_font(note); apply_font(save); apply_font(cancel);
         SendMessageA(g_motion_eco_check, BM_SETCHECK, g_eco_visuals ? BST_CHECKED : BST_UNCHECKED, 0);
-        EnableWindow(sync, FALSE);
         SetFocus(g_motion_mode_combo);
         return 0;
     }
@@ -210,13 +174,19 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
             g_reduce_motion = (g_motion_mode == 2);
             g_eco_visuals = SendMessageA(g_motion_eco_check, BM_GETCHECK, 0, 0) == BST_CHECKED;
             save_motion_settings();
-            log_format("[UI MOTION] Mode %s | Eco Visuals %s | BPM sync unavailable without transport.\\r\\n",
+            log_format("[UI MOTION] Mode %s | Eco Visuals %s.\\r\\n",
                 g_motion_mode == 2 ? "REDUCED" : g_motion_mode == 1 ? "EXPRESSIVE" : "NORMAL",
                 g_eco_visuals ? "ON" : "OFF");
             close_motion_dialog(dialog);
             return 0;
         }
         if (LOWORD(wparam) == ID_MOTION_CANCEL) {
+            close_motion_dialog(dialog);
+            return 0;
+        }
+        break;
+    case WM_KEYDOWN:
+        if (wparam == VK_ESCAPE) {
             close_motion_dialog(dialog);
             return 0;
         }
@@ -241,9 +211,9 @@ static void show_motion_settings(void) {
         return;
     }
     EnableWindow(g_main, FALSE);
-    g_motion_dialog = CreateWindowExA(WS_EX_DLGMODALFRAME, "PytylikiMotionSettings",
+    g_motion_dialog = CreateWindowExA(WS_EX_DLGMODALFRAME | WS_EX_CONTROLPARENT, "PytylikiMotionSettings",
         "UI Motion Settings", WS_CAPTION | WS_SYSMENU | WS_POPUP,
-        CW_USEDEFAULT, CW_USEDEFAULT, 490, 300, g_main, NULL, GetModuleHandleA(NULL), NULL);
+        CW_USEDEFAULT, CW_USEDEFAULT, 490, 320, g_main, NULL, GetModuleHandleA(NULL), NULL);
     if (!g_motion_dialog) {
         EnableWindow(g_main, TRUE);
         SetForegroundWindow(g_main);
@@ -266,20 +236,6 @@ static void log_format(const char *fmt, ...) {
     va_end(args); log_text(buffer);
 }
 static void apply_font(HWND control) { if (g_font) SendMessageA(control, WM_SETFONT, (WPARAM)g_font, TRUE); }
-static HWND add_label(HWND parent, const char *label, int id) {
-    HWND h=CreateWindowExA(0,"STATIC",label,WS_CHILD|WS_VISIBLE|SS_LEFT,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
-    apply_font(h); return h;
-}
-static HWND add_edit(HWND parent, const char *value, int id) {
-    HWND h=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT",value,WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_AUTOHSCROLL|ES_LEFT,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
-    apply_font(h); return h;
-}
-static double read_parameter(int id, double fallback) {
-    char text[64], *end=NULL; GetWindowTextA(GetDlgItem(g_main,id),text,(int)sizeof(text));
-    double value=strtod(text,&end);
-    if (!text[0] || !end || end==text || *end || !isfinite(value)) return fallback;
-    return value;
-}
 static HWND add_button(HWND parent, const char *label, int id) {
     HWND h=CreateWindowExA(0,"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW|BS_NOTIFY,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
     apply_font(h); return h;
@@ -319,12 +275,12 @@ static void run_suite(void) {
          r.integer_ms,r.memory_ms,r.memory_mib,r.passes,r.matrix_ms,(unsigned long long)r.checksum,r.integrity_ok?"PASS":"CHECK");
     log_text("Scores are local comparative measurements, not processor certification. Close other high-load applications for more repeatable runs.\r\n");
 }
-static int choose_file(char *path,size_t cap,int save) {
+static int choose_file(char *path,size_t cap) {
     OPENFILENAMEA ofn; memset(&ofn,0,sizeof(ofn)); path[0]='\0';
     ofn.lStructSize=sizeof(ofn); ofn.hwndOwner=GetActiveWindow(); ofn.lpstrFile=path; ofn.nMaxFile=(DWORD)cap;
-    ofn.lpstrFilter="WAV audio (*.wav)\0*.wav\0C/C++/Rust source (*.c;*.h;*.cpp;*.rs)\0*.c;*.h;*.cpp;*.rs\0All files (*.*)\0*.*\0";
-    ofn.nFilterIndex=save?1:3; ofn.lpstrDefExt=save?"wav":NULL; ofn.Flags=OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|(save?(OFN_OVERWRITEPROMPT|OFN_EXPLORER):(OFN_FILEMUSTEXIST|OFN_EXPLORER));
-    return save?GetSaveFileNameA(&ofn):GetOpenFileNameA(&ofn);
+    ofn.lpstrFilter="C/C++/Rust source (*.c;*.h;*.cpp;*.rs)\0*.c;*.h;*.cpp;*.rs\0All files (*.*)\0*.*\0";
+    ofn.nFilterIndex=1; ofn.Flags=OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_FILEMUSTEXIST|OFN_EXPLORER;
+    return GetOpenFileNameA(&ofn);
 }
 static int choose_report(char *path,size_t cap) {
     OPENFILENAMEA ofn; memset(&ofn,0,sizeof(ofn)); path[0]='\0';
@@ -342,46 +298,13 @@ static void save_report(void) {
     log_format("[REPORT] Saved CPU snapshot and bounded benchmark JSON: %s\r\n",path);
 }
 static void review_source(void) {
-    char path[1024]; if(!choose_file(path,sizeof(path),0)) return;
+    char path[1024]; if(!choose_file(path,sizeof(path))) return;
     pl_analysis a={0}; char details[8192]={0};
     if(pl_analyze_file(path,&a,details,sizeof(details))!=0) { log_format("[SOURCE REVIEW] Could not read: %s\r\n",path); return; }
     log_format("\r\n[SOURCE REVIEW] %s\r\nFiles: %u | review flags: %u | read errors: %u\r\n%s",
          path,a.files_scanned,a.findings,a.read_errors,details[0]?details:"No heuristic flags found.\r\n");
     log_text("Flags are review prompts, not vulnerability verdicts. Source files are never executed or modified.\r\n");
 }
-static void load_wav(void) {
-    char path[1024]; if(!choose_file(path,sizeof(path),0)) return;
-    int rc=pl_audio_load_wav(path,&g_audio);
-    if(rc!=0) { log_format("[AUDIO IMPORT] WAV load failed (%d). Expected PCM 16-bit mono/stereo WAV, 8–192 kHz, bounded file size.\r\n",rc); return; }
-    log_format("\r\n[DSP IMPORT] %s | %u Hz | %u channel(s) | %lu frames\r\n",path,g_audio.sample_rate,g_audio.channels,(unsigned long)g_audio.frames);
-    pl_audio_stats s; if(pl_audio_measure(&g_audio,&s)==0) log_format("Peak %.4f | RMS %.4f | crest %.2f dB | clipped samples %lu\r\n",s.peak,s.rms,s.crest_db,(unsigned long)s.clipped_samples);
-}
-static void generate_tone(void) {
-    int rc=pl_audio_generate_tone(&g_audio,48000,2,440.0,3.0);
-    if(rc!=0) { log_format("[DSP GENERATOR] Tone generation failed (%d).\r\n",rc); return; }
-    log_text("\r\n[DSP GENERATOR] Created 440 Hz stereo test tone, 48 kHz, 3 seconds, -3.1 dBFS peak.\r\n");
-}
-static void audio_effect(int id) {
-    if(!g_audio.samples) { log_text("[DSP] Load a PCM WAV or generate a test tone first.\r\n"); return; }
-    int rc=0; const char *name="";
-    if(id==ID_LOWPASS) { double cutoff=read_parameter(ID_CUTOFF,5000.0); rc=pl_audio_apply_lowpass(&g_audio,cutoff); log_format("[DSP PROCESS] One-pole low-pass %.1f Hz: %s\r\n",cutoff,rc==0?"applied":"invalid parameter"); return; }
-    else if(id==ID_COMPRESS) { double threshold=read_parameter(ID_THRESHOLD,-12.0), ratio=read_parameter(ID_RATIO,4.0); rc=pl_audio_apply_compressor(&g_audio,threshold,ratio); log_format("[DSP PROCESS] Compressor %.1f dB / %.2f:1: %s\r\n",threshold,ratio,rc==0?"applied":"invalid parameter"); return; }
-    else if(id==ID_SATURATE) { double drive=read_parameter(ID_DRIVE,1.8); rc=pl_audio_apply_saturation(&g_audio,drive); log_format("[DSP PROCESS] Soft saturation %.2fx: %s\r\n",drive,rc==0?"applied":"invalid parameter"); return; }
-    else if(id==ID_GAIN) { double gain=read_parameter(ID_GAIN_VALUE,-3.0); rc=pl_audio_apply_gain(&g_audio,gain); log_format("[DSP PROCESS] Gain %.1f dB: %s\r\n",gain,rc==0?"applied":"invalid parameter"); return; }
-    if(rc==0) log_format("[DSP PROCESS] Applied %s.\r\n",name); else log_format("[DSP PROCESS] %s rejected the current buffer.\r\n",name);
-}
-static void measure_audio(void) {
-    pl_audio_stats s; if(pl_audio_measure(&g_audio,&s)!=0) { log_text("[DSP METER] No valid audio buffer.\r\n"); return; }
-    log_format("\r\n[DSP METER] Peak %.5f | RMS %.5f | DC %.6f | crest %.2f dB | clipped %lu\r\n",
-         s.peak,s.rms,s.dc,s.crest_db,(unsigned long)s.clipped_samples);
-}
-static void export_wav(void) {
-    if(!g_audio.samples) { log_text("[DSP EXPORT] No audio buffer to export.\r\n"); return; }
-    char path[1024]; if(!choose_file(path,sizeof(path),1)) return;
-    if(pl_audio_write_wav(path,&g_audio)==0) log_format("[DSP EXPORT] Wrote PCM16 WAV: %s\r\n",path);
-    else log_format("[DSP EXPORT] Write failed: %s\r\n",path);
-}
-
 static void show_embedded_profiles(void) {
     size_t i;
     log_text("\r\n[EMBEDDED C] Native MCU profile catalogue\r\n");
@@ -412,28 +335,6 @@ static void layout(HWND w) {
     }
     y+=top_rows*(button_height+gap)+8;
 
-    int audio_ids[]={ID_LOAD_WAV,ID_TONE,ID_LOWPASS,ID_COMPRESS,ID_SATURATE,ID_GAIN,ID_MEASURE,ID_EXPORT};
-    int audio_columns=width>=740?4:2;
-    int audio_rows=(8+audio_columns-1)/audio_columns;
-    int audio_width=(width-2*margin-(audio_columns-1)*gap)/audio_columns;
-    for(int i=0;i<8;i++) {
-        int row=i/audio_columns, column=i%audio_columns;
-        MoveWindow(GetDlgItem(w,audio_ids[i]),margin+column*(audio_width+gap),y+row*(button_height+gap),audio_width,button_height,TRUE);
-    }
-    y+=audio_rows*(button_height+gap)+8;
-
-    int labels[]={1201,1202,1203,1204,1205};
-    int edits[]={ID_CUTOFF,ID_THRESHOLD,ID_RATIO,ID_DRIVE,ID_GAIN_VALUE};
-    int parameter_columns=width>=1280?5:3;
-    int parameter_rows=(5+parameter_columns-1)/parameter_columns;
-    int group=(width-2*margin-(parameter_columns-1)*gap)/parameter_columns;
-    for(int i=0;i<5;i++) {
-        int row=i/parameter_columns, column=i%parameter_columns;
-        int x=margin+column*(group+gap), py=y+row*60;
-        MoveWindow(GetDlgItem(w,labels[i]),x,py,group-4,18,TRUE);
-        MoveWindow(GetDlgItem(w,edits[i]),x,py+20,group-4,30,TRUE);
-    }
-    y+=parameter_rows*60+6;
     MoveWindow(GetDlgItem(w,ID_SAVE_REPORT),width-margin-244,y,124,44,TRUE);
     MoveWindow(GetDlgItem(w,ID_CLEAR),width-margin-112,y,112,44,TRUE);
     y+=52;
@@ -447,13 +348,9 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         g_main=w;
         g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
         rebuild_brushes();
-        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"ATMOSPHERE: DAWN",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
-        add_button(w,"LOAD PCM WAV",ID_LOAD_WAV); add_button(w,"GENERATE TEST TONE",ID_TONE); add_button(w,"LOW-PASS 5 kHz",ID_LOWPASS); add_button(w,"COMPRESS 4:1",ID_COMPRESS);
-        add_button(w,"SOFT SATURATION",ID_SATURATE); add_button(w,"GAIN",ID_GAIN); add_button(w,"MEASURE AUDIO",ID_MEASURE); add_button(w,"EXPORT PCM WAV",ID_EXPORT);
-        add_label(w,"LP cutoff Hz",1201); add_label(w,"Comp threshold dB",1202); add_label(w,"Comp ratio",1203); add_label(w,"Saturation drive",1204); add_label(w,"Gain dB",1205);
-        add_edit(w,"5000",ID_CUTOFF); add_edit(w,"-12",ID_THRESHOLD); add_edit(w,"4",ID_RATIO); add_edit(w,"1.8",ID_DRIVE); add_edit(w,"-3",ID_GAIN_VALUE);
+        add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
-        g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nDeveloper: Ivan-VHS\r\nCPU operations are read-only and bounded. DSP actions process a local in-memory audio buffer.\r\n",
+        g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nDeveloper: Ivan-VHS\r\nCPU operations are read-only and bounded.\r\n",
             WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL);
         g_log_font=CreateFontA(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,"Consolas");
         if (g_log_font) SendMessageA(g_log,WM_SETFONT,(WPARAM)g_log_font,TRUE); else apply_font(g_log);
@@ -516,7 +413,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | local DSP",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
         SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
         EndPaint(w,&ps); return 0;
     }
@@ -528,27 +425,17 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
             case ID_METRIC_LAB: show_metric_lab(); break;
             case ID_EMBEDDED: show_embedded_profiles(); break;
             case ID_MOTION: show_motion_settings(); break;
-            case ID_LOAD_WAV: load_wav(); break;
-            case ID_TONE: generate_tone(); break;
-            case ID_LOWPASS: case ID_COMPRESS: case ID_SATURATE: case ID_GAIN: audio_effect(LOWORD(p)); break;
-            case ID_MEASURE: measure_audio(); break;
-            case ID_EXPORT: export_wav(); break;
             case ID_SAVE_REPORT: save_report(); break;
             case ID_CLEAR: SetWindowTextA(g_log,"Session log cleared.\r\n"); break;
             case ID_THEME:
-                g_atmosphere = (g_atmosphere + 1) % 3;
-                g_dark_mode = (g_atmosphere == 2);
-                save_motion_settings();
+                g_dark_mode = !g_dark_mode;
                 rebuild_brushes();
-                SetWindowTextA(GetDlgItem(w,ID_THEME),
-                    g_atmosphere == 0 ? "ATMOSPHERE: DAWN" :
-                    g_atmosphere == 1 ? "ATMOSPHERE: SUNSET" : "ATMOSPHERE: NIGHT");
+                SetWindowTextA(GetDlgItem(w,ID_THEME),g_dark_mode?"LIGHT THEME":"DARK THEME");
                 RedrawWindow(w,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN|RDW_ERASE);
                 break;
         }
         return 0;
     case WM_DESTROY:
-        pl_audio_free(&g_audio);
         if (g_font) DeleteObject(g_font);
         if (g_log_font) DeleteObject(g_log_font);
         if (g_page_brush) DeleteObject(g_page_brush);
@@ -572,9 +459,6 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
     load_motion_settings();
-    SetWindowTextA(GetDlgItem(w,ID_THEME),
-        g_atmosphere == 0 ? "ATMOSPHERE: DAWN" :
-        g_atmosphere == 1 ? "ATMOSPHERE: SUNSET" : "ATMOSPHERE: NIGHT");
     BOOL animations_enabled=(g_motion_mode == 2 || g_eco_visuals) ? FALSE : TRUE;
     char reduced_motion[8]={0};
     if(GetEnvironmentVariableA("UI_REDUCED_MOTION",reduced_motion,(DWORD)sizeof(reduced_motion))>0 &&
@@ -586,8 +470,12 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     if(animations_enabled &&
        SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION,0,&animations_enabled,0) &&
        animations_enabled) {
-        const UINT intro_ms = g_motion_mode == 1 ? 190u : 140u;
-        if(!AnimateWindow(w,intro_ms,AW_BLEND|AW_ACTIVATE)) ShowWindow(w,show);
+        const UINT intro_ms = g_motion_mode == 1 ? 240u : 140u;
+        /* Expressive maps the paddle response to one native glide; no ambient loop. */
+        const DWORD intro_flags = g_motion_mode == 1
+            ? (AW_SLIDE | AW_VER_NEGATIVE | AW_ACTIVATE)
+            : (AW_BLEND | AW_ACTIVATE);
+        if(!AnimateWindow(w,intro_ms,intro_flags)) ShowWindow(w,show);
     } else {
         ShowWindow(w,show);
     }

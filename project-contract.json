@@ -127,15 +127,13 @@
       ]
     },
     {
-      "id": "reaper.native-expression-frontend",
-      "status": "partial",
-      "summary": "Pinned native C frontend provides UTF-8 tokenization and bounded Pratt parsing of a single Reaper expression; no full program execution.",
+      "id": "benchmark.report-comparison",
+      "status": "implemented",
+      "summary": "Compares repeat-suite JSON reports using warmup-excluded medians and explicit improvement/regression thresholds.",
       "evidence": [
-        "vendor/reaper_frontend/src/lexer.c",
-        "vendor/reaper_frontend/src/parser.c",
-        "src/reaper_frontend_cli.c",
-        "tests/test_reaper_frontend.c",
-        "docs/REAPER_FRONTEND.md"
+        "scripts/compare_benchmarks.py",
+        "tests/test_benchmark_compare.py",
+        "CMakeLists.txt"
       ]
     }
   ],
@@ -159,17 +157,6 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
-      ]
-    },
-    {
-      "id": "pytyliki.reaper-frontend.v1",
-      "format": "Native C API bundled from Reaper lexer and single-expression parser",
-      "direction": "provides",
-      "status": "partial",
-      "evidence": [
-        "vendor/reaper_frontend/include/reaper/lexer.h",
-        "vendor/reaper_frontend/include/reaper/ast.h",
-        "docs/REAPER_FRONTEND.md"
       ]
     }
   ],

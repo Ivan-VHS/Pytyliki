@@ -1,8 +1,5 @@
 # Documentation
 
-[Security and trust boundaries](SECURITY_AND_TRUST_BOUNDARIES.md) — project-specific threat surfaces, safe failure, verification evidence and release checklist.
-[Beelzebul AppGuard 666](BEELZEBUL_APPGUARD_666.md) — 666-control catalog, status semantics and CI validation.
-
 | File | Scope |
 |---|---|
 | [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
@@ -24,6 +21,7 @@
 | [QCS_NATIVE.md](QCS_NATIVE.md) | syntax-only frontend |
 | [UI_UX_SYSTEM.md](UI_UX_SYSTEM.md) | desktop interaction |
 | [QUALITY_REPEATABILITY_NATIVE.md](QUALITY_REPEATABILITY_NATIVE.md) | reproducibility gates |
+| [SUITE_COMPARISON.md](SUITE_COMPARISON.md) | median/MAD comparison of repeated CPU suite reports |
 
 The root README includes the live Windows desktop capture and current build/test commands. Legacy contract paths remain concise for validators. Machine-readable JSON, source and tests are authoritative for implemented behavior.
 
