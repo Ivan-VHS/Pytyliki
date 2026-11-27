@@ -19,7 +19,7 @@ static const char *const node_kind_names[PL_PROCESSOR_FABRIC_NODE_KIND_COUNT] = 
 };
 
 static const char *const node_state_names[PL_PROCESSOR_FABRIC_NODE_STATE_COUNT] = {
-    "declared", "verified", "available", "blocked", "completed",
+    "declared", "verified", "ready", "available", "blocked", "completed",
     "failed", "disabled", "retired"
 };
 
