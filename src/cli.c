@@ -320,10 +320,10 @@ static void print_foundations(int pipeline, int catalog, int policy, pl_pipeline
 static void print_e2k_profile(void) {
     pl_processor_snapshot profile;
     if (pl_processor_scan(&profile) != 0) {
-        fputs("Target profile scan failed.\\n", stderr);
+        fputs("Target profile scan failed.\n", stderr);
         return;
     }
-    printf("Build architecture: %s\\n", profile.architecture);
+    printf("Build architecture: %s\n", profile.architecture);
     puts("Compiler identification: unavailable in the current processor snapshot ABI");
     puts("VLIW scheduling and software pipelining: delegated to the actual target compiler");
     puts("AETHER-ANAS native backend: not implemented (target profile only)");
