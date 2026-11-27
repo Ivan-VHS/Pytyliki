@@ -132,7 +132,7 @@ pytyliki-system-sigil --check "{]+/* systemArray ^>"
 pytyliki-system-sigil --ast-json "systemArray ^>==!"
 ~~~
 
-The AST explicitly reports `overload_resolution_performed: false`, `operator_execution_performed: false`, `hardware_access_performed: false` and `source_execution_performed: false`.
+The AST emits canonical source spelling `system::array` and retains `legacy_ast_name: system(array)` for compatibility with the first syntax-only parser. It explicitly reports `overload_resolution_performed: false`, `operator_execution_performed: false`, `hardware_access_performed: false` and `source_execution_performed: false`.
 
 ## Acceptance requirements for the semantic implementation
 
