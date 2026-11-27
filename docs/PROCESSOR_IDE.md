@@ -58,6 +58,33 @@ The twenty-entry enhancement registry is implemented, but the twenty interactive
 
 The existing registry API is the source of truth for the workspace names and domain IDs. Processor IDE must extend or consume it rather than creating a second list with renamed domains.
 
+### The twenty named engineering spaces
+
+These are the twenty perspectives supplied in the Processor IDE brief. They sit inside the shared workspace shell and map to the existing twenty-domain registry; they are not separate applications and do not grant privilege.
+
+| Perspective ID | Display name | Workspace | Focus | Status |
+|---|---|---|---|---|
+| machine-oriented-studio | Окружение — Машинно-ориентированная — Студия разработки процессоров | `crimson-overdrive` | Target-bound project entry, source/IR/ASM navigation and build session. | planned |
+| hardware-engineering-lab | Пространство — Аппаратно-ориентированная — Лаборатория процессорной инженерии | `reactor-afterglow` | Waveforms, bus capture, signal phases and measurement provenance. | planned |
+| machine-processor-design-center | Платформа — Машинная — Центр проектирования процессоров | `horizon-spectral` | Target profile, register map, bus map, clock and timing configuration. | planned |
+| hardware-technology-workshop | Экосистема — Аппаратная — Мастерская процессорных технологий | `eclipse-outlaw` | Simulator, timing analyzer, compiler and backend adapter integration. | planned |
+| native-microprocessor-bureau | Инфраструктура — Нативная — Бюро разработки микропроцессоров | `scarlet-avalanche` | Reproducible native builds, memory images and descriptor generation. | planned |
+| assembly-systems-institute | Оболочка — Ассемблерная — Институт процессорных систем | `crimson-overdrive` | Assembly editor, instruction encodings, flags and source provenance. | planned |
+| processor-development-complex | Система — Процессорная — Комплекс процессорной разработки | `reactor-afterglow` | Unified simulation timeline for pipeline, caches, memory and interrupts. | planned |
+| microarchitecture-atelier | Контекст — Микропроцессорная — Ателье микроархитектуры | `quantum-paradox` | Core/thread context, execution mode, pipeline model and target capabilities. | planned |
+| register-design-lab | Прослойка — Регистровая — Лаборатория проектирования CPU | `circuit-cobalt` | Architecture-specific register bank, flags and per-step register diff. | planned |
+| bit-construction-center | Интерфейс — Битовая — Центр процессорного конструирования | `titanium-riptide` | Bitfields, shifts, rotates, masks, descriptors and endian-aware views. | planned |
+| instruction-engineering-studio | Рабочее пространство — Инструкционная — Студия микроэлектронной инженерии | `crimson-overdrive` | Source-to-IR-to-assembly-to-byte correlation and cost evidence. | planned |
+| address-architecture-workshop | Исполнительная площадка — Адресная — Мастерская аппаратных архитектур | `titanium-riptide` | Virtual, physical, bus, I/O and MMIO address spaces with page boundaries. | planned |
+| microarchitecture-technology-center | Технологическая база — Микроархитектурная — Центр разработки микропроцессорных систем | `quantum-paradox` | Versioned pipeline, branch, queue, cache and execution-unit models. | planned |
+| processor-modeling-lab | Программная платформа — Системная — Лаборатория процессорного моделирования | `shadow-nemesis` | Scenario execution on reference models and emulators before target execution. | planned |
+| computer-architecture-bureau | Операционная среда — Фундаментальная — Бюро архитектуры вычислительных систем | `voltage-citadel` | Privilege, reset, interrupt-vector and address-space isolation review. | planned |
+| hardware-programming-studio | Инструментальная система — Базовая — Студия аппаратного программирования | `raven-vortex` | Quick tests, register snapshots, trace diff, diagnostics and breakpoints. | planned |
+| compute-core-engineering-center | Вычислительное окружение — Железно-ориентированная — Центр инженерии вычислительных ядер | `thunder-phantom` | Core load, locks, synchronization barriers and memory-order events. | planned |
+| digital-logic-lab | Функциональное пространство — Машинно-приближённая — Лаборатория цифровой логики | `quantum-paradox` | Boolean logic, sequential logic, FSM reachability and transition verification. | planned |
+| cpu-hardware-software-workshop | Аппаратно-программный комплекс — Аппаратно-зависимая — Мастерская разработки CPU | `circuit-cobalt` | Stepping-, board-, bus- and silicon-specific dependency inspection. | planned |
+| near-machine-runtime-center | Среда выполнения — Близкая к машинному коду — Инжиниринговый центр процессорных технологий | `crimson-overdrive` | No-alloc/bare-metal profiles, execution traces, artifact inspection and runtime boundary. | planned |
+
 ## 4. Unified shell and ten persistent panes
 
 The shell binds all panes to one project and one explicit target. A pane may change abstraction level, but it must not silently change architecture, silicon stepping, board, ABI or evidence mode.
