@@ -88,7 +88,7 @@ static const pl_system_sigil_info sigils[PL_SYSTEM_SIGIL_COUNT] = {
     {PL_SYSTEM_SIGIL_LOGIC_EQUAL_WITH_VALIDITY, "^>==!", "logic.equal_with_validity",
      "(Logic<N>, Logic<N>) -> LogicBit",
      "(LogicSystemArray<N>, LogicSystemArray<N>) -> LogicSystemArrayComparePlan<EqualWithValidity>",
-     "LogicRead", "StructuralLogic|Verification",
+     "Pure", "StructuralLogic|Verification",
      "Four-state equality: known equal yields 1, known unequal yields 0, and any unresolved equality yields X; it is not a two-state bool comparison.",
      0}
 };
