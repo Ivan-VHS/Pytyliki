@@ -70,6 +70,9 @@ static void set_isa_from_profile(pl_processor_topology_snapshot *out) {
     pl_processor_snapshot profile;
     memset(&profile, 0, sizeof(profile));
     if (pl_processor_scan(&profile) != 0) return;
+    set_string(out->architecture, sizeof(out->architecture), profile.architecture);
+    set_string(out->vendor, sizeof(out->vendor), profile.base.vendor);
+    set_string(out->model, sizeof(out->model), profile.base.model);
 
 #define SET_ISA(feature, hw, usable, source) do { \
     out->isa[(feature)].hardware_present = (int8_t)(hw); \
@@ -343,6 +346,7 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
         index = add_cpu(out, 0u, (uint32_t)os_id, 1);
         if (index == SIZE_MAX) { (void)closedir(directory); return PL_TOPOLOGY_LIMIT_EXCEEDED; }
         cpu = &out->logical_cpus[index];
+        cpu->logical_id = (uint32_t)os_id;
         (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/online", os_id);
         cpu->online = (uint8_t)(read_u32_file(path) == 0u ? 0u : 1u);
         (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/topology/physical_package_id", os_id);
@@ -663,7 +667,7 @@ pl_topology_status pl_processor_topology_write_json(
                     cache->kind == PL_TOPOLOGY_CACHE_DATA ? "data" :
                     cache->kind == PL_TOPOLOGY_CACHE_INSTRUCTION ? "instruction" :
                     cache->kind == PL_TOPOLOGY_CACHE_UNIFIED ? "unified" : "unknown",
-                    cache->size_bytes, cache->line_bytes) < 0) return PL_TOPOLOGY_IO_ERROR;
+                    cache->size_bytes ? cache->size_bytes : UINT64_C(0), cache->line_bytes) < 0) return PL_TOPOLOGY_IO_ERROR;
         int first = 1;
         for (uint32_t id = 0u; id < snapshot->logical_cpu_count; ++id) {
             if ((cache->sharing_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u) {
