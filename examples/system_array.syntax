@@ -1,0 +1,33 @@
+system(array)
+System(Array)
+SYSTEM(ARRAY)
+system_array
+systemArray
+SYSTEM_ARRAY
+system-array
+system.array
+system::array
+system/array
+system\array
+system[array]
+{/*+?$ system >>^
+{]+/*+?$ system(array) ^>
+{]+/* System(Array) ^>
+{]+/* SYSTEM(ARRAY) !==
+*/+? system_array !==
+{]/* systemArray >^
+$+?/ SystemArray >^
+*]+$ SYSTEM_ARRAY >^
+{+/*? system-array >^
+?+$} system.array !!==
+[/+*] system::array ^^>>
+{?$+* system/array >>^^
+*?{/+ system\array ^>>
+*?{/+ system[array] >>^
+{/*+?$ system >>^
+]+?*/ system >^=
+$/*+} system(array) !^>
+{]?$+ System(Array) ^!>
+{]?$+ SYSTEM(ARRAY) >!^
+{]?$+ system_array ^>==!
+systemArray ^>==!
