@@ -27,7 +27,7 @@ This module does not install drivers, change firmware, clocks, voltage, frequenc
 ### Cycle counters
 
 - x86 uses an ordered RDTSC read and reports TSC ticks, not guaranteed core cycles. TSC frequency is left unknown unless the platform supplies a separately measured or trusted frequency.
-- Cortex-M uses an explicitly supplied DWT->CYCCNT pointer. DWT setup is accepted only for an ARM32 build, checks DWT_CTRL.NOCYCCNT, sets DEMCR.TRCENA and DWT_CTRL.CYCCNTENA, and optionally resets the counter. The call assumes privileged execution and valid CMSIS/device register mappings. Check the exact MCU reference manual because DWT can be absent or reduced; bind the cycle source after successful setup.
+- Cortex-M uses an explicitly supplied DWT->CYCCNT pointer. DWT setup is accepted only when the compiler identifies the M profile through __ARM_ARCH_PROFILE == 'M' or the board explicitly defines PYTYLIKI_ENABLE_CORTEX_M_DWT; it then checks DWT_CTRL.NOCYCCNT, sets DEMCR.TRCENA and DWT_CTRL.CYCCNTENA, and optionally resets the counter. The call assumes privileged execution and valid CMSIS/device register mappings. The explicit build flag is a board/toolchain assertion, not runtime silicon discovery. Check the exact MCU reference manual because DWT can be absent or reduced; bind the cycle source after successful setup.
 - RISC-V cycle CSR access is not enabled automatically. A build may opt in with PYTYLIKI_ENABLE_RISCV_CYCLE_CSR only after the execution environment confirms that counter access is permitted. RV32 reads use a high/low/high retry sequence.
 - Counter deltas are modulo the source width. Do not compare timestamps across cores unless the platform documents a shared, synchronized counter.
 
