@@ -59,7 +59,8 @@ jobs:
           Copy-Item build/Release/pytyliki.exe dist/
           Copy-Item build/Release/pytyliki-apsia.exe dist/
           Copy-Item build/Release/pytyliki-metrics.exe dist/
-          Copy-Item build/Release/pytyliki-code-wellbeing.exe dist/
+          Copy-Item build/Release/pytyliki-benchstats.exe dist/
+          Copy-Item build/Release/pytyliki-qcs.exe dist/
           Copy-Item README.md dist/
           Copy-Item LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath Pytyliki-windows-x64.zip -Force
