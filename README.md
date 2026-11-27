@@ -53,6 +53,7 @@ Useful first runs on Linux:
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
 ./build/pytyliki-mos --inverter low
+./build/pytyliki-fabric --catalogues
 ~~~
 
 On Windows, use the corresponding executable under the selected CMake configuration directory, for example `build/Release/pytyliki.exe`.
