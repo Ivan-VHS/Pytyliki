@@ -336,7 +336,8 @@
             "required": [
               "hardware_present",
               "os_usable",
-              "evidence"
+              "evidence",
+              "os_evidence"
             ],
             "properties": {
               "hardware_present": {
@@ -357,6 +358,13 @@
                   "os-api",
                   "os-state",
                   "platform-feature-query",
+                  "unknown"
+                ]
+              },
+              "os_evidence": {
+                "enum": [
+                  "cpuid",
+                  "os-state",
                   "unknown"
                 ]
               }
