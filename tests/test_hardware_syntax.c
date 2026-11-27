@@ -25,7 +25,8 @@ static const char *const valid_constructs[PL_HW_SYNTAX_CONSTRUCT_COUNT] = {
     "device dma_ring_worker(ch: DmaChannel) { on ready { start_transfer(ch); } }",
     "invariant hardware_sanity { always temp_c < 95.0; }",
     "memory_map cpu_window_layout { slot REG_MIRROR @ 0x10000000 : size 4KB : attr [RW]; }",
-    "trace_script step_debugger target core[0] { set_bp(0x80000120); continue_until_bp(); }"
+    "trace_script step_debugger target core[0] { set_bp(0x80000120); continue_until_bp(); }",
+    "physical_model radioactive_decay { input initial_atoms: Quantity<Count>; input elapsed: Quantity<Time>; input half_life: Quantity<Time>; derive expected_atoms = initial_atoms * exp(-ln(2) * elapsed / half_life); uncertainty propagate_poisson_and_parameter_uncertainty; }"
 };
 
 static void test_catalog_matches_language_constructs(void) {

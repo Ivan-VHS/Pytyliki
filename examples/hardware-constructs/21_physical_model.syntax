@@ -1,0 +1,12 @@
+physical_model radioactive_decay {
+    input initial_atoms: Quantity<Count>;
+    input elapsed: Quantity<Time>;
+    input half_life: Quantity<Time>;
+    require initial_atoms >= 0_count;
+    require elapsed >= 0_s;
+    require half_life > 0_s;
+    derive decay_constant = ln(2.0) / half_life;
+    derive expected_atoms = initial_atoms * exp(-decay_constant * elapsed);
+    uncertainty propagate_poisson_and_parameter_uncertainty;
+    invariant expected_atoms >= 0_count;
+}

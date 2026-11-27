@@ -15,6 +15,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
+- [Pytyliki processor and physical-computing domain](PYTYLIKI_PROCESSOR_DOMAIN.md) — integrated processor, hardware, scientific and nuclear-physics language profile.
 - [Pytyliki hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty hardware construct families, structural parser and safety contracts.
 - [Pytyliki Hardware Language Extension 0.4](PYTYLIKI_HARDWARE_LANGUAGE_SPEC_0.4.md) — target profiles, memory/capability model, ISA, microarchitecture, RTL, simulation and Reaper IR boundary.
 - [SystemArray sigil operators](SYSTEM_SIGIL_OPERATORS.md) — thirteen reserved operators, type signatures, effects and metadata-only frontend.

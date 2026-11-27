@@ -300,6 +300,7 @@ if(BUILD_TESTING)
     18_hardware_sanity
     19_cpu_window_layout
     20_step_debugger
+    21_physical_model
   )
   foreach(example IN LISTS PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES)
     add_test(
@@ -348,4 +349,26 @@ if(BUILD_TESTING)
   add_test(NAME iron-core-pr-rollout-example COMMAND pytyliki-iron --check ${CMAKE_CURRENT_SOURCE_DIR}/examples/iron/01_sequential_pr_rollout.iron)
   add_test(NAME iron-core-catalog-smoke COMMAND pytyliki-iron --catalog --json)
   set_tests_properties(iron-core-catalog-smoke PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.iron-core-catalog.v1")
+
+  add_test(
+    NAME processor-domain-iron-source
+    COMMAND pytyliki-iron --check
+      ${CMAKE_CURRENT_SOURCE_DIR}/examples/processor-domain/processor-domain.iron
+  )
+  set(PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES
+    01_target_contract
+    02_processor_pipeline
+    03_processor_lifecycle
+    04_dma_ownership
+    05_physical_decay
+    06_detector_stream
+    07_decay_function
+  )
+  foreach(example IN LISTS PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES)
+    add_test(
+      NAME processor-domain-example-${example}
+      COMMAND pytyliki-hw-syntax --check
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/processor-domain/${example}.syntax
+    )
+  endforeach()
 endif()

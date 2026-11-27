@@ -310,6 +310,31 @@ The JSON AST schema is \`pytyliki.hardware-construct-ast.v1\`. The catalogue sch
 
 ## 7. Build and tests
 
-The C11 core exports the structural parser through \`hardware_syntax.h\`. CMake builds \`pytyliki-hw-syntax\`, and CTest covers all twenty construct examples plus malformed delimiters, comments, strings, nesting, bounds and AST serialization.
+The C11 core exports the structural parser through \`hardware_syntax.h\`. CMake builds \`pytyliki-hw-syntax\`, and CTest covers all twenty-one construct examples plus malformed delimiters, comments, strings, nesting, bounds and AST serialization.
 
-The frontend is intentionally syntax-only. Do not advertise any of the twenty constructs as compiled, simulated, synthesized, privileged, real-time, or physically connected until the corresponding semantic analysis, target contract, backend, and integration tests exist.
+The frontend is intentionally syntax-only. Do not advertise any of the twenty-one constructs as compiled, simulated, synthesized, privileged, real-time, or physically connected until the corresponding semantic analysis, target contract, backend, and integration tests exist.
+
+
+## 8. Scientific and physical models
+
+The additive **physical_model** construct declares a computational model with explicit quantities, dimensions, parameters, assumptions, uncertainty treatment and provenance.
+
+~~~pytyliki
+physical_model radioactive_decay {
+    input initial_atoms: Quantity<Count>;
+    input elapsed: Quantity<Time>;
+    input half_life: Quantity<Time>;
+
+    require initial_atoms >= 0_count;
+    require elapsed >= 0_s;
+    require half_life > 0_s;
+
+    derive decay_constant = ln(2.0) / half_life;
+    derive expected_atoms = initial_atoms * exp(-decay_constant * elapsed);
+
+    uncertainty propagate_poisson_and_parameter_uncertainty;
+    invariant expected_atoms >= 0_count;
+}
+~~~
+
+This construct is a source-language declaration. The current frontend verifies only its outer structure. It does not yet resolve quantity dimensions, evaluate the model, run Monte Carlo samples, access detectors or control physical equipment. Dimensional analysis, numerical semantics, validated datasets and execution backends remain explicit implementation gates.

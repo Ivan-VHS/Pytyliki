@@ -1,0 +1,226 @@
+verison ///. * PYTYLIKI_PROCESSOR_DOMAIN_V1
+CC based rules ^^^ PROCESSOR_PHYSICS_CONSISTENCY_V1
+begin iron )
+() core --
+@extend pytyliki.hardware version "0.4";
+@domain firmware;
+@domain architectural_model;
+@domain microarchitecture_model;
+@domain structural_logic;
+@domain physical_model;
+@domain simulation;
+@domain verification;
+@hardware_effects explicit;
+@unsafe deny_by_default;
+@reaper typed_ir=true span=true source_map=true abi="DABI64";
+type Bit<const N: usize>;
+type Logic<const N: usize>;
+type UInt<const N: usize>;
+type SInt<const N: usize>;
+type Quantity<Dimension, Unit>;
+type Address<const W: usize, Space>;
+type Register<Bank, const W: usize>;
+type Capability<Permission, Space, Region>;
+type CycleCount<ClockDomain>;
+type Nuclide<const Z: u16, const N: u16>;
+stop option ;
+[ system ]-
+module ProcessorDomain {
+    target_profile RiscvApplication {
+        architecture = "riscv";
+        profile = "RVA23";
+        profile_version = "1.0";
+        xlen = 64;
+        endian = little;
+        abi = "lp64d";
+        privilege = [M, S, U];
+        required_extensions = profile_required("RVA23");
+    }
+    register_bank Gpr64 {
+        width = 64;
+        count = 32;
+        zero_register = x0;
+        program_counter = pc;
+    }
+    memory_map ReferenceMemory {
+        region SRAM { base: 0x2000_0000; size: 128_KiB; permissions: [read, write]; }
+        region DeviceWindow { base: 0x4000_0000; size: 64_KiB; permissions: [device_read, device_write]; }
+    }
+}
+stop option ;
+} operation P)-
+isa_instruction ADD {
+    encoding = target.encoding("ADD");
+    operands = [rd: Gpr, rs1: Gpr, rs2: Gpr];
+    transition { rd <- rs1 + rs2; }
+    effects = [ArchitecturalStateWrite];
+    exceptions = [];
+}
+microarchitecture CorePipeline {
+    stages = [Fetch, Decode, Rename, Dispatch, Execute, Memory, Commit];
+    resources = { issue_width: 4, reorder_entries: 128, load_queue_entries: 48, store_queue_entries: 32 };
+    speculation = { recovery: precise_commit; };
+}
+logic_module RegisterSlice64 {
+    input clk: Clock;
+    input reset_n: Reset<ActiveLow>;
+    input enable: Logic<1>;
+    input data_in: Logic<64>;
+    output data_out: Logic<64>;
+    sequential on rising_edge(clk) {
+        if reset_n == 0 { data_out <= 0; }
+        else if enable == 1 { data_out <= data_in; }
+    }
+}
+stop option ;
+?? massive <>
+type Frame = system::array<64, 16, RAM>;
+memory_contract FrameOwnership {
+    states = [CpuOwned, PreparedForDevice, DeviceOwned, CompletionPending, SynchronizedForCpu, Released];
+    transitions = [
+        CpuOwned -> PreparedForDevice,
+        PreparedForDevice -> DeviceOwned,
+        DeviceOwned -> CompletionPending,
+        CompletionPending -> SynchronizedForCpu,
+        SynchronizedForCpu -> Released
+    ];
+    reject_unlisted_transitions = true;
+}
+dma_contract FrameTransfer {
+    direction = ToDevice;
+    buffer = Frame;
+    require alignment(Frame) >= 64_bytes;
+    require bounded_length(Frame);
+    require explicit_completion = true;
+}
+stop option ;
+< start >?
+fsm ProcessorLifecycle initial RESET {
+    state RESET: on reset_complete -> goto INITIALIZE;
+    state INITIALIZE: on memory_ready and clock_ready -> goto IDLE;
+    state IDLE: on work_available -> goto ACTIVE;
+    state ACTIVE: on fault -> goto DEGRADED; on queue_empty -> goto IDLE;
+    state DEGRADED: on recovery_verified -> goto IDLE;
+}
+interrupt_contract TimerInterrupt {
+    vector = target.irq("timer");
+    context = InterruptContext<Machine>;
+    maximum_stack = 256_bytes;
+    effects = [InterruptSafe, MemoryWrite<LocalQueue>];
+    may_block = false;
+}
+stop option ;
+} operation P)-
+physical_model RadioactiveDecay {
+    input initial_atoms: Quantity<Count>;
+    input elapsed: Quantity<Time>;
+    input half_life: Quantity<Time>;
+    require initial_atoms >= 0_count;
+    require elapsed >= 0_s;
+    require half_life > 0_s;
+    derive decay_constant = ln(2.0) / half_life;
+    derive expected_atoms = initial_atoms * exp(-decay_constant * elapsed);
+    derive expected_decays = initial_atoms - expected_atoms;
+    uncertainty propagate_poisson_and_parameter_error;
+    invariant expected_atoms >= 0_count;
+    invariant expected_decays >= 0_count;
+    provenance dataset("nuclear/decay-reference.v1");
+}
+physical_model DecayNetwork {
+    nodes = [Parent, DaughterA, DaughterB];
+    transitions = [
+        decay(Parent -> DaughterA, branch = 0.7),
+        decay(Parent -> DaughterB, branch = 0.3)
+    ];
+    require branch_sum(Parent) == 1.0;
+    require all_rates_nonnegative;
+    solve bounded_bateman_system;
+    uncertainty propagate_branching_and_half_life_error;
+}
+physical_model DetectorResponse {
+    input particle_energy: Quantity<Energy>;
+    input material: MaterialProfile;
+    input detector: DetectorProfile;
+    derive interaction_probability = response_model(material, particle_energy);
+    derive measured_signal = detector.response(interaction_probability);
+    uncertainty combine_counting_noise_and_calibration_error;
+    provenance [
+        dataset("materials/materials.v1"),
+        dataset("detectors/calibration.v1")
+    ];
+}
+stop option ;
+} operation P)-
+simulation ProcessorReplay {
+    target = target_profile.RiscvApplication;
+    model = ArchitecturalModel;
+    deterministic_seed = 0x5EED;
+    record_events = [Interrupt, Timer, DmaCompletion, ExternalInput];
+    checkpoint_every = 100000_instructions;
+    compare_architectural_state = true;
+}
+simulation DecayUncertainty {
+    model = RadioactiveDecay;
+    deterministic_seed = 0x5EED;
+    samples = 100000;
+    record_inputs = true;
+    record_model_version = true;
+    output = [mean, variance, confidence_interval];
+}
+verify CorePipeline {
+    assert no_unbounded_queue_growth;
+    assert architectural_state_commits_in_order;
+    cover branch_recovery;
+}
+verify RadioactiveDecay {
+    assert half_life > 0_s;
+    assert expected_atoms <= initial_atoms;
+    assert expected_atoms >= 0_count;
+    assert expected_decays + expected_atoms ~= initial_atoms within numerical_tolerance;
+    cover elapsed == 0_s;
+    cover elapsed == half_life;
+}
+stop option ;
+level jump to run *(
+compiler_pipeline {
+    source -> hardware_ast -> typed_domain_ast;
+    typed_domain_ast -> target_resolution;
+    target_resolution -> type_and_effect_checks;
+    type_and_effect_checks -> hardware_ir;
+    hardware_ir -> reaper_canonical_typed_ir;
+    reaper_canonical_typed_ir -> target_backend;
+}
+backend_targets = [object, rtl, simulation, verification_report];
+preserve = [Span, SourceMap, address_space, clock_domain, effects, ownership, provenance];
+stop option ;
+# unify TAB
+acceptance {
+    structural_parser = required;
+    dimensional_typechecker = pending;
+    hardware_ir_lowering = pending;
+    isa_emulator = pending;
+    rtl_backend = pending;
+    physical_model_executor = pending;
+    physical_device_access = excluded;
+}
+stop option ;
+setup brachpass ^^
+analysis_policy {
+    mode = offline;
+    inspect_source = read_only;
+    infer_target_features = false;
+    unknown_features = preserve_unknown;
+    execution_from_source_text = deny;
+}
+stop option ;
+TRUE connective *+
+invariants {
+    all_hardware_effects_are_declared;
+    all_physical_quantities_have_dimensions;
+    all_dma_buffers_have_ownership;
+    all_clock_crossings_have_protocols;
+    all_measurements_have_provenance;
+    all_simulation_runs_are_reproducible;
+}
+stop option ;
+verificated /// !! SOURCE_SPECIMEN_ONLY

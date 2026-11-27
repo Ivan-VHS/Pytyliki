@@ -1,0 +1,11 @@
+fn expected_decay_population(
+    initial_atoms: Quantity<Count>,
+    elapsed: Quantity<Time>,
+    half_life: Quantity<Time>
+) -> Result<Quantity<Count>, PhysicsError> {
+    require initial_atoms >= 0_count;
+    require elapsed >= 0_s;
+    require half_life > 0_s;
+    let decay_constant = ln(2.0) / half_life;
+    return Ok(initial_atoms * exp(-decay_constant * elapsed));
+}
