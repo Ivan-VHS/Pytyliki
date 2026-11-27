@@ -28,6 +28,7 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 - **Native interoperability:** versioned C ABI v1 with caller-owned buffers; consumers must explicitly select a trusted library.
 - **Embedded references:** MCU profiles, memory estimates, starter generation and simulated MMIO masks. These are reference tools, not physical memory mapping, device access or firmware flashing.
 - **Toolchain inventory:** read-only discovery of available tools; discovered programs are not installed or launched.
+- **Processor-language workbench:** 66 unique assembly, systems-language, VM/IR and HDL profiles; bounded structural checks, target compatibility and non-executing toolchain argument plans.
 
 PCM16 WAV/DSP processing is not part of the current delivered Pytyliki core. See the project contract and feature documentation before depending on partial or planned capabilities.
 
