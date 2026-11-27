@@ -18,7 +18,7 @@ The general Halting Problem is different: its undecidability is a theorem. The V
 - **Reaper:** canonical typed function metadata, argument validation, effect/budget contracts and a future FFI invocation plan. Reaper does not duplicate these native kernels.
 - **Evidence:** preserve input parameters, build identity, compiler/platform details, function identifier, status code, checked-count/budget, and output digest with every research run.
 
-The public C API is in `src/research_math.h`. The implementation is in `src/research_math.c`. The 51-entry stable catalog is exposed by `pl_math_research_catalog_count()` and `pl_math_research_catalog_name()`.
+The public C API is in `src/research_math.h` (API version 1.0 via `PL_MATH_RESEARCH_API_MAJOR` / `PL_MATH_RESEARCH_API_MINOR`). The implementation is in `src/research_math.c`. The 51-entry stable catalog is exposed by `pl_math_research_catalog_count()` and `pl_math_research_catalog_name()`.
 
 ## Function catalog
 
@@ -217,6 +217,10 @@ Return values:
 | `PL_MATH_NOT_FOUND` | The declared finite search completed without a witness |
 
 A status is not an epistemic verdict on a conjecture.
+
+## Memory and buffer contract
+
+The kernels are stateless and allocate no memory. The caller owns input and output buffers and must provide storage for the complete declared shapes. Input buffers are read-only. Output buffers must not overlap input buffers or each other unless an individual function explicitly documents alias support; dense matrix multiplication is alias-safe for its result and either input matrix. No pointer is retained after return.
 
 ## Build and test
 
