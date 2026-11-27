@@ -2,6 +2,7 @@
 #define PYTYLIKI_PROCESSOR_PLACEMENT_H
 
 #include "processor_topology.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,6 +90,7 @@ pl_placement_status pl_processor_placement_plan(
     const pl_processor_topology_snapshot *topology,
     const pl_placement_task *tasks, size_t task_count,
     pl_placement_pressure *pressure, pl_placement_result *out);
+pl_placement_status pl_processor_placement_write_json(const pl_placement_result *result, FILE *output);
 const char *pl_placement_state_name(pl_placement_state state);
 const char *pl_placement_status_name(pl_placement_status status);
 
