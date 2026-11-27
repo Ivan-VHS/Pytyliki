@@ -48,6 +48,10 @@ int main(void) {
             PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
             PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
             PL_TOPOLOGY_UNKNOWN);
+    set_cpu(&topology.logical_cpus[3], 130u, 130u, 1u,
+            PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+            PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+            PL_TOPOLOGY_UNKNOWN);
     topology.caches[0].cache_id = 0u;
     topology.caches[0].level = 3u;
     topology.caches[0].kind = PL_TOPOLOGY_CACHE_UNIFIED;
@@ -87,14 +91,15 @@ int main(void) {
     model.edges = edges;
     assert(pl_processor_fabric_validate(&model, &workspace, &summary, &error)
            == PL_PROCESSOR_FABRIC_OK);
-    assert(summary.worker_count == 3u);
-    assert(summary.available_worker_count == 2u);
+    assert(summary.worker_count == 4u);
+    assert(summary.available_worker_count == 3u);
     assert(summary.node_kind_counts[PL_PROCESSOR_FABRIC_CACHE] == 1u);
     assert(summary.node_kind_counts[PL_PROCESSOR_FABRIC_NUMA_NODE] == 1u);
     assert(summary.resource_edge_count == edge_count);
 
     {
         int saw_sparse_cpu_2 = 0, saw_sparse_cpu_5 = 0, saw_offline_root = 0;
+        int saw_cpu_130 = 0;
         for (size_t i = 0u; i < node_count; ++i) {
             if (nodes[i].kind != PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR) continue;
             if (nodes[i].logical_id == 2u) {
@@ -108,9 +113,13 @@ int main(void) {
                 assert(nodes[i].state == PL_PROCESSOR_FABRIC_DISABLED);
                 assert(nodes[i].capacity_basis_points == 0u);
                 assert(nodes[i].parent_id == 0u);
+            } else if (nodes[i].logical_id == 130u) {
+                saw_cpu_130 = 1;
+                assert(nodes[i].state == PL_PROCESSOR_FABRIC_AVAILABLE);
+                assert(nodes[i].affinity_mask[2] == (UINT64_C(1) << 2u));
             }
         }
-        assert(saw_sparse_cpu_2 && saw_sparse_cpu_5 && saw_offline_root);
+        assert(saw_sparse_cpu_2 && saw_sparse_cpu_5 && saw_offline_root && saw_cpu_130);
     }
     assert(pl_processor_fabric_plan(&model, &workspace, assignments, 1u,
         &assignment_count, &summary, &error) == PL_PROCESSOR_FABRIC_OK);
@@ -122,6 +131,7 @@ int main(void) {
         pl_processor_fabric_node ready_local;
         pl_processor_fabric_node ready_waiting;
         pl_processor_fabric_node prerequisite;
+        pl_processor_fabric_node ready_wide;
         pl_processor_fabric_edge dependency;
         memset(&pool, 0, sizeof(pool));
         pool.id = 100u; pool.generation = topology.generation;
@@ -134,7 +144,7 @@ int main(void) {
         ready_local.state = PL_PROCESSOR_FABRIC_READY;
         ready_local.domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
         ready_local.feature_mask = UINT64_C(1) << PL_TOPOLOGY_ISA_SSE2;
-        ready_local.affinity_mask = UINT64_C(1) << 2u;
+        ready_local.affinity_mask[0] = UINT64_C(1) << 2u;
         ready_local.requested_load_basis_points = 1200u;
         ready_local.priority = 5u;
         memset(&ready_waiting, 0, sizeof(ready_waiting));
@@ -152,6 +162,15 @@ int main(void) {
         prerequisite.kind = PL_PROCESSOR_FABRIC_PROCESS;
         prerequisite.state = PL_PROCESSOR_FABRIC_DECLARED;
         prerequisite.domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
+        memset(&ready_wide, 0, sizeof(ready_wide));
+        ready_wide.id = 104u; ready_wide.parent_id = pool.id;
+        ready_wide.generation = topology.generation;
+        ready_wide.kind = PL_PROCESSOR_FABRIC_PROCESS;
+        ready_wide.state = PL_PROCESSOR_FABRIC_READY;
+        ready_wide.domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
+        ready_wide.affinity_mask[2] = UINT64_C(1) << 2u;
+        ready_wide.requested_load_basis_points = 500u;
+        ready_wide.priority = 4u;
         dependency.from_id = prerequisite.id;
         dependency.to_id = ready_waiting.id;
         dependency.kind = PL_PROCESSOR_FABRIC_DEPENDS_ON;
@@ -159,6 +178,7 @@ int main(void) {
         nodes[node_count++] = ready_local;
         nodes[node_count++] = ready_waiting;
         nodes[node_count++] = prerequisite;
+        nodes[node_count++] = ready_wide;
         edges[edge_count++] = dependency;
         model.node_count = node_count;
         model.edge_count = edge_count;
@@ -173,18 +193,23 @@ int main(void) {
         placement_tasks[1].preferred_numa_node_id = 0u;
         placement_tasks[1].working_set_bytes = 2048u;
         placement_tasks[1].require_local_numa = 1u;
+        placement_tasks[2].task_id = ready_wide.id;
+        placement_tasks[2].preferred_numa_node_id = PL_TOPOLOGY_UNKNOWN;
         memset(&pressure, 0, sizeof(pressure));
         pressure.generation = topology.generation;
         pressure.numa_bandwidth_capacity_bytes_per_second[0] = 100000000u;
         assert(pl_processor_fabric_place_v2(
-            &model, &topology, placement_tasks, 2u, &pressure, &placement,
+            &model, &topology, placement_tasks, 3u, &pressure, &placement,
             &workspace, &summary, &error) == PL_PROCESSOR_FABRIC_OK);
-        assert(placement.assignment_count == 2u);
+        assert(placement.assignment_count == 3u);
         assert(placement.assignments[0].task_id == ready_waiting.id);
         assert(placement.assignments[0].state == PL_PLACEMENT_WAITING_DEPENDENCY);
         assert(placement.assignments[1].task_id == ready_local.id);
         assert(placement.assignments[1].state == PL_PLACEMENT_ASSIGNED);
         assert(placement.assignments[1].logical_cpu_id == 2u);
+        assert(placement.assignments[2].task_id == ready_wide.id);
+        assert(placement.assignments[2].state == PL_PLACEMENT_ASSIGNED);
+        assert(placement.assignments[2].logical_cpu_id == 130u);
         assert(placement.report.execution_performed == 0u);
         assert(placement.report.affinity_changed == 0u);
         assert(placement.report.scheduling_changed == 0u);
