@@ -117,11 +117,11 @@ pl_placement_status pl_processor_placement_workers_from_topology(
     if (topology->logical_processor_count > 64u ||
         topology->logical_processor_count > worker_capacity ||
         topology->logical_processor_count > PL_PLACEMENT_MAX_WORKERS)
-        return PL_PLACEMENT_LIMIT_EXCEEDED;
+        return PL_PLACEMENT_OUTPUT_TOO_SMALL;
     for (i = 0u; i < topology->logical_processor_count; ++i) {
         const pl_topology_logical_processor *cpu = &topology->logical_processors[i];
         pl_placement_worker *worker = &workers[i];
-        if (cpu->logical_id != i || cpu->generation != topology->generation ||
+        if (cpu->logical_id != i || 
             cpu->online > 1u)
             return PL_PLACEMENT_INVALID_ARGUMENT;
         memset(worker, 0, sizeof(*worker));
