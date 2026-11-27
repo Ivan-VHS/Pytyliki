@@ -40,7 +40,18 @@ First checks:
 ./build/pytyliki-metrics --demo
 ```
 
-## Specifications and integration
+
+Windows-only event-log inspection and bounded fault-history analysis:
+
+```sh
+./build/pytyliki --thread-recovery tests/fixtures/processor_thread_recovery.csv
+./build/pytyliki --thread-recovery-demo
+# Windows only: read WHEA Event Log metadata (read-only)
+./build/pytyliki --ras-whea
+```
+
+PTFR emits advisory recovery decisions for application-managed workers. WHEA records remain system-level evidence; severity and worker attribution are not inferred.
+\n## Specifications and integration
 
 - [Documentation index](docs/README.md) · [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
 - [Reaper policy integration](docs/REAPER_INTEGRATION.md) is an optional CI validation example, not an application runtime dependency.
