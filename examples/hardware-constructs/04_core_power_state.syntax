@@ -1,0 +1,14 @@
+fsm core_power_state initial IDLE {
+    state IDLE:
+        on tick when load > 0.85 -> goto BOOST_LOAD;
+
+    state BOOST_LOAD:
+        enter { request_power_state(PERFORMANCE_BOUNDED); }
+        on tick when temperature_c >= 90.0 -> goto MUKI_COOL;
+        on tick when load < 0.30 -> goto IDLE;
+
+    state MUKI_COOL:
+        enter { request_clock_throttle(step: 2); emit_muki("thermal_limit"); }
+        on cooled -> goto IDLE;
+}
+
