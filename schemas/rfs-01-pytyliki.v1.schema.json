@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/schemas/rfs-01-pytyliki.v1.schema.json",
+  "title": "RFS-01 Pytyliki interchange records",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "nodes",
+    "links",
+    "signals"
+  ],
+  "properties": {
+    "schema": {
+      "const": "rfs-01.pytyliki-interchange.v1"
+    },
+    "nodes": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "links": {
+      "type": "array",
+      "maxItems": 16384,
+      "items": {
+        "$ref": "#/$defs/link"
+      }
+    },
+    "signals": {
+      "type": "array",
+      "maxItems": 65536,
+      "items": {
+        "$ref": "#/$defs/signal"
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "layer",
+        "pressure",
+        "load_limit",
+        "integrity",
+        "noise_db",
+        "core_seed",
+        "active"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "layer": {
+          "enum": [
+            "Basement",
+            "Corridor",
+            "Gate",
+            "Skyline",
+            "Horizon"
+          ]
+        },
+        "pressure": {
+          "type": "number",
+          "minimum": 0
+        },
+        "load_limit": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "integrity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "noise_db": {
+          "type": "number",
+          "minimum": -160,
+          "maximum": 24
+        },
+        "core_seed": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 127
+        },
+        "active": {
+          "type": "boolean"
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "origin",
+        "target",
+        "channel",
+        "blocked",
+        "weight"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "origin": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "channel": {
+          "enum": [
+            "Wire",
+            "Rail",
+            "Beat",
+            "Current",
+            "Bridge"
+          ]
+        },
+        "blocked": {
+          "type": "boolean"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "origin",
+        "payload",
+        "trusted",
+        "manufactured"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "origin": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "payload": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "trusted": {
+          "type": "boolean"
+        },
+        "manufactured": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
