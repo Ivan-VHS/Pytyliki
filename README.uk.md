@@ -53,6 +53,7 @@ ctest --test-dir build -C Release --output-on-failure
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
 ./build/pytyliki-mos --inverter low
+./build/pytyliki-fabric --catalogues
 ~~~
 
 У Windows використовуйте відповідний виконуваний файл у каталозі вибраної конфігурації CMake, наприклад `build/Release/pytyliki.exe`.
