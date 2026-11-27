@@ -14,6 +14,13 @@ static pl_resource_status fail(pl_resource_error *error,
     return status;
 }
 
+static const pl_resource_device *device_by_id(
+    const pl_resource_model *m, uint32_t id) {
+    size_t i;
+    for (i = 0u; i < m->device_count; ++i)
+        if (m->devices[i].id == id) return &m->devices[i];
+    return NULL;
+}
 static const pl_resource_address_space *space_by_id(
     const pl_resource_model *m, uint32_t id) {
     size_t i;
@@ -49,7 +56,10 @@ pl_resource_status pl_resource_region_contains(
     uint64_t offset, uint64_t length, uint32_t alignment
 ) {
     const pl_resource_memory_region *region;
-    if (model == NULL || length == 0u) return PL_RESOURCE_INVALID_ARGUMENT;
+    if (model == NULL || length == 0u ||
+        model->region_count > PL_RESOURCE_MAX_REGIONS ||
+        (model->region_count != 0u && model->regions == NULL))
+        return PL_RESOURCE_INVALID_ARGUMENT;
     region = region_by_id(model, region_id);
     if (region == NULL) return PL_RESOURCE_MISSING_REFERENCE;
     if (offset > region->length || length > region->length - offset)
@@ -68,27 +78,42 @@ pl_resource_status pl_resource_model_validate(
     size_t i, j;
     if (error != NULL) memset(error, 0, sizeof(*error));
     if (m == NULL || m->generation == 0u ||
-        (m->space_count && m->spaces == NULL) ||
+        (m->device_count != 0u && m->devices == NULL) ||
+        (m->space_count != 0u && m->spaces == NULL) ||
         (m->region_count && m->regions == NULL) ||
         (m->bank_count && m->banks == NULL) ||
         (m->register_count && m->registers == NULL) ||
         (m->dma_count && m->dma_buffers == NULL))
         return fail(error, PL_RESOURCE_INVALID_ARGUMENT, 0u, "model arrays and generation are required");
-    if (m->space_count > PL_RESOURCE_MAX_SPACES ||
+    if (m->device_count > PL_RESOURCE_MAX_DEVICES ||
+        m->space_count > PL_RESOURCE_MAX_SPACES ||
         m->region_count > PL_RESOURCE_MAX_REGIONS ||
         m->bank_count > PL_RESOURCE_MAX_BANKS ||
         m->register_count > PL_RESOURCE_MAX_REGISTERS ||
         m->dma_count > PL_RESOURCE_MAX_DMA_BUFFERS)
         return fail(error, PL_RESOURCE_LIMIT_EXCEEDED, 0u, "resource model exceeds a bounded collection limit");
 
+    for (i = 0u; i < m->device_count; ++i) {
+        const pl_resource_device *device = &m->devices[i];
+        if (device->id == 0u)
+            return fail(error, PL_RESOURCE_DUPLICATE_ID, device->id, "device ID must be non-zero");
+        if (device->generation != m->generation)
+            return fail(error, PL_RESOURCE_STALE_GENERATION, device->id, "device generation does not match resource snapshot");
+        for (j = 0u; j < i; ++j)
+            if (m->devices[j].id == device->id)
+                return fail(error, PL_RESOURCE_DUPLICATE_ID, device->id, "device ID is duplicated");
+    }
     for (i = 0u; i < m->space_count; ++i) {
         const pl_resource_address_space *s = &m->spaces[i];
         if (s->id == 0u || !id_unique(s->id, ids, i))
             return fail(error, PL_RESOURCE_DUPLICATE_ID, s->id, "address-space ID is zero or duplicated");
         ids[i] = s->id;
-        if (s->kind > PL_RESOURCE_SPACE_DMA_IOVA || s->owner > PL_RESOURCE_OWNER_UNOWNED ||
+        if ((unsigned)s->kind > (unsigned)PL_RESOURCE_SPACE_DMA_IOVA ||
+            (unsigned)s->owner > (unsigned)PL_RESOURCE_OWNER_UNOWNED ||
             s->address_bits == 0u || s->address_bits > 64u)
             return fail(error, PL_RESOURCE_INVALID_ARGUMENT, s->id, "address-space kind, owner or width is invalid");
+        if (s->device_id != 0u && device_by_id(m, s->device_id) == NULL)
+            return fail(error, PL_RESOURCE_MISSING_REFERENCE, s->id, "address space references a missing device");
     }
     for (i = 0u; i < m->region_count; ++i) {
         const pl_resource_memory_region *r = &m->regions[i];
@@ -107,8 +132,20 @@ pl_resource_status pl_resource_model_validate(
         }
         if (!power_of_two(r->alignment) || (r->base % r->alignment) != 0u)
             return fail(error, PL_RESOURCE_INVALID_ALIGNMENT, r->id, "memory region base alignment is invalid");
-        if (r->owner > PL_RESOURCE_OWNER_UNOWNED)
+        if ((unsigned)r->owner > (unsigned)PL_RESOURCE_OWNER_UNOWNED)
             return fail(error, PL_RESOURCE_INVALID_OWNER, r->id, "memory region owner is invalid");
+        if (r->permissions == 0u || (r->permissions & ~PL_RESOURCE_PERMISSION_ALL) != 0u)
+            return fail(error, PL_RESOURCE_INVALID_ARGUMENT, r->id, "memory region permissions are empty or unknown");
+        if (r->device_id != 0u && device_by_id(m, r->device_id) == NULL)
+            return fail(error, PL_RESOURCE_MISSING_REFERENCE, r->id, "memory region references a missing device");
+        for (j = 0u; j < i; ++j) {
+            const pl_resource_memory_region *other = &m->regions[j];
+            const uint64_t current_last = r->base + r->length - 1u;
+            const uint64_t other_last = other->base + other->length - 1u;
+            if (other->space_id == r->space_id &&
+                r->base <= other_last && other->base <= current_last)
+                return fail(error, PL_RESOURCE_INVALID_RANGE, r->id, "memory regions overlap in the same address space");
+        }
     }
     for (i = 0u; i < m->bank_count; ++i) {
         const pl_resource_register_bank *b = &m->banks[i];
@@ -133,8 +170,8 @@ pl_resource_status pl_resource_model_validate(
         if (r->width_bits != 8u && r->width_bits != 16u &&
             r->width_bits != 32u && r->width_bits != 64u && r->width_bits != 128u)
             return fail(error, PL_RESOURCE_INVALID_REGISTER, r->id, "register width is unsupported");
-        if (r->access > PL_RESOURCE_ACCESS_READ_CLEAR ||
-            r->owner > PL_RESOURCE_OWNER_UNOWNED || r->is_volatile > 1u ||
+        if ((unsigned)r->access > (unsigned)PL_RESOURCE_ACCESS_READ_CLEAR ||
+            (unsigned)r->owner > (unsigned)PL_RESOURCE_OWNER_UNOWNED || r->is_volatile > 1u ||
             r->has_side_effects > 1u)
             return fail(error, PL_RESOURCE_INVALID_REGISTER, r->id, "register access, owner or flags are invalid");
         bytes = (uint32_t)r->width_bits / 8u;
@@ -149,8 +186,11 @@ pl_resource_status pl_resource_model_validate(
     for (i = 0u; i < m->dma_count; ++i) {
         const pl_resource_dma_buffer *d = &m->dma_buffers[i];
         const pl_resource_address_space *s = space_by_id(m, d->space_id);
-        if (d->id == 0u || d->device_id == 0u || s == NULL)
+        if (d->id == 0u || d->device_id == 0u || s == NULL ||
+            device_by_id(m, d->device_id) == NULL)
             return fail(error, PL_RESOURCE_MISSING_REFERENCE, d->id, "DMA buffer has a missing device or address space");
+        if (s->kind != PL_RESOURCE_SPACE_DMA_IOVA)
+            return fail(error, PL_RESOURCE_INVALID_ARGUMENT, d->id, "DMA buffer requires a DMA IOVA address space");
         for (j = 0u; j < i; ++j)
             if (m->dma_buffers[j].id == d->id)
                 return fail(error, PL_RESOURCE_DUPLICATE_ID, d->id, "DMA buffer ID is duplicated");
@@ -165,10 +205,10 @@ pl_resource_status pl_resource_model_validate(
         }
         if (!power_of_two(d->alignment) || d->base % d->alignment != 0u)
             return fail(error, PL_RESOURCE_INVALID_ALIGNMENT, d->id, "DMA base alignment is invalid");
-        if (d->direction > PL_DMA_BIDIRECTIONAL ||
-            d->coherency > PL_DMA_COHERENCY_UNKNOWN ||
-            d->owner > PL_RESOURCE_OWNER_SHARED ||
-            d->state > PL_DMA_RELEASED)
+        if ((unsigned)d->direction > (unsigned)PL_DMA_BIDIRECTIONAL ||
+            (unsigned)d->coherency > (unsigned)PL_DMA_COHERENCY_UNKNOWN ||
+            (unsigned)d->owner > (unsigned)PL_RESOURCE_OWNER_SHARED ||
+            (unsigned)d->state > (unsigned)PL_DMA_RELEASED)
             return fail(error, PL_RESOURCE_INVALID_DMA_STATE, d->id, "DMA direction, coherency, owner or state is invalid");
         if (d->owner == PL_RESOURCE_OWNER_CPU && d->state == PL_DMA_DEVICE_OWNED)
             return fail(error, PL_RESOURCE_INVALID_DMA_STATE, d->id, "CPU-owned DMA buffer cannot be device-owned");
