@@ -2,7 +2,7 @@
 
 ## Coverage
 
-The federated assurance workflow audits tracked source and configuration files of **Pytyliki, Reaper, OPlague and VentuSample**. Static scanning does not execute inspected source. Findings contain rule ID, severity, repository-relative path and line number only; secret values and source snippets are never included.
+The federated assurance workflow checks the project identity and local security controls of **Pytyliki, Reaper, OPlague and VentuSample**, then applies one centrally maintained scanner and dependency inventory to all four checked-out source trees. Each product keeps its own project contract and implementation-specific security boundaries. The shared Beelzebul rule catalogue and `SECURITY.md` are checked for parity. Static scanning does not execute inspected source. Findings contain rule ID, severity, repository-relative path and line number only; secret values and source snippets are never included.
 
 ### Automated controls
 
@@ -11,7 +11,7 @@ The federated assurance workflow audits tracked source and configuration files o
 - **Dependency vulnerabilities:** OSV-Scanner compares dependency advisories on Pull Requests and performs a scheduled full scan; GitHub Dependency Review gates pull-request dependency changes, while Dependabot updates for GitHub Actions and an offline inventory of CMake/Python/package manifests, lockfiles and exact version pins.
 - **Fuzz smoke:** the production pl_audio_load_wav routine receives a deterministic corpus of malformed and RIFF-shaped byte streams; each result buffer is released after parsing.
 - **Privacy regression:** synthetic-token detection, placeholder handling, no-secret-output assertions and policy prohibitions are tested.
-- **Federation:** all four checkouts are inspected, common policy/tool checksums are compared, and each repository's actual tracked sources and dependency declarations are scanned.
+- **Federation:** validate each repository's `project-contract.json`, `SECURITY.md` and CodeQL workflow; confirm the shared Beelzebul rule catalogue and security policy are identical; then run the central source and dependency audits against each repository's tracked files. Peer repositories do not need to copy Pytyliki's scanner scripts or CI workflow.
 
 ## Run locally
 
@@ -38,7 +38,7 @@ Every repository uses the same 100-point weights:
 | Privacy regressions | 10 |
 | Federation consistency | 10 |
 
-The federated report also calculates a cross-repository score from policy/tooling parity, aggregate source findings and dependency pin hygiene. Scores are engineering trend indicators, not certifications. A critical credential finding, an OSV scan failure or known vulnerable dependency, failed fuzz/privacy/federation gate or score below 70 fails the assurance gate.
+The federated report also calculates a cross-repository score from project-identity and security-contract coverage, shared policy parity, aggregate source findings and dependency pin hygiene. Scores are engineering trend indicators, not certifications. A critical credential finding, an OSV scan failure or known vulnerable dependency, failed fuzz/privacy/federation gate or score below 70 fails the assurance gate.
 
 ## Boundaries
 
