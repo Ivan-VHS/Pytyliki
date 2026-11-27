@@ -58,6 +58,16 @@ class OmegaNullContractTests(unittest.TestCase):
         op = next(item for item in self.data["operation_catalog"] if item["id"] == "bci.capture")
         self.assertIn("consent", " ".join(op["constraints"]).lower())
 
+    def test_target_operations_require_named_capabilities(self) -> None:
+        for operation in self.data["operation_catalog"]:
+            with self.subTest(operation=operation["id"]):
+                if "target" in operation["mode"]:
+                    self.assertNotEqual(operation["required_capability"], "none")
+
+    def test_fabrication_requires_operator_approval(self) -> None:
+        operation = next(item for item in self.data["operation_catalog"] if item["id"] == "fabrication.plan")
+        self.assertTrue(operation["operator_approval_required"])
+
     def test_all_four_frameworks_are_mapped(self) -> None:
         self.assertEqual(
             {item["id"] for item in self.data["frameworks"]},
