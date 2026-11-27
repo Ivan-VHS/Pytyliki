@@ -10,8 +10,9 @@
  */
 static const pl_system_sigil_info sigils[PL_SYSTEM_SIGIL_COUNT] = {
     {PL_SYSTEM_SIGIL_ROTATE_LEFT, "^>", "bits.rotate_left",
-     "(Bit<N>, u32) -> Bit<N>",
-     "(SystemArray<W,N,S>, u32) -> SystemArrayPlan<W,N,S,RotateLeft>",
+     "(Bit<N>, u32) -> Bit<N>; (Logic<N>, Logic<S>) -> Logic<N>",
+     "(SystemArray<W,N,S>, u32) -> SystemArrayPlan<W,N,S,RotateLeft>; "
+     "(LogicSystemArray<W,N,S>, Logic<S>) -> LogicSystemArrayPlan<RotateLeft>",
      "Pure", "Firmware|ArchitecturalModel|StructuralLogic|Verification",
      "Rotate within the declared bit width N; N must be nonzero; count is reduced modulo N.",
      0},
@@ -22,8 +23,9 @@ static const pl_system_sigil_info sigils[PL_SYSTEM_SIGIL_COUNT] = {
      "Operands must have the same comparable type and compatible shape; this is value inequality.",
      0},
     {PL_SYSTEM_SIGIL_ROTATE_RIGHT, ">^", "bits.rotate_right",
-     "(Bit<N>, u32) -> Bit<N>",
-     "(SystemArray<W,N,S>, u32) -> SystemArrayPlan<W,N,S,RotateRight>",
+     "(Bit<N>, u32) -> Bit<N>; (Logic<N>, Logic<S>) -> Logic<N>",
+     "(SystemArray<W,N,S>, u32) -> SystemArrayPlan<W,N,S,RotateRight>; "
+     "(LogicSystemArray<W,N,S>, Logic<S>) -> LogicSystemArrayPlan<RotateRight>",
      "Pure", "Firmware|ArchitecturalModel|StructuralLogic|Verification",
      "Rotate within the declared bit width N; N must be nonzero; count is reduced modulo N.",
      0},
@@ -70,14 +72,16 @@ static const pl_system_sigil_info sigils[PL_SYSTEM_SIGIL_COUNT] = {
      "Only valid for a mutable place inside an active explicit SystemArray mutation transaction holding both read and write capabilities; never an implicit device write.",
      1},
     {PL_SYSTEM_SIGIL_ARITHMETIC_SHIFT_RIGHT, "^>>", "bits.arithmetic_shift_right",
-     "(SBit<N>, u32) -> SBit<N>",
-     "(SystemArray<SBit<N>>, u32) -> SystemArrayPlan<ArithmeticShiftRight>",
+     "(SBit<N>, u32) -> SBit<N>; (LogicSigned<N>, Logic<S>) -> LogicSigned<N>",
+     "(SystemArray<SBit<N>>, u32) -> SystemArrayPlan<ArithmeticShiftRight>; "
+     "(LogicSystemArray<W,N,S>, Logic<S>) -> LogicSystemArrayPlan<ArithmeticShiftRight>",
      "Pure", "Firmware|ArchitecturalModel|StructuralLogic|Verification",
      "Signed two's-complement shift with sign extension; for count >= N the result is all sign bits.",
      0},
     {PL_SYSTEM_SIGIL_LOGICAL_SHIFT_RIGHT, ">>^", "bits.logical_shift_right",
-     "(Bit<N>, u32) -> Bit<N>",
-     "(SystemArray<Bit<N>>, u32) -> SystemArrayPlan<LogicalShiftRight>",
+     "(Bit<N>, u32) -> Bit<N>; (Logic<N>, Logic<S>) -> Logic<N>",
+     "(SystemArray<Bit<N>>, u32) -> SystemArrayPlan<LogicalShiftRight>; "
+     "(LogicSystemArray<W,N,S>, Logic<S>) -> LogicSystemArrayPlan<LogicalShiftRight>",
      "Pure", "Firmware|ArchitecturalModel|StructuralLogic|Verification",
      "Unsigned logical shift with zero fill; for count >= N the result is zero.",
      0},
