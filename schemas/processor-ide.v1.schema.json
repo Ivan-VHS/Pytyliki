@@ -21,7 +21,8 @@
     "implementation_layers",
     "integration_workstreams",
     "safety_adjustments",
-    "perspectives"
+    "perspectives",
+    "signal_palette"
   ],
   "properties": {
     "schema": {
@@ -696,6 +697,70 @@
               "implemented"
             ]
           }
+        }
+      }
+    },
+    "signal_palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "theme_independent",
+        "states",
+        "accessibility"
+      ],
+      "properties": {
+        "scope": {
+          "const": "waveform_and_electrical_signal_views_only"
+        },
+        "theme_independent": {
+          "const": true
+        },
+        "states": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "default_color",
+              "pattern"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "high",
+                  "low",
+                  "floating",
+                  "contended",
+                  "unknown"
+                ]
+              },
+              "label": {
+                "type": "string",
+                "minLength": 3
+              },
+              "default_color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              "pattern": {
+                "enum": [
+                  "solid",
+                  "dashed",
+                  "crosshatch",
+                  "dotted"
+                ]
+              }
+            }
+          }
+        },
+        "accessibility": {
+          "type": "string",
+          "minLength": 40
         }
       }
     }
