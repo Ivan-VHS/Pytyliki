@@ -26,14 +26,16 @@ static int parse_task(const char *argument, pl_placement_task *task) {
     if (argument == NULL || strlen(argument) >= sizeof(buffer)) return 0;
     (void)snprintf(buffer, sizeof(buffer), "%s", argument);
     cursor = buffer;
-    while (count < 9u) {
-        char *comma = strchr(cursor, ',');
-        if (comma != NULL) *comma = '\0';
+    for (;;) {
+        char *comma;
+        if (count >= 9u) return 0;
         parts[count++] = cursor;
+        comma = strchr(cursor, ',');
         if (comma == NULL) break;
+        *comma = '\0';
         cursor = comma + 1;
     }
-    if (count != 9u || strchr(parts[8], ',') != NULL) return 0;
+    if (count != 9u) return 0;
     if (strcmp(parts[2], "unknown") == 0) values[2] = PL_TOPOLOGY_UNKNOWN;
     else if (!parse_u64(parts[2], &values[2])) return 0;
     for (size_t i = 0u; i < 9u; ++i) {
