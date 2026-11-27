@@ -8,6 +8,7 @@
     "schema",
     "version",
     "generation",
+    "devices",
     "address_spaces",
     "memory_regions",
     "register_banks",
@@ -61,8 +62,7 @@
               40,
               48,
               52,
-              64,
-              128
+              64
             ]
           },
           "endianness": {
@@ -397,6 +397,43 @@
     },
     "dma_submitted": {
       "const": false
+    },
+    "devices": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "generation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 48
+          },
+          "capabilities": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          }
+        }
+      }
     }
   }
 }
