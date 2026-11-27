@@ -51,6 +51,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.6"
       - name: Configure with EDAC adapter
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DPYTYLIKI_ENABLE_RUST_EDAC=ON
       - name: Build native and EDAC targets
@@ -70,6 +73,7 @@ jobs:
           printf '3\n' > "$root/mc/mc0/dimm0/dimm_ce_count"
           ./build/pytyliki-ptfr --edac-root "$root" --jsonl "$RUNNER_TEMP/evidence.jsonl"
           grep -q '"provider":"linux-edac"' "$RUNNER_TEMP/evidence.jsonl"
+          node --experimental-strip-types adapters/typescript-evidence/src/verify.ts "$RUNNER_TEMP/evidence.jsonl"
 
   windows-whea:
     runs-on: windows-latest
