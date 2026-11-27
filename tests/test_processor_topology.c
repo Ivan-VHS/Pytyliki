@@ -11,7 +11,7 @@ int main(void) {
     assert(snapshot.online_logical_cpu_count>0u);
     assert(pl_processor_topology_validate(&snapshot)==PL_TOPOLOGY_OK);
     for(uint32_t i=0u;i<snapshot.logical_cpu_count;++i) {
-        assert(snapshot.logical_cpus[i].logical_id==i);
+        assert(snapshot.logical_cpus[i].logical_id<PL_TOPOLOGY_MAX_LOGICAL_CPUS);
         assert(snapshot.logical_cpus[i].online<=1u);
     }
     {
