@@ -32,6 +32,7 @@ static void test_json_envelope_and_unknown_values(void) {
     snapshot.logical_processors[0].logical_id = 0u;
     snapshot.logical_processors[0].os_id = 0u;
     snapshot.logical_processors[0].group_id = PL_TOPOLOGY_UNKNOWN_ID;
+    snapshot.logical_processors[0].thread_id = PL_TOPOLOGY_UNKNOWN_ID;
     snapshot.logical_processors[0].package_id = PL_TOPOLOGY_UNKNOWN_ID;
     snapshot.logical_processors[0].die_id = PL_TOPOLOGY_UNKNOWN_ID;
     snapshot.logical_processors[0].core_id = PL_TOPOLOGY_UNKNOWN_ID;
@@ -53,6 +54,7 @@ static void test_json_envelope_and_unknown_values(void) {
     buffer[count] = '\0';
     assert(strstr(buffer, "pytyliki.processor-topology-evidence.v2") != NULL);
     assert(strstr(buffer, "\"package_id\":null") != NULL);
+    assert(strstr(buffer, "\"thread_id\":null") != NULL);
     assert(strstr(buffer, "\"os_usable\":null") == NULL);
     assert(strstr(buffer, "\"avx\":{\"hardware_present\":true,\"os_usable\":false") != NULL);
     assert(strstr(buffer, "\"avx2\":{\"hardware_present\":true,\"os_usable\":false") != NULL);
