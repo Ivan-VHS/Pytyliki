@@ -74,22 +74,16 @@ static void set_isa_evidence(pl_processor_topology_snapshot *out,
         }
         if (cpu->avx_hw) out->isa_hardware_present |= PL_TOPOLOGY_ISA_AVX;
         if (cpu->avx) out->isa_os_usable |= PL_TOPOLOGY_ISA_AVX;
-        if (cpu->avx2) {
-            out->isa_hardware_present |= PL_TOPOLOGY_ISA_AVX2;
-            out->isa_os_usable |= PL_TOPOLOGY_ISA_AVX2;
-        }
-        if (cpu->avx512f) {
-            out->isa_hardware_present |= PL_TOPOLOGY_ISA_AVX512F;
-            out->isa_os_usable |= PL_TOPOLOGY_ISA_AVX512F;
-        }
+        if (cpu->avx2_hw) out->isa_hardware_present |= PL_TOPOLOGY_ISA_AVX2;
+        if (cpu->avx2) out->isa_os_usable |= PL_TOPOLOGY_ISA_AVX2;
+        if (cpu->avx512f_hw) out->isa_hardware_present |= PL_TOPOLOGY_ISA_AVX512F;
+        if (cpu->avx512f) out->isa_os_usable |= PL_TOPOLOGY_ISA_AVX512F;
         if (cpu->aes) {
             out->isa_hardware_present |= PL_TOPOLOGY_ISA_AES;
             out->isa_os_usable |= PL_TOPOLOGY_ISA_AES;
         }
-        if (cpu->fma) {
-            out->isa_hardware_present |= PL_TOPOLOGY_ISA_FMA;
-            out->isa_os_usable |= PL_TOPOLOGY_ISA_FMA;
-        }
+        if (cpu->fma_hw) out->isa_hardware_present |= PL_TOPOLOGY_ISA_FMA;
+        if (cpu->fma) out->isa_os_usable |= PL_TOPOLOGY_ISA_FMA;
         if (cpu->virtualization) {
             out->isa_hardware_present |= PL_TOPOLOGY_ISA_VIRTUALIZE;
             out->isa_os_usable |= PL_TOPOLOGY_ISA_VIRTUALIZE;
