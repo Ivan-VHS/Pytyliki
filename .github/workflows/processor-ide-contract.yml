@@ -1,0 +1,46 @@
+name: Processor IDE contract
+
+on:
+  pull_request:
+    paths:
+      - "contracts/processor-ide.v1.json"
+      - "schemas/processor-ide.v1.schema.json"
+      - "docs/PROCESSOR_IDE.md"
+      - "project-contract.json"
+      - "tools/validate_processor_ide.py"
+      - "tests/test_processor_ide_contract.py"
+      - "src/ironclad_systems.c"
+      - "src/ironclad_systems.h"
+      - "tests/test_ironclad_systems.c"
+      - ".github/workflows/processor-ide-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/processor-ide.v1.json"
+      - "schemas/processor-ide.v1.schema.json"
+      - "docs/PROCESSOR_IDE.md"
+      - "project-contract.json"
+      - "tools/validate_processor_ide.py"
+      - "tests/test_processor_ide_contract.py"
+      - "src/ironclad_systems.c"
+      - "src/ironclad_systems.h"
+      - "tests/test_ironclad_systems.c"
+      - ".github/workflows/processor-ide-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: false
+      - name: Validate Processor IDE contract
+        run: python tools/validate_processor_ide.py
+      - name: Run Processor IDE contract tests
+        run: python -m unittest discover -s tests -p "test_processor_ide_contract.py" -v
