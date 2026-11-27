@@ -132,7 +132,8 @@
       "required": [
         "iron_core",
         "low_level_contract",
-        "system_workspace_registry"
+        "system_workspace_registry",
+        "native_session_foundation"
       ],
       "properties": {
         "iron_core": {
@@ -172,6 +173,44 @@
             "reuse_policy": {
               "type": "string",
               "minLength": 50
+            }
+          }
+        },
+        "native_session_foundation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "header",
+            "source",
+            "tests",
+            "build",
+            "api",
+            "description"
+          ],
+          "properties": {
+            "header": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tests": {
+              "type": "string",
+              "minLength": 1
+            },
+            "build": {
+              "type": "string",
+              "minLength": 1
+            },
+            "api": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 40
             }
           }
         }
