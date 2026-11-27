@@ -191,6 +191,11 @@ pl_placement_status pl_processor_placement_plan(
         best.task_id=task->task_id;
         best.state=PL_PLACEMENT_NO_COMPATIBLE_CPU;
         best.logical_cpu_id=PL_TOPOLOGY_UNKNOWN;
+        if(task->dependencies_pending!=0u) {
+            best.state=PL_PLACEMENT_WAITING_DEPENDENCY;
+            out->assignments[out->assignment_count++]=best;
+            continue;
+        }
         for(size_t i=0u;i<topology->logical_cpu_count;++i) {
             const pl_topology_logical_cpu *record=&topology->logical_cpus[i];
             pl_placement_assignment candidate;
@@ -279,6 +284,7 @@ pl_placement_status pl_processor_placement_write_json(const pl_placement_result 
 const char *pl_placement_state_name(pl_placement_state s) {
     switch(s) {
     case PL_PLACEMENT_ASSIGNED:return "assigned";
+    case PL_PLACEMENT_WAITING_DEPENDENCY:return "waiting-dependency";
     case PL_PLACEMENT_NO_COMPATIBLE_CPU:return "no-compatible-cpu";
     case PL_PLACEMENT_CAPACITY_EXHAUSTED:return "capacity-exhausted";
     case PL_PLACEMENT_REQUIRED_LOCALITY_UNKNOWN:return "required-locality-unknown";
