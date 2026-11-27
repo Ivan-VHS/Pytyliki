@@ -15,6 +15,7 @@ This hub is the topic-level entry point for the pages below. Use the linked spec
 - [EMBEDDED C](../EMBEDDED_C.md)
 - [HARDWARE RULE ENGINE](../HARDWARE_RULE_ENGINE.md)
 - [IRON CORE v1 — 100 hardware-engineering rules](../IRON_CORE.md)
+- [Omega-Null — physics-inspired research profile](../OMEGA_NULL.md)
 - [MICROBUDGET PLANNER](../MICROBUDGET_PLANNER.md)
 - [ORTHOGONAL METRIC ENGINE](../ORTHOGONAL_METRIC_ENGINE.md)
 - [PROGRAM CATALOG 1000](../PROGRAM_CATALOG_1000.md)
