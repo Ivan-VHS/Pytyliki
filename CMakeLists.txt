@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/embedded_kernel.c src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c src/system_array.c)
+add_library(pytyliki_core src/embedded_kernel.c src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c src/system_array.c src/hardware_syntax.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
@@ -36,7 +36,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/system_array.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/system_array.h src/hardware_syntax.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -58,6 +58,8 @@ add_executable(pytyliki-qcs src/qcs_cli.c)
 target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 add_executable(pytyliki-system-array src/system_array_cli.c)
 target_link_libraries(pytyliki-system-array PRIVATE pytyliki_core)
+add_executable(pytyliki-hw-syntax src/hardware_syntax_cli.c)
+target_link_libraries(pytyliki-hw-syntax PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -260,6 +262,42 @@ if(BUILD_TESTING)
   set_tests_properties(system-array-cli-normalize PROPERTIES PASS_REGULAR_EXPRESSION "system")
   add_test(NAME system-array-cli-json COMMAND pytyliki-system-array --json "{]+/* systemArray >^")
   set_tests_properties(system-array-cli-json PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.system-array-ast.v1")
+
+  add_executable(pytyliki-hardware-syntax-tests tests/test_hardware_syntax.c)
+  target_link_libraries(pytyliki-hardware-syntax-tests PRIVATE pytyliki_core)
+  add_test(NAME hardware-construct-syntax-tests COMMAND pytyliki-hardware-syntax-tests)
+  add_test(NAME hardware-construct-catalog COMMAND pytyliki-hw-syntax --catalog)
+  set_tests_properties(hardware-construct-catalog PROPERTIES PASS_REGULAR_EXPRESSION "trace_script")
+
+  set(PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES
+    01_irq_dispatch
+    02_cpu_pulse
+    03_boot_guard
+    04_core_power_state
+    05_bus_alignment_rule
+    06_microcode_section
+    07_cache_react
+    08_trace_mode_matrix
+    09_fold_address_tree
+    10_quantum_wheel
+    11_apocrypha_noise_gate
+    12_register_transaction
+    13_pipeline_graph
+    14_vector_lane_shift
+    15_overlay_swap
+    16_ipc_watch
+    17_dma_ring_worker
+    18_hardware_sanity
+    19_cpu_window_layout
+    20_step_debugger
+  )
+  foreach(example IN LISTS PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES)
+    add_test(
+      NAME hardware-syntax-example-${example}
+      COMMAND pytyliki-hw-syntax --check
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/hardware-constructs/${example}.syntax
+    )
+  endforeach()
 
 endif()
 
