@@ -233,7 +233,14 @@ def correlate(findings,file_texts,focus_paths=None):
             add(findings,"Q03","critical",path,1,"External input and command/expression execution share a trust boundary.","medium")
         if re.search(r"\b(?:requests\.|urllib\.request|httpx\.|fetch\s*\()",low) and "verify=false" in low:add(findings,"Q02","high",path,1,"Network client and disabled TLS verification are correlated.","medium")
         if re.search(r"\b(?:requests\.|urllib\.request|httpx\.|fetch\s*\()",low) and re.search(r"\bpickle\.(?:load|loads)\s*\(",low):add(findings,"Q04","critical",path,1,"Network input and unsafe deserialization are correlated.","medium")
-        if re.search(r"\b(?:password|token|secret|api[_-]?key)\b",low) and re.search(r"\b(?:print|logger\.|logging\.)",low):add(findings,"Q05","high",path,1,"Secret-bearing identifiers and output/logging calls coexist.","medium")
+        sensitive_output = any(
+            not line.lstrip().startswith("#")
+            and re.search(r"\b(?:print|logger\.\w+|logging\.\w+)\s*\(", line, re.I)
+            and re.search(r"\b(?:password|passwd|secret|access_token|token|api[_-]?key)\b", line, re.I)
+            for line in text.splitlines()
+        )
+        if sensitive_output:
+            add(findings,"Q05","high",path,1,"Sensitive identifiers are passed to an output/logging call on the same source line.","medium")
         if re.search(r"\b(?:password|auth|credential)\b",low) and re.search(r"\b(?:md5|sha1)\b",low):add(findings,"Q06","high",path,1,"Weak digest and authentication-related identifiers coexist.","medium")
     workflow_text="\n".join(text for path,text in file_texts.items() if path.startswith(".github/workflows/"))
     if workflow_text:
