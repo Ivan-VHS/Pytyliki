@@ -57,3 +57,15 @@ CTest covers positive and negative operand combinations, exactness, zero
 division, signed overflow rejection, partition coverage, empty partitions,
 worker recommendation limits, and weighted-allocation conservation. CLI
 smoke tests cover division and partition output.
+
+
+## Exhaustive small-domain invariants
+
+The CTest suite also checks every item count from 0 through 128 against
+partition counts from 1 through 16. For each plan it verifies contiguous
+coverage, exact conservation, and a maximum group-size difference of one.
+Equal-weight apportionment is checked for totals 0 through 128, including the
+stable input-order rule for tied remainders.
+
+These are finite-domain regression checks of the integer contracts; they do
+not imply that a downstream consumer has performed the physical distribution.
