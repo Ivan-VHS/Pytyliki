@@ -32,6 +32,8 @@ typedef struct {
     uint32_t capacity_basis_points;
     uint32_t isa_usable_mask;
     uint8_t online;
+    uint32_t package_id;
+    uint32_t die_id;
 } pl_placement_worker;
 
 typedef struct {
