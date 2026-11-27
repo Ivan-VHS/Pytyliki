@@ -129,7 +129,7 @@
       "forbidden_interpretation": "Querying a quantum vacuum for arbitrary resources."
     },
     {
-      "marker": "grown new-work >/ ",
+      "marker": "grown new-work >/",
       "normalized": "pipeline.expand",
       "category": "pipeline",
       "intent": "Expand a model or engineering workflow.",
