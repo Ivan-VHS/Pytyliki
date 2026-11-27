@@ -10,7 +10,7 @@ This hub is the topic-level entry point for the pages below. Use the linked spec
 
 - [CONTRIBUTING](../../CONTRIBUTING.md)
 - [ATOMIC QUANTUM 133](../ATOMIC_QUANTUM_133.md)
-- [DUCKSTORY](../DUCKSTORY.md)
+- [DAKSTORY](../DAKSTORY.md)
 - [FEATURES](../FEATURES.md)
 - [HUMAN FIRST GOVERNANCE](../HUMAN_FIRST_GOVERNANCE.md)
 - [MARKET DEVELOPMENT STANDARD](../MARKET_DEVELOPMENT_STANDARD.md)
