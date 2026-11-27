@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with bounded processor discovery, measurements, source diagnostics, versioned native interoperability, structural hardware-language frontends, and deterministic MOS switch-level modeling.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, native interoperability, hardware-language frontends, switch-level modeling and Processor Fabric graph aggregation/planning.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -181,6 +181,18 @@
         "docs/PHYSICAL_SWITCH_MODEL_V1.md",
         "schemas/pytyliki.mos-switch-model.v1.schema.json"
       ]
+    },
+    {
+      "id": "processor.process-fabric",
+      "status": "partial",
+      "summary": "Bounded C11 processor-system graph validates hierarchy and typed relations, detects dependency cycles, aggregates five existing processor/hardware catalogues, and builds deterministic advisory worker plans constrained by execution domains, feature masks, affinity masks and capacity. No tasks are launched and no host or hardware state is changed.",
+      "evidence": [
+        "src/processor_fabric.h",
+        "src/processor_fabric.c",
+        "tests/test_processor_fabric.c",
+        "docs/PROCESSOR_FABRIC_V1.md",
+        "schemas/pytyliki.processor-fabric-report.v1.schema.json"
+      ]
     }
   ],
   "interfaces": [
@@ -267,7 +279,8 @@
     "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
     "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware.",
     "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities.",
-    "The MOS switch-level model is a deterministic ideal-switch simulation only; it does not model analog current/voltage dynamics or access physical hardware."
+    "The MOS switch-level model is a deterministic ideal-switch simulation only; it does not model analog current/voltage dynamics or access physical hardware.",
+    "Processor Fabric plans are advisory only: they do not spawn processes, modify host scheduling or affinity, write registers, map MMIO/DMA, change firmware, clocks or device state."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
@@ -279,6 +292,7 @@
     "Twenty versioned hardware construct families with structural AST nodes, ready for future grammar, type/effect checking, Hardware IR and Reaper adapter work.",
     "Reference-only compound Hyper-Switch audio/system and Epoch 4M vacuum-lattice profile specimens; future token grammar, type/effect checks and target contracts remain unimplemented.",
     "Versioned metadata registry for reserved SystemArray sigils; future semantic resolution must preserve source spans and lower to Reaper canonical typed IR.",
-    "Versioned MOS switch-level topology model with bounded reachability, ready for separately validated logic, sequential, timing and electrical-model layers."
+    "Versioned MOS switch-level topology model with bounded reachability, ready for separately validated logic, sequential, timing and electrical-model layers.",
+    "Versioned Processor Fabric graph for CPU hierarchy, register/ISA/address-space resources, process pools, typed dependencies and deterministic advisory worker plans."
   ]
 }
