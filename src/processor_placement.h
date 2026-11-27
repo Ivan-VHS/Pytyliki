@@ -20,6 +20,7 @@ extern "C" {
 
 typedef enum {
     PL_PLACEMENT_ASSIGNED = 0,
+    PL_PLACEMENT_WAITING_DEPENDENCY,
     PL_PLACEMENT_NO_COMPATIBLE_CPU,
     PL_PLACEMENT_CAPACITY_EXHAUSTED,
     PL_PLACEMENT_REQUIRED_LOCALITY_UNKNOWN
@@ -35,6 +36,7 @@ typedef struct {
     uint32_t requested_load_basis_points;
     uint8_t priority;
     uint8_t require_local_numa;
+    uint8_t dependencies_pending;
 } pl_placement_task;
 
 typedef struct {
