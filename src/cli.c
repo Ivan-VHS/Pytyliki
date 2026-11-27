@@ -1,6 +1,7 @@
 #include "core.h"
 #include "budget.h"
 #include "division.h"
+#include "division_cli.h"
 #include "processor.h"
 #include "improvement.h"
 #include "hw_rules.h"
@@ -317,18 +318,13 @@ static void print_foundations(int pipeline, int catalog, int policy, pl_pipeline
 }
 
 static void print_e2k_profile(void) {
-    pl_processor_snapshot p;
-    if (pl_processor_scan(&p) != 0) {
-        fputs("Target profile scan failed.\n", stderr);
+    pl_processor_snapshot profile;
+    if (pl_processor_scan(&profile) != 0) {
+        fputs("Target profile scan failed.\\n", stderr);
         return;
     }
-    printf("Build architecture: %s\n", p.architecture);
-    if (p.is_e2k_target && p.mcst_lcc)
-        printf("Toolchain: MCST LCC (major version %u)\n", p.lcc_major);
-    else if (p.is_e2k_target)
-        puts("Toolchain: E2K compiler detected; MCST LCC version macro unavailable");
-    else
-        puts("E2K target: not detected in this build");
+    printf("Build architecture: %s\\n", profile.architecture);
+    puts("Compiler identification: unavailable in the current processor snapshot ABI");
     puts("VLIW scheduling and software pipelining: delegated to the actual target compiler");
     puts("AETHER-ANAS native backend: not implemented (target profile only)");
     puts("No fixed issue width, ALU count, register count, or cycle model is assumed.");
