@@ -87,7 +87,7 @@ static void test_mutation_operator_requires_transaction(void) {
 static void test_logic_operator_is_not_two_state_bool(void) {
     const pl_system_sigil_info *info = pl_system_sigil_lookup("^>==!");
     assert(info != NULL);
-    assert(strcmp(info->effect_class, "LogicRead") == 0);
+    assert(strcmp(info->effect_class, "Pure") == 0);
     assert(strcmp(info->scalar_signature, "(Logic<N>, Logic<N>) -> LogicBit") == 0);
     assert(strstr(info->safety_contract, "X") != NULL);
 }
