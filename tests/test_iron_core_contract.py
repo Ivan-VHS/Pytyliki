@@ -82,7 +82,16 @@ class IronCoreContractTests(unittest.TestCase):
         self.assertEqual(related["status"], "merged_in_main")
         self.assertEqual(related["rule_count"], 100)
         self.assertTrue((ROOT / related["path"]).is_file())
+        self.assertTrue((ROOT / related["schema_path"]).is_file())
         self.assertTrue(all((ROOT / path).is_file() for path in related["implementation"]))
+
+    def test_stacked_pull_requests_keep_explicit_dependencies(self) -> None:
+        work = {item["pr"]: item for item in self.data["open_work"]}
+        self.assertIn(299, work[302]["depends_on"])
+        self.assertIn(299, work[304]["depends_on"])
+        self.assertIn(286, work[290]["depends_on"])
+        self.assertIn(286, work[297]["depends_on"])
+        self.assertEqual(work[302]["state"], "merged-to-open-branch")
 
     def test_crosswalk_references_existing_iron_and_pll_rules(self) -> None:
         related = self.data["related_contracts"]
