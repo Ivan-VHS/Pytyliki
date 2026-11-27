@@ -185,7 +185,7 @@
     {
       "id": "processor.process-fabric",
       "status": "partial",
-      "summary": "Bounded C11 processor-system graph validates hierarchy and typed relations, detects dependency cycles, aggregates five existing processor/hardware catalogues, and builds deterministic advisory worker plans constrained by execution domains, feature masks, affinity masks and capacity. No tasks are launched and no host or hardware state is changed.",
+      "summary": "Bounded C11 processor-system graph validates hierarchy and typed relations, detects dependency cycles, aggregates processor/hardware catalogues, imports read-only host topology evidence into package/die/core/logical CPU, processor-group, NUMA and cache-sharing nodes, and builds deterministic advisory process plans. Placement v2 includes NUMA/cache/SMT/bandwidth cost estimates and PPF dependency gating. Worker affinity remains limited to 64 logical IDs in this PPF ABI; no tasks are launched and no host/hardware state is changed.",
       "evidence": [
         "src/processor_fabric.h",
         "src/processor_fabric.c",
@@ -193,7 +193,54 @@
         "docs/PROCESSOR_FABRIC_V1.md",
         "schemas/pytyliki.processor-fabric-report.v1.schema.json",
         "schemas/pytyliki.processor-fabric-catalogues.v1.schema.json",
-        "src/processor_fabric_cli.c"
+        "src/processor_fabric_cli.c",
+        "src/processor_topology.h",
+        "src/processor_topology.c",
+        "src/processor_placement.h",
+        "src/processor_placement.c",
+        "tests/test_processor_fabric_topology.c",
+        "docs/PROCESSOR_FABRIC_IMPLEMENTATION_V2.md",
+        "schemas/pytyliki.processor-topology-evidence.v2.schema.json",
+        "schemas/pytyliki.processor-placement-report.v2.schema.json"
+      ]
+    },
+    {
+      "id": "processor.topology-evidence.v2",
+      "status": "partial",
+      "summary": "Native C11 read-only Windows/Linux topology collector records logical CPU IDs, processor groups where applicable, package/die/core, NUMA and shared cache evidence, ISA hardware-presence versus OS-usability, timestamps and generations. Platform coverage and bounds remain partial pending Windows/Linux CI and expanded topology fixtures.",
+      "evidence": [
+        "src/processor_topology.h",
+        "src/processor_topology.c",
+        "src/processor_topology_cli.c",
+        "tests/test_processor_topology.c",
+        "schemas/pytyliki.processor-topology-evidence.v2.schema.json",
+        "docs/PROCESSOR_FABRIC_IMPLEMENTATION_V2.md"
+      ]
+    },
+    {
+      "id": "processor.placement-v2",
+      "status": "partial",
+      "summary": "Deterministic advisory process placement estimates CPU capacity/load, NUMA locality, shared-cache working-set pressure, SMT sibling contention and caller-supplied NUMA bandwidth pressure. A graph-aware PPF entry point checks READY process nodes and dependencies; CLI starts from a declared zero-pressure baseline. It does not set affinity, schedule or launch processes.",
+      "evidence": [
+        "src/processor_placement.h",
+        "src/processor_placement.c",
+        "src/processor_placement_cli.c",
+        "tests/test_processor_placement.c",
+        "tests/test_processor_fabric_topology.c",
+        "schemas/pytyliki.processor-placement-report.v2.schema.json",
+        "docs/PROCESSOR_FABRIC_IMPLEMENTATION_V2.md"
+      ]
+    },
+    {
+      "id": "processor.hardware-resource-validator",
+      "status": "partial",
+      "summary": "Bounded native C11 validators check typed address spaces, devices, memory regions, register banks/register permissions and overlap, DMA device/generation references, and explicit CPU/device ownership transitions. Validation mutates only caller-owned descriptors and performs no physical MMIO, mapping, cache maintenance or DMA submission.",
+      "evidence": [
+        "src/hardware_resources.h",
+        "src/hardware_resources.c",
+        "tests/test_hardware_resources.c",
+        "schemas/pytyliki.hardware-resource-contract.v1.schema.json",
+        "docs/PROCESSOR_FABRIC_IMPLEMENTATION_V2.md"
       ]
     }
   ],
@@ -228,6 +275,41 @@
         "src/mos_switch.h",
         "src/mos_switch.c",
         "tests/test_mos_switch.c"
+      ]
+    },
+    {
+      "id": "pytyliki.processor-topology-evidence.v2",
+      "format": "Versioned JSON read-only OS topology and ISA evidence",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "src/processor_topology.c",
+        "schemas/pytyliki.processor-topology-evidence.v2.schema.json",
+        "tests/test_processor_topology.c"
+      ]
+    },
+    {
+      "id": "pytyliki.processor-placement-report.v2",
+      "format": "Versioned JSON advisory placement and contention cost report",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "src/processor_placement.c",
+        "src/processor_placement_cli.c",
+        "schemas/pytyliki.processor-placement-report.v2.schema.json",
+        "tests/test_processor_placement.c"
+      ]
+    },
+    {
+      "id": "pytyliki.hardware-resource-contract.v1",
+      "format": "Typed caller-owned hardware resource and DMA ownership descriptors",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "src/hardware_resources.h",
+        "src/hardware_resources.c",
+        "schemas/pytyliki.hardware-resource-contract.v1.schema.json",
+        "tests/test_hardware_resources.c"
       ]
     }
   ],
@@ -282,7 +364,10 @@
     "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware.",
     "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities.",
     "The MOS switch-level model is a deterministic ideal-switch simulation only; it does not model analog current/voltage dynamics or access physical hardware.",
-    "Processor Fabric plans are advisory only: they do not spawn processes, modify host scheduling or affinity, write registers, map MMIO/DMA, change firmware, clocks or device state."
+    "Processor Fabric plans are advisory only: they do not spawn processes, modify host scheduling or affinity, write registers, map MMIO/DMA, change firmware, clocks or device state.",
+    "The processor topology collector is read-only and bounded; missing OS topology remains unknown/partial and out-of-bound CPU counts are rejected instead of truncated.",
+    "Processor Placement v2 is a deterministic advisory estimate only; CLI pressure inputs are zero-baseline unless explicitly supplied by an embedding caller, and no affinity or scheduler state is changed.",
+    "The typed hardware resource validator checks caller-owned descriptions and DMA ownership transitions only; it does not map MMIO, perform register access, install IOMMU mappings, submit DMA, or perform device/firmware operations."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
