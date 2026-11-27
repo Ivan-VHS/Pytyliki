@@ -1,6 +1,6 @@
 # Pytyliki IRON CORE v1
 
-> **Architecture contract · 100 engineering rules · reviewed 2026-11-27**
+> **Architecture contract · 100 engineering rules · reviewed 2026-11-28**
 >
 > This document defines the target architecture and evidence gates for evolving Pytyliki into a processor-programming and hardware-engineering platform. It is a specification and integration map, not a claim that all listed features are already implemented.
 
