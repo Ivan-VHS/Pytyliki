@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and bounded system-array and hardware-construct structural syntax frontends.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, static diagnostics, versioned native interoperability, and structural SystemArray and hardware-language frontends.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -156,6 +156,18 @@
         "examples/hardware-constructs/01_irq_dispatch.syntax",
         "schemas/pytyliki.hardware-construct-ast.v1.schema.json"
       ]
+    },
+    {
+      "id": "syntax.system-sigil-operators",
+      "status": "partial",
+      "summary": "C11 metadata registry maps the thirteen SystemArray suffix tokens to stable semantic IDs, type/array-plan signatures, effect classes and safety contracts; parsing and JSON metadata are implemented, while expression parsing, type-directed overload resolution, capability/effect checking, plan evaluation, IR lowering and hardware access are not implemented.",
+      "evidence": [
+        "src/system_sigil.h",
+        "src/system_sigil.c",
+        "src/system_sigil_cli.c",
+        "tests/test_system_sigil.c",
+        "docs/SYSTEM_SIGIL_OPERATORS.md"
+      ]
     }
   ],
   "interfaces": [
@@ -229,7 +241,8 @@
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
     "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
     "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
-    "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware."
+    "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware.",
+    "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
@@ -239,6 +252,7 @@
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
     "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
     "Twenty versioned hardware construct families with structural AST nodes, ready for future grammar, type/effect checking, Hardware IR and Reaper adapter work.",
-    "Reference-only compound Hyper-Switch audio/system and Epoch 4M vacuum-lattice profile specimens; future token grammar, type/effect checks and target contracts remain unimplemented."
+    "Reference-only compound Hyper-Switch audio/system and Epoch 4M vacuum-lattice profile specimens; future token grammar, type/effect checks and target contracts remain unimplemented.",
+    "Versioned metadata registry for reserved SystemArray sigils; future semantic resolution must preserve source spans and lower to Reaper canonical typed IR."
   ]
 }
