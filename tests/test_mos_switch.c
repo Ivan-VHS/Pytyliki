@@ -77,21 +77,22 @@ static void test_cmos_nand2_truth_table(void)
 static void test_contention_and_floating(void)
 {
     pl_mos_switch_network network;
-    pl_mos_logic levels[5] = {
+    pl_mos_logic levels[6] = {
         PL_MOS_LOGIC_UNKNOWN,
         PL_MOS_LOGIC_UNKNOWN,
         PL_MOS_LOGIC_LOW,
+        PL_MOS_LOGIC_UNKNOWN,
         PL_MOS_LOGIC_HIGH,
         PL_MOS_LOGIC_UNKNOWN
     };
-    pl_mos_state states[5];
+    pl_mos_state states[6];
 
-    assert(pl_mos_switch_network_init(&network, 5u, 0u, 1u) == PL_MOS_SWITCH_OK);
+    assert(pl_mos_switch_network_init(&network, 6u, 0u, 1u) == PL_MOS_SWITCH_OK);
     assert(pl_mos_switch_add(&network, PL_MOS_CHANNEL_P, 2u, 0u, 3u) == PL_MOS_SWITCH_OK);
-    assert(pl_mos_switch_add(&network, PL_MOS_CHANNEL_N, 3u, 3u, 1u) == PL_MOS_SWITCH_OK);
-    assert(pl_mos_switch_evaluate(&network, levels, 5u, states, 5u) == PL_MOS_SWITCH_OK);
+    assert(pl_mos_switch_add(&network, PL_MOS_CHANNEL_N, 4u, 3u, 1u) == PL_MOS_SWITCH_OK);
+    assert(pl_mos_switch_evaluate(&network, levels, 6u, states, 6u) == PL_MOS_SWITCH_OK);
     assert(states[3] == PL_MOS_STATE_CONTENDED);
-    assert(states[4] == PL_MOS_STATE_FLOATING);
+    assert(states[5] == PL_MOS_STATE_FLOATING);
 }
 
 static void test_invalid_inputs(void)
