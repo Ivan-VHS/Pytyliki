@@ -20,9 +20,9 @@ PPF is not a second compiler or operating-system scheduler. Reaper is not a subs
 
 ## 1. Read-only topology and ISA evidence
 
-The current pl_processor_scan() captures CPU identity, architecture, logical processor count, memory totals and a bounded x86 ISA set. Its AVX-family flags already distinguish hardware support from OS-enabled vector state. It does not currently discover package, die, physical-core, processor-group, NUMA or cache-sharing topology.
+The existing pl_processor_scan() captures CPU identity, architecture, logical processor count, memory totals and a bounded x86 ISA set. AVX-family profile fields now distinguish hardware presence from OS-usable state. The new pl_processor_topology_scan() adds read-only Linux sysfs and Windows processor-topology API collectors for package/die/core/group, NUMA and cache-sharing evidence, bounded to 256 logical processors.
 
-Pytyliki's existing Processor Control model validates caller-supplied logical CPU/package/core identifiers and produces affinity-constrained advisory worker choices. That validation is not an operating-system topology collector.
+The collector retains OS logical IDs (and Windows processor-group IDs), nullable topology identifiers, source/interface provenance, timestamp and generation. Linux processor-group IDs are unknown rather than synthesized; Windows NUMA total memory remains unknown in this first slice and therefore has partial evidence. Unsupported/out-of-bound topology is rejected rather than truncated. See PROCESSOR_FABRIC_IMPLEMENTATION_V2.md for implementation details.
 
 The v2 evidence envelope in schemas/pytyliki.processor-topology-evidence.v2.schema.json closes the data-contract gap:
 
@@ -33,7 +33,7 @@ The v2 evidence envelope in schemas/pytyliki.processor-topology-evidence.v2.sche
 - every capture carries a monotonic generation, collector identity, timestamp, source and completeness state;
 - the collector is read-only; lack of permission or unsupported platform APIs results in partial/unknown evidence rather than inferred topology.
 
-The next implementation must add platform collectors (Windows processor topology APIs and Linux sysfs), reconcile their CPU identifiers with the existing CPU profile, and reject stale/mismatched generations. The resulting evidence can then populate PPF. A logical processor may be represented as an observed root when the OS does not expose its parent package/core; the graph must never invent a parent to satisfy a preferred tree shape.
+The collector output is validated for duplicate IDs, online counts, NUMA/cache mask references and ISA tri-state consistency. pl_processor_fabric_from_topology() now maps observed evidence into PPF nodes plus explicit processor-group/NUMA/cache-sharing edges. A logical processor remains a root if its parent is not observed; no package/die/core parent is invented. PPF v1 still has a 64-bit worker-affinity mask, so the bridge rejects logical IDs >=64 even though the topology evidence format can retain up to 256 processors.
 
 ISA legality uses two independent facts:
 
@@ -44,9 +44,9 @@ A compiler target check must reject unknown for a required feature. A performanc
 
 ## 2. NUMA/cache-aware planning and contention
 
-The current PPF planner is deterministic and constrained by process dependencies, domain masks, feature masks, affinity and a per-worker basis-point capacity. Pytyliki's processor-control planner adds affinity-aware least-load selection. Neither model currently includes NUMA locality, cache-sharing domains or memory-bandwidth pressure.
+The original PPF v1 planner remains a deterministic dependency/domain/feature/affinity/capacity planner. The new Placement v2 layer adds NUMA locality, known shared-cache working-set pressure, observed package/die/core SMT sibling pressure and caller-supplied NUMA bandwidth pressure. pl_processor_fabric_place_v2() connects it to READY PROCESS nodes and honours the PPF depends-on graph.
 
-The extended planner is an advisory placement estimator, not an OS scheduler. It applies hard admission constraints first, then a stable cost function:
+The extended planner is an advisory placement estimator, not an OS scheduler. It applies hard admission constraints first, then a stable cost function. Each component is returned in a versioned JSON report; the CLI uses a zero pressure baseline unless an embedding caller provides a pressure snapshot:
 
 - hard constraints: online/available worker, usable ISA, process dependency completion, affinity, execution domain and declared resource ownership;
 - locality: preferred NUMA node, local versus remote memory, cache-domain compatibility and data reuse;
@@ -124,4 +124,6 @@ Keep these as separate reviewable changes rather than one unbounded feature bran
 
 ## Current implementation boundary
 
-This change records the cross-repository v2 contracts and the required implementation order. It does not add live Windows/Linux topology collectors, NUMA/cache placement code, MMIO/DMA access, a Reaper canonical-IR lowering pass or executable assembler/linker/emulator/RTL/formal backends. Those remain explicit implementation work and must not be presented as complete.
+This Pytyliki implementation slice now includes live read-only Windows/Linux collectors, the PPF topology graph bridge, a bounded NUMA/cache/SMT/bandwidth advisory planner and a native C11 descriptor/ownership validator for registers, address spaces, regions and DMA. These additions remain partial until platform CI, Release/Debug/sanitizer CTest and schema-to-source conformance gates pass.
+
+Physical MMIO/DMA access is deliberately not implemented. Reaper's PPF importer, canonical Typed IR adapter, and target-specific assembler/linker/emulator/RTL/formal backends remain Reaper-side implementation work and are not claimed by this Pytyliki branch.
