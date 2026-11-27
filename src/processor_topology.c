@@ -515,6 +515,15 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
                     0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
             }
             ++die_id;
+        } else if (item->Relationship == RelationProcessorDie) {
+            for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
+                (void)find_or_add_windows_mask(out,
+                    item->Processor.GroupMask[i].Group,
+                    item->Processor.GroupMask[i].Mask,
+                    PL_TOPOLOGY_UNKNOWN, die_id, PL_TOPOLOGY_UNKNOWN,
+                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+            }
+            ++die_id;
         } else if (item->Relationship == RelationProcessorCore) {
             for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
                 (void)find_or_add_windows_mask(out,
