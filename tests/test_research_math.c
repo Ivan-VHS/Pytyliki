@@ -185,9 +185,9 @@ static void test_legendre_beal_and_cuboid(void) {
     assert(equal == 1);
     CHECK_OK(pl_math_beal_common_prime_divisor(6u, 12u, 18u, &common_factor));
     assert(common_factor == 2u);
-    assert(pl_math_beal_common_prime_divisor(1000003u * 1000033u,
-                                             2u * 1000003u * 1000033u,
-                                             3u * 1000003u * 1000033u,
+    assert(pl_math_beal_common_prime_divisor(UINT64_C(1000003) * UINT64_C(1000033),
+                                             UINT64_C(2) * UINT64_C(1000003) * UINT64_C(1000033),
+                                             UINT64_C(3) * UINT64_C(1000003) * UINT64_C(1000033),
                                              &common_factor) == PL_MATH_LIMIT);
     CHECK_OK(pl_math_beal_counterexample_screen(2u, 3u, 3u, 3u, 5u, 3u, &candidate));
     assert(candidate == 0);
