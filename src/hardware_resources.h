@@ -81,6 +81,8 @@ typedef struct {
     uint32_t alignment;
     pl_hw_register_side_effect side_effect;
     pl_hw_resource_owner owner;
+    uint64_t reserved_mask;
+    uint64_t reset_value;
 } pl_hw_register;
 
 typedef struct {
