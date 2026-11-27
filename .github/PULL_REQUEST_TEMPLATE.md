@@ -1,28 +1,31 @@
-## What changes?
+## Purpose
+What user or engineering problem does this change solve?
 
-Describe the user problem and the behavior changed.
+## Smallest coherent change
+What behavior is added, changed or removed? Why is this the right boundary?
 
-## Implementation
-
-- [ ] The change is focused and follows existing project boundaries.
-- [ ] Public interfaces and output formats remain compatible, or the breaking change is documented.
-- [ ] Unsupported platform behavior is explicit.
+## Function interactions
+- [ ] Public contracts and side effects are documented.
+- [ ] Valid function pairs / representative composition chains are tested.
+- [ ] Invalid combinations and boundary cases are tested or explicitly justified.
+- [ ] No placeholder or duplicate function was added just to increase counts.
 
 ## Verification
+- [ ] Unit tests pass.
+- [ ] Integration / regression tests pass.
+- [ ] CI checks pass on the supported platforms and runtimes.
+- [ ] Examples and documentation match the actual implementation.
 
-- [ ] Relevant unit or regression tests were added or updated.
-- [ ] CMake build and CTest pass, where applicable.
-- [ ] README link and four-language parity checks pass.
-- [ ] CI-relevant architecture and contract checks pass.
+## UX and design (when applicable)
+- [ ] White / blue / red tokens are used semantically.
+- [ ] Keyboard access, visible focus, labels and contrast are checked.
+- [ ] Platform limitations are stated accurately.
 
-## Documentation
-
-- [ ] README.md
-- [ ] README.uk.md
-- [ ] README.ru.md
-- [ ] README.zh-CN.md
-- [ ] docs/, schemas/, or project-contract.json updated where required.
+## Automation and integration
+- [ ] No direct push to main and no force-push.
+- [ ] Workflow permissions are least-privilege and jobs are bounded.
+- [ ] An independent human review is required before merge.
+- [ ] Rollback is clear.
 
 ## Evidence and limitations
-
-List commands run, results, and any remaining limitations. Do not present host-specific benchmark results as universal claims.
+List test commands, CI run links, measured results where relevant, and anything not yet implemented.
