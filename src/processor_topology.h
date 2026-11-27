@@ -40,6 +40,7 @@ typedef struct {
     uint32_t logical_id;
     uint32_t os_id;
     uint32_t group_id;
+    uint32_t thread_id;
     uint32_t package_id;
     uint32_t die_id;
     uint32_t core_id;
