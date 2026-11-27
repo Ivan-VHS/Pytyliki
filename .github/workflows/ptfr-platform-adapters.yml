@@ -1,0 +1,111 @@
+name: PTFR platform adapters
+
+on:
+  pull_request:
+    paths:
+      - "src/ras_provider.*"
+      - "src/ras_provider_cli.*"
+      - "src/ras_evidence.*"
+      - "src/processor_placement.*"
+      - "src/processor_thread_recovery_arch.*"
+      - "src/arch/x86_64/**"
+      - "src/cli.c"
+      - "tests/test_ras_evidence.c"
+      - "tests/test_processor_placement.c"
+      - "adapters/**"
+      - "schemas/ras-provider-report.v1.schema.json"
+      - "automation/reaper/ras_evidence.rpr"
+      - "docs/PTFR_PLATFORM_ADAPTERS.md"
+      - "CMakeLists.txt"
+      - ".github/workflows/ptfr-platform-adapters.yml"
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "src/ras_provider.*"
+      - "src/ras_provider_cli.*"
+      - "src/ras_evidence.*"
+      - "src/processor_placement.*"
+      - "src/processor_thread_recovery_arch.*"
+      - "src/arch/x86_64/**"
+      - "src/cli.c"
+      - "tests/test_ras_evidence.c"
+      - "tests/test_processor_placement.c"
+      - "adapters/**"
+      - "schemas/ras-provider-report.v1.schema.json"
+      - "automation/reaper/ras_evidence.rpr"
+      - "docs/PTFR_PLATFORM_ADAPTERS.md"
+      - "CMakeLists.txt"
+      - ".github/workflows/ptfr-platform-adapters.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  linux-c11-rust-reaper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Configure C11 and Linux EDAC
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+      - name: Build native core, Assembly and Rust EDAC provider
+        run: cmake --build build --parallel
+      - name: Run native CTest suite
+        run: ctest --test-dir build --output-on-failure
+      - name: Run Rust provider unit tests
+        run: cargo test --manifest-path adapters/rust/Cargo.toml
+      - name: Capture a read-only RAS report and checkpoint evidence
+        run: |
+          ./build/pytyliki --ras-whea > build/ras-provider-report.json
+          ./build/pytyliki --ras-evidence build/ras-evidence.bin
+      - name: Check out pinned Reaper VM
+        uses: actions/checkout@v4
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: c3d89dd91da880e523867bd8d0724a6edc6b3cf6
+          path: _deps/Reaper
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate and execute Reaper RAS evidence contract
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          python -m reaper --check automation/reaper/ras_evidence.rpr
+          python -m reaper --engine vm automation/reaper/ras_evidence.rpr
+
+  windows-c11-whea:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure MSVC, MASM, WHEA and CPU Sets
+        run: cmake -S . -B build -DBUILD_TESTING=ON
+      - name: Build native Windows targets
+        run: cmake --build build --config Release --parallel
+      - name: Run native Windows tests
+        run: ctest --test-dir build -C Release --output-on-failure
+
+  swift-report-contract:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Swift report contract tests
+        run: swift test --package-path adapters/swift
+
+  typescript-report-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install TypeScript toolchain
+        working-directory: adapters/typescript
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Type-check report adapters
+        working-directory: adapters/typescript
+        run: npm run typecheck
+      - name: Run report validator tests
+        working-directory: adapters/typescript
+        run: npm test

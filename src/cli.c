@@ -18,6 +18,7 @@
 #include "embedded.h"
 #include "processor_thread_recovery_cli.h"
 #include "ras_provider_cli.h"
+#include "ras_evidence.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -158,6 +159,7 @@ static void usage(void) {
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --thread-recovery FILE.csv | --thread-recovery-demo | --ras-whea\n"
+         "  pytyliki --ras-evidence JOURNAL.bin (poll and atomically persist OS RAS evidence)\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }
@@ -346,6 +348,8 @@ int main(int argc,char **argv) {
     }
     if (argc == 2 && strcmp(argv[1], "--ras-whea") == 0)
         return pl_ras_provider_cli();
+    if (argc == 3 && strcmp(argv[1], "--ras-evidence") == 0)
+        return pl_ras_evidence_cli(argv[2]);
     if (argc == 2 && strcmp(argv[1], "--thread-recovery-demo") == 0)
         return pl_thread_recovery_demo_cli();
     if (argc == 3 && strcmp(argv[1], "--thread-recovery") == 0)

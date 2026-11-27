@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/schemas/ras-provider-report.v1.schema.json",
+  "title": "Pytyliki RAS Provider Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "provider", "status", "read_only", "events"],
+  "properties": {
+    "schema": { "const": "pytyliki.ras-provider-report.v1" },
+    "provider": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "status": { "enum": ["ok", "unsupported"] },
+    "read_only": { "const": true },
+    "hardware_writes": { "const": false },
+    "worker_attribution": { "enum": ["none", "not_inferred"] },
+    "events": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "droppedRecords": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+    "mayHaveMore": { "type": "boolean" }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordId", "timestampNs", "clockDomain", "source", "eventId", "level", "severity", "countDelta", "controllerId", "flags", "attribution"],
+      "properties": {
+        "recordId": { "type": "integer", "minimum": 1 },
+        "timestampNs": { "type": "integer", "minimum": 0 },
+        "clockDomain": { "enum": ["unix-realtime", "process-monotonic"] },
+        "source": { "enum": ["windows-whea", "linux-edac"] },
+        "eventId": { "type": "integer", "minimum": 1, "maximum": 4294967295 },
+        "level": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "severity": { "enum": ["unknown", "corrected", "uncorrected"] },
+        "countDelta": { "type": "integer", "minimum": 1 },
+        "controllerId": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "flags": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "attribution": { "const": "system-wide" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "source": { "const": "linux-edac" } } },
+          "then": {
+            "properties": {
+              "clockDomain": { "const": "process-monotonic" },
+              "severity": { "enum": ["corrected", "uncorrected"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "source": { "const": "windows-whea" } } },
+          "then": {
+            "properties": {
+              "clockDomain": { "const": "unix-realtime" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
