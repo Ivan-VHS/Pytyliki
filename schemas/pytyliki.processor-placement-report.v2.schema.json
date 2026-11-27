@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pytyliki.dev/schemas/pytyliki.processor-placement-report.v2.schema.json",
+  "title": "Pytyliki Processor Placement Report v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generation",
+    "summary",
+    "assignments",
+    "execution_performed",
+    "affinity_changed",
+    "scheduling_changed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.processor-placement-report.v2"
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assigned",
+        "no_compatible_cpu",
+        "capacity_exhausted",
+        "locality_unknown",
+        "total_estimated_cost",
+        "topology_complete",
+        "pressure_input_present"
+      ],
+      "properties": {
+        "assigned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "no_compatible_cpu": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "capacity_exhausted": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "locality_unknown": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "total_estimated_cost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "topology_complete": {
+          "type": "boolean"
+        },
+        "pressure_input_present": {
+          "type": "boolean"
+        }
+      }
+    },
+    "assignments": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "logical_cpu_id",
+          "state",
+          "total_cost",
+          "cost",
+          "reason_mask"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "logical_cpu_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 255
+          },
+          "state": {
+            "enum": [
+              "assigned",
+              "waiting-dependency",
+              "no-compatible-cpu",
+              "capacity-exhausted",
+              "required-locality-unknown"
+            ]
+          },
+          "total_cost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "cost": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cpu_load",
+              "numa_locality",
+              "cache_pressure",
+              "smt_contention",
+              "bandwidth_pressure",
+              "capacity"
+            ],
+            "properties": {
+              "cpu_load": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "numa_locality": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "cache_pressure": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "smt_contention": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "bandwidth_pressure": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "capacity": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            }
+          },
+          "reason_mask": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "execution_performed": {
+      "const": false
+    },
+    "affinity_changed": {
+      "const": false
+    },
+    "scheduling_changed": {
+      "const": false
+    }
+  }
+}
