@@ -33,6 +33,17 @@
       ]
     },
     {
+      "id": "processor.control-policy.v1",
+      "status": "implemented",
+      "summary": "Native C11 policy engine for bounded processor-topology validation, affinity-constrained load selection, balanced work partitioning, measurement provenance, revision evidence and deny-by-default host-control admission. This library does not change host CPU configuration.",
+      "evidence": [
+        "src/processor_control.h",
+        "src/processor_control.c",
+        "tests/test_processor_control.c",
+        "docs/PROCESSOR_CONTROL.md"
+      ]
+    },
+    {
       "id": "benchmark.bounded-suite",
       "status": "implemented",
       "summary": "Bounded processor, memory and matrix workloads for local, hardware-dependent comparison.",
