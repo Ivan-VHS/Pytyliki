@@ -230,10 +230,10 @@ static int same_cache(const pl_topology_cache *cache,
                   sizeof(uint64_t) * PL_TOPOLOGY_MASK_WORDS) == 0;
 }
 
-static void scan_linux_numa(pl_processor_topology_snapshot *out) {
+static pl_topology_status scan_linux_numa(pl_processor_topology_snapshot *out) {
     DIR *directory = opendir("/sys/devices/system/node");
     struct dirent *entry;
-    if (directory == NULL) return;
+    if (directory == NULL) return PL_TOPOLOGY_OK;
     while ((entry = readdir(directory)) != NULL) {
         unsigned node_id;
         char *end = NULL;
@@ -247,7 +247,10 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
         errno = 0;
         node_id = (unsigned)strtoul(entry->d_name + 4u, &end, 10);
         if (errno != 0 || end == entry->d_name + 4u || *end != '\0') continue;
-        if (out->numa_node_count >= PL_TOPOLOGY_MAX_NUMA_NODES) break;
+        if (out->numa_node_count >= PL_TOPOLOGY_MAX_NUMA_NODES) {
+            (void)closedir(directory);
+            return PL_TOPOLOGY_LIMIT_EXCEEDED;
+        }
         memset(&node, 0, sizeof(node));
         node.node_id = node_id;
         node.evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
@@ -303,7 +306,7 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
     (void)closedir(directory);
 }
 
-static void scan_linux_caches(pl_processor_topology_snapshot *out) {
+static pl_topology_status scan_linux_caches(pl_processor_topology_snapshot *out) {
     for (size_t cpu_index = 0u; cpu_index < out->logical_cpu_count; ++cpu_index) {
         const uint32_t os_id = out->logical_cpus[cpu_index].os_id;
         char directory_path[256];
@@ -368,6 +371,7 @@ static void scan_linux_caches(pl_processor_topology_snapshot *out) {
         }
         (void)closedir(directory);
     }
+    return PL_TOPOLOGY_OK;
 }
 
 static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
@@ -413,7 +417,10 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
     out->online_logical_cpu_count = 0u;
     for (size_t i = 0u; i < out->logical_cpu_count; ++i)
         if (out->logical_cpus[i].online != 0u) ++out->online_logical_cpu_count;
-    scan_linux_numa(out);
+    {
+        pl_topology_status status = scan_linux_numa(out);
+        if (status != PL_TOPOLOGY_OK) return status;
+    }
     for (size_t i = 0u; i < out->logical_cpu_count; ++i) {
         pl_topology_logical_cpu *cpu = &out->logical_cpus[i];
         cpu->evidence = (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
@@ -423,7 +430,10 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
                             ? PL_TOPOLOGY_EVIDENCE_OBSERVED
                             : PL_TOPOLOGY_EVIDENCE_PARTIAL;
     }
-    scan_linux_caches(out);
+    {
+        pl_topology_status status = scan_linux_caches(out);
+        if (status != PL_TOPOLOGY_OK) return status;
+    }
     if (uname(&system_info) == 0) set_string(out->platform_release, sizeof(out->platform_release), system_info.release);
     return PL_TOPOLOGY_OK;
 }
