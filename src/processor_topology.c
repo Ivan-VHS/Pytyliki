@@ -289,6 +289,7 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
                         memory_total_observed = 1;
                     } else {
                         node.memory_available_bytes = bytes;
+                        node.memory_available_observed = 1u;
                         if (strstr(line, "MemAvailable:") != NULL)
                             memory_available_observed = 1;
                     }
@@ -413,6 +414,15 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
     for (size_t i = 0u; i < out->logical_cpu_count; ++i)
         if (out->logical_cpus[i].online != 0u) ++out->online_logical_cpu_count;
     scan_linux_numa(out);
+    for (size_t i = 0u; i < out->logical_cpu_count; ++i) {
+        pl_topology_logical_cpu *cpu = &out->logical_cpus[i];
+        cpu->evidence = (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
+                         cpu->die_id != PL_TOPOLOGY_UNKNOWN &&
+                         cpu->core_id != PL_TOPOLOGY_UNKNOWN &&
+                         cpu->numa_node_id != PL_TOPOLOGY_UNKNOWN)
+                            ? PL_TOPOLOGY_EVIDENCE_OBSERVED
+                            : PL_TOPOLOGY_EVIDENCE_PARTIAL;
+    }
     scan_linux_caches(out);
     if (uname(&system_info) == 0) set_string(out->platform_release, sizeof(out->platform_release), system_info.release);
     return PL_TOPOLOGY_OK;
@@ -570,8 +580,10 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
     for (size_t i = 0u; i < out->numa_node_count; ++i) {
         ULONGLONG available = 0u;
         if (out->numa_nodes[i].node_id <= UINT16_MAX &&
-            GetNumaAvailableMemoryNodeEx((USHORT)out->numa_nodes[i].node_id, &available))
+            GetNumaAvailableMemoryNodeEx((USHORT)out->numa_nodes[i].node_id, &available)) {
             out->numa_nodes[i].memory_available_bytes = (uint64_t)available;
+            out->numa_nodes[i].memory_available_observed = 1u;
+        }
         out->numa_nodes[i].evidence =
             out->numa_nodes[i].memory_available_bytes != 0u
                 ? PL_TOPOLOGY_EVIDENCE_PARTIAL
@@ -655,7 +667,11 @@ pl_topology_status pl_processor_topology_validate(
         if (count != node->logical_count ||
             node->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED ||
             (node->memory_total_bytes != 0u &&
-             node->memory_available_bytes > node->memory_total_bytes))
+             node->memory_available_observed > 1u ||
+            node->memory_total_observed > 1u ||
+            (node->memory_total_observed != 0u &&
+             node->memory_available_observed != 0u &&
+             node->memory_available_bytes > node->memory_total_bytes)))
             return PL_TOPOLOGY_INVALID_MASK;
         if (node->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED && count == 0u)
             return PL_TOPOLOGY_INVALID_MASK;
@@ -862,9 +878,13 @@ pl_topology_status pl_processor_topology_write_json(
             fprintf(output, "{\"node_id\":%" PRIu32 ",\"logical_ids\":[", node->node_id) < 0 ||
             !write_mask_ids(output, snapshot, node->logical_mask) ||
             fputs("],\"memory_total_bytes\":", output) < 0 ||
-            !write_optional_u64(output, node->memory_total_bytes) ||
+            (node->memory_total_observed != 0u
+                ? fprintf(output, "%" PRIu64, node->memory_total_bytes) < 0
+                : fputs("null", output) < 0) ||
             fputs(",\"memory_available_bytes\":", output) < 0 ||
-            !write_optional_u64(output, node->memory_available_bytes) ||
+            (node->memory_available_observed != 0u
+                ? fprintf(output, "%" PRIu64, node->memory_available_bytes) < 0
+                : fputs("null", output) < 0) ||
             fprintf(output, ",\"evidence\":\"%s\"}",
                     node->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED ? "observed" : "partially-observed") < 0)
             return PL_TOPOLOGY_IO_ERROR;
