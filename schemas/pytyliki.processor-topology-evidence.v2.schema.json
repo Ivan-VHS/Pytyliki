@@ -106,6 +106,7 @@
               "package_id",
               "die_id",
               "core_id",
+              "thread_id",
               "numa_node_id",
               "evidence"
             ],
@@ -165,6 +166,13 @@
                   "partially-observed",
                   "unknown"
                 ]
+              },
+              "thread_id": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
               }
             }
           }
