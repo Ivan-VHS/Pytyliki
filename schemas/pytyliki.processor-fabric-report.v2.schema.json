@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/schemas/pytyliki.processor-fabric-report.v2.schema.json",
+  "title": "Pytyliki Processor Fabric Report v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "abi_major",
+    "generation",
+    "inventory",
+    "catalogues",
+    "node_kinds",
+    "node_states",
+    "assignments",
+    "execution_performed",
+    "processor_control_changed",
+    "hardware_access_performed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.processor-fabric-report.v2"
+    },
+    "abi_major": {
+      "const": 2
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_count",
+        "edge_count",
+        "worker_count",
+        "available_worker_count",
+        "process_count",
+        "ready_process_count",
+        "completed_process_count",
+        "failed_process_count",
+        "dependency_edge_count",
+        "resource_edge_count",
+        "produced_edge_count",
+        "worker_capacity_basis_points",
+        "worker_reserved_basis_points"
+      ],
+      "properties": {
+        "node_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "edge_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        },
+        "worker_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "available_worker_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "process_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "ready_process_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "completed_process_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "failed_process_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "dependency_edge_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        },
+        "resource_edge_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        },
+        "produced_edge_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        },
+        "worker_capacity_basis_points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "worker_reserved_basis_points": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "catalogues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpu_suite_modules",
+        "processor_rules",
+        "hardware_constructs",
+        "system_sigil_operators",
+        "iron_core_markers"
+      ],
+      "properties": {
+        "cpu_suite_modules": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "processor_rules": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hardware_constructs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "system_sigil_operators": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "iron_core_markers": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "node_kinds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package",
+        "die",
+        "core",
+        "logical-processor",
+        "register-bank",
+        "isa-profile",
+        "address-space",
+        "memory-region",
+        "device",
+        "execution-unit",
+        "process-pool",
+        "process",
+        "artifact",
+        "processor-group",
+        "numa-node",
+        "cache"
+      ],
+      "properties": {
+        "package": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "die": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "core": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "logical-processor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "register-bank": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "isa-profile": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "address-space": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory-region": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "device": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "execution-unit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "process-pool": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "process": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "artifact": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "processor-group": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "numa-node": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cache": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "node_states": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declared",
+        "verified",
+        "ready",
+        "available",
+        "blocked",
+        "completed",
+        "failed",
+        "disabled",
+        "retired"
+      ],
+      "properties": {
+        "declared": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verified": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ready": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "available": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disabled": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retired": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "assignments": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "worker_id",
+          "resulting_load_basis_points",
+          "state"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4294967295
+          },
+          "worker_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "resulting_load_basis_points": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "state": {
+            "enum": [
+              "assigned",
+              "waiting-dependency",
+              "no-compatible-worker",
+              "capacity-exhausted"
+            ]
+          }
+        }
+      }
+    },
+    "execution_performed": {
+      "const": false
+    },
+    "processor_control_changed": {
+      "const": false
+    },
+    "hardware_access_performed": {
+      "const": false
+    }
+  }
+}
