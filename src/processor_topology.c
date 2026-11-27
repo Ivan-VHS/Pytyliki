@@ -708,12 +708,18 @@ pl_topology_status pl_processor_topology_scan(pl_processor_topology_snapshot *ou
                     return PL_TOPOLOGY_LIMIT_EXCEEDED;
             }
         }
-        if (scan_windows(out) != PL_TOPOLOGY_OK) return PL_TOPOLOGY_IO_ERROR;
+        {
+            pl_topology_status status = scan_windows(out);
+            if (status != PL_TOPOLOGY_OK) return status;
+        }
     }
 #elif defined(__linux__)
     set_string(out->provider, sizeof(out->provider), "Linux");
     set_string(out->interface_name, sizeof(out->interface_name), "linux-sysfs");
-    if (scan_linux(out) != PL_TOPOLOGY_OK) return PL_TOPOLOGY_IO_ERROR;
+    {
+        pl_topology_status status = scan_linux(out);
+        if (status != PL_TOPOLOGY_OK) return status;
+    }
 #else
     set_string(out->provider, sizeof(out->provider), "unsupported");
     set_string(out->interface_name, sizeof(out->interface_name), "unknown");
