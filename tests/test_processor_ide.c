@@ -12,7 +12,7 @@ static pl_ll_target make_target(void) {
     pl_ll_target target;
     memset(&target, 0, sizeof(target));
     target.abi_version = PL_LL_ABI_VERSION;
-    (void)strcpy(target.id, "test-x86_64");
+    memcpy(target.id, "test-x86_64", sizeof("test-x86_64"));
     target.address_bits = 48u;
     target.word_bits = 64u;
     target.byte_order = PL_LL_LITTLE_ENDIAN;
