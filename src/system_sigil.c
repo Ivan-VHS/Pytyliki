@@ -202,7 +202,10 @@ int pl_system_sigil_write_json(const pl_system_sigil_directive *directive,
     if (directive == NULL || output == NULL) return 0;
     info = pl_system_sigil_info_for_kind(directive->kind);
     if (info == NULL ||
-        directive->system_array.suffix_marker != (unsigned)info->kind)
+        directive->system_array.suffix_marker != (unsigned)info->kind ||
+        (unsigned)directive->system_array.alias >= PL_SYSTEM_ARRAY_ALIAS_COUNT ||
+        memchr(directive->system_array.spelling, '\\0',
+               sizeof(directive->system_array.spelling)) == NULL)
         return 0;
 
     if (fprintf(output, "{\"schema\":\"%s\",\"canonical\":",
