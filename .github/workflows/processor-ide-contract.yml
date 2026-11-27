@@ -23,6 +23,12 @@ on:
     branches: [main]
     paths:
       - "contracts/processor-ide.v1.json"
+      - "CMakeLists.txt"
+      - "src/processor_ide.h"
+      - "src/processor_ide.c"
+      - "tests/test_processor_ide.c"
+      - "src/low_level_contract.h"
+      - "src/ironclad_systems.h"
       - "schemas/processor-ide.v1.schema.json"
       - "docs/PROCESSOR_IDE.md"
       - "project-contract.json"
