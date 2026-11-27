@@ -92,19 +92,16 @@ static void test_unknown_locality_fails_closed_when_required(void) {
 
 static void test_topology_worker_adapter_preserves_host_ids(void) {
     pl_processor_topology_snapshot topology;
-    pl_topology_logical_processor cpus[2];
     pl_placement_worker workers[2];
     size_t count = 0u;
     memset(&topology, 0, sizeof(topology));
-    memset(cpus, 0, sizeof(cpus));
     topology.generation = 19u;
     topology.logical_processor_count = 2u;
     topology.isa_os_usable = UINT64_C(0x15);
-    cpus[0].logical_id = 0u; cpus[0].package_id = 2u; cpus[0].die_id = 1u;
+    topology.logical_processors[0].logical_id = 0u; cpus[0].package_id = 2u; cpus[0].die_id = 1u;
     cpus[0].core_id = 3u; cpus[0].numa_node_id = 0u; cpus[0].online = 1u;
-    cpus[1].logical_id = 1u; cpus[1].package_id = 2u; cpus[1].die_id = 1u;
+    topology.logical_processors[1].logical_id = 1u; cpus[1].package_id = 2u; cpus[1].die_id = 1u;
     cpus[1].core_id = 4u; cpus[1].numa_node_id = 1u; cpus[1].online = 0u;
-    topology.logical_processors = cpus;
     assert(pl_processor_placement_workers_from_topology(
         &topology, workers, 2u, &count) == PL_PLACEMENT_OK);
     assert(count == 2u);
