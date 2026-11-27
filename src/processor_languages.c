@@ -195,6 +195,8 @@ int pl_language_detect(const char *path, const char *source, size_t length,
         return 0;
     }
     if (matches > 1u) return 2;
+    if (path != NULL && (path_has_extension(path, ".asm") ||
+                         path_has_extension(path, ".s"))) return 2;
     if (source == NULL || length == 0u) return 1;
 
     while (length > 0u && isspace((unsigned char)*source)) {
