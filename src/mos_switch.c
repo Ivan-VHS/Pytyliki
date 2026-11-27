@@ -57,8 +57,13 @@ int pl_mos_switch_add(pl_mos_switch_network *network,
 {
     pl_mos_switch_device *device;
 
-    if (!network_is_valid(network) ||
-        (unsigned)channel > (unsigned)PL_MOS_CHANNEL_P ||
+    if (network == NULL) {
+        return PL_MOS_SWITCH_INVALID_ARGUMENT;
+    }
+    if (!network_is_valid(network)) {
+        return PL_MOS_SWITCH_INVALID_TOPOLOGY;
+    }
+    if ((unsigned)channel > (unsigned)PL_MOS_CHANNEL_P ||
         gate_node >= network->node_count ||
         terminal_a >= network->node_count ||
         terminal_b >= network->node_count ||
@@ -150,8 +155,13 @@ int pl_mos_switch_evaluate(const pl_mos_switch_network *network,
     unsigned char possible_low[PL_MOS_SWITCH_MAX_NODES];
     size_t i;
 
-    if (!network_is_valid(network) || gate_levels == NULL || states == NULL ||
-        gate_level_count < network->node_count ||
+    if (network == NULL || gate_levels == NULL || states == NULL) {
+        return PL_MOS_SWITCH_INVALID_ARGUMENT;
+    }
+    if (!network_is_valid(network)) {
+        return PL_MOS_SWITCH_INVALID_TOPOLOGY;
+    }
+    if (gate_level_count < network->node_count ||
         state_capacity < network->node_count) {
         return PL_MOS_SWITCH_INVALID_ARGUMENT;
     }
