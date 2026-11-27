@@ -48,5 +48,7 @@ jobs:
         run: python tools/validate_iron_core.py
       - name: Validate Omega-Null research profile
         run: python tools/validate_omega_null.py
-      - name: Run IRON and Omega-Null contract regression tests
-        run: python -m unittest discover -s tests -p "test_*contract.py" -v
+      - name: Run IRON CORE contract regression tests
+        run: python -m unittest discover -s tests -p "test_iron_core_contract.py" -v
+      - name: Run Omega-Null contract regression tests
+        run: python -m unittest discover -s tests -p "test_omega_null_contract.py" -v
