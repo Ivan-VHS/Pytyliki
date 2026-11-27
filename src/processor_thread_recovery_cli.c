@@ -2,7 +2,9 @@
 
 #include "processor_thread_recovery.h"
 
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define PL_TR_CLI_MAX_EVENTS 4096u
@@ -19,39 +21,66 @@ static int parse_kind(const char *text, pl_tr_fault_kind *kind) {
     return 1;
 }
 
-static int parse_event_line(char *line, pl_tr_observation *event, uint32_t *task_flags) {
-    unsigned long long worker_id = 0u;
-    unsigned long long timestamp_ns = 0u;
-    unsigned long long cpu_id = 0u;
-    unsigned long long fault_code = 0u;
-    unsigned long long flags = 0u;
-    char kind_text[32] = {0};
-    char trailing = '\0';
-    int fields = sscanf(line,
-        " %llu , %llu , %llu , %llu , %31[^,] , %llu %c",
-        &worker_id, &timestamp_ns, &cpu_id, &fault_code,
-        kind_text, &flags, &trailing);
-    if (fields != 6) return 0;
+static char *trim_field(char *field) {
+    char *end;
+    while (*field == ' ' || *field == '\\t' || *field == '\\r') ++field;
+    end = field + strlen(field);
+    while (end > field &&
+           (end[-1] == ' ' || end[-1] == '\\t' || end[-1] == '\\r' ||
+            end[-1] == '\\n')) {
+        *--end = '\\0';
+    }
+    return field;
+}
 
-    char *kind = kind_text;
-    while (*kind == ' ' || *kind == '\t') ++kind;
-    size_t length = strlen(kind);
-    while (length > 0u &&
-           (kind[length - 1u] == ' ' || kind[length - 1u] == '\t' ||
-            kind[length - 1u] == '\r' || kind[length - 1u] == '\n')) {
-        kind[--length] = '\0';
+static int parse_u64_field(const char *text, uint64_t maximum, uint64_t *out) {
+    char *end = NULL;
+    unsigned long long value;
+    if (text == NULL || text[0] == '\\0' || out == NULL) return 0;
+    if (text[0] == '+' || text[0] == '-' ||
+        (text[0] < '0' || text[0] > '9')) return 0;
+    errno = 0;
+    value = strtoull(text, &end, 10);
+    if (errno == ERANGE || end == text || end == NULL || *end != '\\0' ||
+        value > maximum) return 0;
+    *out = (uint64_t)value;
+    return 1;
+}
+
+static int parse_event_line(char *line, pl_tr_observation *event, uint32_t *task_flags) {
+    char *fields[6];
+    char *cursor;
+    uint64_t values[5] = {0u, 0u, 0u, 0u, 0u};
+    size_t field_count = 0u;
+
+    if (line == NULL || event == NULL || task_flags == NULL) return 0;
+    cursor = line;
+    while (field_count < 6u) {
+        char *separator;
+        fields[field_count++] = cursor;
+        separator = strchr(cursor, ',');
+        if (separator == NULL) break;
+        *separator = '\\0';
+        cursor = separator + 1;
+    }
+    if (field_count != 6u || strchr(fields[5], ',') != NULL) return 0;
+    for (size_t i = 0u; i < 6u; ++i) fields[i] = trim_field(fields[i]);
+
+    if (!parse_u64_field(fields[0], UINT64_MAX, &values[0]) ||
+        !parse_u64_field(fields[1], UINT64_MAX, &values[1]) ||
+        !parse_u64_field(fields[2], UINT32_MAX, &values[2]) ||
+        !parse_u64_field(fields[3], UINT32_MAX, &values[3]) ||
+        !parse_u64_field(fields[5], PL_TR_CLI_VALID_FLAGS, &values[4]) ||
+        values[0] == 0u || values[1] == 0u || values[3] == 0u) {
+        return 0;
     }
 
-    if (worker_id == 0u || timestamp_ns == 0u ||
-        cpu_id > UINT32_MAX || fault_code == 0u || fault_code > UINT32_MAX ||
-        flags > PL_TR_CLI_VALID_FLAGS || kind[0] == '\0') return 0;
-
-    event->worker_id = (uint64_t)worker_id;
-    event->timestamp_ns = (uint64_t)timestamp_ns;
-    event->cpu_id = (uint32_t)cpu_id;
-    event->fault_code = (uint32_t)fault_code;
-    if (!parse_kind(kind, &event->kind)) return 0;
-    *task_flags = (uint32_t)flags;
+    event->worker_id = values[0];
+    event->timestamp_ns = values[1];
+    event->cpu_id = (uint32_t)values[2];
+    event->fault_code = (uint32_t)values[3];
+    if (!parse_kind(fields[4], &event->kind)) return 0;
+    *task_flags = (uint32_t)values[4];
     return 1;
 }
 
