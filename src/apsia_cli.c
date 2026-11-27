@@ -82,7 +82,7 @@ static int parse_legacy_request(int argc, char **argv, pl_apsia_request *request
     char *end = NULL;
     unsigned long capabilities;
 
-    if (argc != 10) return -1;
+    if (argc != 9 && argc != 10) return -1;
     if (parse_workload(argv[1], &request->workload) != 0 ||
         parse_number(argv[2], &request->expected_speedup) != 0 ||
         parse_number(argv[3], &request->ffi_overhead_fraction) != 0 ||
@@ -97,10 +97,14 @@ static int parse_legacy_request(int argc, char **argv, pl_apsia_request *request
         return -1;
     }
     request->requested_capabilities = (uint32_t)capabilities;
-    if (parse_flag(argv[6], &request->gpu_available) != 0 ||
-        parse_flag(argv[7], &request->wasm_available) != 0 ||
-        parse_flag(argv[8], &request->deterministic_required) != 0 ||
-        parse_flag(argv[9], &request->sandbox_required) != 0) {
+    if (parse_flag(argv[6], &request->gpu_available) != 0) return -1;
+    if (argc == 9) {
+        request->wasm_available = 0;
+        if (parse_flag(argv[7], &request->deterministic_required) != 0 ||
+            parse_flag(argv[8], &request->sandbox_required) != 0) return -1;
+    } else if (parse_flag(argv[7], &request->wasm_available) != 0 ||
+               parse_flag(argv[8], &request->deterministic_required) != 0 ||
+               parse_flag(argv[9], &request->sandbox_required) != 0) {
         return -1;
     }
     return 0;
@@ -154,9 +158,10 @@ int main(int argc, char **argv) {
     }
 
     /* Keep the original numeric form usable for existing scripts. */
-    parsed = argc == 10
+    parsed = (argc == 9 || argc == 10)
         ? parse_legacy_request(argc, argv, &request)
-        : parse_option_request(argc, argv, &request);
+        : -1;
+    if (parsed != 0) parsed = parse_option_request(argc, argv, &request);
     if (parsed != 0) {
         fputs("Invalid APSIA workload, numeric input or option.\n", stderr);
         usage();
