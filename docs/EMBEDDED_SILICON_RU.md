@@ -53,7 +53,11 @@ ctest --test-dir build -C Release --output-on-failure
 
 Базовая библиотека не угадывает адрес GPIO/RCC/SCB/PLIC/CLINT, не переключает clocks, не пишет Flash и не устанавливает firmware или драйверы.
 
-## 4. Архитектурные барьеры
+## 4. Reaper-контракт кремния
+
+`automation/reaper/silicon_profile.rpr` — исполняемый контракт на уже поддерживаемом синтаксисе Reaper. Он описывает reference-профиль Cortex-M4: состояния, пример MMIO-имён/адресов, fault-векторы, режим машинного потока и бюджеты CPU-потоков, а затем проверяет их и формирует JSON-отчёт. Адреса — иллюстративная конфигурация, а не универсальная карта MCU. В этом PR не добавляются новые зарезервированные операторы `silicon arch`, `mmio`, `trap`, `thread_cpu` в грамматику/компилятор Reaper; такое расширение должно выполняться в самом репозитории Reaper.
+
+## 5. Архитектурные барьеры
 
 `pl_silicon_native_barrier()` реализует архитектурные барьеры там, где доступен compiler/ISA backend:
 
@@ -63,7 +67,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 Это не взаимозаменяемые понятия. DMB/FENCE задают порядок наблюдения операций, DSB ждёт завершения операций, ISB/fence.i синхронизирует последующее выполнение инструкций. Выбор барьера должен соответствовать периферийному протоколу и ISA manual. Если backend не поддерживается, функция возвращает `PL_SILICON_EUNSUPPORTED`, а не подменяет барьер пустой инструкцией.
 
-## 5. Реальные счётчики циклов
+## 6. Реальные счётчики циклов
 
 `pl_silicon_native_cycle_read()` содержит compile-time backend:
 
@@ -77,7 +81,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 `pl_silicon_cycle_engine` считает unsigned-разность с учётом переполнения счётчика шириной 16/32/64 бит. Между двумя выборками не должно пройти больше одного полного периода счётчика; иначе число оборотов не восстановить из одной пары значений. Slow-motion — это decimation логических trace-шагов, а не изменение частоты CPU.
 
-## 6. MMIO и права записи
+## 7. MMIO и права записи
 
 MMIO-дескриптор задаёт точное имя и адрес. Банк отклоняет неправильное выравнивание, пересекающиеся диапазоны, неизвестную ширину, дубликаты, неподдерживаемые барьеры и некорректную writable mask. Чтение/запись возможны только при наличии callback-а HAL и подходящего права.
 
@@ -85,7 +89,7 @@ MMIO-дескриптор задаёт точное имя и адрес. Бан
 
 `PL_SILICON_ENABLE_DIRECT_MMIO` включает native volatile callback-ы. Не включайте его в обычную Windows/Linux workstation-сборку. Для firmware-сборки это лишь низкоуровневый доступ: всё равно нужны точная SoC map, MPU/MMU permissions, доступ к шине, read/write side effects и review каждого регистра. Регистры W1C, read-to-clear, FIFO и key sequences требуют специальных API вместо общего read-modify-write.
 
-## 7. Состояния, faults и «боль» процессора
+## 8. Состояния, faults и «боль» процессора
 
 Портрет содержит архитектуру, версию ABI, CPUID/MARCHID, состояние, последнюю отметку циклов, текущую/пиковую боль и fault flags. State program разрешает переход только при совпадении исходного состояния, требуемых/запрещённых fault bits, порога боли и условий готовности.
 
@@ -95,13 +99,13 @@ MMIO-дескриптор задаёт точное имя и адрес. Бан
 
 Pain causes — причины наблюдаемой задержки: BUS_WAIT, IRQ_JITTER, DMA_QUEUE, DIE_TEMP. В v1 сумма боли и peak — диагностическая модель в тактах, а не аппаратная метрика температуры/очереди. Источник каждого события должен быть привязан к реальному таймеру/счётчику/сенсору и его единицам.
 
-## 8. Бюджет потоков и детерминизм
+## 9. Бюджет потоков и детерминизм
 
 `pl_silicon_thread_budget` реализует admission-control: поток получает логический slice, пока не превысит `quota_cycles`, затем выдерживает `breath_cycles`. Это не планировщик ОС, не preemptive scheduler и не управление affinity. Его нужно вызывать из уже существующего RTOS/кооперативного диспетчера; время `now_cycle` и `step_cost_cycles` должны относиться к одному аппаратному источнику.
 
 `pl_silicon_determinism_route` закрепляет `route_id` для пары `(input_hash,state_hash)` и сообщает о расхождении предложенного маршрута. Коллизии хеша возможны; для safety-critical решений используйте полное сравнение входного tuple или криптографический digest, а не 32-битный hash как доказательство идентичности.
 
-## 9. Машинный код и модель исполнения
+## 10. Машинный код и модель исполнения
 
 `pl_silicon_verify_native_stream()` проверяет выравнивание и whitelist безопасных арифметических инструкций для Thumb-16 и RV32I. Управляющие переходы, системные/CSR, load/store и непроверенные opcodes отклоняются. Thumb-2 32-битные инструкции не входят в v1. Для x86/x86_64 верификатор пока возвращает `PL_SILICON_EUNSUPPORTED`: надёжная граница инструкций требует полноценного декодера и правил для prefixes, ModRM/SIB, control flow и instruction boundaries.
 
@@ -109,7 +113,7 @@ Pain causes — причины наблюдаемой задержки: BUS_WAIT
 
 RPR32 — отдельный 32-битный виртуальный формат с фиксированными полями opcode/rd/rs/imm16. `VERIFY_ONLY` проверяет и продвигает позицию без выполнения. `RPR32_INTERPRET` изменяет только shadow GPR и обращается к MMIO по exact allowlist. `NATIVE_ASM` и `JIT_TRAMPOLINE` всегда отклоняются. Не смешивайте этот формат с Thumb/RV32I машинным кодом.
 
-## 10. Patch slots, таблицы и fixed-point
+## 11. Patch slots, таблицы и fixed-point
 
 Patch bank хранит до четырёх SRAM-hosted payload-слотов по 128 байт, вычисляет CRC-16/CCITT и проверяет целостность. CRC обнаруживает случайное повреждение, но не подтверждает подлинность и не защищает от злонамеренной подмены: для аутентичности нужен отдельный доверенный механизм цифровой подписи/проверки. Это staging в памяти процесса, а не live patching исполняемого кода. Нет записи во Flash, исполнения патча, переключения vector table, MPU permission change или cache invalidation.
 
@@ -117,7 +121,7 @@ Patch bank хранит до четырёх SRAM-hosted payload-слотов п�
 
 `pl_silicon_qmul_saturating()` использует signed 64-bit промежуточное произведение и насыщение в int32; деление определено с усечением к нулю. Это не универсальная Q15/Q31 конвенция: масштаб, rounding и overflow должны быть частью контракта конкретного сигнала.
 
-## 11. Пример HAL и allowlist
+## 12. Пример HAL и allowlist
 
 ```c
 pl_silicon_config config = {
@@ -145,7 +149,7 @@ if (pl_silicon_mmio_add(&mmio, "GPIOA.ODR", BOARD_GPIOA_ODR, 32u,
 
 `board_silicon_hal()` и `BOARD_GPIOA_ODR` — точки интеграции BSP, не символы Pytyliki и не выдуманные адреса. Адрес/маска должны браться из datasheet, reference manual и errata конкретной ревизии.
 
-## 12. Ограничения и следующие hardware-specific этапы
+## 13. Ограничения и следующие hardware-specific этапы
 
 До применения на изделии нужны отдельные проверенные BSP для конкретных плат: startup и linker script, vector table, clock tree, watchdog, fault register decoding, MPU/MMU, DMA/cache coherency, interrupt priority rules, device-specific MMIO register semantics, low-power wakeup, PMU calibration, stack watermarking и hardware-in-loop tests. Для x86 требуется audited instruction decoder. Для JIT/native code execution нужны отдельная executable-memory policy, W^X, cache maintenance, signature/provenance verification и threat model; v1 сознательно не включает эти функции.
 

@@ -18,6 +18,10 @@
 | Faults | atomic bounded SPSC event ring | multiple concurrent producers need a different queue/IRQ port |
 | Patching | in-memory staging and CRC-16 verification | no Flash writes or execution of staged payloads |
 
+## Reaper contract profile
+
+`automation/reaper/silicon_profile.rpr` is an executable Reaper contract using the language features already supported by the pinned Reaper toolchain. It carries a Cortex-M4 reference profile with processor states, illustrative MMIO names and addresses, fault vectors, instruction mode and thread budgets into a checked JSON report. The addresses are reference data, not a universal MCU map. This Pytyliki change does not add new reserved statements such as `silicon arch` or `thread_cpu` to the Reaper parser; that grammar/compiler extension belongs in the Reaper repository.
+
 ## Build and inspect
 
 ```sh
