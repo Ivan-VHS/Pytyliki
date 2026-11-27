@@ -16,6 +16,7 @@
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
 #include "processor_thread_recovery_cli.h"
+#include "ras_provider_cli.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -155,7 +156,7 @@ static void usage(void) {
          "           [--budget-set food|transport|household|digital|leisure|reserve UAH]\n"
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
-         "  pytyliki --thread-recovery FILE.csv | --thread-recovery-demo\n"
+         "  pytyliki --thread-recovery FILE.csv | --thread-recovery-demo | --ras-whea\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }
@@ -347,6 +348,8 @@ int main(int argc,char **argv) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;
     }
+    if (argc == 2 && strcmp(argv[1], "--ras-whea") == 0)
+        return pl_ras_provider_cli();
     if (argc == 2 && strcmp(argv[1], "--thread-recovery-demo") == 0)
         return pl_thread_recovery_demo_cli();
     if (argc == 3 && strcmp(argv[1], "--thread-recovery") == 0)
