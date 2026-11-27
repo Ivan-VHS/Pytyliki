@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, static diagnostics, versioned native interoperability, and structural SystemArray and hardware-language frontends.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, static diagnostics, native interoperability, and structural hardware-language frontends including a physical-model domain.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -168,7 +168,8 @@
         "tests/test_system_sigil.c",
         "docs/SYSTEM_SIGIL_OPERATORS.md"
       ]
-    }
+    },
+    "syntax.physical-model-construct"
   ],
   "interfaces": [
     {

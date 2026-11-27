@@ -1,0 +1,7 @@
+device dma_ring_worker(channel: DmaChannel) {
+    on ready { submit_next_owned_descriptor(channel)?; }
+    on complete(descriptor) {
+        sync_for_cpu(descriptor.buffer)?;
+        release_descriptor(descriptor)?;
+    }
+}

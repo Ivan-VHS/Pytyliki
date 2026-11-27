@@ -1,0 +1,9 @@
+dag processor_pipeline {
+    node fetch_stage: fetch_instruction();
+    node decode_stage: decode_instruction();
+    node execute_stage: execute_instruction();
+    node commit_stage: commit_architectural_state();
+    fetch_stage -> decode_stage;
+    decode_stage -> execute_stage;
+    execute_stage -> commit_stage;
+}
