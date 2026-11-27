@@ -51,28 +51,45 @@ static void usage(void) {
          "Routing is advisory; it never loads or executes generated code.");
 }
 
-static int parse_capabilities(const char *text, uint32_t *out) {
-    char buffer[256];
-    char *token;
-    uint32_t capabilities = 0u;
-
-    if (text == NULL || out == NULL || text[0] == '\0' || strlen(text) >= sizeof(buffer)) {
+static int capability_from_token(const char *token, size_t length, uint32_t *out) {
+    if (token == NULL || out == NULL) return -1;
+    if (length == 7u && memcmp(token, "network", 7u) == 0) {
+        *out = PL_APSIA_CAP_NETWORK;
+    } else if (length == 10u && memcmp(token, "filesystem", 10u) == 0) {
+        *out = PL_APSIA_CAP_FILESYSTEM;
+    } else if (length == 5u && memcmp(token, "clock", 5u) == 0) {
+        *out = PL_APSIA_CAP_CLOCK;
+    } else if (length == 3u && memcmp(token, "gpu", 3u) == 0) {
+        *out = PL_APSIA_CAP_GPU;
+    } else if (length == 13u && memcmp(token, "shared-memory", 13u) == 0) {
+        *out = PL_APSIA_CAP_SHARED_MEMORY;
+    } else {
         return -1;
     }
-    memcpy(buffer, text, strlen(text) + 1u);
+    return 0;
+}
 
-    token = strtok(buffer, ",");
-    if (token == NULL) return -1;
-    while (token != NULL) {
+static int parse_capabilities(const char *text, uint32_t *out) {
+    const char *token;
+    const char *cursor;
+    uint32_t capabilities = 0u;
+
+    if (text == NULL || out == NULL || text[0] == '\0') return -1;
+
+    token = text;
+    cursor = text;
+    for (;;) {
         uint32_t bit;
-        if (strcmp(token, "network") == 0) bit = PL_APSIA_CAP_NETWORK;
-        else if (strcmp(token, "filesystem") == 0) bit = PL_APSIA_CAP_FILESYSTEM;
-        else if (strcmp(token, "clock") == 0) bit = PL_APSIA_CAP_CLOCK;
-        else if (strcmp(token, "gpu") == 0) bit = PL_APSIA_CAP_GPU;
-        else if (strcmp(token, "shared-memory") == 0) bit = PL_APSIA_CAP_SHARED_MEMORY;
-        else return -1;
-        capabilities |= bit;
-        token = strtok(NULL, ",");
+        if (*cursor == ',' || *cursor == '\0') {
+            if (cursor == token || capability_from_token(token, (size_t)(cursor - token), &bit) != 0) {
+                return -1;
+            }
+            capabilities |= bit;
+            if (*cursor == '\0') break;
+            token = cursor + 1;
+        }
+        if (*cursor == '\0') break;
+        ++cursor;
     }
 
     *out = capabilities;
