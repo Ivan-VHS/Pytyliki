@@ -47,6 +47,7 @@ int main(void) {
     }
     topology.isa[PL_TOPOLOGY_ISA_SSE2].hardware_present=1;
     topology.isa[PL_TOPOLOGY_ISA_SSE2].os_usable=1;
+    topology.isa[PL_TOPOLOGY_ISA_SSE2].evidence=1u;
     pressure.generation=11u;
     pressure.cpu_load_basis_points[0]=3000u;
     pressure.cpu_load_basis_points[1]=1000u;
