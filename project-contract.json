@@ -185,7 +185,7 @@
     {
       "id": "processor.process-fabric",
       "status": "partial",
-      "summary": "Bounded C11 processor-system graph validates hierarchy and typed relations, detects dependency cycles, aggregates processor/hardware catalogues, imports read-only host topology evidence into package/die/core/logical CPU, processor-group, NUMA and cache-sharing nodes, and builds deterministic advisory process plans. Placement v2 includes NUMA/cache/SMT/bandwidth cost estimates and PPF dependency gating. Worker affinity remains limited to 64 logical IDs in this PPF ABI; no tasks are launched and no host/hardware state is changed.",
+      "summary": "Processor Fabric ABI v2 is a bounded C11 inventory and process graph with topology evidence import, processor-group/NUMA/cache-sharing relations, typed resource references, deterministic base planning and NUMA/cache/SMT/bandwidth advisory placement. Four-word affinity masks preserve sparse logical CPU IDs up to 255. No task launches, OS scheduling changes or physical hardware effects are performed.",
       "evidence": [
         "src/processor_fabric.h",
         "src/processor_fabric.c",
@@ -201,7 +201,8 @@
         "tests/test_processor_fabric_topology.c",
         "docs/PROCESSOR_FABRIC_IMPLEMENTATION_V2.md",
         "schemas/pytyliki.processor-topology-evidence.v2.schema.json",
-        "schemas/pytyliki.processor-placement-report.v2.schema.json"
+        "schemas/pytyliki.processor-placement-report.v2.schema.json",
+        "schemas/pytyliki.processor-fabric-report.v2.schema.json"
       ]
     },
     {
