@@ -31,8 +31,8 @@
       "properties": {
         "id": {
           "enum": [
-            "pytyliki",
             "reaper",
+            "pytyliki",
             "oplague",
             "ventusample"
           ]
@@ -43,7 +43,7 @@
         },
         "repository": {
           "type": "string",
-          "pattern": "^Ivan-VHS/(Pytyliki|Reaper|OPlague|VentuSample)$"
+          "pattern": "^Ivan-VHS/(Pytyliki|Reaper|OPlague)$"
         },
         "summary": {
           "type": "string",
@@ -193,8 +193,8 @@
         "properties": {
           "project": {
             "enum": [
-              "pytyliki",
               "reaper",
+              "pytyliki",
               "oplague",
               "ventusample"
             ]
@@ -214,8 +214,7 @@
             "enum": [
               "implemented",
               "optional",
-              "planned",
-              "not_applicable"
+              "planned"
             ]
           },
           "opt_in": {
