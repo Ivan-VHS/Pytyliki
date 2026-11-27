@@ -93,6 +93,7 @@ static void test_target_compatibility(void) {
 
 static void test_build_plan_is_explicit_and_inert(void) {
     pl_language_build_plan plan;
+    int compatible = 0;
     int found_target = 0;
     int found_compile_only = 0;
 
