@@ -1,0 +1,36 @@
+# Reaper validates the same evidence contract used by platform adapters.
+import "../../_deps/Reaper/stdlib/platform_evidence.rpr" as evidence
+
+craft sample_record(cpu_id, provider, sequence) {
+    yield {
+        "schema": "pytyliki.platform-evidence.v1",
+        "sequence": sequence,
+        "timestamp_epoch_ns": "1700000000000000000",
+        "provider": provider,
+        "event_code": 1,
+        "event_kind": "counter_snapshot",
+        "severity": "warning",
+        "cpu_id": cpu_id,
+        "source_record_id": "0",
+        "counter_total": "7",
+        "source_identity": "mc/mc0/ce_count",
+        "payload_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "event_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "chain_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+}
+
+make sample := sample_record(null, "linux-edac", "1")
+assert(evidence.platform_event_valid(sample), "valid EDAC counter snapshot rejected")
+assert(evidence.platform_evidence_batch_valid([sample]), "valid evidence batch rejected")
+
+make wrong_cpu := sample_record(-1, "linux-edac", "1")
+assert(not evidence.platform_event_valid(wrong_cpu), "negative CPU ID must be rejected")
+
+make wrong_provider := sample_record(null, "unknown-provider", "1")
+assert(not evidence.platform_event_valid(wrong_provider), "unknown provider must be rejected")
+
+make wrong_sequence := sample_record(null, "linux-edac", "2")
+assert(not evidence.platform_evidence_batch_valid([wrong_sequence]), "sequence gap must be rejected")
+
+emit "PYTYLIKI_PLATFORM_EVIDENCE:PASS"

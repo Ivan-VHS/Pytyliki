@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 option(PYTYLIKI_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer (GCC/Clang)" OFF)
+option(PYTYLIKI_ENABLE_RUST_EDAC "Build the optional read-only Linux EDAC adapter with Rust" OFF)
 
 if(MSVC)
   add_compile_options(/W4 /sdl /experimental:c11atomics)
@@ -24,7 +25,69 @@ endif()
 
 add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_sources(pytyliki_core PRIVATE src/processor_thread_recovery.c)
+target_sources(pytyliki_core PRIVATE
+  src/processor_thread_recovery.c
+  src/ptfr_evidence_link.c
+  src/processor_evidence.c
+  src/sha256.c
+  src/processor_affinity.c
+  src/processor_arch.c
+)
+
+if(WIN32)
+  target_sources(pytyliki_core PRIVATE src/platform_windows_whea.c)
+  target_link_libraries(pytyliki_core PUBLIC wevtapi)
+  add_executable(pytyliki-ptfr src/ptfr_cli.c)
+  target_link_libraries(pytyliki-ptfr PRIVATE pytyliki_core)
+  install(TARGETS pytyliki-ptfr RUNTIME DESTINATION bin)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  find_package(Threads REQUIRED)
+  target_link_libraries(pytyliki_core PUBLIC Threads::Threads)
+
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$" AND
+     CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    enable_language(ASM)
+    target_sources(pytyliki_core PRIVATE src/asm/ptfr_cpuid_x86_64.S)
+    target_compile_definitions(pytyliki_core PUBLIC PYTYLIKI_HAVE_ASM_CPUID=1)
+  endif()
+
+  if(PYTYLIKI_ENABLE_RUST_EDAC)
+    find_program(CARGO_EXECUTABLE cargo REQUIRED)
+    set(PTFR_RUST_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/rust-edac")
+    set(PTFR_RUST_EDAC_LIBRARY "${PTFR_RUST_TARGET_DIR}/release/libpytyliki_edac.a")
+    add_custom_command(
+      OUTPUT "${PTFR_RUST_EDAC_LIBRARY}"
+      COMMAND "${CARGO_EXECUTABLE}" build --release
+              --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/adapters/linux-edac/Cargo.toml"
+              --target-dir "${PTFR_RUST_TARGET_DIR}"
+      DEPENDS
+        adapters/linux-edac/Cargo.toml
+        adapters/linux-edac/src/lib.rs
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      VERBATIM
+    )
+    add_custom_target(pytyliki-edac-rust-build DEPENDS "${PTFR_RUST_EDAC_LIBRARY}")
+    add_library(pytyliki_edac_rust STATIC IMPORTED GLOBAL)
+    set_target_properties(pytyliki_edac_rust PROPERTIES
+      IMPORTED_LOCATION "${PTFR_RUST_EDAC_LIBRARY}"
+    )
+    add_dependencies(pytyliki_core pytyliki-edac-rust-build)
+    target_sources(pytyliki_core PRIVATE src/platform_linux_edac.c)
+    target_compile_definitions(pytyliki_core PUBLIC PYTYLIKI_HAVE_RUST_EDAC=1)
+    target_link_libraries(pytyliki_core PUBLIC
+      pytyliki_edac_rust
+      ${CMAKE_DL_LIBS}
+      gcc_s
+      util
+      rt
+    )
+    add_executable(pytyliki-ptfr src/ptfr_cli.c)
+    target_link_libraries(pytyliki-ptfr PRIVATE pytyliki_core)
+    install(TARGETS pytyliki-ptfr RUNTIME DESTINATION bin)
+  endif()
+endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
 endif()
@@ -37,7 +100,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/processor_thread_recovery.h src/processor_evidence.h src/platform_adapters.h src/processor_affinity.h src/processor_arch.h src/ptfr_evidence_link.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -81,6 +144,18 @@ if(BUILD_TESTING)
     target_link_libraries(pytyliki-ui-ux-40026-tests PRIVATE m)
   endif()
   add_test(NAME ui-ux-codex-40026 COMMAND pytyliki-ui-ux-40026-tests)
+
+  add_executable(pytyliki-processor-evidence-tests tests/test_processor_evidence.c)
+  target_link_libraries(pytyliki-processor-evidence-tests PRIVATE pytyliki_core)
+  add_test(NAME processor-platform-evidence-tests COMMAND pytyliki-processor-evidence-tests)
+
+  add_executable(pytyliki-sha256-tests tests/test_sha256.c)
+  target_link_libraries(pytyliki-sha256-tests PRIVATE pytyliki_core)
+  add_test(NAME sha256-known-vector-tests COMMAND pytyliki-sha256-tests)
+
+  add_executable(pytyliki-ptfr-evidence-link-tests tests/test_ptfr_evidence_link.c)
+  target_link_libraries(pytyliki-ptfr-evidence-link-tests PRIVATE pytyliki_core)
+  add_test(NAME ptfr-evidence-link-tests COMMAND pytyliki-ptfr-evidence-link-tests)
 
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)

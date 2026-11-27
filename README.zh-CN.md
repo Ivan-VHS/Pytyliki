@@ -9,21 +9,23 @@
 
 Pytyliki 是一款面向处理器系统分析的本地工作站，采用受限 C11 核心、Windows 桌面界面和可移植命令行工具。
 
-**范围：**处理器与文件盘点、受限本地分析和诊断报告。硬件发现仅执行只读操作；应用不会更改操作系统调度、CPU 亲和性、频率、电压或固件。
+**范围：**处理器与文件盘点、受限本地分析和诊断报告。硬件数据采集仅执行只读操作。显式且可恢复的 affinity 租约仅可将当前 Pytyliki worker 限制到操作系统已允许的逻辑处理器；不会更改全局调度、CPU online/offline、频率、电压或固件。
 
 ## 功能
 
 - CPU 拓扑、ISA 与内存信息；受限 CPU/内存测量及工作负载分区示例。
 - 面向应用自主管理工作线程的周期性故障分析与受限恢复计划。
+- Windows WHEA 与 Linux EDAC 只读证据适配器，以及 SHA-256 证据链。
+- 当前 worker 的可恢复 affinity 租约，以及 Swift/TypeScript 证据消费者。
 - 性能分析数据导入、分析、折叠堆栈和 SVG 火焰图。
 - 源码诊断、QCS 语法检查以及 MCU FLASH/SRAM 参考估算。
 - 版本化 C ABI，以及包含来源和限制信息的结构化报告。
 
-详细资料：[功能](docs/FEATURES.md) · [架构](docs/ARCHITECTURE.md) · [基准统计](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [处理器线程故障恢复](docs/PROCESSOR_THREAD_RECOVERY.md)。
+详细资料：[功能](docs/FEATURES.md) · [架构](docs/ARCHITECTURE.md) · [基准统计](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [处理器线程故障恢复](docs/PROCESSOR_THREAD_RECOVERY.md) · [平台适配器](docs/PLATFORM_ADAPTERS.md)。
 
 ## 构建与测试
 
-需要 CMake 3.16+、C11 编译器（MSVC、GCC 或 Clang）和 Git。Win32 GUI 仅支持 Windows；核心和 CLI 可移植。Python 仅供可选的仓库契约检查使用，不属于 C11 运行时。
+需要 CMake 3.16+、C11 编译器（MSVC、GCC 或 Clang）和 Git。WHEA 适配器用于 Windows；Linux EDAC 适配器可选，需要 Rust stable/Cargo。Swift 和 Node.js 22 仅用于独立证据消费者。
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON

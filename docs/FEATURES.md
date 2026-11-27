@@ -2,8 +2,10 @@
 
 | Area | Scope | Boundary |
 |---|---|---|
-| CPU | identity, topology, memory, ISA/XCR0 | read-only |
-| PTFR | periodic fault correlation and bounded recovery plans | caller-supplied evidence; no host CPU control |
+| CPU | identity, topology, memory, ISA/XCR0 | read-only discovery |
+| PTFR | worker-fault cadence and bounded recovery plans | application-owned tasks only |
+| Platform evidence | Windows WHEA log pull, Linux EDAC counter snapshots, SHA-256 ledger | no driver; unknown CPU attribution remains unknown |
+| Worker affinity | reversible affinity lease for the calling thread | target must already be allowed by the OS |
 | Benchmarks | CPU, memory, matrices, partitioning | bounded local tests |
 | Source review | static diagnostics | no compile/run/rewrite |
 | Memory | typed views, checked slices, arenas, pools | fixed limits |

@@ -1,0 +1,13 @@
+{
+  "name": "pytyliki-platform-evidence",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "verify": "node --experimental-strip-types src/verify.ts",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  }
+}

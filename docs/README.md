@@ -1,6 +1,6 @@
 # Pytyliki documentation
 
-> **Psychoporter 666 documentation profile v1.0** · Reviewed 2026-11-25 (UTC)
+> **Psychoporter 666 documentation profile v1.0** · Reviewed 2026-11-27 (UTC)
 
 [Project overview](../README.md) · [Source](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md)
 
@@ -14,7 +14,8 @@ Start with the [project README](../README.md) for product scope, build steps, fi
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
-- [Processor Thread Fault Recovery](PROCESSOR_THREAD_RECOVERY.md) — periodic fault correlation and application-level recovery planning.
+- [Processor Thread Fault Recovery](PROCESSOR_THREAD_RECOVERY.md) — worker-fault cadence and bounded recovery plans.
+- [Platform adapters](PLATFORM_ADAPTERS.md) — WHEA/EDAC collection, evidence hashing, language modules and affinity limits.
 
 ## Browse by topic
 

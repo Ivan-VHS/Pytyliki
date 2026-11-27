@@ -1,0 +1,129 @@
+name: PTFR platform adapters
+
+on:
+  pull_request:
+    paths:
+      - "src/processor_evidence.*"
+      - "src/sha256.c"
+      - "src/platform_*"
+      - "src/processor_affinity.*"
+      - "src/processor_arch.*"
+      - "src/ptfr_evidence_link.*"
+      - "src/asm/**"
+      - "src/ptfr_cli.c"
+      - "tests/test_processor_evidence.c"
+      - "tests/test_ptfr_evidence_link.c"
+      - "adapters/linux-edac/**"
+      - "adapters/swift-evidence/**"
+      - "adapters/typescript-evidence/**"
+      - "automation/reaper/platform_evidence.rpr"
+      - "docs/PLATFORM_ADAPTERS.md"
+      - ".cargo/config.toml"
+      - "CMakeLists.txt"
+      - ".github/workflows/platform-adapters.yml"
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "src/processor_evidence.*"
+      - "src/sha256.c"
+      - "src/platform_*"
+      - "src/processor_affinity.*"
+      - "src/processor_arch.*"
+      - "src/ptfr_evidence_link.*"
+      - "src/asm/**"
+      - "src/ptfr_cli.c"
+      - "tests/test_processor_evidence.c"
+      - "tests/test_ptfr_evidence_link.c"
+      - "adapters/linux-edac/**"
+      - "adapters/swift-evidence/**"
+      - "adapters/typescript-evidence/**"
+      - "automation/reaper/platform_evidence.rpr"
+      - "docs/PLATFORM_ADAPTERS.md"
+      - ".cargo/config.toml"
+      - "CMakeLists.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  linux-c11-assembly-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Configure with EDAC adapter
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DPYTYLIKI_ENABLE_RUST_EDAC=ON
+      - name: Build native and EDAC targets
+        run: cmake --build build --parallel
+      - name: Run native tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Test Rust EDAC collector
+        run: cargo test --manifest-path adapters/linux-edac/Cargo.toml
+      - name: Collect synthetic sysfs evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/edac-fixture"
+          mkdir -p "$root/mc/mc0/dimm0"
+          printf '7\n' > "$root/mc/mc0/ce_count"
+          printf '0\n' > "$root/mc/mc0/ue_count"
+          printf '3\n' > "$root/mc/mc0/dimm0/dimm_ce_count"
+          ./build/pytyliki-ptfr --edac-root "$root" --jsonl "$RUNNER_TEMP/evidence.jsonl"
+          grep -q '"provider":"linux-edac"' "$RUNNER_TEMP/evidence.jsonl"
+
+  windows-whea:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Windows WHEA adapter
+        run: cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Test native core
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Verify WHEA collector CLI contract
+        run: .\build\Release\pytyliki-ptfr.exe --help
+
+  typescript-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.6"
+      - name: Run TypeScript evidence tests
+        working-directory: adapters/typescript-evidence
+        run: npm test
+
+  swift-evidence:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test Swift evidence consumer
+        run: swift test --package-path adapters/swift-evidence
+
+  reaper-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out immutable Reaper contract revision
+        uses: actions/checkout@v4
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: bfc1b071eac2ad77341730e7f705b9574d1b4c1b
+          path: _deps/Reaper
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check Reaper platform evidence contract
+        env:
+          PYTHONPATH: \${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/platform_evidence.rpr
+      - name: Execute Reaper VM conformance fixture
+        shell: bash
+        env:
+          PYTHONPATH: \${{ github.workspace }}/_deps/Reaper
+        run: |
+          set -euo pipefail
+          python -m reaper --engine vm automation/reaper/platform_evidence.rpr | tee platform-evidence.txt
+          grep -qx "PYTYLIKI_PLATFORM_EVIDENCE:PASS" platform-evidence.txt

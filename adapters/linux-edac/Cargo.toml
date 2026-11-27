@@ -1,0 +1,13 @@
+[package]
+name = "pytyliki-edac-adapter"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "pytyliki_edac"
+crate-type = ["staticlib", "rlib"]
+
+[profile.release]
+lto = true
+codegen-units = 1
