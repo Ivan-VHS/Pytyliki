@@ -68,6 +68,8 @@ typedef struct {
     uint32_t capacity_exhausted;
     uint32_t locality_unknown;
     uint64_t total_estimated_cost;
+    uint8_t topology_complete;
+    uint8_t pressure_input_present;
     uint8_t execution_performed;
     uint8_t affinity_changed;
     uint8_t scheduling_changed;
