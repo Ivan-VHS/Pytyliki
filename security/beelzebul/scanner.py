@@ -179,7 +179,10 @@ def workflow_has_unscoped_write(text):
                 in_permissions = False
             if in_permissions and ":" in stripped:
                 key, value = stripped.split(":", 1)
-                if key.strip() == "contents" and value.strip().lower() == "write":
+                permission = value.strip().lower()
+                if (key.strip() == "contents" and permission == "write") or (
+                    key.strip() == "permissions" and permission == "write-all"
+                ):
                     return True
         return False
 
