@@ -22,6 +22,7 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 - **Processor inventory:** CPU topology, usable instruction-set features and memory information, including operating-system vector-state checks.
 - **Bounded measurements:** repeatable CPU, memory and matrix workloads with explicit run limits and structured results.
 - **Source inspection:** static diagnostics and QCS syntax validation; inspected source is not executed or rewritten.
+- **System-array syntax:** a bounded C11 frontend normalizes the documented framed aliases to `system(array)`; syntax-only, with no execution or hardware access.
 - **Numerical metrics:** C11 vector, distance, geometry and quadratic-form operations through a stable native API.
 - **Memory utilities:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints and fixed-block pools.
 - **Native interoperability:** versioned C ABI v1 with caller-owned buffers; consumers must explicitly select a trusted library.
