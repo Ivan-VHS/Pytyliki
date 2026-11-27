@@ -1,6 +1,7 @@
 #include "core.h"
 #include "budget.h"
 #include "division.h"
+#include "division_cli.h"
 #include "processor.h"
 #include "improvement.h"
 #include "hw_rules.h"
@@ -320,12 +321,16 @@ static void print_e2k_profile(void) {
         return;
     }
     printf("Build architecture: %s\n", p.architecture);
-    if (p.is_e2k_target && p.mcst_lcc)
-        printf("Toolchain: MCST LCC (major version %u)\n", p.lcc_major);
-    else if (p.is_e2k_target)
-        puts("Toolchain: E2K compiler detected; MCST LCC version macro unavailable");
-    else
-        puts("E2K target: not detected in this build");
+#if defined(__e2k__)
+    puts("E2K target: detected at compile time");
+# if defined(__LCC__)
+    printf("Toolchain: MCST LCC (major version %u)\n", (unsigned)__LCC__);
+# else
+    puts("Toolchain: E2K compiler detected; MCST LCC version macro unavailable");
+# endif
+#else
+    puts("E2K target: not detected in this build");
+#endif
     puts("VLIW scheduling and software pipelining: delegated to the actual target compiler");
     puts("AETHER-ANAS native backend: not implemented (target profile only)");
     puts("No fixed issue width, ALU count, register count, or cycle model is assumed.");
