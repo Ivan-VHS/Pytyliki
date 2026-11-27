@@ -1,0 +1,9 @@
+macro_def vector_lane_shift(lane: bits<64>, count: u32) {
+    require count < 64;
+
+    let high = lane << count;
+    let low = if count == 0 { 0 } else { lane >> (64 - count) };
+
+    emit(high | low);
+}
+
