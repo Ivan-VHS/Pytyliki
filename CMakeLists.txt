@@ -262,3 +262,16 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-runtime-transaction-tests PRIVATE pytyliki_core)
   add_test(NAME runtime-transaction-contract-tests COMMAND pytyliki-runtime-transaction-tests)
 endif()
+
+# Python gaming-session evidence tests.
+if(BUILD_TESTING)
+  find_package(Python3 QUIET COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    add_test(
+      NAME gaming-performance-assessor
+      COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_gaming_performance_assessor -v
+    )
+    set_tests_properties(gaming-performance-assessor PROPERTIES
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+endif()
