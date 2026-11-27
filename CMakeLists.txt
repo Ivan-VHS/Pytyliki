@@ -30,7 +30,7 @@ endif()
 
 # Stable C11 ABI for explicitly configured FFI consumers.
 set_target_properties(pytyliki_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
-add_library(pytyliki_ffi SHARED src/interop.c)
+add_library(pytyliki_ffi SHARED src/interop.c src/rfs_contract.c)
 target_link_libraries(pytyliki_ffi PRIVATE pytyliki_core)
 target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
@@ -86,6 +86,10 @@ if(BUILD_TESTING)
   add_executable(pytyliki-interop-tests tests/test_interop.c)
   target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
   add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
+
+  add_executable(pytyliki-rfs-contract-tests tests/test_rfs_contract.c)
+  target_link_libraries(pytyliki-rfs-contract-tests PRIVATE pytyliki_ffi)
+  add_test(NAME rfs-01-c11-contract COMMAND pytyliki-rfs-contract-tests)
 
   add_executable(pytyliki-self-product-tests tests/test_self_product.c)
   target_link_libraries(pytyliki-self-product-tests PRIVATE pytyliki_core)

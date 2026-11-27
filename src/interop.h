@@ -101,6 +101,89 @@ typedef struct {
     char capabilities[PYTYLIKI_PLUGIN_CAPABILITIES_CAP];
 } pytyliki_plugin_descriptor_v1;
 
+/* RFS-01 read-only contracts. Records use fixed-size caller-owned buffers;
+ * calls are synchronous, retain no pointers, and never change system state. */
+#define PYTYLIKI_RFS01_ABI_VERSION 1u
+#define PYTYLIKI_RFS01_ID_CAP 64u
+#define PYTYLIKI_RFS01_SEED_CAP 128u
+#define PYTYLIKI_RFS01_PAYLOAD_CAP 4096u
+
+enum {
+    PYTYLIKI_RFS01_OK = 0,
+    PYTYLIKI_RFS01_INVALID_ARGUMENT = -1,
+    PYTYLIKI_RFS01_UNSUPPORTED_ABI = -2,
+    PYTYLIKI_RFS01_LOAD_LIMIT = -3,
+    PYTYLIKI_RFS01_BLOCKED = -4,
+    PYTYLIKI_RFS01_SIGNAL_REJECTED = -5
+};
+enum {
+    PYTYLIKI_RFS01_LAYER_BASEMENT = 1,
+    PYTYLIKI_RFS01_LAYER_CORRIDOR = 2,
+    PYTYLIKI_RFS01_LAYER_GATE = 3,
+    PYTYLIKI_RFS01_LAYER_SKYLINE = 4,
+    PYTYLIKI_RFS01_LAYER_HORIZON = 5
+};
+enum {
+    PYTYLIKI_RFS01_CHANNEL_WIRE = 1,
+    PYTYLIKI_RFS01_CHANNEL_RAIL = 2,
+    PYTYLIKI_RFS01_CHANNEL_BEAT = 3,
+    PYTYLIKI_RFS01_CHANNEL_CURRENT = 4,
+    PYTYLIKI_RFS01_CHANNEL_BRIDGE = 5
+};
+
+typedef struct {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    char id[PYTYLIKI_RFS01_ID_CAP];
+    uint32_t layer;
+    double pressure;
+    double load_limit;
+    double integrity;
+    double noise_db;
+    char core_seed[PYTYLIKI_RFS01_SEED_CAP];
+    int32_t active;
+} pytyliki_rfs01_node_v1;
+
+typedef struct {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    char id[PYTYLIKI_RFS01_ID_CAP];
+    char origin[PYTYLIKI_RFS01_ID_CAP];
+    char target[PYTYLIKI_RFS01_ID_CAP];
+    uint32_t channel;
+    int32_t blocked;
+    double weight;
+} pytyliki_rfs01_link_v1;
+
+typedef struct {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t sequence;
+    char origin[PYTYLIKI_RFS01_ID_CAP];
+    char payload[PYTYLIKI_RFS01_PAYLOAD_CAP + 1u];
+    int32_t trusted;
+    int32_t manufactured;
+} pytyliki_rfs01_signal_v1;
+
+PYTYLIKI_FFI_API uint32_t pytyliki_rfs01_abi_version(void);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_validate_node_v1(const pytyliki_rfs01_node_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_validate_link_v1(const pytyliki_rfs01_link_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_validate_signal_v1(const pytyliki_rfs01_signal_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_signal_is_clean_v1(const pytyliki_rfs01_signal_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_pressure_reserve_v1(const pytyliki_rfs01_node_v1 *, double *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_plan_pressure_forward_v1(
+    const pytyliki_rfs01_node_v1 *, const pytyliki_rfs01_node_v1 *,
+    const pytyliki_rfs01_link_v1 *, pytyliki_rfs01_node_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_plan_signal_forward_v1(
+    const pytyliki_rfs01_node_v1 *, const pytyliki_rfs01_node_v1 *,
+    const pytyliki_rfs01_link_v1 *, const pytyliki_rfs01_signal_v1 *,
+    pytyliki_rfs01_node_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_root_restore_v1(
+    const pytyliki_rfs01_node_v1 *, pytyliki_rfs01_node_v1 *);
+PYTYLIKI_FFI_API int32_t pytyliki_rfs01_core_restore_v1(
+    const pytyliki_rfs01_node_v1 *, const pytyliki_rfs01_node_v1 *,
+    pytyliki_rfs01_node_v1 *);
+
 /* Contiguous float64 buffers, fixed-width uint64 counts, synchronous calls.
  * Implementations never retain caller pointers or allocate caller-owned data. */
 PYTYLIKI_FFI_API uint32_t pytyliki_abi_version(void);

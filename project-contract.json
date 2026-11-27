@@ -142,6 +142,18 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "interop.rfs-01-c11-contract.v1",
+      "status": "implemented",
+      "summary": "Versioned C11 records and read-only validation/planning functions for RFS-01 nodes, links, signals, reserve metrics, bounded pressure/signal routing proposals, and distinct root/core recovery plans. This is not an OS controller or RFS source executor.",
+      "evidence": [
+        "src/interop.h",
+        "src/rfs_contract.c",
+        "tests/test_rfs_contract.c",
+        "docs/RFS_01_INTEGRATION.md",
+        "schemas/rfs-01-pytyliki.v1.schema.json"
+      ]
     }
   ],
   "interfaces": [
@@ -164,6 +176,17 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "rfs-01.pytyliki-c-abi.v1",
+      "format": "Fixed-size C11 v1 records with caller-owned output structs",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "src/interop.h",
+        "src/rfs_contract.c",
+        "tests/test_rfs_contract.c"
       ]
     }
   ],
@@ -207,6 +230,14 @@
       "status": "planned",
       "opt_in": true,
       "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+    },
+    {
+      "project": "reaper",
+      "interface": "rfs-01.pytyliki-c-abi.v1",
+      "mode": "native-ffi",
+      "status": "implemented",
+      "opt_in": true,
+      "summary": "The versioned adapter is available to explicitly configured trusted Reaper native-FFI consumers; no library is auto-loaded and no implicit runtime dependency is introduced."
     }
   ],
   "safety_boundaries": [
@@ -222,6 +253,7 @@
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
-    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration."
+    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
+    "RFS-01 read-only C11 record validation and caller-owned state-transition planning, versioned independently from the Pytyliki processor and metric APIs."
   ]
 }
