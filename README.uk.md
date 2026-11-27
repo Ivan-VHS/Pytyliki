@@ -14,11 +14,12 @@ Pytyliki — локальна робоча станція для аналізу 
 ## Можливості
 
 - Топологія CPU, ISA та пам’ять; обмежені вимірювання CPU/пам’яті й приклади розподілу навантаження.
+- Аналіз періодичності збоїв потоків і обмежені плани відновлення для потоків під керуванням застосунку.
 - Імпорт та аналіз профілів, folded stacks і SVG flamegraphs.
 - Діагностика коду, синтаксичний аналіз QCS і довідкові оцінки FLASH/SRAM для MCU.
 - Версійований C ABI та структуровані звіти з походженням даних і межами точності.
 
-Деталі: [Можливості](docs/FEATURES.md) · [Архітектура](docs/ARCHITECTURE.md) · [Статистика бенчмарків](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md).
+Деталі: [Можливості](docs/FEATURES.md) · [Архітектура](docs/ARCHITECTURE.md) · [Статистика бенчмарків](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [Відновлення потоків процесора](docs/PROCESSOR_THREAD_RECOVERY.md).
 
 ## Збирання й тести
 
@@ -38,6 +39,18 @@ ctest --test-dir build -C Release --output-on-failure
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
 ```
+
+
+Перегляд журналу подій Windows і обмежений аналіз історії збоїв:
+
+```sh
+./build/pytyliki --thread-recovery tests/fixtures/processor_thread_recovery.csv
+./build/pytyliki --thread-recovery-demo
+# Лише Windows: читання метаданих WHEA (тільки читання)
+./build/pytyliki --ras-whea
+```
+
+PTFR формує рекомендації для потоків, якими керує сам застосунок. Записи WHEA залишаються системними свідченнями: серйозність помилки та її зв’язок із worker не виводяться автоматично.
 
 ## Специфікації та інтеграція
 

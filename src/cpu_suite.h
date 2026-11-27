@@ -5,7 +5,19 @@
 #define PL_CPU_SUITE_MODULE_COUNT 78u
 #define PL_CPU_SUITE_NAME_MAX 40u
 #define PL_CPU_SUITE_DETAIL_MAX 160u
-typedef enum { PL_CPU_SUITE_HUB = 0, PL_CPU_SUITE_THERMAL_POWER, PL_CPU_SUITE_MEMORY_CACHE, PL_CPU_SUITE_SCHEDULER, PL_CPU_SUITE_DIAGNOSTICS_SECURITY, PL_CPU_SUITE_BENCHMARK_LAB } pl_cpu_suite_domain;
+/*
+ * Existing domain values remain stable. Architecture is appended because
+ * catalogue entries 15-26 already use it.
+ */
+typedef enum {
+    PL_CPU_SUITE_HUB = 0,
+    PL_CPU_SUITE_THERMAL_POWER = 1,
+    PL_CPU_SUITE_MEMORY_CACHE = 2,
+    PL_CPU_SUITE_SCHEDULER = 3,
+    PL_CPU_SUITE_DIAGNOSTICS_SECURITY = 4,
+    PL_CPU_SUITE_BENCHMARK_LAB = 5,
+    PL_CPU_SUITE_ARCHITECTURE = 6
+} pl_cpu_suite_domain;
 typedef struct { uint16_t id; const char *name; pl_cpu_suite_domain domain; const char *description; } pl_cpu_suite_module;
 typedef struct { uint16_t module_id; char module_name[PL_CPU_SUITE_NAME_MAX]; char domain_name[24]; char execution_mode[24]; char safety_note[PL_CPU_SUITE_DETAIL_MAX]; } pl_cpu_suite_plan;
 /* Immutable 78-entry catalogue; enumeration is deterministic and allocation-free. */

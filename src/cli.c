@@ -1,6 +1,7 @@
 #include "core.h"
 #include "budget.h"
 #include "division.h"
+#include "division_cli.h"
 #include "processor.h"
 #include "improvement.h"
 #include "hw_rules.h"
@@ -15,6 +16,8 @@
 #include "systems_accel.h"
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
+#include "processor_thread_recovery_cli.h"
+#include "ras_provider_cli.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -154,6 +157,7 @@ static void usage(void) {
          "           [--budget-set food|transport|household|digital|leisure|reserve UAH]\n"
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
+         "  pytyliki --thread-recovery FILE.csv | --thread-recovery-demo | --ras-whea\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }
@@ -314,18 +318,13 @@ static void print_foundations(int pipeline, int catalog, int policy, pl_pipeline
 }
 
 static void print_e2k_profile(void) {
-    pl_processor_snapshot p;
-    if (pl_processor_scan(&p) != 0) {
+    pl_processor_snapshot profile;
+    if (pl_processor_scan(&profile) != 0) {
         fputs("Target profile scan failed.\n", stderr);
         return;
     }
-    printf("Build architecture: %s\n", p.architecture);
-    if (p.is_e2k_target && p.mcst_lcc)
-        printf("Toolchain: MCST LCC (major version %u)\n", p.lcc_major);
-    else if (p.is_e2k_target)
-        puts("Toolchain: E2K compiler detected; MCST LCC version macro unavailable");
-    else
-        puts("E2K target: not detected in this build");
+    printf("Build architecture: %s\n", profile.architecture);
+    puts("Compiler identification: unavailable in the current processor snapshot ABI");
     puts("VLIW scheduling and software pipelining: delegated to the actual target compiler");
     puts("AETHER-ANAS native backend: not implemented (target profile only)");
     puts("No fixed issue width, ALU count, register count, or cycle model is assumed.");
@@ -345,6 +344,12 @@ int main(int argc,char **argv) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;
     }
+    if (argc == 2 && strcmp(argv[1], "--ras-whea") == 0)
+        return pl_ras_provider_cli();
+    if (argc == 2 && strcmp(argv[1], "--thread-recovery-demo") == 0)
+        return pl_thread_recovery_demo_cli();
+    if (argc == 3 && strcmp(argv[1], "--thread-recovery") == 0)
+        return pl_thread_recovery_cli(argv[2]);
     if (argc > 1 && strcmp(argv[1], "--embedded") == 0)
         return pl_embedded_cli(argc - 1, argv + 1);
     int profile=0,bench=0,capabilities=0,suite=0,improvement_plan=0,trimatrix=0,syntax_pie=0,hw_rules=0,pipeline=0,catalog=0,policy=0,evolve=0,berry_list=0,e2k_profile=0,systems=0,systems_lab=0,architectures=0; const char *architecture_name=NULL; const char *berry_name=NULL; unsigned berry_core=0u; const char *analyze=NULL,*json=NULL;

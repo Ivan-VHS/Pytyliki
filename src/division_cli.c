@@ -1,6 +1,7 @@
-#include "division.h"
+#include "division_cli.h"
 
-#include "processor.h"
+#include "core.h"
+#include "division.h"
 
 #include <errno.h>
 #include <inttypes.h>
@@ -9,13 +10,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PL_DIVISION_CLI_MAX_WORKERS 64u
+
 static int parse_i64(const char *text, int64_t *out) {
     char *end = NULL;
-    intmax_t value;
-    if (text == NULL || text[0] == '\0' || out == NULL) return -1;
+    long long value;
+    if (text == NULL || text[0] == '\0' || out == NULL ||
+        text[0] == '+' || text[0] == ' ') return -1;
     errno = 0;
-    value = strtoimax(text, &end, 10);
-    if (end == text || *end != '\0' || errno == ERANGE ||
+    value = strtoll(text, &end, 10);
+    if (errno == ERANGE || end == text || end == NULL || *end != '\0' ||
         value < INT64_MIN || value > INT64_MAX) return -1;
     *out = (int64_t)value;
     return 0;
@@ -43,7 +47,7 @@ static int parse_u64(const char *text, uint64_t *out) {
 
 static int print_division(int64_t dividend, int64_t divisor) {
     pl_division_result result;
-    if (pl_division_euclidean(dividend, divisor, &result) != 0) {
+    if (pl_euclidean_divmod(dividend, divisor, &result) != 0) {
         fputs("Division rejected: zero divisor or signed 64-bit overflow.\n", stderr);
         return 2;
     }
@@ -56,35 +60,49 @@ static int print_division(int64_t dividend, int64_t divisor) {
 
 static int print_partition(uint64_t items, uint64_t available_workers,
                            uint64_t minimum_grain) {
-    uint64_t workers = 0u;
-    pl_partition_plan plan;
-    if (pl_division_recommend_workers(items, available_workers,
-                                      minimum_grain, &workers) != 0) {
-        fputs("Partition request rejected: invalid worker count or minimum grain.\n",
-              stderr);
+    int64_t counts[PL_DIVISION_CLI_MAX_WORKERS];
+    uint64_t offset = 0u;
+    uint64_t workers;
+    if (minimum_grain == 0u || available_workers == 0u) {
+        fputs("Partition request rejected: workers and minimum grain must be positive.\n", stderr);
         return 2;
     }
-    if (workers == 0u) {
+    if (items == 0u) {
         puts("No work items: no partitions required.");
         return 0;
     }
-    if (pl_partition_plan_create(items, workers, &plan) != 0) {
-        fputs("Partition plan exceeds the configured safety limit.\n", stderr);
+    if (items > (uint64_t)INT64_MAX) {
+        fputs("Partition request exceeds the signed 64-bit balanced-split limit.\n", stderr);
         return 2;
     }
+
+    workers = items / minimum_grain + (items % minimum_grain != 0u ? 1u : 0u);
+    if (workers == 0u) workers = 1u;
+    if (workers > available_workers) workers = available_workers;
+    if (workers > PL_DIVISION_CLI_MAX_WORKERS) workers = PL_DIVISION_CLI_MAX_WORKERS;
+    if (pl_division_split_evenly((int64_t)items, (size_t)workers,
+                                 counts, PL_DIVISION_CLI_MAX_WORKERS) != 0) {
+        fputs("Partition plan could not be created.\n", stderr);
+        return 2;
+    }
+
     printf("Balanced partition plan: items=%" PRIu64
            " available-workers=%" PRIu64 " minimum-grain=%" PRIu64
            " recommended-workers=%" PRIu64 "\n",
            items, available_workers, minimum_grain, workers);
     for (uint64_t i = 0u; i < workers; ++i) {
-        uint64_t offset = 0u;
-        uint64_t count = 0u;
-        if (pl_partition_plan_range(&plan, i, &offset, &count) != 0) {
-            fputs("Partition plan could not be read.\n", stderr);
-            return 1;
-        }
+        const uint64_t count = (uint64_t)counts[i];
         printf("  worker-%" PRIu64 ": offset=%" PRIu64 " count=%" PRIu64 "\n",
                i, offset, count);
+        if (UINT64_MAX - offset < count) {
+            fputs("Partition offset overflow.\n", stderr);
+            return 2;
+        }
+        offset += count;
+    }
+    if (offset != items) {
+        fputs("Partition plan failed its total-work invariant.\n", stderr);
+        return 1;
     }
     puts("Planning only: no threads are spawned and CPU affinity is unchanged.");
     return 0;
@@ -125,8 +143,7 @@ int pl_division_cli(int argc, char **argv) {
         if ((argc != 3 && argc != 4) ||
             parse_u64(argv[2], &items) != 0 ||
             (argc == 4 && parse_u64(argv[3], &grain) != 0)) {
-            fputs("Usage: pytyliki --partition-auto ITEMS [MIN_GRAIN]\n",
-                  stderr);
+            fputs("Usage: pytyliki --partition-auto ITEMS [MIN_GRAIN]\n", stderr);
             return 2;
         }
         if (pl_cpu_profile(&cpu) != 0 || cpu.logical_cpus == 0u) {
