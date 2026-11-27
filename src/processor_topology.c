@@ -274,9 +274,6 @@ static void scan_linux_numa(pl_processor_topology_snapshot *out) {
                         value = strstr(line, "MemTotal:") + 9;
                     } else if (strstr(line, "MemAvailable:") != NULL) {
                         value = strstr(line, "MemAvailable:") + 13;
-                    } else if (!memory_available_observed &&
-                               strstr(line, "MemFree:") != NULL) {
-                        value = strstr(line, "MemFree:") + 8;
                     }
                     if (value == NULL) continue;
                     {
@@ -349,7 +346,10 @@ static void scan_linux_caches(pl_processor_topology_snapshot *out) {
                 }
             }
             if (cache == NULL) {
-                if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) continue;
+                if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) {
+                free(records);
+                return PL_TOPOLOGY_LIMIT_EXCEEDED;
+            }
                 cache = &out->caches[out->cache_count];
                 memset(cache, 0, sizeof(*cache));
                 cache->cache_id = out->cache_count;
@@ -470,7 +470,9 @@ static size_t find_or_add_windows_mask(pl_processor_topology_snapshot *out,
         pl_topology_numa_node *node = NULL;
         for (size_t i = 0u; i < out->numa_node_count; ++i)
             if (out->numa_nodes[i].node_id == numa_id) node = &out->numa_nodes[i];
-        if (node == NULL && out->numa_node_count < PL_TOPOLOGY_MAX_NUMA_NODES) {
+        if (node == NULL) {
+            if (out->numa_node_count >= PL_TOPOLOGY_MAX_NUMA_NODES)
+                return SIZE_MAX;
             node = &out->numa_nodes[out->numa_node_count++];
             memset(node, 0, sizeof(*node));
             node->node_id = numa_id;
@@ -535,40 +537,52 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
         }
         if (item->Relationship == RelationProcessorPackage) {
             for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
-                (void)find_or_add_windows_mask(out,
-                    item->Processor.GroupMask[i].Group,
-                    item->Processor.GroupMask[i].Mask,
-                    package_id, PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
-                    PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+                if (find_or_add_windows_mask(out,
+                        item->Processor.GroupMask[i].Group,
+                        item->Processor.GroupMask[i].Mask,
+                        package_id, PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                        PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN) == SIZE_MAX) {
+                    free(records);
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                }
             }
             ++package_id;
         } else if (item->Relationship == RelationProcessorDie) {
             for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
-                (void)find_or_add_windows_mask(out,
-                    item->Processor.GroupMask[i].Group,
-                    item->Processor.GroupMask[i].Mask,
-                    PL_TOPOLOGY_UNKNOWN, die_id, PL_TOPOLOGY_UNKNOWN,
-                    PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+                if (find_or_add_windows_mask(out,
+                        item->Processor.GroupMask[i].Group,
+                        item->Processor.GroupMask[i].Mask,
+                        PL_TOPOLOGY_UNKNOWN, die_id, PL_TOPOLOGY_UNKNOWN,
+                        PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN) == SIZE_MAX) {
+                    free(records);
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                }
             }
             ++die_id;
         } else if (item->Relationship == RelationProcessorCore) {
             for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
-                (void)find_or_add_windows_mask(out,
-                    item->Processor.GroupMask[i].Group,
-                    item->Processor.GroupMask[i].Mask,
-                    PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN, core_id,
-                    PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+                if (find_or_add_windows_mask(out,
+                        item->Processor.GroupMask[i].Group,
+                        item->Processor.GroupMask[i].Mask,
+                        PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN, core_id,
+                        PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN) == SIZE_MAX) {
+                    free(records);
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                }
             }
             ++core_id;
         } else if (item->Relationship == RelationNumaNode) {
             WORD group_count = item->NumaNode.GroupCount;
             for (WORD i = 0u; i < group_count; ++i) {
                 const GROUP_AFFINITY *affinity = &item->NumaNode.GroupMasks[i];
-                (void)find_or_add_windows_mask(out,
-                    affinity->Group, affinity->Mask,
-                    PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
-                    PL_TOPOLOGY_UNKNOWN, item->NumaNode.NodeNumber,
-                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+                if (find_or_add_windows_mask(out,
+                        affinity->Group, affinity->Mask,
+                        PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                        PL_TOPOLOGY_UNKNOWN, item->NumaNode.NodeNumber,
+                        0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN) == SIZE_MAX) {
+                    free(records);
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                }
             }
         } else if (item->Relationship == RelationCache) {
             pl_topology_cache_kind kind = PL_TOPOLOGY_CACHE_UNKNOWN;
@@ -588,17 +602,16 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
                                item->Cache.CacheSize != 0u && item->Cache.LineSize != 0u)
                                   ? PL_TOPOLOGY_EVIDENCE_OBSERVED
                                   : PL_TOPOLOGY_EVIDENCE_PARTIAL;
-            if (group_count == 0u) group_count = 1u;
-            for (WORD i = 0u; i < group_count; ++i) {
-                const GROUP_AFFINITY *affinity =
-                    item->Cache.GroupCount == 0u
-                        ? &item->Cache.GroupMask
-                        : &item->Cache.GroupMasks[i];
-                (void)find_or_add_windows_mask(out,
-                    affinity->Group, affinity->Mask,
-                    PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
-                    PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
-                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+            {
+                const GROUP_AFFINITY *affinity = &item->Cache.GroupMask;
+                if (find_or_add_windows_mask(out,
+                        affinity->Group, affinity->Mask,
+                        PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                        PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                        0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN) == SIZE_MAX) {
+                    free(records);
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                }
                 for (unsigned bit = 0u; bit < sizeof(KAFFINITY) * 8u; ++bit) {
                     if ((affinity->Mask & ((KAFFINITY)1u << bit)) != 0u) {
                         size_t cpu_index = find_cpu(out, (uint32_t)affinity->Group, bit);
