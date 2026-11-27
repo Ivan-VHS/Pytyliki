@@ -42,6 +42,13 @@ static inline int pl_ui_text_contrast_meets(
     return pl_ui_contrast_ratio_rgb(fr, fg, fb, br, bg, bb) >= (large_text ? 3.0 : 4.5);
 }
 
+/* Convert logical UI pixels to physical pixels for the current monitor DPI. */
+static inline int pl_ui_scale_logical_px(int logical_px, uint32_t dpi) {
+    if (logical_px <= 0 || dpi == 0u) return 0;
+    const uint64_t scaled = ((uint64_t)(unsigned int)logical_px * (uint64_t)dpi + 48u) / 96u;
+    return scaled > (uint64_t)INT_MAX ? INT_MAX : (int)scaled;
+}
+
 static inline unsigned int pl_ui_preferred_target_px(void) { return 44u; }
 
 static inline int pl_ui_clamp_font_size(int value) {
