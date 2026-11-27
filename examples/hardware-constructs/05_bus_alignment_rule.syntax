@@ -1,0 +1,12 @@
+contract bus_alignment_rule for AXI_BUS {
+    require address % 64 == 0;
+    require burst_length in 1..16;
+
+    observe telemetry.tray;
+
+    on_violation {
+        emit_diagnostic("BUS_ALIGNMENT", address, burst_length);
+        reject_transfer();
+    }
+}
+
