@@ -123,6 +123,21 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
            (unsigned)r->side_effect>(unsigned)PL_HW_SIDE_EFFECT_RESET ||
            (unsigned)r->owner>(unsigned)PL_HW_OWNER_UNOWNED)
             return PL_HW_RESOURCE_PERMISSION;
+        {
+            uint64_t width_mask = r->width_bits == 64u
+                ? UINT64_MAX : ((UINT64_C(1) << r->width_bits) - UINT64_C(1));
+            if ((r->reserved_mask & ~width_mask) != 0u ||
+                (r->reset_value & ~width_mask) != 0u ||
+                (r->reset_value & r->reserved_mask) != 0u)
+                return PL_HW_RESOURCE_PERMISSION;
+        }
+        if ((r->access == PL_HW_ACCESS_READ_CLEAR &&
+             r->side_effect != PL_HW_SIDE_EFFECT_CLEAR_ON_READ) ||
+            (r->side_effect == PL_HW_SIDE_EFFECT_CLEAR_ON_READ &&
+             r->access != PL_HW_ACCESS_READ_CLEAR) ||
+            ((r->owner == PL_HW_OWNER_DEVICE || region->cache_policy == PL_HW_CACHE_DEVICE) &&
+             r->is_volatile == 0u))
+            return PL_HW_RESOURCE_PERMISSION;
         if(r->access==PL_HW_ACCESS_READ_ONLY || r->access==PL_HW_ACCESS_READ_CLEAR) {
             if((region->permissions&1u)==0u) return PL_HW_RESOURCE_PERMISSION;
         } else if(r->access==PL_HW_ACCESS_WRITE_ONLY ||
@@ -188,6 +203,14 @@ pl_hw_resource_status pl_hw_dma_transition(pl_hw_dma_buffer *b,
         return PL_HW_RESOURCE_INVALID_ARGUMENT;
     if(b->generation==0u || b->generation!=expected_generation)
         return PL_HW_RESOURCE_STALE_GENERATION;
+    if(b->id==0u || b->device_id==0u || b->space_id==0u ||
+       b->length==0u || !power_of_two(b->alignment) ||
+       !range_valid(b->base,b->length,64u) ||
+       (unsigned)b->direction>(unsigned)PL_HW_DMA_BIDIRECTIONAL ||
+       (unsigned)b->coherency>(unsigned)PL_HW_DMA_EXPLICIT_SYNC ||
+       (unsigned)b->state>(unsigned)PL_HW_DMA_RELEASED ||
+       (unsigned)b->owner>(unsigned)PL_HW_OWNER_SHARED)
+        return PL_HW_RESOURCE_INVALID_ARGUMENT;
     if(actor==PL_HW_ACTOR_ADAPTER && !capability_granted)
         return PL_HW_RESOURCE_PERMISSION;
     switch(b->state) {
@@ -204,7 +227,8 @@ pl_hw_resource_status pl_hw_dma_transition(pl_hw_dma_buffer *b,
             b->state=next; b->owner=PL_HW_OWNER_CPU; return PL_HW_RESOURCE_OK;
         }
         if(next==PL_HW_DMA_DEVICE_OWNED && actor==PL_HW_ACTOR_ADAPTER &&
-           capability_granted && submission_accepted) {
+           capability_granted && submission_accepted &&
+           b->coherency!=PL_HW_DMA_COHERENCY_UNKNOWN) {
             b->state=next; b->owner=PL_HW_OWNER_DEVICE; return PL_HW_RESOURCE_OK;
         }
         break;
