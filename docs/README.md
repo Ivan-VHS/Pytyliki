@@ -14,7 +14,7 @@ Start with the [project README](../README.md) for product scope, build steps, fi
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
-- [Processor Thread Fault Recovery](PROCESSOR_THREAD_RECOVERY.md) — periodic fault correlation and application-level recovery planning.
+- [Processor Thread Fault Recovery](PROCESSOR_THREAD_RECOVERY.md) — periodic fault correlation, CSV evidence import, Windows WHEA Event Log viewing and application-level recovery planning.
 
 ## Browse by topic
 
