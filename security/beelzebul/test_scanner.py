@@ -47,7 +47,7 @@ class ScannerRegressionTests(unittest.TestCase):
         unrelated = []
         correlate(
             unrelated,
-            {"src/module.py": "token = read_token()\\nlogger.info('request complete')"},
+            {"src/module.py": "token = read_token()\nlogger.info('request complete')"},
         )
         self.assertFalse([item for item in unrelated if item["rule_id"] == "Q05"])
 
@@ -83,8 +83,8 @@ jobs:
             "if: always()",
         )
         writable_build = safe_release.replace(
-            "  build-windows:\\n    runs-on: windows-latest",
-            "  build-windows:\\n    permissions:\\n      contents: write\\n    runs-on: windows-latest",
+            "  build-windows:\n    runs-on: windows-latest",
+            "  build-windows:\n    permissions:\n      contents: write\n    runs-on: windows-latest",
         )
         global_write = safe_release.replace(
             "  contents: read",
