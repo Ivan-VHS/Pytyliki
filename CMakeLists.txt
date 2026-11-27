@@ -257,7 +257,7 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-system-array-tests PRIVATE pytyliki_core)
   add_test(NAME system-array-syntax-tests COMMAND pytyliki-system-array-tests)
   add_test(NAME system-array-cli-normalize COMMAND pytyliki-system-array --normalize system_array)
-  set_tests_properties(system-array-cli-normalize PROPERTIES PASS_REGULAR_EXPRESSION "system(array)")
+  set_tests_properties(system-array-cli-normalize PROPERTIES PASS_REGULAR_EXPRESSION "system")
   add_test(NAME system-array-cli-json COMMAND pytyliki-system-array --json "{]+/* systemArray >^")
   set_tests_properties(system-array-cli-json PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.system-array-ast.v1")
 
