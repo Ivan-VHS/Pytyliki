@@ -23,12 +23,12 @@ static int parse_kind(const char *text, pl_tr_fault_kind *kind) {
 
 static char *trim_field(char *field) {
     char *end;
-    while (*field == ' ' || *field == '\\t' || *field == '\\r') ++field;
+    while (*field == ' ' || *field == '\t' || *field == '\r') ++field;
     end = field + strlen(field);
     while (end > field &&
-           (end[-1] == ' ' || end[-1] == '\\t' || end[-1] == '\\r' ||
-            end[-1] == '\\n')) {
-        *--end = '\\0';
+           (end[-1] == ' ' || end[-1] == '\t' || end[-1] == '\r' ||
+            end[-1] == '\n')) {
+        *--end = '\0';
     }
     return field;
 }
@@ -36,12 +36,12 @@ static char *trim_field(char *field) {
 static int parse_u64_field(const char *text, uint64_t maximum, uint64_t *out) {
     char *end = NULL;
     unsigned long long value;
-    if (text == NULL || text[0] == '\\0' || out == NULL) return 0;
+    if (text == NULL || text[0] == '\0' || out == NULL) return 0;
     if (text[0] == '+' || text[0] == '-' ||
         (text[0] < '0' || text[0] > '9')) return 0;
     errno = 0;
     value = strtoull(text, &end, 10);
-    if (errno == ERANGE || end == text || end == NULL || *end != '\\0' ||
+    if (errno == ERANGE || end == text || end == NULL || *end != '\0' ||
         value > maximum) return 0;
     *out = (uint64_t)value;
     return 1;
@@ -58,7 +58,7 @@ static int parse_event_line(char *line, pl_tr_observation *event, uint32_t *task
     while (field_count < 5u) {
         char *separator = strchr(cursor, ',');
         if (separator == NULL) return 0;
-        *separator = '\\0';
+        *separator = '\0';
         fields[field_count++] = cursor;
         cursor = separator + 1;
     }
