@@ -57,7 +57,7 @@ static int identifier_valid(const char *value, size_t capacity) {
     if (value == NULL || capacity < 2u) return 0;
     for (index = 0u; index < capacity; ++index) {
         const unsigned char ch = (unsigned char)value[index];
-        if (ch == '\\0') return index > 0u;
+        if (ch == '\0') return index > 0u;
         if (!((ch >= (unsigned char)'a' && ch <= (unsigned char)'z') ||
               (ch >= (unsigned char)'A' && ch <= (unsigned char)'Z') ||
               (ch >= (unsigned char)'0' && ch <= (unsigned char)'9') ||
@@ -75,7 +75,8 @@ static int mode_valid(pl_ide_mode mode) {
 pl_ide_status pl_ide_session_validate(const pl_ide_session *session) {
     if (session == NULL) return PL_IDE_INVALID_ARGUMENT;
     if (session->abi_version != PL_IDE_ABI_VERSION) return PL_IDE_ABI_MISMATCH;
-    if (session->project_id[0] == '\0' || session->session_id[0] == '\0')
+    if (!identifier_valid(session->project_id, sizeof(session->project_id)) ||
+        !identifier_valid(session->session_id, sizeof(session->session_id)))
         return PL_IDE_INVALID_IDENTIFIER;
     if (pl_ide_workspace_find(session->workspace_id) == NULL)
         return PL_IDE_INVALID_WORKSPACE;
