@@ -16,9 +16,9 @@ This ownership model prevents two competing parsers, compilers or hardware model
 
 ### Reaper consumes Pytyliki
 
-Reaper's native adapter in `reaper/native.py` consumes `pytyliki.c-abi.v1`. The supported surface includes bounded numerical operations, embedded target-profile metadata, FLASH/SRAM budget evaluation and metadata-only plugin discovery.
+Reaper's native adapter in `reaper/native.py` consumes `pytyliki.c-abi.v1`. The current high-level adapter supports bounded numerical operations, embedded target-profile metadata and FLASH/SRAM budget evaluation. Pytyliki's native provider also exports metadata catalogue APIs; those exports are not all wrapped as dedicated Reaper builtins yet.
 
-Activation is explicit: the caller supplies an absolute library path and runs with `--allow-native-ffi`. There is no PATH probing, ambient library search, plugin loading or retained caller buffer.
+Activation is explicit: the caller supplies an absolute library path and enables native FFI. There is no PATH probing, ambient library search, plugin loading or retained caller buffer.
 
 ### Pytyliki consumes Reaper
 
@@ -42,7 +42,7 @@ The integration test paths are independent and complementary:
 - Pytyliki's native interop test links the real Reaper C17 ABI when `REAPER_SOURCE_DIR` is supplied and checks availability, version, expression evaluation and exact lookup.
 - Default builds remain independently buildable and explicitly report an absent optional peer backend.
 
-An ABI change must update the contract, the provider header, the consumer adapter, tests and both pinned CI workflows in coordinated PRs.
+An ABI change must update the contract, the provider header, the consumer adapter, tests and both pinned cross-repository CI workflows in coordinated PRs.
 
 ## Copying, provenance and safety
 

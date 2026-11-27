@@ -43,7 +43,8 @@ int main(void) {
             expression, (uint64_t)(sizeof expression - 1u),
             &reaper_value, NULL, 0u
         ) == PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
-        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &plugin_count) ==
+        uint64_t selfhood_ordinal = 0u;
+        assert(pytyliki_v1_reaper_selfhood_lookup("Сам", &selfhood_ordinal) ==
                PYTYLIKI_ABI_BACKEND_UNAVAILABLE);
     }
     assert(pytyliki_v1_norm_f64(a,2u,&value)==0&&fabs(value-5.0)<1e-12);

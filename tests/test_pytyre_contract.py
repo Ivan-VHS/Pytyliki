@@ -22,14 +22,8 @@ class PytyReContractTests(unittest.TestCase):
         )
         self.assertTrue(contract["development_policy"]["change_rule"])
         self.assertTrue(contract["safety_boundaries"])
-        self.assertEqual(
-            contract["repositories"]["reaper"]["baseline_commit"],
-            "c3d89dd91da880e523867bd8d0724a6edc6b3cf6",
-        )
-        self.assertEqual(
-            contract["repositories"]["pytyliki"]["baseline_commit"],
-            "41edd2bd33fbf554c8a8cbdc1ddd97847e1f9a53",
-        )
+        self.assertEqual(contract["repositories"]["reaper"]["baseline_commit"], "c3d89dd91da880e523867bd8d0724a6edc6b3cf6")
+        self.assertEqual(contract["repositories"]["pytyliki"]["baseline_commit"], "41edd2bd33fbf554c8a8cbdc1ddd97847e1f9a53")
 
 
 if __name__ == "__main__":

@@ -87,7 +87,7 @@
       "transport": "explicit-native-ffi",
       "abi_version": 1,
       "status": "implemented",
-      "operations": [
+      "provider_operations": [
         "pytyliki_v1_dot_f64",
         "pytyliki_v1_norm_f64",
         "pytyliki_v1_distance_f64",
@@ -100,11 +100,21 @@
         "pytyliki_v1_plugin_find",
         "pytyliki_v1_metric_registry_search"
       ],
+      "consumer_operations": [
+        "pytyliki_v1_dot_f64",
+        "pytyliki_v1_norm_f64",
+        "pytyliki_v1_distance_f64",
+        "pytyliki_v1_orthogonal_f64",
+        "pytyliki_v1_embedded_profile_count",
+        "pytyliki_v1_embedded_profile_at",
+        "pytyliki_v1_embedded_budget_evaluate"
+      ],
       "activation": "Reaper requires an explicit absolute library path and explicit --allow-native-ffi permission.",
       "constraints": [
         "The library is trusted native code and is never discovered implicitly.",
         "Calls are synchronous, bounded and do not retain caller-owned buffers.",
-        "Metadata discovery does not load or execute plugin code."
+        "Metadata discovery does not load or execute plugin code.",
+        "Provider exports do not imply that every operation is currently wrapped by Reaper's high-level adapter."
       ]
     },
     {
@@ -115,10 +125,12 @@
       "transport": "optional-build-time-native-link",
       "abi_version": 1,
       "status": "optional",
-      "operations": [
+      "provider_operations": [
         "reaper_abi_version",
         "reaper_v1_eval_i64",
-        "reaper_v1_selfhood_lookup",
+        "reaper_v1_selfhood_lookup"
+      ],
+      "consumer_adapter_operations": [
         "pytyliki_v1_reaper_available",
         "pytyliki_v1_reaper_abi_version",
         "pytyliki_v1_reaper_eval_i64",
@@ -128,7 +140,8 @@
       "constraints": [
         "The Reaper C17 ABI is linked at build time; there is no runtime library search.",
         "The bridge exposes the bounded Reaper i64 expression evaluator and exact lookup only.",
-        "A build without REAPER_SOURCE_DIR remains self-contained and reports the backend as unavailable."
+        "A build without REAPER_SOURCE_DIR remains self-contained and reports the backend as unavailable.",
+        "The wrapper forwards Reaper ABI statuses unchanged when the linked ABI is available."
       ]
     }
   ],
@@ -140,6 +153,7 @@
       "evidence": [
         "reaper/native.py",
         "tests/test_native.py",
+        "tests/test_pytyre_live.py",
         "docs/REAPER_LANGUAGE_INTEGRATION.md"
       ]
     },
@@ -151,12 +165,13 @@
         "CMakeLists.txt",
         "src/interop.h",
         "src/interop.c",
-        "tests/test_interop.c"
+        "tests/test_interop.c",
+        "docs/REAPER_RUNTIME_INTEGRATION.md"
       ]
     }
   ],
   "development_policy": {
-    "change_rule": "Every change in Reaper or Pytyliki must include a reciprocal impact review. When a shared contract, ABI, syntax, IR, target model or safety boundary changes, update and test both repositories in coordinated reviewable PRs.",
+    "change_rule": "Every change in Reaper or Pytyliki must include a reciprocal impact review. When a shared contract, ABI, syntax, IR, target model or safety boundary changes, update and test both repositories in coordinated PRs.",
     "integration_rule": "Keep one canonical implementation for each owned subsystem. Share through typed/versioned contracts and native adapters; do not fork competing parsers, runtimes or processor models.",
     "synchronization_rule": "Update the shared contract and both pinned integration workflows together when either side changes an exposed ABI.",
     "release_rule": "A PytyRe release is qualified only when both component revisions and both reciprocal integration test paths are recorded."
@@ -172,6 +187,7 @@
   "known_gaps": [
     "Reaper native compiler parity and full self-hosting are incomplete.",
     "The vendored Reaper frontend in Pytyliki handles tokenization and a single expression, not full .rpr program execution.",
-    "Processor physical models and low-level hardware APIs remain capability- and backend-gated; no physical backend is shipped."
+    "Processor physical models and low-level hardware APIs remain capability- and backend-gated; no physical backend is shipped.",
+    "Some Pytyliki ABI provider operations are available to C consumers but are not yet exposed as dedicated high-level Reaper builtins."
   ]
 }
