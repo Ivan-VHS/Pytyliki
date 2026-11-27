@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,11 +69,12 @@ static void capture_time(char output[32]) {
 
 static void set_isa_from_profile(pl_processor_topology_snapshot *out) {
     pl_processor_snapshot profile;
-    const int x86 = strcmp(out->architecture, "x86") == 0 ||
-                    strcmp(out->architecture, "x86-64") == 0;
+    int x86;
     memset(&profile, 0, sizeof(profile));
     if (pl_processor_scan(&profile) != 0) return;
     set_string(out->architecture, sizeof(out->architecture), profile.architecture);
+    x86 = strcmp(out->architecture, "x86") == 0 ||
+          strcmp(out->architecture, "x86-64") == 0;
     set_string(out->vendor, sizeof(out->vendor), profile.base.vendor);
     set_string(out->model, sizeof(out->model), profile.base.model);
     if (!x86) return;
@@ -369,7 +371,9 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
         (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/topology/core_id", os_id);
         cpu->core_id = read_u32_file(path);
         if (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
-            cpu->core_id != PL_TOPOLOGY_UNKNOWN)
+            cpu->die_id != PL_TOPOLOGY_UNKNOWN &&
+            cpu->core_id != PL_TOPOLOGY_UNKNOWN &&
+            cpu->numa_node_id != PL_TOPOLOGY_UNKNOWN)
             cpu->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
         else cpu->evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
     }
@@ -636,10 +640,14 @@ pl_topology_status pl_processor_topology_scan(pl_processor_topology_snapshot *ou
     capture_time(out->captured_at);
     set_isa_from_profile(out);
     out->completeness = PL_TOPOLOGY_COMPLETE;
+    if (out->cache_count == 0u || out->numa_node_count == 0u)
+        out->completeness = PL_TOPOLOGY_PARTIAL;
     for (uint32_t i = 0u; i < out->logical_cpu_count; ++i) {
         const pl_topology_logical_cpu *cpu = &out->logical_cpus[i];
         if (cpu->package_id == PL_TOPOLOGY_UNKNOWN ||
+            cpu->die_id == PL_TOPOLOGY_UNKNOWN ||
             cpu->core_id == PL_TOPOLOGY_UNKNOWN ||
+            cpu->numa_node_id == PL_TOPOLOGY_UNKNOWN ||
             cpu->evidence != PL_TOPOLOGY_EVIDENCE_OBSERVED) {
             out->completeness = PL_TOPOLOGY_PARTIAL;
             break;
