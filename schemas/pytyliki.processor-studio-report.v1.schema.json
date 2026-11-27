@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/schemas/pytyliki.processor-studio-report.v1.schema.json",
+  "title": "Pytyliki Processor Studio Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "contract",
+    "abi_major",
+    "generation",
+    "core_id",
+    "domain_count",
+    "requested_domain_mask",
+    "completed_domain_mask",
+    "committed_domain_mask",
+    "registers",
+    "worker_plan",
+    "fold",
+    "hardware_effects",
+    "trace_dropped",
+    "domains"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.processor-studio-report.v1"
+    },
+    "contract": {
+      "const": "pytyliki.reaper-processor-studio.v1"
+    },
+    "abi_major": {
+      "const": 1
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "core_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "domain_count": {
+      "const": 20
+    },
+    "requested_domain_mask": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048575
+    },
+    "completed_domain_mask": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1048575
+    },
+    "committed_domain_mask": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1048575
+    },
+    "registers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "r0",
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "r5",
+        "r6",
+        "r7",
+        "regit",
+        "pc",
+        "planned_jump_target",
+        "flags"
+      ],
+      "properties": {
+        "r0": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r1": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r2": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r3": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r4": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r5": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r6": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "r7": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "regit": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "pc": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "planned_jump_target": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "flags": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        }
+      }
+    },
+    "worker_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workers",
+        "queue",
+        "threads_spawned",
+        "assignments"
+      ],
+      "properties": {
+        "workers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "queue": {
+          "const": "AXI_BUS"
+        },
+        "threads_spawned": {
+          "const": false
+        },
+        "assignments": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "domain_id",
+              "worker_id",
+              "estimated_cost"
+            ],
+            "properties": {
+              "domain_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "worker_id": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 19
+              },
+              "estimated_cost": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "fold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "matrix",
+        "sweep",
+        "tournament",
+        "tournament_domain",
+        "low_byte_signature",
+        "bit_parity",
+        "predicate_nonzero"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "matrix": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "sweep": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "tournament": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        },
+        "tournament_domain": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "low_byte_signature": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "bit_parity": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "predicate_nonzero": {
+          "type": "boolean"
+        }
+      }
+    },
+    "hardware_effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physical_memory_accessed",
+        "mmio_accessed",
+        "dma_submitted"
+      ],
+      "properties": {
+        "physical_memory_accessed": {
+          "const": false
+        },
+        "mmio_accessed": {
+          "const": false
+        },
+        "dma_submitted": {
+          "const": false
+        }
+      }
+    },
+    "trace_dropped": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "domains": {
+      "type": "array",
+      "minItems": 20,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "seed",
+          "layer",
+          "transform",
+          "state",
+          "generation",
+          "transformed",
+          "accumulated",
+          "commit_count",
+          "environment",
+          "engineering_focus",
+          "organization",
+          "layer_name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "seed": {
+            "type": "string",
+            "pattern": "^0x[0-9a-f]{4}$"
+          },
+          "layer": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "transform": {
+            "enum": [
+              "xor_u64",
+              "add_u64",
+              "rotl_u64_then_xor_u64"
+            ]
+          },
+          "state": {
+            "enum": [
+              "declared",
+              "ready",
+              "executed",
+              "committed",
+              "disabled",
+              "failed"
+            ]
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "transformed": {
+            "type": "string",
+            "pattern": "^0x[0-9a-f]{16}$"
+          },
+          "accumulated": {
+            "type": "string",
+            "pattern": "^0x[0-9a-f]{16}$"
+          },
+          "commit_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "environment": {
+            "type": "string"
+          },
+          "engineering_focus": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "layer_name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
