@@ -184,7 +184,7 @@ pl_placement_status pl_processor_placement_plan(
                     candidate.numa_cost = 2500u;
                 } else if (worker->numa_node_id != task->preferred_numa_node_id) {
                     reasons |= PL_PLACEMENT_REASON_NUMA_REMOTE;
-                    if (task->locality_required) continue;
+                    if (task->locality_required) { results[output_count].reasons |= reasons; continue; }
                     candidate.numa_cost = 3000u;
                 }
             }
