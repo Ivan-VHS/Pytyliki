@@ -149,6 +149,8 @@ The model is a read-only view over caller-owned node and edge arrays. No pointer
 
 The report serializer writes `pytyliki.processor-fabric-report.v1` to a caller-owned character buffer. The schema requires the fields `execution_performed`, `processor_control_changed` and `hardware_access_performed` to be false.
 
+The `pytyliki-fabric` utility exposes `--version`, `--catalogues` and `--catalogues-json`. The catalogue summary has its own schema, `pytyliki.processor-fabric-catalogues.v1`, and is metadata-only.
+
 ## 9. Error and lifecycle model
 
 The API reports structured status codes for invalid arguments, limits, duplicate or missing IDs, invalid parent/edge relations, parent/dependency cycles, generation mismatches, invalid capacity/domain metadata, and insufficient caller output storage.
