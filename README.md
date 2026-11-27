@@ -1,34 +1,56 @@
-# Pytyliki
-### C11 processor-systems workstation
+# Pytyliki — Processor Systems Workstation
 
-<p align="center"><img src="assets/brand/hero.svg" alt="Pytyliki workstation" width="100%"></p>
-<p align="center"><strong>DISCOVER · ANALYZE · OPTIMIZE · VERIFY</strong><br><img src="https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge" alt="C11"> <img src="https://img.shields.io/badge/Windows-Linux-DC2626?style=for-the-badge" alt="Platforms"> <img src="https://img.shields.io/badge/License-MIT-111827?style=for-the-badge" alt="MIT"></p>
+<p align="center">
+  <a href="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml"><img alt="Windows and Linux CI" src="https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="ISO C11" src="https://img.shields.io/badge/C-ISO%20C11-2563EB?style=flat-square">
+  <img alt="Windows and Linux" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-DC2626?style=flat-square">
+  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-111827?style=flat-square">
+</p>
 
-**Pytyliki is a modular C11 workstation for read-only processor discovery, bounded local benchmarks, source diagnostics, and PCM16 WAV/DSP utilities.** It provides a Windows/Linux CLI and a native Win32 GUI.
+<p align="center"><strong>DISCOVER · ANALYZE · PROCESS · VERIFY</strong></p>
 
-[English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
+<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki — processor diagnostics, source analysis and local DSP workstation" width="100%"></p>
 
-> [!IMPORTANT]
-> Pytyliki does not reprogram processors, write firmware, change clocks or voltage, or guarantee performance gains.
+**A practical C11 workstation for understanding a machine and inspecting local workloads.** Pytyliki combines read-only processor discovery, bounded benchmarks, source-code diagnostics, PCM16 WAV/DSP tools and a native Windows desktop interface in one modular project.
 
-## Capabilities
+It is built for developers and engineers who want useful local measurements, inspectable reports and explicit safety boundaries — not a black box that silently changes hardware.
 
-| Area | Included |
+**Read this in:** [English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [简体中文](README.zh-CN.md)
+
+## The workstation at a glance
+
+| Workbench | What you can do |
 |---|---|
-| Processor | Read-only CPU and ISA inventory |
-| Workloads | Bounded processor, memory and matrix tests |
-| Analysis | Read-only source scanner and JSON reports |
-| Audio / DSP | PCM16 WAV I/O, tone generation, processing and metering |
-| Interfaces | Cross-platform CLI and native Windows GUI |
-| Planning | 20-capability catalogue and evidence-gated planning |
-| HyperFusion | Six bounded analysis modules |
-| CI | CMake/CTest on Windows and Linux |
+| **Processor lab** | Inspect CPU identity, logical processors, memory and usable ISA capabilities |
+| **Benchmark suite** | Run bounded processor, memory and matrix workloads for local comparison |
+| **Source review** | Scan supported source files without executing or rewriting them; export JSON reports |
+| **Audio / DSP** | Read and write PCM16 WAV, generate test tones, process audio and inspect levels |
+| **Windows desktop** | Use the native Win32 GUI for processor scans, source review and audio controls |
+| **Engineering catalogue** | Explore improvement classifications, advisory hardware rules and reference plans |
+| **Verification** | Build with CMake and run CTest on Windows and Linux |
 
-<p align="center"><img src="assets/brand/architecture.svg" alt="Pytyliki architecture" width="100%"></p>
+## See the interface
+
+<p align="center"><img src="assets/pytyliki-workstation-preview.svg" alt="Illustrative preview of the current Pytyliki Win32 workstation layout" width="100%"></p>
+
+<sub>Illustrative interface preview reconstructed from the checked-in Win32 controls and labels; it is not a screenshot captured from a live Windows session.</sub>
+
+The desktop application exposes CPU capability scans, processor suites, source review, PCM WAV import/export, tone generation, low-pass filtering, compression, saturation, gain, metering and JSON report export.
+
+## How the pieces fit
+
+<p align="center"><img src="assets/pytyliki-architecture.svg" alt="Pytyliki architecture: inspect, analyze, process, verify" width="100%"></p>
 
 ## Quick start
 
-Requirements: Git, CMake and a C11-capable compiler on Windows or Linux.
+### Requirements
+
+- Windows or Linux
+- CMake 3.16 or newer
+- A C11-capable compiler
+- Git
+
+### Build and test
 
 ```bash
 git clone https://github.com/Ivan-VHS/Pytyliki.git
@@ -38,60 +60,76 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Windows builds also provide `pytyliki-gui.exe`.
+On Windows, the build also produces **`pytyliki-gui.exe`**.
+
+### Useful commands
 
 ```bash
-pytyliki --improvement-plan
-pytyliki --evolve --evolution-rounds 8
-pytyliki --syntax-pie
-pytyliki --mtte
+# Read-only processor profile
+./build/pytyliki --profile
+
+# Bounded integer, memory and matrix suite
+./build/pytyliki --suite
+
+# Inspect the improvement catalogue
+./build/pytyliki --improvement-plan
+
+# Generate a local 48 kHz PCM16 WAV test tone
+./build/pytyliki --tone-out test-tone.wav --frequency 440 --seconds 3
+
+# Write a machine-readable local report
+./build/pytyliki --json report.json
 ```
 
-<p align="center"><img src="assets/brand/terminal-preview.svg" alt="Illustrative CLI workflow" width="100%"></p>
-<sub>Command-line presentation mockup; not a captured run or benchmark result.</sub>
+Use the platform-specific executable path on Windows (for example, `build/Release/pytyliki.exe`).
 
-## Architecture
+## Engineering capabilities
 
-| Module | Responsibility |
+- **Processor inventory:** CPU vendor/model, architecture, logical processor count, memory and ISA flags. AVX-family usability includes operating-system vector-state checks.
+- **Bounded measurements:** repeatable local workloads for processor, memory and matrix paths. Scores are workload- and platform-dependent, not certification.
+- **Static source diagnostics:** review supported source files and produce findings without running or modifying the files.
+- **Bounded concatenation core:** binary-safe byte-span joining and NUL-terminated text concatenation with overflow, capacity and argument checks.
+- **PCM16 audio tools:** WAV import/export, test-tone generation, low-pass, compressor, soft saturation, gain and level metering.
+- **Syntax-pie:** a deterministic 20-layer catalogue linking function verbs and syntax abstractions; it is a lookup catalogue, not a general-purpose parser.
+- **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications, displayed by `--improvement-plan`.
+- **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness and synergy are heuristic planning indicators, not measured speedups.
+- **APSIA 2.0:** a language-routing planner with target-availability and FFI-cost gates. It proposes routes; it does not compile or execute the selected language module.
+- **Hardware rules:** 12 implemented advisory rules; other catalogue identifiers are reserved. Findings are prompts for engineering review, not hardware certification.
+- **Reference pipeline:** a C11/C23 planning model, not a production transpiler.
+
+## CI, quality and safety
+
+The GitHub Actions workflow builds and tests on **Ubuntu and Windows**. A separate Linux job runs the test suite with AddressSanitizer and UndefinedBehaviorSanitizer. CMake/CTest results are the source of truth for a given commit.
+
+Pytyliki follows explicit local-operation boundaries:
+
+- Processor discovery is read-only. No firmware, BIOS/UEFI, microcode, clock, voltage, power-limit, kernel, driver or device-register writes are performed.
+- Source review does not execute or rewrite scanned files.
+- Benchmarks are bounded and depend on hardware, operating system, compiler and workload; no speedup is promised.
+- Advisory scores and planning catalogues are not hardware certification or proof of autonomous optimization.
+- Local audio processing operates on bounded PCM16 WAV buffers.
+
+## Compatibility
+
+| Item | Current scope |
 |---|---|
-| `src/core.c/.h` | CPU profile, bounded benchmark, scanner, JSON report |
-| `src/processor.c/.h` | Processor and ISA inventory and tests |
-| `src/dsp.c/.h` | Bounded WAV and DSP operations |
-| `src/improvement.c/.h` | Improvement catalogue and lifecycle |
-| `src/hw_rules.c/.h` | Advisory hardware rules |
-| `src/evolution.c/.h` | HyperFusion analysis |
-| `src/pipeline.c/.h` | C11/C23 reference pipeline plan |
-| `src/policy.c/.h` | Local authorization policy |
-| `src/cli.c`, `src/win_gui.c` | CLI and Windows GUI |
-
-### Capability status
-
-- **Syntax-pie:** deterministic 20-layer function/syntax catalogue and lookup layer; not a general-purpose parser.
-- **MTTE:** 20 semantic/function/mechanical layers and a logical tick counter; it models software scheduling and does not alter hardware timers, CPU frequency, registers, firmware or voltage.
-- **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications.
-- **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness/synergy values are heuristics, not measured speedups.
-- **APSIA 2.0:** C11 language-routing planner with target-availability and FFI-cost gates; it proposes routes but does not compile or execute selected modules.
-- **Hardware rules:** 12 advisory rules are implemented; other identifiers are reserved. The C11/C23 pipeline is a reference plan, not a production transpiler.
-
-## CI and verified Auto-Merge
-
-Pull requests targeting `main` use CMake/CTest validation on Ubuntu and Windows. The verified Auto-Merge workflow checks that the current PR head matches the validated commit and requires an independent approval tied to that head before requesting GitHub squash Auto-Merge.
-
-Enable **Allow auto-merge**, protect `main`, require relevant checks and independent review, and scope write permissions to the merge job. An Auto-Merge request is not proof that a PR has merged.
-
-## Compatibility and safety
-
-- Validated CI targets: Windows and Linux. Implementation: ISO C11; C23 appears only in the reference pipeline plan.
-- Data formats: JSON reports and PCM16 WAV.
-- Processor discovery and source scanning are read-only.
-- Workloads have explicit limits; benchmark results depend on compiler, OS, hardware and workload.
-- No writes to firmware, BIOS/UEFI, microcode, voltage, clocks, power limits, kernels, drivers or device registers.
-- Advisory rules and planning scores are not hardware certification or performance guarantees.
+| Implementation | ISO C11 |
+| Validated CI platforms | Windows and Linux |
+| Desktop interface | Native Win32 GUI on Windows |
+| Data formats | JSON reports; PCM16 WAV audio |
+| Build and tests | CMake + CTest |
+| Not claimed | macOS support, guaranteed ARM64/x86_64 performance, production RTL/FPGA synthesis or an autonomous source transformer |
 
 ## Documentation
 
-See [architecture](docs/ARCHITECTURE.md), [APSIA 2.0](docs/APSIA_2.0.md), [platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md) and [quality audit](docs/QUALITY_AUDIT_0.7.1.md). Workflow results are authoritative for an individual commit.
+- [Architecture](docs/ARCHITECTURE.md)
+- [APSIA 2.0 routing design](docs/APSIA_2.0.md)
+- [Hardware rule engine](docs/HARDWARE_RULE_ENGINE.md)
+- [Processor taxonomy](docs/PROCESSOR_TAXONOMY.md)
+- [Platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md)
+- [Recursive evolution model](docs/RECURSIVE_EVOLUTION.md)
+- [Quality audit](docs/QUALITY_AUDIT_0.7.1.md)
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Released under the [MIT License](LICENSE).

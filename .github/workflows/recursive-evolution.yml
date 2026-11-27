@@ -2,7 +2,7 @@ name: Recursive Evolution Gate
 
 on:
   push:
-    branches: [main, "feat/**", "integration/**"]
+    branches: [main, "feat/**", "integration/**", "chore/**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
@@ -36,6 +36,8 @@ jobs:
         shell: bash
         run: |
           test -s docs/RECURSIVE_EVOLUTION.md
+          test -s docs/ENGINEERING_STANDARD.md
+          test -s .github/pull_request_template.md
           grep -q "human maintainer authorizes merge" docs/RECURSIVE_EVOLUTION.md
           grep -q "must not" docs/RECURSIVE_EVOLUTION.md
           echo "PREE policy present; merge remains a human-controlled action."

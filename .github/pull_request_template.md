@@ -1,19 +1,31 @@
-## What changed
+## Purpose
+What user or engineering problem does this change solve?
 
-Describe the user-visible result and why it belongs in Pytyliki.
+## Smallest coherent change
+What behavior is added, changed or removed? Why is this the right boundary?
+
+## Function interactions
+- [ ] Public contracts and side effects are documented.
+- [ ] Valid function pairs / representative composition chains are tested.
+- [ ] Invalid combinations and boundary cases are tested or explicitly justified.
+- [ ] No placeholder or duplicate function was added just to increase counts.
 
 ## Verification
+- [ ] Unit tests pass.
+- [ ] Integration / regression tests pass.
+- [ ] CI checks pass on the supported platforms and runtimes.
+- [ ] Examples and documentation match the actual implementation.
 
-- [ ] CMake configure and build completed.
-- [ ] CTest passed.
-- [ ] Error/documentation contracts pass.
-- [ ] Sanitizers were considered for memory-sensitive code.
-- [ ] Performance statements include host and measurement context.
+## UX and design (when applicable)
+- [ ] White / blue / red tokens are used semantically.
+- [ ] Keyboard access, visible focus, labels and contrast are checked.
+- [ ] Platform limitations are stated accurately.
 
-## Engineering review
+## Automation and integration
+- [ ] No direct push to main and no force-push.
+- [ ] Workflow permissions are least-privilege and jobs are bounded.
+- [ ] An independent human review is required before merge.
+- [ ] Rollback is clear.
 
-- [ ] Hardware inspection remains read-only.
-- [ ] Unsupported hardware capabilities are not presented as detected.
-- [ ] Public C ABI and documented limits are preserved or versioned.
-- [ ] README and localized docs are updated.
-- [ ] No credentials, private device identifiers or build artefacts were added.
+## Evidence and limitations
+List test commands, CI run links, measured results where relevant, and anything not yet implemented.
