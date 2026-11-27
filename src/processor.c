@@ -100,11 +100,14 @@ int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,
    out->avx512_os_state=(unsigned)((xcr0_lo&0xE6u)==0xE6u);
   }
   out->avx=(unsigned)(out->avx_hw&&out->avx_os_state);
-  out->fma=(unsigned)(out->avx&&((c>>12)&1u));
+  out->fma_hw=(unsigned)((c>>12)&1u);
+  out->fma=(unsigned)(out->avx&&out->fma_hw);
  }
  if(__get_cpuid_count(7,0,&a,&b,&c,&d)){
-  out->avx2=(unsigned)(out->avx&&((b>>5)&1u));
-  out->avx512f=(unsigned)(out->avx&&out->avx512_os_state&&((b>>16)&1u));
+  out->avx2_hw=(unsigned)((b>>5)&1u);
+  out->avx2=(unsigned)(out->avx&&out->avx2_hw);
+  out->avx512f_hw=(unsigned)((b>>16)&1u);
+  out->avx512f=(unsigned)(out->avx&&out->avx512_os_state&&out->avx512f_hw);
  }
 #endif
  return 0;}
