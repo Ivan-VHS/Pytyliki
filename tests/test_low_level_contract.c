@@ -92,7 +92,7 @@ static void test_target_and_memory_map(void) {
     pl_ll_memory_region region;
     memset(&target, 0, sizeof(target));
     target.abi_version = PL_LL_ABI_VERSION;
-    strcpy(target.id, "test-x64");
+    memcpy(target.id, "test-x64", sizeof("test-x64"));
     target.address_bits = 32u;
     target.word_bits = 64u;
     target.byte_order = PL_LL_LITTLE_ENDIAN;
@@ -111,35 +111,35 @@ static void test_target_and_memory_map(void) {
     assert(pl_ll_memory_map_init(&map, 32u) == PL_LL_OK);
 
     memset(&region, 0, sizeof(region));
-    strcpy(region.name, "RAM");
+    memcpy(region.name, "RAM", sizeof("RAM"));
     region.base = UINT64_C(0x1000);
     region.size = 256u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_WRITE | PL_LL_REGION_CACHEABLE;
     region.access_alignment = 1u;
     assert(pl_ll_memory_map_add(&map, &region) == PL_LL_OK);
 
-    strcpy(region.name, "ROM");
+    memcpy(region.name, "ROM", sizeof("ROM"));
     region.base = UINT64_C(0x2000);
     region.size = 256u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_EXECUTE;
     region.access_alignment = 1u;
     assert(pl_ll_memory_map_add(&map, &region) == PL_LL_OK);
 
-    strcpy(region.name, "MMIO");
+    memcpy(region.name, "MMIO", sizeof("MMIO"));
     region.base = UINT64_C(0x4000);
     region.size = 256u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_WRITE | PL_LL_REGION_DEVICE;
     region.access_alignment = 4u;
     assert(pl_ll_memory_map_add(&map, &region) == PL_LL_OK);
 
-    strcpy(region.name, "OVERLAP");
+    memcpy(region.name, "OVERLAP", sizeof("OVERLAP"));
     region.base = UINT64_C(0x40F0);
     region.size = 64u;
     region.flags = PL_LL_REGION_READ;
     region.access_alignment = 1u;
     assert(pl_ll_memory_map_add(&map, &region) == PL_LL_OVERLAP);
 
-    strcpy(region.name, "OUT_OF_RANGE");
+    memcpy(region.name, "OUT_OF_RANGE", sizeof("OUT_OF_RANGE"));
     region.base = UINT64_C(0xFFFFFFF0);
     region.size = 64u;
     region.flags = PL_LL_REGION_READ;
@@ -149,7 +149,7 @@ static void test_target_and_memory_map(void) {
                                  PL_LL_REGION_READ) != NULL);
     assert(pl_ll_memory_map_find(&map, UINT64_C(0x1000), 257u,
                                  PL_LL_REGION_READ) == NULL);
-    strcpy(region.name, "W_X_REJECTED");
+    memcpy(region.name, "W_X_REJECTED", sizeof("W_X_REJECTED"));
     region.base = UINT64_C(0x6000);
     region.size = 64u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_WRITE | PL_LL_REGION_EXECUTE;
@@ -168,7 +168,7 @@ static void test_bus_capabilities_and_mmio_fences(void) {
     uint64_t value = 0u;
     memset(&target, 0, sizeof(target));
     target.abi_version = PL_LL_ABI_VERSION;
-    strcpy(target.id, "bus-test");
+    memcpy(target.id, "bus-test", sizeof("bus-test"));
     target.address_bits = 32u;
     target.word_bits = 32u;
     target.byte_order = PL_LL_LITTLE_ENDIAN;
@@ -180,18 +180,18 @@ static void test_bus_capabilities_and_mmio_fences(void) {
         PL_LL_POWER_MASK(PL_LL_POWER_THROTTLED);
     assert(pl_ll_memory_map_init(&map, 32u) == PL_LL_OK);
     memset(&region, 0, sizeof(region));
-    strcpy(region.name, "RAM");
+    memcpy(region.name, "RAM", sizeof("RAM"));
     region.base = UINT64_C(0x1000);
     region.size = 256u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_WRITE;
     region.access_alignment = 1u;
     assert(pl_ll_memory_map_add(&map, &region) == PL_LL_OK);
-    strcpy(region.name, "ROM");
+    memcpy(region.name, "ROM", sizeof("ROM"));
     region.base = UINT64_C(0x2000);
     region.size = 256u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_EXECUTE;
     assert(pl_ll_memory_map_add(&map, &region) == PL_LL_OK);
-    strcpy(region.name, "MMIO");
+    memcpy(region.name, "MMIO", sizeof("MMIO"));
     region.base = UINT64_C(0x4000);
     region.size = 256u;
     region.flags = PL_LL_REGION_READ | PL_LL_REGION_WRITE | PL_LL_REGION_DEVICE;
