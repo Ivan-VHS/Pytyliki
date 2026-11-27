@@ -187,13 +187,44 @@ static int pop_delimiter(delimiter_stack *stack, char value,
     return 1;
 }
 
-static int skip_quoted_or_comment(const char *source, size_t *offset,
-                                  pl_hw_syntax_error *error) {
-    if (source[*offset] == '"' || source[*offset] == '\'')
-        return parse_quoted(source, offset, error);
-    if (source[*offset] == '/' &&
-        (source[*offset + 1u] == '/' || source[*offset + 1u] == '*'))
-        return skip_comment(source, offset, error);
+static int has_top_level_assignment(const char *source, size_t start, size_t end) {
+    delimiter_stack stack = {{0}, 0u};
+    size_t index = start;
+
+    while (index < end) {
+        char value = source[index];
+        if (value == '"' || value == '\'') {
+            pl_hw_syntax_error ignored = {{0}, 0u};
+            if (!parse_quoted(source, &index, &ignored)) return 0;
+            continue;
+        }
+        if (value == '/' && index + 1u < end &&
+            (source[index + 1u] == '/' || source[index + 1u] == '*')) {
+            if (source[index + 1u] == '/') {
+                while (index < end && source[index] != '\n') ++index;
+            } else {
+                index += 2u;
+                while (index + 1u < end &&
+                       !(source[index] == '*' && source[index + 1u] == '/'))
+                    ++index;
+                index += 2u;
+            }
+            continue;
+        }
+        if (value == '(' || value == '[') {
+            if (stack.length < sizeof(stack.values))
+                stack.values[stack.length++] = value;
+            ++index;
+            continue;
+        }
+        if (value == ')' || value == ']') {
+            if (stack.length != 0u) --stack.length;
+            ++index;
+            continue;
+        }
+        if (value == '=' && stack.length == 0u) return 1;
+        ++index;
+    }
     return 0;
 }
 
@@ -400,7 +431,6 @@ int pl_hw_syntax_parse_one(const char *source,
     size_t body_close = NO_OFFSET;
     size_t semicolon = NO_OFFSET;
     pl_hw_construct_kind kind;
-    int has_semicolon;
 
     if (error != NULL) memset(error, 0, sizeof(*error));
     if (source == NULL || out == NULL)
@@ -481,7 +511,8 @@ int pl_hw_syntax_parse_one(const char *source,
         out->body_kind = PL_HW_BODY_BLOCK;
         out->body_offset = body_open;
         out->body_length = body_close - body_open + 1u;
-        if (kind == PL_HW_CONSTRUCT_FUNCTION && source[offset] == '=')
+        if (kind == PL_HW_CONSTRUCT_FUNCTION &&
+            has_top_level_assignment(source, offset, body_open))
             out->body_kind = PL_HW_BODY_EXPRESSION;
         return 1;
     }
@@ -499,8 +530,6 @@ int pl_hw_syntax_parse_one(const char *source,
     out->body_length = semicolon - offset;
     if (out->body_length == 0u)
         return set_error(error, offset, "construct body cannot be empty");
-    has_semicolon = 1;
-    (void)has_semicolon;
     return 1;
 }
 
