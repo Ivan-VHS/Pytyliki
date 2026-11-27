@@ -124,6 +124,18 @@ Default mode is `inspect`. Target writes, debug register writes, power controls 
 
 ## 6. Evidence, timing and instrumentation
 
+The waveform/electrical view uses a signal-specific legend, independent from the global IDE theme:
+
+| State | Default color | Pattern |
+|---|---|---|
+| VCC / logic high | Red `#E53935` | Solid |
+| GND / logic low | Black `#070707` | Solid |
+| Floating / high impedance | Blue `#2878D0` | Dashed |
+| Contended | Yellow `#FFD400` | Crosshatch |
+| Unknown / indeterminate | Gray `#8B8B8B` | Dotted |
+
+Every state also has a text label and a non-color pattern. The palette can be changed without changing signal semantics.
+
 All time, power and signal data carries provenance. The UI distinguishes live OS observation, bounded host measurement, static analysis, reference fixture, deterministic or probabilistic simulation, hardware-in-the-loop and physical sign-off.
 
 A value includes target, provider, evidence mode, clock source, unit, sampling window, sample count, uncertainty, dropped samples, profiler/probe overhead and limitations. TSC ticks, core cycles, device ticks and wall time are not interchangeable without a calibrated mapping.
