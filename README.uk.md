@@ -4,45 +4,79 @@
 
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
+> Локальна робоча станція на C11 для виявлення характеристик процесора, обмежених вимірювань, статичної діагностики вихідного коду та версіонованої native-взаємодії.
+
+**Відомості про проєкт:** розробка · версія CMake-проєкту 0.8.0 · ядро C11 · графічний інтерфейс Windows · ядро та CLI для Windows/Linux · MIT · **Документацію перевірено:** 2026-11-27 UTC
+
 <p align="center"><img src="assets/readme/dashboard.svg" alt="Огляд Pytyliki" width="100%"></p>
-<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki у Windows" width="100%"></a></p>
+<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Робоча станція Pytyliki у Windows" width="100%"></a></p>
 
-Pytyliki — локальна робоча станція для аналізу процесорних систем на основі обмеженого ядра C11, інтерфейсу Windows і переносних CLI-інструментів.
+## Призначення та межі
 
-**Межі:** інвентаризація процесора й файлів, локальний аналіз із визначеними лімітами та діагностичні звіти. Виявлення обладнання працює лише на читання: застосунок не змінює планування ОС, affinity, частоти, напругу чи прошивку.
+Pytyliki локально збирає й аналізує дані про процесорну систему. Ядро C11 та інструменти командного рядка забезпечують read-only-виявлення характеристик хоста, обмежені навантаження CPU і пам’яті, статичну перевірку вихідного коду та числові метрики. Графічний інтерфейс Win32 доступний лише у Windows; ядро та CLI збираються для Windows і Linux.
+
+Виявлення обладнання не змінює планування CPU, affinity, напругу, частоту, прошивку, драйвери або налаштування пристроїв. Результати бенчмарків описують конкретний локальний запуск, а не універсальний рейтинг продуктивності.
 
 ## Можливості
 
-- Топологія CPU, ISA та пам’ять; обмежені вимірювання CPU/пам’яті й приклади розподілу навантаження.
-- Імпорт та аналіз профілів, folded stacks і SVG flamegraphs.
-- Діагностика коду, синтаксичний аналіз QCS і довідкові оцінки FLASH/SRAM для MCU.
-- Версійований C ABI та структуровані звіти з походженням даних і межами точності.
+- **Інвентаризація процесора:** топологія CPU, доступні набори інструкцій і відомості про пам’ять, зокрема перевірка векторного стану ОС.
+- **Обмежені вимірювання:** відтворювані навантаження CPU, пам’яті й матриць із явними лімітами та структурованими результатами.
+- **Перевірка вихідного коду:** статична діагностика та перевірка синтаксису QCS; код не виконується й не переписується.
+- **Числові метрики:** операції C11 із векторами, відстанями, геометрією та квадратичними формами через стабільний native API.
+- **Робота з пам’яттю:** типізовані подання, перевірка переповнення зрізів, обмежені арени, контрольні точки rewind і пули фіксованих блоків.
+- **Native-взаємодія:** версіонований C ABI v1 із буферами, що належать стороні-виклику; споживач має явно вибрати довірену бібліотеку.
+- **Embedded-довідник:** профілі MCU, оцінки пам’яті, генерація стартових заготовок та імітація MMIO-масок. Це довідкові інструменти, а не фізичне відображення пам’яті, доступ до пристроїв або прошивання.
+- **Інвентаризація toolchain:** read-only-пошук доступних інструментів; знайдені програми не встановлюються та не запускаються.
 
-Деталі: [Можливості](docs/FEATURES.md) · [Архітектура](docs/ARCHITECTURE.md) · [Статистика бенчмарків](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md).
+Обробка PCM16 WAV/DSP не входить до поточної поставленої функціональності ядра Pytyliki. Перед використанням часткових або запланованих можливостей звіряйтеся з контрактом проєкту та матрицею функцій.
 
-## Збирання й тести
+## Збирання та перевірка
 
-Потрібні CMake 3.16+, компілятор C11 (MSVC, GCC або Clang) і Git. Win32 GUI доступний лише у Windows; ядро та CLI переносні. Python необов’язковий і використовується тільки окремими перевірками контрактів, а не runtime C11.
+Потрібні CMake 3.16+, компілятор C11 (MSVC, GCC або Clang) і Git. Win32 GUI збирається у Windows. Python необов’язковий і використовується для додаткових перевірок контрактів репозиторію; він не є середовищем виконання C11-ядра.
 
-```sh
+~~~sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
-```
+~~~
 
-Перші перевірки:
+Корисні перші запуски в Linux:
 
-```sh
+~~~sh
 ./build/pytyliki --profile
 ./build/pytyliki --suite
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
-```
+~~~
 
-## Специфікації та інтеграція
+У Windows використовуйте відповідний виконуваний файл у каталозі вибраної конфігурації CMake, наприклад `build/Release/pytyliki.exe`.
 
-- [Індекс документації](docs/README.md) · [Релізи](docs/RELEASE.md) · [Формат звіту](docs/REPORT_ENVELOPE.md)
-- [Інтеграція з Reaper](docs/REAPER_INTEGRATION.md) — необов’язкова CI-перевірка політик, а не runtime-залежність застосунку.
-- [Спільні стандарти екосистеми](https://github.com/Ivan-VHS/DAK/blob/main/docs/SHARED_STANDARDS.md)
+Для GCC/Clang можна ввімкнути AddressSanitizer та UndefinedBehaviorSanitizer параметром `-DPYTYLIKI_ENABLE_SANITIZERS=ON`.
 
-[Внесок у проєкт](CONTRIBUTING.md) · [Безпека](SECURITY.md) · [MIT](LICENSE)
+## Інтерфейси та екосистема
+
+| Інтерфейс | Роль | Межа |
+|---|---|---|
+| `pytyliki.c-abi.v1` | Native API метрик | Явний шлях до бібліотеки; буфери належать стороні-виклику |
+| `octa.pyramid.peer-mesh.v1` | Контракт взаємодії | Версіоновані метадані та явні запити |
+| Reaper | Необов’язковий споживач метрик | Native FFI вмикається явно й потребує довіреної ABI-сумісної бібліотеки |
+| OPlague | Необов’язковий споживач метрик | Явний вибір довіреної бібліотеки; приховане завантаження заборонене |
+
+Інтеграції не надають апаратних привілеїв і не розширюють read-only-межі виявлення обладнання.
+
+## Документація
+
+- [Огляд можливостей](docs/FEATURES.md) · [Архітектура](docs/ARCHITECTURE.md)
+- [Статистика бенчмарків](docs/BENCHMARK_STATISTICS.md) · [Довідкова Embedded C-система](docs/EMBEDDED_C.md)
+- [Нативна перевірка QCS](docs/QCS_NATIVE.md) · [Індекс документації](docs/README.md)
+- [Процес релізу](docs/RELEASE.md) · [Формат звітів](docs/REPORT_ENVELOPE.md)
+- [Інтеграція з Reaper](docs/REAPER_INTEGRATION.md) · [Спільні стандарти екосистеми](https://github.com/Ivan-VHS/DAK/blob/main/docs/SHARED_STANDARDS.md)
+
+## Безпека та внесок
+
+Вважайте імпортовані профілі й вихідні файли недовіреними даними. Зберігайте обмеженість і детермінованість аналізу. Не додавайте приховану мережеву активність, привілейовані зміни обладнання, автоматичне встановлення інструментів або запис у прошивку/пристрої.
+
+Перед пропозицією змін прочитайте [CONTRIBUTING.md](CONTRIBUTING.md). Про вразливості повідомляйте відповідно до [SECURITY.md](SECURITY.md). Репозиторій поширюється за ліцензією [MIT](LICENSE).
+
+---
+<p align="center"><sub>Pytyliki · перевірка README 2026-11-27 UTC</sub></p>
