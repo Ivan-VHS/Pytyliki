@@ -1,0 +1,12 @@
+probe ipc_watch on core[0] window 1024_cycles {
+    require capability(performance_counters);
+
+    measure retired = pmu::retired_instructions();
+    measure cycles = pmu::core_cycles();
+
+    derive ipc = if cycles == 0 { none } else { retired / cycles };
+
+    alert when ipc < 0.45 -> log("LOW_IPC", ipc);
+    alert when pmu::stall_cycles() > 300 -> emit_muki("PIPELINE_STALL_STORM");
+}
+
