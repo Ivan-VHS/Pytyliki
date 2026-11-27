@@ -58,6 +58,19 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
         if workspace.get("source_registry") != workspace_registry.get("source"):
             errors.append(f"{workspace.get('id')}: must reuse the canonical enhancement registry")
 
+    perspectives = data.get("perspectives", [])
+    perspective_ids = [item.get("id") for item in perspectives]
+    if len(perspectives) != EXPECTED_WORKSPACES or len(perspective_ids) != len(set(perspective_ids)):
+        errors.append("perspectives must contain exactly 20 unique named engineering spaces")
+    for perspective in perspectives:
+        perspective_id = perspective.get("id", "<unknown>")
+        if perspective.get("workspace") not in set(workspace_ids):
+            errors.append(f"{perspective_id}: unknown workspace {perspective.get('workspace')}")
+        if perspective.get("scope_kind") != "workspace_perspective":
+            errors.append(f"{perspective_id}: must be a workspace perspective")
+        if perspective.get("authority") != "no_privilege_elevation":
+            errors.append(f"{perspective_id}: perspectives must not grant privilege elevation")
+
     shell = data.get("shell", {})
     if shell.get("default_mode") != "inspect":
         errors.append("Processor IDE default mode must be inspect")
