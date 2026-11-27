@@ -311,7 +311,7 @@ pl_processor_fabric_status pl_processor_fabric_validate(
                 node->kind == PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR &&
                 node->state == PL_PROCESSOR_FABRIC_DISABLED &&
                 node->capacity_basis_points == 0u;
-            if (node->logical_id >= 64u ||
+            if (node->logical_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS ||
                 (!offline_logical_cpu &&
                  (node->capacity_basis_points == 0u ||
                   node->capacity_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS)) ||
@@ -476,9 +476,8 @@ pl_processor_fabric_status pl_processor_fabric_place_v2(
         normalized[i] = tasks[i];
         normalized[i].task_id = process->id;
         normalized[i].required_isa_mask = (uint32_t)process->feature_mask;
-        normalized[i].affinity_mask[0] = process->affinity_mask;
-        for (size_t word = 1u; word < PL_TOPOLOGY_MASK_WORDS; ++word)
-            normalized[i].affinity_mask[word] = 0u;
+        memcpy(normalized[i].affinity_mask, process->affinity_mask,
+               sizeof(normalized[i].affinity_mask));
         normalized[i].requested_load_basis_points = process->requested_load_basis_points;
         normalized[i].priority = process->priority;
         normalized[i].dependencies_pending =
@@ -508,6 +507,19 @@ pl_processor_fabric_status pl_processor_fabric_place_v2(
     return PL_PROCESSOR_FABRIC_OK;
 }
 
+static int affinity_is_unrestricted(const uint64_t mask[PL_TOPOLOGY_MASK_WORDS]) {
+    for (size_t i = 0u; i < PL_TOPOLOGY_MASK_WORDS; ++i)
+        if (mask[i] != 0u) return 0;
+    return 1;
+}
+
+static int affinity_allows(const uint64_t mask[PL_TOPOLOGY_MASK_WORDS],
+                           uint32_t logical_id) {
+    if (logical_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS) return 0;
+    return (mask[logical_id / 64u] &
+            (UINT64_C(1) << (logical_id % 64u))) != 0u;
+}
+
 static int worker_supports_task(const pl_processor_fabric_node *worker,
                                 const pl_processor_fabric_node *task) {
     if (!is_worker_kind(worker->kind) ||
@@ -517,8 +529,8 @@ static int worker_supports_task(const pl_processor_fabric_node *worker,
         return 0;
     if ((worker->feature_mask & task->feature_mask) != task->feature_mask)
         return 0;
-    if (task->affinity_mask != 0u &&
-        (task->affinity_mask & (UINT64_C(1) << worker->logical_id)) == 0u)
+    if (!affinity_is_unrestricted(task->affinity_mask) &&
+        !affinity_allows(task->affinity_mask, worker->logical_id))
         return 0;
     return 1;
 }
@@ -888,10 +900,10 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
             cpu->online != 0u ? PL_PROCESSOR_FABRIC_AVAILABLE
                               : PL_PROCESSOR_FABRIC_DISABLED;
 
-        if (cpu->logical_id >= 64u)
+        if (cpu->logical_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS)
             return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED,
                         cpu->logical_id, 0u, 0u,
-                        "PPF v1 cannot encode a logical processor ID >= 64");
+                        "logical processor ID exceeds the PPF v2 affinity width");
         for (uint32_t feature = 0u; feature < PL_TOPOLOGY_ISA_FEATURE_COUNT; ++feature)
             if (topology->isa[feature].os_usable == 1)
                 feature_mask |= UINT64_C(1) << feature;
@@ -944,7 +956,8 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
         if (cpu_node_id == 0u)
             return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                         cpu->logical_id, 0u, 0u, "node buffer exhausted at logical CPU");
-        nodes[used_nodes - 1u].affinity_mask = UINT64_C(1) << cpu->logical_id;
+        nodes[used_nodes - 1u].affinity_mask[cpu->logical_id / 64u] =
+            UINT64_C(1) << (cpu->logical_id % 64u);
 
         if (cpu->group_id != PL_TOPOLOGY_UNKNOWN) {
             group_id = find_topology_node(groups, group_count, cpu->group_id, 0u, 0u);
