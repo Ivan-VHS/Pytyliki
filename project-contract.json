@@ -192,7 +192,8 @@
         "tests/test_processor_fabric.c",
         "docs/PROCESSOR_FABRIC_V1.md",
         "schemas/pytyliki.processor-fabric-report.v1.schema.json",
-        "schemas/pytyliki.processor-fabric-catalogues.v1.schema.json"
+        "schemas/pytyliki.processor-fabric-catalogues.v1.schema.json",
+        "src/processor_fabric_cli.c"
       ]
     }
   ],
