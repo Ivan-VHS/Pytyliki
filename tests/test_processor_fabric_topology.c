@@ -29,6 +29,9 @@ int main(void) {
     pl_processor_fabric_error error;
     pl_processor_fabric_model model;
     pl_processor_fabric_assignment assignments[1];
+    pl_placement_task placement_tasks[2];
+    pl_placement_pressure pressure;
+    pl_placement_result placement;
     size_t node_count = 0u, edge_count = 0u, assignment_count = 0u;
 
     memset(&topology, 0, sizeof(topology));
@@ -110,6 +113,81 @@ int main(void) {
     assert(pl_processor_fabric_plan(&model, &workspace, assignments, 1u,
         &assignment_count, &summary, &error) == PL_PROCESSOR_FABRIC_OK);
     assert(assignment_count == 0u);
+
+    /* Extend the inventory with a process pool and a dependent READY process. */
+    {
+        pl_processor_fabric_node pool;
+        pl_processor_fabric_node ready_local;
+        pl_processor_fabric_node ready_waiting;
+        pl_processor_fabric_node prerequisite;
+        pl_processor_fabric_edge dependency;
+        memset(&pool, 0, sizeof(pool));
+        pool.id = 100u; pool.generation = topology.generation;
+        pool.kind = PL_PROCESSOR_FABRIC_PROCESS_POOL;
+        pool.state = PL_PROCESSOR_FABRIC_DECLARED;
+        memset(&ready_local, 0, sizeof(ready_local));
+        ready_local.id = 101u; ready_local.parent_id = pool.id;
+        ready_local.generation = topology.generation;
+        ready_local.kind = PL_PROCESSOR_FABRIC_PROCESS;
+        ready_local.state = PL_PROCESSOR_FABRIC_READY;
+        ready_local.domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
+        ready_local.feature_mask = UINT64_C(1) << PL_TOPOLOGY_ISA_SSE2;
+        ready_local.affinity_mask = UINT64_C(1) << 2u;
+        ready_local.requested_load_basis_points = 1200u;
+        ready_local.priority = 5u;
+        memset(&ready_waiting, 0, sizeof(ready_waiting));
+        ready_waiting.id = 102u; ready_waiting.parent_id = pool.id;
+        ready_waiting.generation = topology.generation;
+        ready_waiting.kind = PL_PROCESSOR_FABRIC_PROCESS;
+        ready_waiting.state = PL_PROCESSOR_FABRIC_READY;
+        ready_waiting.domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
+        ready_waiting.feature_mask = UINT64_C(1) << PL_TOPOLOGY_ISA_SSE2;
+        ready_waiting.requested_load_basis_points = 900u;
+        ready_waiting.priority = 9u;
+        memset(&prerequisite, 0, sizeof(prerequisite));
+        prerequisite.id = 103u; prerequisite.parent_id = pool.id;
+        prerequisite.generation = topology.generation;
+        prerequisite.kind = PL_PROCESSOR_FABRIC_PROCESS;
+        prerequisite.state = PL_PROCESSOR_FABRIC_DECLARED;
+        prerequisite.domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
+        dependency.from_id = prerequisite.id;
+        dependency.to_id = ready_waiting.id;
+        dependency.kind = PL_PROCESSOR_FABRIC_DEPENDS_ON;
+        nodes[node_count++] = pool;
+        nodes[node_count++] = ready_local;
+        nodes[node_count++] = ready_waiting;
+        nodes[node_count++] = prerequisite;
+        edges[edge_count++] = dependency;
+        model.node_count = node_count;
+        model.edge_count = edge_count;
+
+        memset(placement_tasks, 0, sizeof(placement_tasks));
+        placement_tasks[0].task_id = ready_local.id;
+        placement_tasks[0].preferred_numa_node_id = 0u;
+        placement_tasks[0].working_set_bytes = 1024u * 1024u;
+        placement_tasks[0].memory_bandwidth_bytes_per_second = 1000000u;
+        placement_tasks[0].require_local_numa = 1u;
+        placement_tasks[1].task_id = ready_waiting.id;
+        placement_tasks[1].preferred_numa_node_id = 0u;
+        placement_tasks[1].working_set_bytes = 2048u;
+        placement_tasks[1].require_local_numa = 1u;
+        memset(&pressure, 0, sizeof(pressure));
+        pressure.generation = topology.generation;
+        pressure.numa_bandwidth_capacity_bytes_per_second[0] = 100000000u;
+        assert(pl_processor_fabric_place_v2(
+            &model, &topology, placement_tasks, 2u, &pressure, &placement,
+            &workspace, &summary, &error) == PL_PROCESSOR_FABRIC_OK);
+        assert(placement.assignment_count == 2u);
+        assert(placement.assignments[0].task_id == ready_waiting.id);
+        assert(placement.assignments[0].state == PL_PLACEMENT_WAITING_DEPENDENCY);
+        assert(placement.assignments[1].task_id == ready_local.id);
+        assert(placement.assignments[1].state == PL_PLACEMENT_ASSIGNED);
+        assert(placement.assignments[1].logical_cpu_id == 2u);
+        assert(placement.report.execution_performed == 0u);
+        assert(placement.report.affinity_changed == 0u);
+        assert(placement.report.scheduling_changed == 0u);
+    }
+
     puts("processor fabric topology bridge tests passed");
     return 0;
 }
