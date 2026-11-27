@@ -73,6 +73,8 @@ static void test_navier_stokes_diagnostics(void) {
     }
     CHECK_OK(pl_math_navier_stokes_cfl_dt(2.0, 0.5, 0.5, 0.5, 0.01, 0.5, &dt));
     assert(dt > 0.0 && dt < 0.1);
+    assert(pl_math_grid3d_divergence(u, v, w, 100u, 100u, 101u,
+                                      1.0, 1.0, 1.0, div) == PL_MATH_LIMIT);
 }
 
 static void test_bsd_hodge_and_tate(void) {
