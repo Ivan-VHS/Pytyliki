@@ -20,14 +20,21 @@ int main(void) {
         topology.logical_cpus[i].os_id=i;
         topology.logical_cpus[i].group_id=0u;
         topology.logical_cpus[i].package_id=0u;
+        topology.logical_cpus[i].die_id=0u;
         topology.logical_cpus[i].core_id=i/2u;
         topology.logical_cpus[i].numa_node_id=i<2u?0u:1u;
         topology.logical_cpus[i].online=1u;
         topology.logical_cpus[i].evidence=PL_TOPOLOGY_EVIDENCE_OBSERVED;
     }
     topology.numa_node_count=2u;
-    topology.numa_nodes[0].node_id=0u; topology.numa_nodes[0].evidence=PL_TOPOLOGY_EVIDENCE_OBSERVED;
-    topology.numa_nodes[1].node_id=1u; topology.numa_nodes[1].evidence=PL_TOPOLOGY_EVIDENCE_OBSERVED;
+    topology.numa_nodes[0].node_id=0u;
+    topology.numa_nodes[0].logical_mask[0]=UINT64_C(3);
+    topology.numa_nodes[0].logical_count=2u;
+    topology.numa_nodes[0].evidence=PL_TOPOLOGY_EVIDENCE_OBSERVED;
+    topology.numa_nodes[1].node_id=1u;
+    topology.numa_nodes[1].logical_mask[0]=UINT64_C(12);
+    topology.numa_nodes[1].logical_count=2u;
+    topology.numa_nodes[1].evidence=PL_TOPOLOGY_EVIDENCE_OBSERVED;
     topology.cache_count=2u;
     for(uint32_t i=0u;i<2u;++i) {
         topology.caches[i].cache_id=i; topology.caches[i].level=3u;
