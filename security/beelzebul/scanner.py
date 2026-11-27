@@ -161,6 +161,53 @@ def validate_exceptions(root,findings):
             add(findings,"G04","high",".beelzebul/exceptions.v1.json",index+1,"Expired exception detected.","high");continue
         valid.append(item)
     return valid
+def workflow_has_unscoped_write(text):
+    """Return true when write permissions are broader than a gated release job."""
+    lines = text.splitlines()
+
+    def requests_write(block, permission_indent):
+        in_permissions = False
+        for line in block:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            indent = len(line) - len(line.lstrip())
+            if indent == permission_indent and stripped == "permissions:":
+                in_permissions = True
+                continue
+            if in_permissions and indent <= permission_indent:
+                in_permissions = False
+            if in_permissions and re.match(r"^contents\\s*:\\s*write\\b", stripped, re.I):
+                return True
+            if in_permissions and re.match(r"^permissions\\s*:\\s*write-all\\b", stripped, re.I):
+                return True
+        return False
+
+    jobs_index = next((i for i, line in enumerate(lines) if line.strip() == "jobs:" and not line[:len(line)-len(line.lstrip())]), len(lines))
+    if requests_write(lines[:jobs_index], 0):
+        return True
+
+    job_headers = [
+        (i, re.match(r"^  ([A-Za-z0-9_-]+):\\s*$", line))
+        for i, line in enumerate(lines[jobs_index + 1:], jobs_index + 1)
+    ]
+    job_headers = [(i, match.group(1)) for i, match in job_headers if match]
+    for index, (start, job_name) in enumerate(job_headers):
+        end = job_headers[index + 1][0] if index + 1 < len(job_headers) else len(lines)
+        block = lines[start:end]
+        if not requests_write(block, 4):
+            continue
+
+        guarded_release = (
+            job_name == "publish-release"
+            and any(re.search(r"^\\s{4}if:\\s*startsWith\\(github\\.ref,\\s*['\\\"]refs/tags/['\\\"]\\)", line) for line in block)
+            and any(re.match(r"^\\s{4}needs:\\s*build-windows\\s*$", line) for line in block)
+        )
+        if not guarded_release:
+            return True
+    return False
+
+
 def inspect_infrastructure(file_texts,findings):
     paths=set(file_texts)
     for path,text in sorted(file_texts.items()):
@@ -177,7 +224,7 @@ def inspect_infrastructure(file_texts,findings):
             if re.search(r"\b(?:curl|wget)\b[\s\S]{0,180}\|\s*(?:ba)?sh\b",text,re.I):add(findings,"N05","critical",path,1,"Remote content is piped directly to a shell.","high")
             if "timeout-minutes:" not in text:add(findings,"N06","low",path,1,"Workflow has no explicit job timeout.","high")
             if "pull_request:" in low and "secrets." in low:add(findings,"N08","high",path,1,"Secret references exist in a workflow triggered by pull_request.","medium")
-            if re.search(r"contents\s*:\s*write|permissions\s*:\s*write-all",text,re.I):add(findings,"N14","high",path,1,"Workflow requests repository content write permission.","high")
+            if workflow_has_unscoped_write(text):add(findings,"N14","high",path,1,"Workflow grants repository content write outside an isolated tag-gated release job.","high")
             if "pull_request_target" in low and ("secrets." in low or "write-all" in low):add(findings,"N15","critical",path,1,"Privileged trigger is combined with secrets or broad write permissions.","high")
         if Path(path).name.lower()=="dockerfile" or Path(path).name.lower().startswith("dockerfile."):
             if re.search(r"^\s*from\s+\S+:latest\b",text,re.I|re.M):add(findings,"N09","medium",path,1,"Container base image uses a floating latest tag.","high")
