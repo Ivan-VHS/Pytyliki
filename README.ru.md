@@ -15,11 +15,12 @@ Pytyliki — локальная рабочая станция для анали�
 
 - Топология CPU, ISA и память; ограниченные измерения CPU/памяти и примеры распределения нагрузки.
 - Анализ периодичности сбоев потоков и ограниченные планы восстановления для потоков под управлением приложения.
+- Чтение WHEA/ETW и Linux EDAC, журнал доказательств RAS с контрольными снимками и обратимое размещение текущего потока.
 - Импорт и анализ профилей, folded stacks и SVG flamegraphs.
 - Диагностика исходников, синтаксический анализ QCS и справочные оценки FLASH/SRAM для MCU.
 - Версионированный C ABI и структурированные отчёты с происхождением данных и ограничениями.
 
-Подробнее: [Возможности](docs/FEATURES.md) · [Архитектура](docs/ARCHITECTURE.md) · [Статистика бенчмарков](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [Восстановление процессорных потоков](docs/PROCESSOR_THREAD_RECOVERY.md).
+Подробнее: [Возможности](docs/FEATURES.md) · [Архитектура](docs/ARCHITECTURE.md) · [Статистика бенчмарков](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [Восстановление процессорных потоков](docs/PROCESSOR_THREAD_RECOVERY.md) · [Платформенные адаптеры PTFR](docs/PTFR_PLATFORM_ADAPTERS.md).
 
 ## Сборка и тесты
 

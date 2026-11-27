@@ -3,7 +3,10 @@
 | Area | Scope | Boundary |
 |---|---|---|
 | CPU | identity, topology, memory, ISA/XCR0 | read-only |
-| PTFR | periodic fault correlation, CSV import, bounded recovery plans | advisory only; no host CPU control |\n| RAS provider | Windows WHEA Event Log snapshot | read-only; source metadata only; no worker attribution or severity guess |
+| PTFR | periodic fault correlation, CSV import, bounded recovery plans | task recovery stays within application-owned workers |
+| RAS providers | WHEA-Logger events and Linux EDAC CE/UE counter deltas | read-only; system-wide evidence, no inferred worker attribution |
+| RAS evidence journal | 128-entry bounded ring, deduplication, atomic snapshot checkpoint | caller-selected local file; CRC integrity, no hardware writes |
+| Thread placement | reversible current-thread affinity / CPU Set selection | explicit consent; no global CPU offlining |
 | Benchmarks | CPU, memory, matrices, partitioning | bounded local tests |
 | Source review | static diagnostics | no compile/run/rewrite |
 | Memory | typed views, checked slices, arenas, pools | fixed limits |

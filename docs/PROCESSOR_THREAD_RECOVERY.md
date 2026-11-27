@@ -77,39 +77,9 @@ Supported fault kinds are `transient`, `corrected_hardware`, `uncorrected_hardwa
 
 The demo and checked-in CSV fixture are synthetic conformance inputs. An imported CSV does not become a hardware event merely because it uses a hardware fault-kind label; retain the exporting provider, original record identifier, machine identity, clock domain and attribution quality in the upstream evidence system. The current CLI reports the recovery plan only and cannot apply it to the host scheduler. `--ras-whea` is an independent read-only event-log viewer; it does not silently merge host records into worker attribution or feed the PTFR planner.
 
-## Hardware evidence and platform integration
+## Platform integration
 
-The event provider is deliberately separate from the monitor. A future Windows provider can consume WHEA event records and ETW notifications. WHEA distinguishes corrected from uncorrected errors and supports user-mode monitoring through event records and ETW; low-level capture and recovery are coordinated by the operating system and platform-specific components. A future Linux provider can consume RAS/EDAC reports and the corresponding kernel interfaces. EDAC exposes corrected and uncorrected error observations; a rise in corrected errors can justify preventive service, but is not by itself proof that an uncorrected error will occur.
-
-This increment does not implement either provider. No Windows event subscription, ETW session, Linux sysfs reader, `/dev/mcelog` reader, kernel driver, PSHED plug-in or privileged service is included. Provider identity and source provenance must be part of every event in a future adapter. Events from synthetic tests and live hardware must never be mixed in the same evidence series.
-
-## Nanometer-scale devices and copper interconnects
-
-The useful software role at the nano-interconnect level is observation, correlation and serviceability—not self-healing. Copper back-end-of-line wiring is subject to electromigration: current-driven atomic transport can create voids and hillocks, with resistance increase, open circuits or shorts. Scaling changes the contribution of grain boundaries, interfaces and barriers; current density, temperature, geometry, microstructure and mechanical stress all matter. These are physical-design and process-reliability concerns, not operating-system thread-scheduling controls.
-
-A credible silicon-reliability research track should therefore separate:
-
-1. **System telemetry:** corrected/uncorrected machine checks, ECC counts, cache/bus error records, temperature, power and source location with provenance.
-2. **Statistical degradation analysis:** trend rates, exposure time, workload, temperature/current conditions, confidence bounds and false-positive controls.
-3. **Physical modelling:** electromigration lifetime and stress/void-growth models (for example, Black-type lifetime models, Blech-length effects, atomic-flux-divergence and stress-diffusion models), calibrated to foundry/process data.
-4. **Design qualification:** layout/DRC, extracted parasitics, IR-drop, current-density, thermal, via and lifetime checks in qualified EDA/TCAD flows.
-5. **Field response:** reduce application exposure, checkpoint/stop affected work, report the exact source and recommend platform service or replacement when evidence warrants it.
-
-A user-mode program cannot inspect individual copper atoms or reverse a void in a nanowire. Such a claim would require physical intervention or a redesigned chip/process, not a Reaper command.
-
-## Language and toolchain ownership
-
-| Technology | PTFR role | Status in this increment |
-|---|---|---|
-| Reaper `.rpr` | Policy operands, state transitions, typed reports and scenario conformance | Implemented as a Reaper reference-runtime program and CI fixture |
-| C11 | Bounded event ingestion, cadence analysis and recovery decision API | Implemented and unit-tested |
-| Assembly | Inspect compiler output or provide separately qualified, target-specific probes | No hand-written privileged assembly or CPU register writes |
-| Bytecode | Reaper VM execution of the policy program | Uses the existing bounded Reaper VM; not a new native hardware bytecode backend |
-| Rust | Candidate for a future memory-safe OS telemetry adapter | Not added: no Rust adapter or Cargo build is part of this repository increment |
-| Swift | Candidate for a native macOS/desktop presentation adapter | Not added: no Swift UI or platform integration is part of this increment |
-| TypeScript | Candidate for a web/desktop report consumer and generated report types | Not added: no TypeScript application or package pipeline is currently part of this increment |
-
-These language boundaries are intentional. A polyglot wrapper does not grant kernel privilege. Each future adapter must have a versioned contract, explicit platform support, read-only default, source provenance, tests and a separately reviewed capability boundary before it can consume privileged OS interfaces.
+See [PTFR platform adapters and evidence journal](PTFR_PLATFORM_ADAPTERS.md) for the current Windows WHEA-Logger, Linux EDAC, persisted RAS journal, reversible application-thread placement, Assembly, Rust, Swift and TypeScript status. The platform providers remain read-only. System-wide hardware events are never assigned to a PTFR worker without separate evidence.
 
 ## Validation
 

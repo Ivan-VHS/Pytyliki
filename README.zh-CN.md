@@ -15,11 +15,12 @@ Pytyliki 是一款面向处理器系统分析的本地工作站，采用受限 C
 
 - CPU 拓扑、ISA 与内存信息；受限 CPU/内存测量及工作负载分区示例。
 - 面向应用自主管理工作线程的周期性故障分析与受限恢复计划。
+- 只读 WHEA/ETW 与 Linux EDAC 遥测、可检查点恢复的 RAS 证据日志，以及可逆的当前线程放置。
 - 性能分析数据导入、分析、折叠堆栈和 SVG 火焰图。
 - 源码诊断、QCS 语法检查以及 MCU FLASH/SRAM 参考估算。
 - 版本化 C ABI，以及包含来源和限制信息的结构化报告。
 
-详细资料：[功能](docs/FEATURES.md) · [架构](docs/ARCHITECTURE.md) · [基准统计](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [处理器线程故障恢复](docs/PROCESSOR_THREAD_RECOVERY.md)。
+详细资料：[功能](docs/FEATURES.md) · [架构](docs/ARCHITECTURE.md) · [基准统计](docs/BENCHMARK_STATISTICS.md) · [Embedded C](docs/EMBEDDED_C.md) · [QCS](docs/QCS_NATIVE.md) · [处理器线程故障恢复](docs/PROCESSOR_THREAD_RECOVERY.md) · [PTFR 平台适配器](docs/PTFR_PLATFORM_ADAPTERS.md)。
 
 ## 构建与测试
 

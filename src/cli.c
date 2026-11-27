@@ -158,6 +158,7 @@ static void usage(void) {
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --thread-recovery FILE.csv | --thread-recovery-demo | --ras-whea\n"
+         "  pytyliki --ras-evidence JOURNAL.bin (poll and atomically persist OS RAS evidence)\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
          "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }

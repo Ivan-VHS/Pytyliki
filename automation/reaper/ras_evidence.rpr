@@ -1,0 +1,68 @@
+# Reaper conformance for read-only WHEA / EDAC reports.
+# System-wide hardware records must never be attributed to a PTFR worker.
+
+make report := read_json("build/ras-provider-report.json")
+assert(report.schema == "pytyliki.ras-provider-report.v1",
+       "unsupported or invalid RAS report schema")
+assert(report.read_only == true, "RAS provider must declare read-only access")
+assert(kind(report.events) == "list", "RAS event collection must be a list")
+assert(size(report.events) <= 32, "RAS provider batch exceeds its contract")
+assert(report.status == "ok" or report.status == "unsupported",
+       "invalid RAS provider status")
+
+vary corrected := 0
+vary uncorrected := 0
+vary unknown := 0
+vary baseline := 0
+
+each event in report.events {
+    assert(event.recordId > 0, "RAS record ID must be positive")
+    assert(event.timestampNs > 0, "RAS timestamp must be present")
+    assert(event.countDelta > 0, "RAS count delta must be positive")
+    assert(event.attribution == "system-wide",
+           "hardware records must not claim worker attribution")
+
+    when event.source == "windows-whea" {
+        assert(event.clockDomain == "unix-realtime",
+               "WHEA timestamp clock domain is invalid")
+        assert(event.severity == "unknown",
+               "WHEA severity must remain unknown until a trusted CPER decoder exists")
+    } otherwise {
+        when event.source == "linux-edac" {
+            assert(event.clockDomain == "process-monotonic",
+                   "EDAC sample timestamp must identify its monotonic clock")
+            assert(event.severity == "corrected" or event.severity == "uncorrected",
+                   "EDAC counter must have a CE or UE severity")
+        } otherwise {
+            assert(false, "unknown RAS provider source")
+        }
+    }
+
+    when event.flags % 8 >= 4 {
+        change baseline := baseline + 1
+    } otherwise {
+        when event.severity == "corrected" {
+            change corrected := corrected + event.countDelta
+        } otherwise {
+            when event.severity == "uncorrected" {
+                change uncorrected := uncorrected + event.countDelta
+            } otherwise {
+                change unknown := unknown + 1
+            }
+        }
+    }
+}
+
+make summary := {
+    "schema": "pytyliki.ptfr-ras-evidence-summary.v1",
+    "provider_status": report.status,
+    "events": size(report.events),
+    "corrected_delta": corrected,
+    "uncorrected_delta": uncorrected,
+    "unknown_severity": unknown,
+    "baseline_records": baseline,
+    "worker_attribution": "none",
+    "hardware_writes": false
+}
+write_json("build/ptfr-ras-evidence-summary.json", summary)
+emit "PYTYLIKI_PTFR_RAS_EVIDENCE:PASS"

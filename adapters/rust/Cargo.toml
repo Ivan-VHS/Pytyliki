@@ -1,0 +1,14 @@
+[package]
+name = "ptfr-ras-edac"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Read-only Linux EDAC provider for Pytyliki PTFR"
+
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"

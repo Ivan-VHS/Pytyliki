@@ -24,12 +24,53 @@ endif()
 
 add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_sources(pytyliki_core PRIVATE src/processor_thread_recovery.c)
+target_sources(pytyliki_core PRIVATE
+  src/processor_thread_recovery.c
+  src/processor_placement.c
+  src/ras_evidence.c
+)
 if(WIN32)
   target_sources(pytyliki_core PRIVATE src/ras_provider_windows.c)
   target_link_libraries(pytyliki_core PUBLIC wevtapi)
+  target_compile_definitions(pytyliki_core PRIVATE _WIN32_WINNT=0x0A00 WINVER=0x0A00)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  find_program(PYTYLIKI_CARGO_EXECUTABLE cargo)
+  if(PYTYLIKI_CARGO_EXECUTABLE)
+    set(PTFR_RAS_RUST_TARGET_DIR "${CMAKE_CURRENT_BINARY_DIR}/rust")
+    set(PTFR_RAS_RUST_LIBRARY "${PTFR_RAS_RUST_TARGET_DIR}/release/libptfr_ras_edac.a")
+    add_custom_command(
+      OUTPUT "${PTFR_RAS_RUST_LIBRARY}"
+      COMMAND ${PYTYLIKI_CARGO_EXECUTABLE} build --release
+        --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/adapters/rust/Cargo.toml"
+        --target-dir "${PTFR_RAS_RUST_TARGET_DIR}"
+      DEPENDS adapters/rust/Cargo.toml adapters/rust/src/lib.rs
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      VERBATIM
+    )
+    add_custom_target(ptfr_ras_edac_build DEPENDS "${PTFR_RAS_RUST_LIBRARY}")
+    add_dependencies(pytyliki_core ptfr_ras_edac_build)
+    target_link_libraries(pytyliki_core PUBLIC
+      "${PTFR_RAS_RUST_LIBRARY}" ${CMAKE_DL_LIBS} pthread)
+    target_compile_definitions(pytyliki_core PUBLIC PL_RAS_PROVIDER_LINUX_EDAC=1)
+  else()
+    target_sources(pytyliki_core PRIVATE src/ras_provider_stub.c)
+    message(STATUS "Cargo was not found; Linux EDAC provider is disabled")
+  endif()
 else()
   target_sources(pytyliki_core PRIVATE src/ras_provider_stub.c)
+endif()
+
+if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8 AND
+   CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
+  enable_language(ASM_MASM)
+  target_sources(pytyliki_core PRIVATE src/arch/x86_64/ptfr_cpu_relax.asm)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+       CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64" AND
+       CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  enable_language(ASM)
+  target_sources(pytyliki_core PRIVATE src/arch/x86_64/ptfr_cpu_relax.S)
+else()
+  target_sources(pytyliki_core PRIVATE src/processor_thread_recovery_arch_stub.c)
 endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
@@ -43,7 +84,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/ras_provider.h src/ras_evidence.h src/processor_thread_recovery.h src/processor_placement.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -273,13 +314,21 @@ if(BUILD_TESTING)
   add_executable(pytyliki-processor-thread-recovery-tests tests/test_processor_thread_recovery.c)
   target_link_libraries(pytyliki-processor-thread-recovery-tests PRIVATE pytyliki_core)
   add_test(NAME processor-thread-recovery-tests COMMAND pytyliki-processor-thread-recovery-tests)
+
+  add_executable(pytyliki-processor-placement-tests tests/test_processor_placement.c)
+  target_link_libraries(pytyliki-processor-placement-tests PRIVATE pytyliki_core)
+  add_test(NAME processor-placement-tests COMMAND pytyliki-processor-placement-tests)
+
+  add_executable(pytyliki-ras-evidence-tests tests/test_ras_evidence.c)
+  target_link_libraries(pytyliki-ras-evidence-tests PRIVATE pytyliki_core)
+  add_test(NAME ras-evidence-ledger-tests COMMAND pytyliki-ras-evidence-tests)
   add_test(NAME processor-thread-recovery-cli COMMAND pytyliki --thread-recovery ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/processor_thread_recovery.csv)
   set_tests_properties(processor-thread-recovery-cli PROPERTIES PASS_REGULAR_EXPRESSION "action=quarantine_application_worker")
   add_test(NAME processor-thread-recovery-demo COMMAND pytyliki --thread-recovery-demo)
   set_tests_properties(processor-thread-recovery-demo PROPERTIES PASS_REGULAR_EXPRESSION "action=quarantine_application_worker")
   if(NOT WIN32)
-    add_test(NAME ras-provider-platform-boundary COMMAND pytyliki --ras-whea)
-    set_tests_properties(ras-provider-platform-boundary PROPERTIES
-      PASS_REGULAR_EXPRESSION "status=unsupported platform")
+    add_test(NAME ras-provider-read-only COMMAND pytyliki --ras-whea)
+    set_tests_properties(ras-provider-read-only PROPERTIES
+      PASS_REGULAR_EXPRESSION "pytyliki.ras-provider-report.v1")
   endif()
 endif()
