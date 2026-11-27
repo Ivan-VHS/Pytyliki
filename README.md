@@ -25,6 +25,7 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 - **Hardware syntax constructs:** a C11 structural frontend catalogs and checks the framing of twenty Pytyliki construct forms. It does not yet type-check, compile, execute, synthesize RTL or access hardware.
 - **SystemArray sigil registry:** a versioned C11 metadata frontend catalogs thirteen hardware operators, their type signatures and effect contracts. It does not yet resolve overloads, evaluate plans or access hardware.
 - **MOS switch-level model:** bounded N/P MOS ideal-switch networks with explicit high, low, floating, contended and indeterminate states. This is deterministic topology simulation, not analog/SPICE modelling or physical device access.
+- **Processor Fabric v1:** a bounded C11 graph aggregates CPU hierarchy, register/ISA/address-space catalogues, process pools and resource dependencies. It validates process graphs and emits deterministic advisory worker plans; it does not start tasks or control the host scheduler.
 - **System-array syntax:** a bounded C11 frontend normalizes the documented framed aliases to `system(array)`; syntax-only, with no execution or hardware access.
 - **Numerical metrics:** C11 vector, distance, geometry and quadratic-form operations through a stable native API.
 - **Memory utilities:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints and fixed-block pools.
