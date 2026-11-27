@@ -49,6 +49,10 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
     if native_session.get("api") != "pl_ide_session_init":
         errors.append("native session foundation must expose pl_ide_session_init")
 
+    session_description = native_session.get("description", "").lower()
+    if "not security tokens" not in session_description or "pl_ll_bus capability checks" not in session_description:
+        errors.append("session preflight flags must not be treated as hardware grants")
+
     for key in ("iron_core", "low_level_contract"):
         path = related.get(key)
         if not isinstance(path, str) or not (root / path).is_file():
