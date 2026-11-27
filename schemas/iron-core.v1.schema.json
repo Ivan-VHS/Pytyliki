@@ -16,7 +16,8 @@
     "rules",
     "open_work",
     "evidence_modes",
-    "safety_invariants"
+    "safety_invariants",
+    "related_contracts"
   ],
   "properties": {
     "schema": {
@@ -403,12 +404,21 @@
           "state": {
             "enum": [
               "open",
-              "open-draft"
+              "open-draft",
+              "merged-to-open-branch"
             ]
           },
           "scope": {
             "type": "string",
             "minLength": 10
+          },
+          "depends_on": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
           }
         }
       }
@@ -436,6 +446,98 @@
       "items": {
         "type": "string",
         "minLength": 20
+      }
+    },
+    "related_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "low_level_contract",
+        "coverage_crosswalk"
+      ],
+      "properties": {
+        "low_level_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "path",
+            "schema_path",
+            "rule_count",
+            "status",
+            "implementation",
+            "summary",
+            "reuse_policy"
+          ],
+          "properties": {
+            "schema": {
+              "const": "pytyliki.low-level-rules.v1"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "schema_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_count": {
+              "const": 100
+            },
+            "status": {
+              "const": "merged_in_main"
+            },
+            "implementation": {
+              "type": "array",
+              "minItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "summary": {
+              "type": "string",
+              "minLength": 40
+            },
+            "reuse_policy": {
+              "type": "string",
+              "minLength": 40
+            }
+          }
+        },
+        "coverage_crosswalk": {
+          "type": "array",
+          "minItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "iron_rule",
+              "low_level_rules",
+              "relationship"
+            ],
+            "properties": {
+              "iron_rule": {
+                "type": "string",
+                "pattern": "^IRON-[0-9]{3}$"
+              },
+              "low_level_rules": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^PLL-[0-9]{3}$"
+                }
+              },
+              "relationship": {
+                "type": "string",
+                "minLength": 10
+              }
+            }
+          }
+        }
       }
     }
   }
