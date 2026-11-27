@@ -47,6 +47,7 @@ static HWND g_main;
 static HFONT g_font;
 static HFONT g_log_font;
 static int g_log_font_size = 14;
+static UINT g_dpi = 96;
 static HFONT g_brand_font;
 static HBRUSH g_page_brush, g_input_brush, g_log_brush;
 static int g_dark_mode = 0;
@@ -58,12 +59,18 @@ static HWND g_motion_dialog = NULL;
 static HWND g_motion_mode_combo = NULL;
 static HWND g_motion_eco_check = NULL;
 
+static int scaled_font_height(int logical_px) {
+    const UINT dpi = g_dpi >= 48u && g_dpi <= 768u ? g_dpi : 96u;
+    const int physical_px = pl_ui_scale_logical_px(logical_px, dpi);
+    return -(physical_px > 0 ? physical_px : logical_px);
+}
+
 static void set_log_font_size(int next_size) {
     HFONT next_font;
     if (next_size < 10) next_size = 10;
     if (next_size > 20) next_size = 20;
     if (next_size == g_log_font_size) return;
-    next_font = CreateFontA(-next_size,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
+    next_font = CreateFontA(scaled_font_height(next_size),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
         DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,
         FIXED_PITCH|FF_MODERN,"Consolas");
     if (!next_font) return;
@@ -336,6 +343,39 @@ static void log_format(const char *fmt, ...) {
     va_end(args); log_text(buffer);
 }
 static void apply_font(HWND control) { if (g_font) SendMessageA(control, WM_SETFONT, (WPARAM)g_font, TRUE); }
+static BOOL CALLBACK apply_font_to_child(HWND control, LPARAM font) {
+    if (font) SendMessageA(control, WM_SETFONT, (WPARAM)font, TRUE);
+    return TRUE;
+}
+static void refresh_fonts_for_dpi(HWND window) {
+    HFONT next_font = CreateFontA(scaled_font_height(16),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
+        DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,
+        DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
+    HFONT next_brand = CreateFontA(scaled_font_height(25),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
+        DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,
+        DEFAULT_PITCH|FF_DONTCARE,"Lobster");
+    HFONT next_log = CreateFontA(scaled_font_height(g_log_font_size),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
+        DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,
+        FIXED_PITCH|FF_MODERN,"Consolas");
+
+    if (next_font) {
+        HFONT previous = g_font;
+        g_font = next_font;
+        EnumChildWindows(window, apply_font_to_child, (LPARAM)g_font);
+        if (previous) DeleteObject(previous);
+    }
+    if (next_brand) {
+        HFONT previous = g_brand_font;
+        g_brand_font = next_brand;
+        if (previous) DeleteObject(previous);
+    }
+    if (next_log) {
+        HFONT previous = g_log_font;
+        g_log_font = next_log;
+        if (g_log) SendMessageA(g_log, WM_SETFONT, (WPARAM)g_log_font, TRUE);
+        if (previous) DeleteObject(previous);
+    }
+}
 static HWND add_button(HWND parent, const char *label, int id) {
     HWND h=CreateWindowExA(0,"BUTTON",label,WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_OWNERDRAW|BS_NOTIFY,0,0,10,10,parent,(HMENU)(INT_PTR)id,GetModuleHandleA(NULL),NULL);
     apply_font(h); return h;
@@ -452,14 +492,20 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     switch(m) {
     case WM_CREATE: {
         g_main=w;
-        g_font=CreateFontA(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
-        g_brand_font=CreateFontA(-25,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Lobster");
+        HDC dpi_dc = GetDC(w);
+        if (dpi_dc) {
+            const int device_dpi = GetDeviceCaps(dpi_dc, LOGPIXELSY);
+            if (device_dpi >= 48 && device_dpi <= 768) g_dpi = (UINT)device_dpi;
+            ReleaseDC(w, dpi_dc);
+        }
+        g_font=CreateFontA(scaled_font_height(16),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Segoe UI");
+        g_brand_font=CreateFontA(scaled_font_height(25),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH|FF_DONTCARE,"Lobster");
         rebuild_brushes();
         add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,theme_button_label(),ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
         g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nDeveloper: Ivan-VHS\r\nCPU operations are read-only and bounded. Measurements and workload plans are local and bounded.\r\n",
             WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL);
-        g_log_font=CreateFontA(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,"Consolas");
+        g_log_font=CreateFontA(scaled_font_height(14),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,"Consolas");
         if (g_log_font) SendMessageA(g_log,WM_SETFONT,(WPARAM)g_log_font,TRUE); else apply_font(g_log);
         return 0;
     }
@@ -484,8 +530,11 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
     }
     case WM_DPICHANGED: {
         RECT *suggested=(RECT*)l;
+        const UINT next_dpi = HIWORD(p);
+        if (next_dpi >= 48u && next_dpi <= 768u) g_dpi = next_dpi;
         SetWindowPos(w,NULL,suggested->left,suggested->top,suggested->right-suggested->left,
             suggested->bottom-suggested->top,SWP_NOZORDER|SWP_NOACTIVATE);
+        refresh_fonts_for_dpi(w);
         layout(w); InvalidateRect(w,NULL,TRUE); return 0;
     }
     case WM_DRAWITEM: {
