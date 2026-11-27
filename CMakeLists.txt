@@ -229,6 +229,9 @@ if(BUILD_TESTING)
   add_executable(pytyliki-embedded-tests tests/test_embedded.c)
   target_link_libraries(pytyliki-embedded-tests PRIVATE pytyliki_core)
   add_test(NAME embedded-c-core-tests COMMAND pytyliki-embedded-tests)
+  add_test(NAME embedded-silicon-cli-smoke COMMAND pytyliki --embedded silicon)
+  set_tests_properties(embedded-silicon-cli-smoke PROPERTIES
+    PASS_REGULAR_EXPRESSION "Native/JIT execution: disabled")
 
   add_executable(pytyliki-silicon-runtime-tests tests/test_silicon_runtime.c)
   target_link_libraries(pytyliki-silicon-runtime-tests PRIVATE pytyliki_core)
