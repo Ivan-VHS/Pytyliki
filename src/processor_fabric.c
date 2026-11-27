@@ -620,7 +620,6 @@ pl_processor_fabric_status pl_processor_fabric_build_host_model(
         uint32_t package_node = 0u, die_node = 0u, core_node = 0u;
         size_t i;
         if (cpu->logical_id >= topology->logical_processor_count ||
-            cpu->generation != topology->generation ||
             cpu->online > 1u)
             return fail(error, PL_PROCESSOR_FABRIC_INVALID_GENERATION, cpu->logical_id,
                         0u, 0u, "logical CPU evidence has an invalid ID, generation or online flag");
