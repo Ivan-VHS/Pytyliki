@@ -23,6 +23,7 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 - **Bounded measurements:** repeatable CPU, memory and matrix workloads with explicit run limits and structured results.
 - **Source inspection:** static diagnostics and QCS syntax validation; inspected source is not executed or rewritten.
 - **Hardware syntax constructs:** a C11 structural frontend catalogs and checks the framing of twenty Pytyliki construct forms. It does not yet type-check, compile, execute, synthesize RTL or access hardware.
+- **SystemArray sigil registry:** a versioned C11 metadata frontend catalogs thirteen hardware operators, their type signatures and effect contracts. It does not yet resolve overloads, evaluate plans or access hardware.
 - **System-array syntax:** a bounded C11 frontend normalizes the documented framed aliases to `system(array)`; syntax-only, with no execution or hardware access.
 - **Numerical metrics:** C11 vector, distance, geometry and quadratic-form operations through a stable native API.
 - **Memory utilities:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints and fixed-block pools.
