@@ -268,7 +268,70 @@ static void test_report_is_versioned_and_non_executing(void) {
     assert(strstr(json, "\"execution_performed\":false") != NULL);
 }
 
+
+static void test_host_topology_builds_ppf_hierarchy(void) {
+    pl_processor_topology_snapshot topology;
+    pl_processor_fabric_node nodes[PL_PROCESSOR_FABRIC_MAX_NODES];
+    pl_processor_fabric_model model;
+    pl_processor_fabric_workspace workspace;
+    pl_processor_fabric_summary summary;
+    pl_processor_fabric_error error;
+    memset(&topology, 0, sizeof(topology));
+    topology.generation = 11u;
+    topology.logical_processor_count = 2u;
+    topology.online_logical_processor_count = 2u;
+    topology.isa_os_usable = UINT64_C(0x25);
+    topology.logical_processors[0].logical_id = 0u; cpus[0].os_id = 2u;
+    cpus[0].package_id = 1u; cpus[0].die_id = 0u; cpus[0].core_id = 4u;
+    cpus[0].thread_id = 0u; cpus[0].numa_node_id = 0u; cpus[0].online = 1u;
+    topology.logical_processors[1].logical_id = 1u; cpus[1].os_id = 6u;
+    cpus[1].package_id = 1u; cpus[1].die_id = 0u; cpus[1].core_id = 4u;
+    cpus[1].thread_id = 1u; cpus[1].numa_node_id = 0u; cpus[1].online = 1u;
+    assert(pl_processor_fabric_build_host_model(
+        &topology, nodes, PL_PROCESSOR_FABRIC_MAX_NODES,
+        &model, &error) == PL_PROCESSOR_FABRIC_OK);
+    assert(model.generation == 11u);
+    assert(model.node_count == 5u);
+    assert(pl_processor_fabric_validate(&model, &workspace, &summary, &error) ==
+           PL_PROCESSOR_FABRIC_OK);
+    assert(summary.worker_count == 2u);
+    assert(summary.available_worker_count == 2u);
+    assert(nodes[3].kind == PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR);
+    assert(nodes[4].parent_id == nodes[3].parent_id);
+    assert(nodes[3].feature_mask == UINT64_C(0x25));
+}
+
+static void test_unknown_parent_topology_does_not_fabricate_hierarchy(void) {
+    pl_processor_topology_snapshot topology;
+    pl_processor_fabric_node nodes[PL_PROCESSOR_FABRIC_MAX_NODES];
+    pl_processor_fabric_model model;
+    pl_processor_fabric_workspace workspace;
+    pl_processor_fabric_summary summary;
+    pl_processor_fabric_error error;
+    memset(&topology, 0, sizeof(topology));
+    topology.generation = 12u;
+    topology.logical_processor_count = 1u;
+    topology.logical_processor_count = 1u;
+    topology.logical_processors[0].logical_id = 0u; topology.logical_processors[0].os_id = 7u; topology.logical_processors[0].online = 1u;
+    topology.logical_processors[0].package_id = PL_TOPOLOGY_UNKNOWN_ID;
+    topology.logical_processors[0].die_id = PL_TOPOLOGY_UNKNOWN_ID;
+    topology.logical_processors[0].core_id = PL_TOPOLOGY_UNKNOWN_ID;
+    topology.logical_processors[0].thread_id = PL_TOPOLOGY_UNKNOWN_ID;
+    topology.logical_processors[0].numa_node_id = PL_TOPOLOGY_UNKNOWN_ID;
+    assert(pl_processor_fabric_build_host_model(
+        &topology, nodes, PL_PROCESSOR_FABRIC_MAX_NODES,
+        &model, &error) == PL_PROCESSOR_FABRIC_OK);
+    assert(model.node_count == 1u);
+    assert(nodes[0].kind == PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR);
+    assert(nodes[0].parent_id == 0u);
+    assert(pl_processor_fabric_validate(&model, &workspace, &summary, &error) ==
+           PL_PROCESSOR_FABRIC_OK);
+}
+
+
 int main(void) {
+    test_host_topology_builds_ppf_hierarchy();
+    test_unknown_parent_topology_does_not_fabricate_hierarchy();
     test_inventory_and_catalogue_aggregation();
     test_deterministic_process_pool_plan();
     test_dependency_cycle_is_rejected();

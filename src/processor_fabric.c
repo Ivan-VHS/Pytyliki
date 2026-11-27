@@ -83,7 +83,9 @@ static int parent_kind_allowed(pl_processor_fabric_node_kind child,
         return parent == PL_PROCESSOR_FABRIC_PACKAGE ||
                parent == PL_PROCESSOR_FABRIC_DIE;
     case PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR:
-        return parent == PL_PROCESSOR_FABRIC_CORE;
+        return parent == PL_PROCESSOR_FABRIC_CORE ||
+               parent == PL_PROCESSOR_FABRIC_DIE ||
+               parent == PL_PROCESSOR_FABRIC_PACKAGE;
     case PL_PROCESSOR_FABRIC_EXECUTION_UNIT:
         return parent == PL_PROCESSOR_FABRIC_PACKAGE ||
                parent == PL_PROCESSOR_FABRIC_DIE ||
@@ -120,6 +122,7 @@ static int parent_kind_allowed(pl_processor_fabric_node_kind child,
 
 static int root_kind_allowed(pl_processor_fabric_node_kind kind) {
     return kind == PL_PROCESSOR_FABRIC_PACKAGE ||
+           kind == PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR ||
            kind == PL_PROCESSOR_FABRIC_PROCESS_POOL ||
            kind == PL_PROCESSOR_FABRIC_ISA_PROFILE ||
            kind == PL_PROCESSOR_FABRIC_ADDRESS_SPACE;
@@ -545,6 +548,177 @@ pl_processor_fabric_status pl_processor_fabric_plan(
     *assignment_count = output_count;
     return PL_PROCESSOR_FABRIC_OK;
 }
+
+typedef struct {
+    uint32_t hardware_id;
+    uint32_t node_id;
+} pl_host_package_map;
+
+typedef struct {
+    uint32_t package_id;
+    uint32_t hardware_die_id;
+    uint32_t node_id;
+} pl_host_die_map;
+
+typedef struct {
+    uint32_t package_id;
+    uint32_t die_id;
+    uint32_t hardware_core_id;
+    uint32_t node_id;
+} pl_host_core_map;
+
+static uint32_t add_host_fabric_node(
+    pl_processor_fabric_node *nodes, size_t *count, size_t capacity,
+    pl_processor_fabric_node_kind kind, uint32_t parent_id,
+    uint32_t generation, pl_processor_fabric_node_state state
+) {
+    pl_processor_fabric_node *node;
+    if (*count >= capacity || *count >= PL_PROCESSOR_FABRIC_MAX_NODES)
+        return 0u;
+    node = &nodes[*count];
+    memset(node, 0, sizeof(*node));
+    node->id = (uint32_t)(*count + 1u);
+    node->parent_id = parent_id;
+    node->generation = generation;
+    node->kind = kind;
+    node->state = state;
+    node->domain_mask = PL_PROCESSOR_FABRIC_DOMAIN_HOST;
+    node->logical_id = PL_TOPOLOGY_UNKNOWN_ID;
+    ++(*count);
+    return node->id;
+}
+
+pl_processor_fabric_status pl_processor_fabric_build_host_model(
+    const pl_processor_topology_snapshot *topology,
+    pl_processor_fabric_node *nodes,
+    size_t node_capacity,
+    pl_processor_fabric_model *model,
+    pl_processor_fabric_error *error
+) {
+    pl_host_package_map packages[PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS];
+    pl_host_die_map dies[PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS];
+    pl_host_core_map cores[PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS];
+    size_t package_count = 0u, die_count = 0u, core_count = 0u;
+    size_t node_count = 0u, cpu_index;
+    if (model == NULL || topology == NULL || nodes == NULL ||
+        topology->generation == 0u || topology->logical_processor_count == 0u)
+        return fail(error, PL_PROCESSOR_FABRIC_INVALID_ARGUMENT, 0u, 0u, 0u,
+                    "topology snapshot, node buffer and model are required");
+    if (topology->logical_processor_count > PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS ||
+        topology->logical_processor_count > 64u ||
+        node_capacity > PL_PROCESSOR_FABRIC_MAX_NODES)
+        return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED, 0u, 0u, 0u,
+                    "host graph currently supports up to 64 logical processors and bounded PPF nodes");
+    memset(model, 0, sizeof(*model));
+    memset(packages, 0, sizeof(packages));
+    memset(dies, 0, sizeof(dies));
+    memset(cores, 0, sizeof(cores));
+
+    for (cpu_index = 0u; cpu_index < topology->logical_processor_count; ++cpu_index) {
+        const pl_topology_logical_processor *cpu =
+            &topology->logical_processors[cpu_index];
+        uint32_t package_node = 0u, die_node = 0u, core_node = 0u;
+        size_t i;
+        if (cpu->logical_id >= topology->logical_processor_count ||
+            cpu->online > 1u)
+            return fail(error, PL_PROCESSOR_FABRIC_INVALID_GENERATION, cpu->logical_id,
+                        0u, 0u, "logical CPU evidence has an invalid ID, generation or online flag");
+
+        if (cpu->package_id != PL_TOPOLOGY_UNKNOWN_ID) {
+            for (i = 0u; i < package_count; ++i)
+                if (packages[i].hardware_id == cpu->package_id) {
+                    package_node = packages[i].node_id;
+                    break;
+                }
+            if (package_node == 0u) {
+                package_node = add_host_fabric_node(
+                    nodes, &node_count, node_capacity,
+                    PL_PROCESSOR_FABRIC_PACKAGE, 0u, topology->generation,
+                    PL_PROCESSOR_FABRIC_VERIFIED);
+                if (package_node == 0u)
+                    return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED, 0u, 0u, 0u,
+                                "PPF host package nodes exceed caller capacity");
+                packages[package_count].hardware_id = cpu->package_id;
+                packages[package_count++].node_id = package_node;
+            }
+        }
+
+        if (package_node != 0u && cpu->die_id != PL_TOPOLOGY_UNKNOWN_ID) {
+            for (i = 0u; i < die_count; ++i)
+                if (dies[i].package_id == cpu->package_id &&
+                    dies[i].hardware_die_id == cpu->die_id) {
+                    die_node = dies[i].node_id;
+                    break;
+                }
+            if (die_node == 0u) {
+                die_node = add_host_fabric_node(
+                    nodes, &node_count, node_capacity,
+                    PL_PROCESSOR_FABRIC_DIE, package_node, topology->generation,
+                    PL_PROCESSOR_FABRIC_VERIFIED);
+                if (die_node == 0u)
+                    return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED, 0u, 0u, 0u,
+                                "PPF host die nodes exceed caller capacity");
+                dies[die_count].package_id = cpu->package_id;
+                dies[die_count].hardware_die_id = cpu->die_id;
+                dies[die_count++].node_id = die_node;
+            }
+        }
+
+        if (package_node != 0u && cpu->core_id != PL_TOPOLOGY_UNKNOWN_ID) {
+            const uint32_t parent = die_node != 0u ? die_node : package_node;
+            const uint32_t die_key = die_node != 0u ? cpu->die_id : PL_TOPOLOGY_UNKNOWN_ID;
+            for (i = 0u; i < core_count; ++i)
+                if (cores[i].package_id == cpu->package_id &&
+                    cores[i].die_id == die_key &&
+                    cores[i].hardware_core_id == cpu->core_id) {
+                    core_node = cores[i].node_id;
+                    break;
+                }
+            if (core_node == 0u) {
+                core_node = add_host_fabric_node(
+                    nodes, &node_count, node_capacity,
+                    PL_PROCESSOR_FABRIC_CORE, parent, topology->generation,
+                    PL_PROCESSOR_FABRIC_VERIFIED);
+                if (core_node == 0u)
+                    return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED, 0u, 0u, 0u,
+                                "PPF host core nodes exceed caller capacity");
+                cores[core_count].package_id = cpu->package_id;
+                cores[core_count].die_id = die_key;
+                cores[core_count].hardware_core_id = cpu->core_id;
+                cores[core_count++].node_id = core_node;
+            }
+        }
+
+        {
+            const uint32_t parent = core_node != 0u ? core_node :
+                (die_node != 0u ? die_node : package_node);
+            const pl_processor_fabric_node_state state = cpu->online
+                ? PL_PROCESSOR_FABRIC_AVAILABLE
+                : PL_PROCESSOR_FABRIC_DISABLED;
+            const uint32_t logical_node = add_host_fabric_node(
+                nodes, &node_count, node_capacity,
+                PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR,
+                parent, topology->generation, state);
+            if (logical_node == 0u)
+                return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED, cpu->logical_id,
+                            0u, 0u, "PPF logical processor nodes exceed caller capacity");
+            nodes[node_count - 1u].logical_id = cpu->logical_id;
+            nodes[node_count - 1u].feature_mask = topology->isa_os_usable;
+            nodes[node_count - 1u].affinity_mask = UINT64_C(1) << cpu->logical_id;
+            nodes[node_count - 1u].capacity_basis_points = cpu->online
+                ? PL_PROCESSOR_FABRIC_BASIS_POINTS : 0u;
+        }
+    }
+    model->generation = topology->generation;
+    model->abi_major = PL_PROCESSOR_FABRIC_ABI_MAJOR;
+    model->node_count = node_count;
+    model->edge_count = 0u;
+    model->nodes = nodes;
+    model->edges = NULL;
+    clear_error(error);
+    return PL_PROCESSOR_FABRIC_OK;
+}
+
 
 pl_processor_fabric_status pl_processor_fabric_collect_catalogues(
     pl_processor_fabric_catalogues *out

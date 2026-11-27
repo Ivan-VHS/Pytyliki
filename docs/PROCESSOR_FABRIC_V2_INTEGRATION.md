@@ -101,6 +101,15 @@ Each backend descriptor must identify its ABI, target triple, supported ISA/feat
 
 No backend is allowed to pass an unqualified artifact to the next stage. Linking requires compatible object ABI and target metadata. Emulator output is simulation evidence, not hardware qualification. RTL emission is not silicon fabrication. Formal unknown is not proved. Native host scalar AOT remains a distinct host-only capability and must not be renamed as a target-specific processor backend.
 
+## Implemented runtime slices in this branch
+
+- Read-only collector source is present for Windows processor groups and Linux sysfs, including package/die/core/thread, NUMA and cache-sharing records with explicit unknowns.
+- x86 ISA scan records CPUID hardware feature bits separately from OS-usable AVX-family state.
+- The placement implementation computes deterministic component costs for load, NUMA, cache working set/sharing, SMT sibling contention and NUMA bandwidth; it emits advisory assignments only.
+- The native C11 resource model validates devices, address spaces, regions, register banks, register ranges, overlapping regions and DMA ownership/generation transitions.
+
+These implementations are marked partial until the platform matrix and CTest workflows pass. They do not perform host affinity changes, MMIO mapping, register access or DMA submissions.
+
 ## Sequenced implementation slices
 
 Keep these as separate reviewable changes rather than one unbounded feature branch:

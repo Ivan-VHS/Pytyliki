@@ -18,6 +18,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Pytyliki hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty hardware construct families, structural parser and safety contracts.
 - [MOS switch-level model v1](PHYSICAL_SWITCH_MODEL_V1.md) — bounded N/P MOS topology evaluation and five-state node resolution; not an analog solver.
 - [Processor Fabric v1](PROCESSOR_FABRIC_V1.md) — bounded processor hierarchy, catalogue aggregation, dependency graph validation and deterministic advisory process-pool planning.
+- [Processor Fabric v2 runtime](PROCESSOR_FABRIC_V2_INTEGRATION.md) — read-only OS topology collection, NUMA/cache-aware placement and typed hardware resource validation.
 - [Processor Fabric v2 integration](PROCESSOR_FABRIC_V2_INTEGRATION.md) — topology/ISA evidence, NUMA/cache placement, resource ownership, Hardware AST bridge and independent backend contracts.
 - [Processor Fabric catalogue schema](../schemas/pytyliki.processor-fabric-catalogues.v1.schema.json) — versioned summary of the CPU Suite, processor rules, hardware constructs, SystemArray sigils and Iron Core markers.
 - [Pytyliki Hardware Language Extension 0.4](PYTYLIKI_HARDWARE_LANGUAGE_SPEC_0.4.md) — target profiles, memory/capability model, ISA, microarchitecture, RTL, simulation and Reaper IR boundary.

@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "processor_topology.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -191,6 +193,14 @@ pl_processor_fabric_status pl_processor_fabric_plan(
     size_t *assignment_count,
     pl_processor_fabric_summary *summary,
     pl_processor_fabric_error *error);
+
+pl_processor_fabric_status pl_processor_fabric_build_host_model(
+    const pl_processor_topology_snapshot *topology,
+    pl_processor_fabric_node *nodes,
+    size_t node_capacity,
+    pl_processor_fabric_model *model,
+    pl_processor_fabric_error *error
+);
 
 /* Counts the existing static catalogues without copying or executing them. */
 pl_processor_fabric_status pl_processor_fabric_collect_catalogues(

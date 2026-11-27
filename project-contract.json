@@ -195,6 +195,26 @@
         "schemas/pytyliki.processor-fabric-catalogues.v1.schema.json",
         "src/processor_fabric_cli.c"
       ]
+    },
+    {
+      "id": "processor.fabric-runtime.v2",
+      "status": "partial",
+      "summary": "Read-only Windows processor-group and Linux sysfs topology collector with package/die/core/thread, NUMA and cache-sharing evidence; separate hardware-present and OS-usable x86 ISA evidence; deterministic NUMA/cache/SMT/bandwidth-aware advisory placement; and native typed hardware resource validation for address spaces, device identity, register maps, ranges and DMA ownership. No privileged hardware operations are performed.",
+      "evidence": [
+        "src/processor_topology.c",
+        "src/processor_topology.h",
+        "src/processor_topology_cli.c",
+        "tests/test_processor_topology.c",
+        "src/processor_placement.c",
+        "src/processor_placement.h",
+        "tests/test_processor_placement.c",
+        "src/hardware_resource.c",
+        "src/hardware_resource.h",
+        "tests/test_hardware_resource.c",
+        "schemas/pytyliki.processor-topology-evidence.v2.schema.json",
+        "schemas/pytyliki.hardware-resource-contract.v1.schema.json",
+        "docs/PROCESSOR_FABRIC_V2_INTEGRATION.md"
+      ]
     }
   ],
   "interfaces": [
