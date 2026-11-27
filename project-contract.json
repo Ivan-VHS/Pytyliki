@@ -4,14 +4,15 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, versioned native interoperability, and optional Reaper-language processor orchestration.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
     "languages": [
       "C11",
       "CMake",
-      "Python 3 tooling"
+      "Python 3 tooling",
+      "Reaper (.rpr orchestration and CI policy)"
     ],
     "runtime_platforms": [
       "Windows",
@@ -130,6 +131,17 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "processor.intelligence.reaper-orchestration",
+      "status": "implemented",
+      "summary": "Optional Reaper .rpr orchestration validates deterministic processor-action histories, checkpoints, bounded memory and pulse summaries, graph reductions and structured exports. Synthetic processor records are marked as fixtures; actual hardware discovery and measurement remain native C11 and read-only.",
+      "evidence": [
+        "automation/reaper/processor_intelligence.rpr",
+        "automation/reaper/processor_metrics.rpr",
+        "docs/REAPER_LANGUAGE_INTEGRATION.md",
+        ".github/workflows/reaper-language.yml"
+      ]
     }
   ],
   "interfaces": [
@@ -152,6 +164,16 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "reaper.processor-intelligence.v1",
+      "format": "Pinned Reaper .rpr processor-state and report orchestration module",
+      "direction": "consumes",
+      "status": "implemented",
+      "evidence": [
+        "automation/reaper/processor_intelligence.rpr",
+        "docs/REAPER_LANGUAGE_INTEGRATION.md"
       ]
     }
   ],
@@ -195,19 +217,29 @@
       "status": "planned",
       "opt_in": true,
       "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+    },
+    {
+      "project": "reaper",
+      "interface": "reaper.processor-intelligence.v1",
+      "mode": "pinned-source-import",
+      "status": "implemented",
+      "opt_in": true,
+      "summary": "The Pytyliki Reaper integration workflow imports the reviewed Reaper Processor Intelligence source module and validates fixture-based reports alongside actual results from the existing Pytyliki C ABI v1 metrics program. The module does not provide live host CPU telemetry."
     }
   ],
   "safety_boundaries": [
     "Processor and hardware inspection is read-only; no firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.",
     "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
-    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable."
+    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
+    "Reaper Processor Intelligence action traces, pulse intervals and processor-package topology in the integration fixture are deterministic test data, not live host telemetry; they carry explicit fixture/simulated provenance."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
     "CMake library boundaries for adding independently tested C11 modules.",
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
-    "Bounded saturating matrix self-product for repeated vertical architecture analysis."
+    "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
+    "Pinned Reaper .rpr processor-state, checkpoint, trace and report contracts for optional host-side orchestration without a Pytyliki runtime dependency."
   ]
 }

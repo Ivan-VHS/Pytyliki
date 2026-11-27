@@ -1,0 +1,80 @@
+# Reaper Processor Intelligence / Pytyliki integration.
+# The native ABI report is produced by processor_metrics.rpr.
+# Processor actions and topology below are deterministic fixtures, not live
+# telemetry. Hardware and memory discovery remain in the native C11 product.
+import "../../_deps/Reaper/stdlib/processor_intelligence.rpr" as processor
+
+make native_abi := read_json("build/reaper-metrics-report.json")
+
+make initial := processor.processor_state_make()
+make decode := [
+    "processor.action.v1", 1, "decode", "core0",
+    0, 12, 24, "ok", "fixture/instruction-stream-a"
+]
+make retire := [
+    "processor.action.v1", 2, "retire", "core0",
+    12, 7, 7, "ok", "fixture/instruction-stream-a"
+]
+make first := processor.processor_state_append(initial, decode)
+assert(first[0] == "OK", "processor decode action rejected")
+make second := processor.processor_state_append(first[1], retire)
+assert(second[0] == "OK", "processor retire action rejected")
+make state := second[1]
+
+make memory := processor.processor_memory_budget(1073741824, 402653184, 67108864)
+assert(memory[0] == "OK", "bounded memory fixture invalid")
+make pulse := processor.processor_pulse_analyze([100, 101, 99, 100], 100, 0.05)
+assert(pulse[0] == "OK" and pulse[1][3], "processor pulse fixture inconsistent")
+make chip := [1, 8, 16, 1, "x86-64", "simulated"]
+assert(processor.processor_chip_snapshot_valid(chip), "processor package fixture invalid")
+
+make table := processor.processor_table_export(state)
+assert(table[0] == "OK", "processor table export failed")
+make slowmo := processor.processor_slowmo_plan(state, 2)
+assert(slowmo[0] == "OK", "logical processor replay plan failed")
+make graph := processor.processor_graph_reduce(8, 20)
+assert(graph[0] == "OK", "processor dependency graph reduction failed")
+make checkpoint := processor.processor_checkpoint_make(state)
+assert(checkpoint[0] == "OK", "processor state checkpoint failed")
+make cache := processor.processor_cache_store([], checkpoint[1], 4)
+assert(cache[0] == "OK", "processor state cache failed")
+make tray := processor.processor_tray_snapshot(state, memory, pulse)
+assert(tray[0] == "OK", "processor status snapshot failed")
+make hardware_read := processor.processor_hardware_policy("read", "read_only", "")
+assert(hardware_read[0] == "OK", "read-only hardware policy denied")
+
+make report := {
+    "schema": "pytyliki.reaper-processor-intelligence.v1",
+    "model": "Reaper Processor Intelligence",
+    "native_abi_schema": native_abi.schema,
+    "native_abi_backend": native_abi.backend,
+    "native_abi_vector_norm": native_abi.vector_norm,
+    "native_abi_dot_product": native_abi.dot_product,
+    "native_abi_distance": native_abi.euclidean_distance,
+    "native_abi_plugin_count": native_abi.plugin_count,
+    "processor_state_schema": "processor.state.v1",
+    "processor_actions": processor.processor_action_count(state)[1],
+    "action_counter": processor.processor_action_counter(state)[1],
+    "memory_fixture": memory[1],
+    "pulse_fixture": pulse[1],
+    "processor_package_fixture": chip,
+    "slowmo_plan": slowmo[1],
+    "graph_reduction": graph[1],
+    "checkpoint": checkpoint[1],
+    "cached_checkpoint_count": size(cache[1]),
+    "operation_table": table[1],
+    "tray_snapshot": tray[1],
+    "hardware_policy": hardware_read[1],
+    "provenance": "deterministic-fixtures; native-abi-fields-are-real-library-results",
+    "hardware_access": "read-only contract; no device adapter invoked",
+    "limitations": [
+        "not live CPU telemetry",
+        "logical slow-motion only",
+        "no scheduler, clock, voltage, firmware or MMIO writes",
+        "no physical memory mapping"
+    ]
+}
+
+write_json("build/processor-intelligence-report.json", report)
+emit "PYTYLIKI_PROCESSOR_INTELLIGENCE:PASS"
+emit report
