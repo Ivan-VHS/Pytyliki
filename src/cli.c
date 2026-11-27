@@ -18,6 +18,7 @@
 #include "embedded.h"
 #include "processor_thread_recovery_cli.h"
 #include "ras_provider_cli.h"
+#include "ras_evidence.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -347,6 +348,8 @@ int main(int argc,char **argv) {
     }
     if (argc == 2 && strcmp(argv[1], "--ras-whea") == 0)
         return pl_ras_provider_cli();
+    if (argc == 3 && strcmp(argv[1], "--ras-evidence") == 0)
+        return pl_ras_evidence_cli(argv[2]);
     if (argc == 2 && strcmp(argv[1], "--thread-recovery-demo") == 0)
         return pl_thread_recovery_demo_cli();
     if (argc == 3 && strcmp(argv[1], "--thread-recovery") == 0)
