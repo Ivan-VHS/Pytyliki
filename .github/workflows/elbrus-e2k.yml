@@ -22,6 +22,6 @@ jobs:
       CC: ${{ vars.ELBRUS_CC || 'gcc' }}
       CXX: ${{ vars.ELBRUS_CXX || 'g++' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verify native E2K toolchain and run build/tests
         run: bash scripts/elbrus/build-e2k.sh

@@ -24,8 +24,8 @@ jobs:
   reaper-pytyliki:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Reaper
           ref: 0903c60e8831477d98583ab1d2927c5f318f8038
