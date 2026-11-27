@@ -36,4 +36,20 @@ static void test_bad_frames(void){pl_iron_program p;pl_iron_error e;
 static void test_comments_strings(void){const char*s="verison ///. * V1\nCC based rules ^^^ R1\nbegin iron )\n() core --\n/*\n{ selective /\nstop option ;\n*/\nconst char*x=\"stop option ;\";\nstop option ;\nverificated /// !! CLAIM\n";pl_iron_program p;pl_iron_error e;assert(pl_iron_parse(s,&p,&e));assert(p.block_count==1&&p.marker_counts[PL_IRON_SELECTIVE]==0&&p.marker_counts[PL_IRON_STOP]==1);}
 static void test_duplicate_and_limit(void){pl_iron_program p;pl_iron_error e;const char*d="verison ///. * V1\nCC based rules ^^^ R1\nbegin iron )\nbegin iron )\n() core --\nstop option ;\nverificated /// !! CLAIM\n";char big[PL_IRON_MAX_SOURCE_BYTES+2];size_t i;assert(!pl_iron_parse(d,&p,&e)&&strstr(e.message,"duplicate begin iron"));for(i=0;i<sizeof(big)-1;i++)big[i]='x';big[sizeof(big)-1]='\0';assert(!pl_iron_parse(big,&p,&e)&&strstr(e.message,"one-megabyte"));}
 static void test_json(void){pl_iron_program p;pl_iron_error e;FILE*f=open_test_stream();char b[12000];size_t n;assert(f&&pl_iron_parse(valid,&p,&e)&&pl_iron_write_json(&p,f));fflush(f);rewind(f);n=fread(b,1,sizeof(b)-1,f);b[n]='\0';assert(strstr(b,PL_IRON_AST_SCHEMA)&&strstr(b,"\"verification_claims_are_ci_evidence\": false")&&strstr(b,"\"hardware_access_performed\": false"));fclose(f);f=open_test_stream();assert(f&&pl_iron_write_catalog_json(f));fflush(f);rewind(f);n=fread(b,1,sizeof(b)-1,f);b[n]='\0';assert(strstr(b,"pytyliki.iron-core-catalog.v1")&&strstr(b,"\"count\": 20"));fclose(f);}
-int main(void){test_catalog();test_valid();test_bad_frames();test_comments_strings();test_duplicate_and_limit();test_json();puts("Pytyliki Iron Core tests passed");return 0;}
+
+static void test_seal_is_final(void) {
+    const char *source =
+        "verison ///. * V1\n"
+        "CC based rules ^^^ R1\n"
+        "begin iron )\n"
+        "() core --\n"
+        "stop option ;\n"
+        "verificated /// !! CLAIM\n"
+        "verison ///. * TOO_LATE\n";
+    pl_iron_program program;
+    pl_iron_error error;
+    assert(!pl_iron_parse(source, &program, &error));
+    assert(strstr(error.message, "after final verification claim") != NULL);
+}
+
+int main(void){test_catalog();test_valid();test_bad_frames();test_comments_strings();test_seal_is_final();test_duplicate_and_limit();test_json();puts("Pytyliki Iron Core tests passed");return 0;}
