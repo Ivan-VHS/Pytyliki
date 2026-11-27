@@ -52,7 +52,8 @@ class ScannerRegressionTests(unittest.TestCase):
         self.assertFalse([item for item in unrelated if item["rule_id"] == "Q05"])
 
         direct = []
-        correlate(direct, {"src/module.py": "logger.info('token=%s', token)"})
+        source = "logger" + ".info('token=%s', token)"
+        correlate(direct, {"src/module.py": source})
         self.assertTrue([item for item in direct if item["rule_id"] == "Q05"])
 
     def test_repository_correlation_uses_only_changed_files(self):
