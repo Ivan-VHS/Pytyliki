@@ -17,7 +17,7 @@
 
 <p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
 
-实际流程：本地主机数据与文件 → 有界 C11 核心 → 检查、分析与 DSP → 证据和本地输出。
+实际流程：本地主机数据与文件 → 有界 C11 核心 → 检查与分析 → 证据和本地输出。
 
 
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
@@ -27,7 +27,7 @@
 
 ## 项目用途与边界
 
-Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断、数值工具和本地音频处理整合到一个原生 C11 核心中。目标读者包括系统开发者、硬件研究人员、QA 工程师以及需要可检查本地结果的代码审查者。
+Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断、数值工具整合到一个原生 C11 核心中。目标读者包括系统开发者、硬件研究人员、QA 工程师以及需要可检查本地结果的代码审查者。
 
 应用展示能够在本机读取到的信息，并生成建议性计划。它不会更改操作系统调度、CPU affinity、处理器频率或电压；不会刷写固件，也不会声称未经测量的性能提升。MCU/MMIO 内容属于参考或模拟数据。QCS 只执行语法分析，不会任意运行被检查的源代码。
 
@@ -37,8 +37,10 @@ Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断�
 |---|---|---|
 | 处理器清单 | 查看型号、拓扑、内存以及可用的 ISA/XCR0 信息 | 本地只读检测 |
 | CPU 与内存测试 | 运行有界的本地测量和工作负载分区示例 | 结果取决于当前主机，并非通用排行榜 |
+| 基准统计 | 分析调用方提供的计时样本：百分位数、波动性和 MAD | 仅分析；不会启动或重复工作负载 |
+| 性能分析导入 | 导入 collapsed stacks 和 Speedscope；导出 folded stacks 与 SVG 火焰图 | 将数据作为文本/JSON 解析；不会启动分析器 |
+| Linux 传感器快照 | 读取 CPU 频率、governor、温度和能耗计数器并记录来源 | 只读 sysfs/procfs；缺失传感器保持未知状态 |
 | 源码检查 | 检查源文本并生成诊断/报告 | 不构建或执行被检查的源代码 |
-| DSP | 加载和处理受支持的 PCM16 WAV，执行滤波、压缩、饱和与测量 | 本地离线缓冲区；不访问音频设备，也没有实时回调 |
 | Embedded C | 浏览 MCU 配置并估算 FLASH/SRAM | 参考估算，不部署固件 |
 | QCS | 词法分析、解析、查看 AST 和诊断 | 仅语法分析 |
 | Interop | 构建版本化 C ABI v1 库 | 调用方必须显式选择可信库 |
@@ -46,6 +48,10 @@ Pytyliki 将处理器信息发现、有界工作负载规划、源代码诊断�
 
 下方图片是桌面应用的实际截屏，并非交互式浏览器预览。
 
+
+## 相关操作系统产品：DuckOS
+
+七款 Mora 应用（Cockos、Kavun、Ka-bon、Gloverty、Po、Illidia 和 Unify）在独立的 [DuckOS 项目](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/PREINSTALLED_APPLICATIONS.md)中定义。它们属于操作系统应用层，并不是 Pytyliki 的组成部分。本仓库不声称随附这些应用或提供其操作系统服务。Pytyliki 自身的能力和接口仍以本仓库的源代码、测试和版本化契约为准。
 
 ## 快速开始
 
@@ -87,8 +93,6 @@ Windows 下使用 `build\Release\pytyliki.exe` 和 `build\Release\pytyliki-metri
 pytyliki --systems
 pytyliki --embedded profiles
 pytyliki --divide -17 5
-pytyliki --tone-out demo.wav --frequency 440 --seconds 2
-pytyliki --process-wav input.wav output.wav --lowpass 12000
 ```
 
 完整参数列表可通过 `pytyliki --help` 查看。以上命令均在本地运行；项目没有默认 HTTP 端口或 localhost URL。
@@ -116,11 +120,8 @@ MSVC 不支持此选项。
 3. **除法：**运行 `pytyliki --divide -17 5`，并与 Euclidean division 测试对照。
 4. **指标示例：**运行 `pytyliki-metrics --demo`；这些是演示数据，不是主机测量值。
 5. **源码检查：**运行 `pytyliki --review-processor path/to/source.c`；诊断过程不会执行源文件。
-6. **音频文件：**通过 `--process-wav` 处理本地 WAV，并检查输出文件。
 
-DSP 支持 8–192 kHz、mono/stereo 音频，WAV 容器上限为 32 MiB。错误的头部、chunk 边界、不支持的格式以及超出范围的样本值都会被拒绝。项目没有延迟/HTTP 500 模拟器、远程媒体服务或浏览器上传流程。
-
-工作数据存在于当前进程以及操作者选择读取或保存的文件中。关闭应用会结束当前内存会话；生成的报告和音频不会自动删除。项目没有“重置演示”按钮，也没有共享服务器端状态。界面外观和动态效果偏好由桌面 UI 管理，不使用 cookies、localStorage、sessionStorage 或 IndexedDB。
+工作数据存在于当前进程以及操作者选择读取或保存的文件中。关闭应用会结束当前内存会话；生成的报告不会自动删除。项目没有“重置演示”按钮，也没有共享服务器端状态。界面外观和动态效果偏好由桌面 UI 管理，不使用 cookies、localStorage、sessionStorage 或 IndexedDB。
 
 ## 配置与访问
 
@@ -141,7 +142,7 @@ DSP 支持 8–192 kHz、mono/stereo 音频，WAV 容器上限为 32 MiB。错�
 
 | 路径 | 内容 |
 |---|---|
-| `src/` | C11 核心、Win32 GUI、CLI 入口、处理器探测、DSP、QCS 和 interop |
+| `src/` | C11 核心、Win32 GUI、CLI 入口、处理器探测、QCS 和 interop |
 | `tests/` | CTest 单元、回归、边界和 CLI 冒烟测试 |
 | `tools/` | 验证工具和仓库工具 |
 | `scripts/` | 架构与工程合同检查 |
@@ -168,7 +169,6 @@ DSP 支持 8–192 kHz、mono/stereo 音频，WAV 容器上限为 32 MiB。错�
 | CMake 无法识别 C 编译器 | 安装 C11 工具链，并在对应的开发者环境中运行配置 |
 | 找不到 `pytyliki-gui` | GUI 目标仅支持 Windows |
 | CTest 在某台主机上失败 | 保存失败测试名称与完整输出；不同 OS/CPU 的探测结果可能不同 |
-| WAV 被拒绝 | 检查 PCM16、mono/stereo、采样率和大小限制 |
 | Sanitizer 选项失败 | `PYTYLIKI_ENABLE_SANITIZERS` 需要 GCC 或 Clang |
 | Embedded 估算被误解为部署 | 它只是参考计算；本项目不会刷写或编程硬件 |
 
@@ -176,7 +176,7 @@ CI 日志可在对应的 GitHub Actions Workflow 中查看。README 和测试套
 
 ## 已知边界、贡献与许可证
 
-已知限制明确列出：GUI 仅支持 Windows，源码检查为静态分析，Embedded 数值是建议性参考，DSP 为本地离线处理，量子功能是经典模拟。仓库的贡献流程、变更验证和 Pull Request 要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。提交改进时，请创建 GitHub Issue 或 Pull Request，说明平台、确切命令、预期结果和实际输出；提交前运行构建与 CTest。
+已知限制明确列出：GUI 仅支持 Windows，源码检查为静态分析，Embedded 数值是建议性参考，量子功能是经典模拟。仓库的贡献流程、变更验证和 Pull Request 要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。提交改进时，请创建 GitHub Issue 或 Pull Request，说明平台、确切命令、预期结果和实际输出；提交前运行构建与 CTest。
 
 支持和缺陷反馈：[GitHub Issues](https://github.com/Ivan-VHS/Pytyliki/issues)。许可证：[MIT](LICENSE)。
 
@@ -203,14 +203,12 @@ CI 日志可在对应的 GitHub Actions Workflow 中查看。README 和测试套
 
 请参阅 docs/REPORT_ENVELOPE.md 和 schemas/ivan-vhs.report.v1.schema.json。该封装记录结果来源和限制；它不是密码学签名，也不代表兼容性认证。
 
-## 基准测试对比
 
-在同一台计算机上，分别在更改前后保存两份重复测试报告：
+## 文档导航图
 
-```sh
-./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
-./build/pytyliki --profile --suite --repeat 10 --json > candidate.json
-python tools/compare_suite_runs.py baseline.json candidate.json --json comparison.json
-```
+请从[文档索引](docs/README.md)进入，并使用[信息架构图](docs/INFORMATION_ARCHITECTURE.md)查看主题集群、相关页面及跨仓库边界。主题入口链接到详细契约；实现状态仍以对应的源代码、测试和 Schema 为准。
 
-对比工具会验证主机和负载配置是否一致，排除预热轮次，并使用 integer、memory 和 matrix 耗时的中位数及中位绝对偏差（MAD）。微小差异将标记为 `within_noise`，不会被误报为性能提升。详情请参阅[基准测试对比指南](docs/SUITE_COMPARISON.md)。
+
+## Mora 桌面集成
+
+Pytyliki 已加入统一的 Mora 应用目录。只有在 Windows 上构建现有 Win32 GUI 目标后，才能从 Mora 启动原生窗口；可移植 C11 核心和 CLI 仍保持独立。请参阅 [Mora 集成说明](docs/MORA_DESKTOP_INTEGRATION.md) 和 [DuckOS 工作空间契约](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md)。

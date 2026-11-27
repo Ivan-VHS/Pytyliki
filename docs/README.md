@@ -1,8 +1,31 @@
+> **Navigation:** Start with the [information architecture map](INFORMATION_ARCHITECTURE.md), then open the relevant [topic hub](clusters/architecture.md). The map catalogs every Markdown page and keeps the repository's topic clusters discoverable.
+
+## Topic hubs
+
+- [Architecture and system contracts](clusters/architecture.md) — System structure, data flow, processor models and bounded execution contracts.
+- [Processor, hardware and computational labs](clusters/processor-labs.md) — CPU capabilities, hardware reference models, numerical engines and bounded lab workflows.
+- [Quality, safety and evidence](clusters/quality-evidence.md) — Validation gates, repeatability, traceability, reporting and safety boundaries.
+- [UI, motion and visual documentation](clusters/ui-visual.md) — Desktop interaction, accessibility, motion behavior and visual asset standards.
+- [Integrations and project federation](clusters/federation.md) — External interfaces, plugins, shared contracts and cross-project integration boundaries.
+- [Governance, planning and reference material](clusters/governance-planning.md) — Project stewardship, decision standards, roadmaps and supporting references.
+
+---
+
 # Documentation
+
+## Related OS product
+
+[DuckOS — Mora application suite](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/PREINSTALLED_APPLICATIONS.md) documents the seven applications provided by the OS layer. This is a related product reference only; it does not add app-suite capabilities to Pytyliki.
+
+## Normative documentation standard
+
+[Unified documentation and semantics standard](UNIFIED_DOCUMENTATION_STANDARD.md) defines the shared terminology, capability maturity, runtime states, verification outcomes, evidence rules, localization requirements and documentation acceptance criteria. It is normative for this repository; project-specific architecture and implementation evidence remain authoritative for the product itself.
 
 | File | Scope |
 |---|---|
 | [FEATURES.md](FEATURES.md) | module inventory and capability boundaries |
+| [BENCHMARK_STATISTICS.md](BENCHMARK_STATISTICS.md) | bounded statistical analysis of timing samples |
+| [PROGRAM_CATALOG_1000.md](PROGRAM_CATALOG_1000.md) | adoption map and project ownership for the 1,000-item catalogue |
 | [ENGINEERING.md](ENGINEERING.md) | quality and safety gates |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | runtime and data flow |
 | [DIVISION_ENGINE.md](DIVISION_ENGINE.md) | checked division, balanced partitioning and weighted allocation |
@@ -14,14 +37,12 @@
 | [QUALITY_COHESION_CADENCE.md](QUALITY_COHESION_CADENCE.md) | measurement cadence |
 | [TRACE_MEASUREMENT_PROVENANCE.md](TRACE_MEASUREMENT_PROVENANCE.md) | measurement context and evidence provenance |
 | [MEMORY_ARENA.md](MEMORY_ARENA.md) | bounded allocation |
-| [PROCESSOR_NATIVE_DSP.md](PROCESSOR_NATIVE_DSP.md) | local audio processing and WAV boundaries |
 | [PROCESSOR_TAXONOMY.md](PROCESSOR_TAXONOMY.md) | processor profiles |
 | [EMBEDDED_C.md](EMBEDDED_C.md) | MCU reference tools |
 | [HARDWARE_RULE_ENGINE.md](HARDWARE_RULE_ENGINE.md) | advisory rules |
 | [QCS_NATIVE.md](QCS_NATIVE.md) | syntax-only frontend |
 | [UI_UX_SYSTEM.md](UI_UX_SYSTEM.md) | desktop interaction |
 | [QUALITY_REPEATABILITY_NATIVE.md](QUALITY_REPEATABILITY_NATIVE.md) | reproducibility gates |
-| [SUITE_COMPARISON.md](SUITE_COMPARISON.md) | median/MAD comparison of repeated CPU suite reports |
 
 The root README includes the live Windows desktop capture and current build/test commands. Legacy contract paths remain concise for validators. Machine-readable JSON, source and tests are authoritative for implemented behavior.
 
@@ -41,3 +62,8 @@ The root README includes the live Windows desktop capture and current build/test
 - [Example JSON](../examples/resource-allocation-500-uah.json) and [JSON Schema](../schemas/resource-allocation.v1.schema.json).
 
 This is an illustrative personal-budgeting reference, not a claim that the host project manages payments or live retail prices.
+
+
+## Project-specific engineering profile
+
+[IVAN_VHS_ENGINEERING_PROFILE.md](IVAN_VHS_ENGINEERING_PROFILE.md) translates the project's direction into concrete architecture boundaries, implementation priorities, human-readable code conventions and acceptance tests. It is a development contract; it does not mark planned work as implemented.

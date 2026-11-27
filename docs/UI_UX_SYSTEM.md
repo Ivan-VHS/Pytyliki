@@ -18,3 +18,7 @@ See [UI_UX_2026_CONVERGENCE.md](UI_UX_2026_CONVERGENCE.md) for shared semantic t
 ## UI/UX Codex 40026
 
 See [UI/UX Codex 40026](UI_UX_CODEX_40026.md) for the six-cycle / 666-rule engineering contract. The Win32 workstation now has a UI-only text contrast policy with a 4.5:1 ordinary-text and 3:1 large-text threshold, a preferred 44 px action target, contrast-safe text fallback, and Escape/keyboard-containment support in Motion Settings. The helper is deliberately not linked into the DSP/FFI/processing core.
+
+## Anatidae desktop visual refinement
+
+The native workstation header uses a restrained 5 px white-blue-red identity band. Keep the blue and red semantic roles consistent with the existing theme, preserve contrast-safe text, visible focus and 44 px action targets. Processor controls, benchmarks and DSP remain visually stable; no decorative animation is added to processing paths.

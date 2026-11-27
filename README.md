@@ -17,7 +17,7 @@ Genuine Windows desktop capture of the running application, produced by this rep
 
 <p align="center"><img src="assets/readme/workflow.svg" alt="Pytyliki implemented data flow" width="100%"></p>
 
-Implemented path: local host and file inputs → bounded C11 core → inspection, analysis and DSP → evidence and local output.
+Implemented path: local host and file inputs → bounded C11 core → inspection, analysis → evidence and local output.
 
 
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml)  [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml)  [![License](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
@@ -27,7 +27,7 @@ Implemented path: local host and file inputs → bounded C11 core → inspection
 
 ## Purpose and boundaries
 
-Pytyliki brings processor inspection, bounded workload planning, source diagnostics, numerical utilities and local audio processing into one native C11 core. It is aimed at systems developers, hardware researchers, QA engineers and reviewers who need inspectable local results.
+Pytyliki brings processor inspection, bounded workload planning, source diagnostics and numerical utilities into one native C11 core. It is aimed at systems developers, hardware researchers, QA engineers and reviewers who need inspectable local results.
 
 The app reports information it can observe and produces advisory plans. It does not change OS scheduling, CPU affinity, processor frequency or voltage; it does not flash firmware or claim measured speedups from a proposed partition. Embedded MCU/MMIO material is reference or simulation data. QCS performs syntax analysis, not arbitrary source execution.
 
@@ -37,8 +37,10 @@ The app reports information it can observe and produces advisory plans. It does 
 |---|---|---|
 | Processor inventory | inspect model, topology, memory and available ISA/XCR0 information | local, read-only discovery |
 | CPU and memory suite | run bounded local measurements and workload-partition examples | results depend on the host; not universal benchmarks |
+| Benchmark statistics | summarize caller-supplied timing samples with percentiles, variability and MAD | analysis only; does not launch or repeat workloads |
+| Profile import | import collapsed stacks and Speedscope samples; export folded stacks and SVG flamegraphs | profile data is parsed as text/JSON; no profiler is launched |
+| Linux sensor snapshot | read exposed CPU frequency, governor, thermal and energy counters with source provenance | Linux sysfs/procfs read-only; unavailable sensors remain unknown |
 | Source review | inspect source and produce diagnostics/reports | reviewed source is not built or executed |
-| DSP | load/process supported PCM16 WAV data, filter, compress, saturate and measure | local offline buffers; no audio-device or real-time callback |
 | Embedded C | browse MCU profiles and estimate FLASH/SRAM use | reference estimates, not firmware deployment |
 | QCS | tokenize/parse input and inspect AST/diagnostics | syntax analysis only |
 | Interop | build the versioned C ABI v1 library | consumers must select a trusted library explicitly |
@@ -46,6 +48,10 @@ The app reports information it can observe and produces advisory plans. It does 
 
 The Windows screenshot below is a captured desktop application, not an interactive browser preview.
 
+
+## Related OS product: DuckOS
+
+The seven-app **Mora** suite (Cockos, Kavun, Ka-bon, Gloverty, Po, Illidia and Unify) is specified in the separate [DuckOS project](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/PREINSTALLED_APPLICATIONS.md). It is an operating-system application layer, not a component of Pytyliki. This repository does not claim to ship those applications or provide their OS services. Its own capabilities and interfaces remain independently defined by this repository's source, tests and versioned contracts.
 
 ## Quick Start
 
@@ -77,6 +83,7 @@ On Windows, CMake places Release executables in `build/Release/`. On a typical s
 ./build/pytyliki --suite
 ./build/pytyliki --partition 10000 8 256
 ./build/pytyliki-metrics --demo
+./build/pytyliki-benchstats 1.8,1.7,1.9,1.8,2.4,1.8
 ```
 
 On Windows use `build\Release\pytyliki.exe` and `build\Release\pytyliki-metrics.exe`. The desktop GUI is `build\Release\pytyliki-gui.exe`.
@@ -87,8 +94,10 @@ More local examples:
 pytyliki --systems
 pytyliki --embedded profiles
 pytyliki --divide -17 5
-pytyliki --tone-out demo.wav --frequency 440 --seconds 2
-pytyliki --process-wav input.wav output.wav --lowpass 12000
+
+python tools/profile_import.py cpu.collapsed --format svg --output cpu-flamegraph.svg
+python tools/profile_import.py capture.speedscope.json --format folded --output cpu.folded
+python tools/sensor_snapshot.py --output host-sensors.json
 ```
 
 The exact supported switches are also printed by `pytyliki --help`. These commands run locally; there is no default HTTP port or localhost URL.
@@ -116,11 +125,8 @@ Try these reproducible scenarios:
 3. **Checked division:** run `pytyliki --divide -17 5`; compare the result with the Euclidean-division tests.
 4. **Metric example:** run `pytyliki-metrics --demo`; the demo data is an example, not a measurement of the host.
 5. **Source review:** run `pytyliki --review-processor path/to/source.c`; inspect diagnostics without executing the source.
-6. **Audio file:** process a local WAV with `--process-wav` and inspect the output file.
 
-For the DSP path, the current implementation accepts mono or stereo audio at 8–192 kHz and applies a 32 MiB WAV-container limit. Invalid headers, chunk bounds, unsupported formats and out-of-range samples are rejected. The project does not provide a delay/HTTP-500 simulator, remote media service or browser upload flow.
-
-The app's working data is local to the process and to files the operator chooses to read or save. Closing the app ends the current in-memory session; generated reports and audio files are not automatically erased. There is no "reset demo" action or shared server-side state. Native appearance/motion preferences are handled by the desktop UI, not by cookies, localStorage, sessionStorage or IndexedDB.
+The app's working data is local to the process and to files the operator chooses to read or save. Closing the app ends the current in-memory session; generated reports are not automatically erased. There is no "reset demo" action or shared server-side state. Native appearance/motion preferences are handled by the desktop UI, not by cookies, localStorage, sessionStorage or IndexedDB.
 
 ## Configuration and access
 
@@ -141,7 +147,7 @@ The application follows a local pipeline: **input → validation → bounded mod
 
 | Path | Contents |
 |---|---|
-| `src/` | C11 core, Win32 GUI, CLI entry points, processor probes, DSP, QCS and interop |
+| `src/` | C11 core, Win32 GUI, CLI entry points, processor probes, QCS and interop |
 | `tests/` | CTest unit, regression, boundary and CLI smoke tests |
 | `tools/` | validation utilities and repository tooling |
 | `scripts/` | architecture and engineering contract checks |
@@ -168,7 +174,6 @@ Artifacts are created under the workflow's build/dist paths. To roll back a dist
 | CMake cannot identify a C compiler | install a C11 toolchain and configure from the matching developer environment |
 | `pytyliki-gui` is missing | the GUI target is Windows-only; build on Windows |
 | CTest fails on one host | retain the failing test name and full output; platform probes can differ by OS and CPU |
-| WAV import is rejected | confirm the PCM16 format, mono/stereo channel count, sample rate and size limits |
 | Sanitizer option fails | `PYTYLIKI_ENABLE_SANITIZERS` requires GCC or Clang |
 | An embedded estimate looks like deployment | it is a reference calculation only; this project does not flash or program hardware |
 
@@ -176,7 +181,7 @@ CI logs are available in the linked GitHub Actions workflows. The README and tes
 
 ## Known limitations, contribution and license
 
-Known boundaries are listed above rather than hidden behind a "production-ready" claim: the GUI is Windows-only, source inspection is static, embedded values are advisory, DSP is local/offline and quantum routines are classical simulations. See [CONTRIBUTING.md](CONTRIBUTING.md) for the repository's contribution workflow and validation requirements. For a change, open a GitHub Issue or Pull Request with the platform, exact command, expected result and actual output; run the build and CTest suite before proposing the change.
+Known boundaries are listed above rather than hidden behind a "production-ready" claim: the GUI is Windows-only, source inspection is static, embedded values are advisory and quantum routines are classical simulations. See [CONTRIBUTING.md](CONTRIBUTING.md) for the repository's contribution workflow and validation requirements. For a change, open a GitHub Issue or Pull Request with the platform, exact command, expected result and actual output; run the build and CTest suite before proposing the change.
 
 Support and defect reports: [GitHub Issues](https://github.com/Ivan-VHS/Pytyliki/issues). License: [MIT](LICENSE).
 
@@ -203,14 +208,12 @@ JSON outputs can be wrapped in the shared ivan-vhs.report.v1 metadata format wit
 
 See docs/REPORT_ENVELOPE.md and schemas/ivan-vhs.report.v1.schema.json. The envelope records provenance and project limitations; it is not a security signature or a compatibility verdict.
 
-## Suite comparison
 
-Capture two repeated reports on the same host, before and after a change:
+## Documentation map
 
-```sh
-./build/pytyliki --profile --suite --repeat 10 --json > baseline.json
-./build/pytyliki --profile --suite --repeat 10 --json > candidate.json
-python tools/compare_suite_runs.py baseline.json candidate.json --json comparison.json
-```
+Use the [documentation index](docs/README.md) as the entry point and the [information architecture map](docs/INFORMATION_ARCHITECTURE.md) for topic clusters, related pages and cross-repository boundaries. Each topic hub links to its detailed contracts; implementation status remains governed by the relevant source, tests and schemas.
 
-The comparator validates host and workload identity, excludes warm-up runs, and uses medians and median absolute deviation (MAD) for integer, memory and matrix timings. Small differences are marked `within_noise`, not presented as speedups. See the [suite comparison guide](docs/SUITE_COMPARISON.md).
+
+## Mora desktop integration
+
+Pytyliki is listed in the shared Mora workspace. Its native launch action is available on Windows when the existing Win32 GUI target has been built; portable C11 and CLI use remain independent. See [Mora integration](docs/MORA_DESKTOP_INTEGRATION.md) and the [DuckOS workspace contract](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/MORA_DESKTOP.md).

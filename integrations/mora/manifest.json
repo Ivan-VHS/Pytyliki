@@ -1,0 +1,26 @@
+{
+  "$schema": "https://github.com/Ivan-VHS/DuckOS/blob/main/mora/app-manifest.schema.json",
+  "schema_version": "1.0.0",
+  "application_id": "ivan-vhs.pytyliki-workstation",
+  "project": "Ivan-VHS/Pytyliki",
+  "display_name": "Pytyliki Workstation",
+  "description": "Native Windows workstation for processor inventory, bounded analysis and local engineering reports.",
+  "launch": {
+    "kind": "local_process",
+    "platforms": ["windows"],
+    "entrypoint": "build/Release/pytyliki-gui.exe",
+    "arguments": [],
+    "working_directory": "."
+  },
+  "policy": {
+    "integration_policy": "opt_in",
+    "confirmation_required": true,
+    "shell_interpolation": false,
+    "trust_source": "operator_installed_project"
+  },
+  "maturity": {
+    "maturity_status": "specified",
+    "verification_status": "not_run"
+  },
+  "capabilities": ["processor-inventory", "bounded-analysis", "local-reporting"]
+}

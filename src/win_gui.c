@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "core.h"
 #include "processor.h"
 #include "metric_geometry.h"
@@ -156,11 +157,11 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
             dialog, (HMENU)(INT_PTR)ID_MOTION_ECO, GetModuleHandleA(NULL), NULL);
         HWND note = CreateWindowExA(0, "STATIC",
             "Normal: balanced motion. Expressive: longer window entrance. Reduced Motion: no spatial transition.",
-            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 136, 430, 48, dialog, NULL, GetModuleHandleA(NULL), NULL);
+            WS_CHILD | WS_VISIBLE | SS_LEFT, 22, 132, 430, 50, dialog, NULL, GetModuleHandleA(NULL), NULL);
         HWND save = CreateWindowExA(0, "BUTTON", "Save", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
-            270, 202, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
+            270, 198, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_SAVE, GetModuleHandleA(NULL), NULL);
         HWND cancel = CreateWindowExA(0, "BUTTON", "Cancel", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-            362, 202, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
+            362, 198, 82, (int)pl_ui_preferred_target_px(), dialog, (HMENU)(INT_PTR)ID_MOTION_CANCEL, GetModuleHandleA(NULL), NULL);
         apply_font(mode_label); apply_font(g_motion_mode_combo); apply_font(g_motion_eco_check);
         apply_font(note); apply_font(save); apply_font(cancel);
         SendMessageA(g_motion_eco_check, BM_SETCHECK, g_eco_visuals ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -174,7 +175,7 @@ static LRESULT CALLBACK motion_dialog_proc(HWND dialog, UINT message, WPARAM wpa
             g_reduce_motion = (g_motion_mode == 2);
             g_eco_visuals = SendMessageA(g_motion_eco_check, BM_GETCHECK, 0, 0) == BST_CHECKED;
             save_motion_settings();
-            log_format("[UI MOTION] Mode %s | Eco Visuals %s.\\r\\n",
+            log_format("[UI MOTION] Mode %s | Eco Visuals %s\\r\\n",
                 g_motion_mode == 2 ? "REDUCED" : g_motion_mode == 1 ? "EXPRESSIVE" : "NORMAL",
                 g_eco_visuals ? "ON" : "OFF");
             close_motion_dialog(dialog);
@@ -275,11 +276,17 @@ static void run_suite(void) {
          r.integer_ms,r.memory_ms,r.memory_mib,r.passes,r.matrix_ms,(unsigned long long)r.checksum,r.integrity_ok?"PASS":"CHECK");
     log_text("Scores are local comparative measurements, not processor certification. Close other high-load applications for more repeatable runs.\r\n");
 }
-static int choose_file(char *path,size_t cap) {
-    OPENFILENAMEA ofn; memset(&ofn,0,sizeof(ofn)); path[0]='\0';
-    ofn.lStructSize=sizeof(ofn); ofn.hwndOwner=GetActiveWindow(); ofn.lpstrFile=path; ofn.nMaxFile=(DWORD)cap;
-    ofn.lpstrFilter="C/C++/Rust source (*.c;*.h;*.cpp;*.rs)\0*.c;*.h;*.cpp;*.rs\0All files (*.*)\0*.*\0";
-    ofn.nFilterIndex=1; ofn.Flags=OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_FILEMUSTEXIST|OFN_EXPLORER;
+static int choose_source_file(char *path, size_t cap) {
+    OPENFILENAMEA ofn;
+    memset(&ofn, 0, sizeof(ofn));
+    path[0] = '\0';
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = GetActiveWindow();
+    ofn.lpstrFile = path;
+    ofn.nMaxFile = (DWORD)cap;
+    ofn.lpstrFilter = "C/C++/Rust source (*.c;*.h;*.cpp;*.rs)\0*.c;*.h;*.cpp;*.rs\0All files (*.*)\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_EXPLORER;
     return GetOpenFileNameA(&ofn);
 }
 static int choose_report(char *path,size_t cap) {
@@ -298,7 +305,7 @@ static void save_report(void) {
     log_format("[REPORT] Saved CPU snapshot and bounded benchmark JSON: %s\r\n",path);
 }
 static void review_source(void) {
-    char path[1024]; if(!choose_file(path,sizeof(path))) return;
+    char path[1024]; if(!choose_source_file(path,sizeof(path))) return;
     pl_analysis a={0}; char details[8192]={0};
     if(pl_analyze_file(path,&a,details,sizeof(details))!=0) { log_format("[SOURCE REVIEW] Could not read: %s\r\n",path); return; }
     log_format("\r\n[SOURCE REVIEW] %s\r\nFiles: %u | review flags: %u | read errors: %u\r\n%s",
@@ -335,7 +342,7 @@ static void layout(HWND w) {
     }
     y+=top_rows*(button_height+gap)+8;
 
-    MoveWindow(GetDlgItem(w,ID_SAVE_REPORT),width-margin-244,y,124,44,TRUE);
+MoveWindow(GetDlgItem(w,ID_SAVE_REPORT),width-margin-244,y,124,44,TRUE);
     MoveWindow(GetDlgItem(w,ID_CLEAR),width-margin-112,y,112,44,TRUE);
     y+=52;
     int log_height=height-y-margin;
@@ -350,7 +357,7 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         rebuild_brushes();
         add_button(w,"CPU CAPABILITY SCAN",ID_PROFILE); add_button(w,"RUN PROCESSOR SUITE",ID_SUITE); add_button(w,"REVIEW SOURCE FILE",ID_REVIEW); add_button(w,"METRIC LAB",ID_METRIC_LAB); add_button(w,"EMBEDDED C",ID_EMBEDDED); add_button(w,"DARK THEME",ID_THEME); add_button(w,"MOTION SETTINGS",ID_MOTION);
         add_button(w,"SAVE JSON REPORT",ID_SAVE_REPORT); add_button(w,"CLEAR LOG",ID_CLEAR);
-        g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nDeveloper: Ivan-VHS\r\nCPU operations are read-only and bounded.\r\n",
+        g_log=CreateWindowExA(WS_EX_CLIENTEDGE,"EDIT","Pytyliki desktop workstation initialized.\r\nDeveloper: Ivan-VHS\r\nCPU operations are read-only and bounded. Measurements and workload plans are local and bounded.\r\n",
             WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|ES_NOHIDESEL,0,0,10,10,w,NULL,GetModuleHandleA(NULL),NULL);
         g_log_font=CreateFontA(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH|FF_MODERN,"Consolas");
         if (g_log_font) SendMessageA(g_log,WM_SETFONT,(WPARAM)g_log_font,TRUE); else apply_font(g_log);
@@ -413,8 +420,24 @@ static LRESULT CALLBACK wndproc(HWND w,UINT m,WPARAM p,LPARAM l) {
         RECT header={0,0,r.right,82}; HBRUSH hb=CreateSolidBrush(header_color()); FillRect(dc,&header,hb); DeleteObject(hb);
         SetBkMode(dc,TRANSPARENT); SetTextColor(dc,RGB(255,255,255));
         HFONT old=(HFONT)SelectObject(dc,g_font); RECT title={22,10,r.right-20,42}; DrawTextA(dc,"PYTYLIKI  /  PROCESSOR SYSTEMS WORKSTATION  /  IVAN-VHS",-1,&title,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
-        SelectObject(dc,old); HBRUSH accent=CreateSolidBrush(red_color()); RECT line={0,82,r.right,86}; FillRect(dc,&line,accent); DeleteObject(accent);
+        SetTextColor(dc,RGB(218,231,245)); RECT sub={23,43,r.right-20,70}; DrawTextA(dc,"WHITE / BLUE / RED    CPU diagnostics | metrics | source review | embedded tools",-1,&sub,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+        SelectObject(dc,old);
+        {
+            const int blue_end = r.right * 34 / 100;
+            const int white_end = r.right * 66 / 100;
+            RECT blue_band = {0,82,blue_end,87};
+            RECT white_band = {blue_end,82,white_end,87};
+            RECT red_band = {white_end,82,r.right,87};
+            HBRUSH blue_brush = CreateSolidBrush(blue_color());
+            HBRUSH white_brush = CreateSolidBrush(RGB(255,255,255));
+            HBRUSH red_brush = CreateSolidBrush(red_color());
+            FillRect(dc,&blue_band,blue_brush);
+            FillRect(dc,&white_band,white_brush);
+            FillRect(dc,&red_band,red_brush);
+            DeleteObject(blue_brush);
+            DeleteObject(white_brush);
+            DeleteObject(red_brush);
+        }
         EndPaint(w,&ps); return 0;
     }
     case WM_COMMAND:
