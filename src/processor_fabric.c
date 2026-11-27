@@ -554,7 +554,6 @@ pl_processor_fabric_status pl_processor_fabric_collect_catalogues(
     const pl_cpu_suite_module *suite = NULL;
     const pl_hw_construct_info *constructs = NULL;
     const pl_system_sigil_info *sigils = NULL;
-    const pl_iron_marker_info *iron = NULL;
 
     if (out == NULL)
         return PL_PROCESSOR_FABRIC_INVALID_ARGUMENT;
@@ -564,9 +563,9 @@ pl_processor_fabric_status pl_processor_fabric_collect_catalogues(
     out->processor_rules = (uint32_t)pl_processor_catalog_count();
     out->hardware_constructs = (uint32_t)pl_hw_syntax_catalog(&constructs);
     out->system_sigil_operators = (uint32_t)pl_system_sigil_catalog(&sigils);
-    out->iron_core_markers = (uint32_t)pl_iron_catalog(&iron);
+    out->iron_core_markers = (uint32_t)PL_IRON_MARKER_COUNT;
 
-    if (suite == NULL || constructs == NULL || sigils == NULL || iron == NULL)
+    if (suite == NULL || constructs == NULL || sigils == NULL)
         return PL_PROCESSOR_FABRIC_INTERNAL_ERROR;
     return PL_PROCESSOR_FABRIC_OK;
 }
