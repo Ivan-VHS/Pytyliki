@@ -741,11 +741,14 @@ pl_topology_status pl_processor_topology_write_json(
     fputs(",\"os_usable\":", output); \
     if ((snapshot->isa_os_known & (flag)) == 0u) fputs("null", output); \
     else fputs((snapshot->isa_os_usable & (flag)) ? "true" : "false", output); \
-    fputs(",\"evidence\":\"cpuid\",\"os_evidence\":", output); \
-    if ((flag) == PL_TOPOLOGY_ISA_AVX || (flag) == PL_TOPOLOGY_ISA_AVX2 || \
-        (flag) == PL_TOPOLOGY_ISA_AVX512F || (flag) == PL_TOPOLOGY_ISA_FMA) \
+    fputs(",\"evidence\":", output); \
+    if ((snapshot->isa_known & (flag)) == 0u) fputs("\"unknown\"", output); \
+    else fputs("\"cpuid\"", output); \
+    fputs(",\"os_evidence\":", output); \
+    if ((snapshot->isa_os_known & (flag)) == 0u) fputs("\"unknown\"}", output); \
+    else if ((flag) == PL_TOPOLOGY_ISA_AVX || (flag) == PL_TOPOLOGY_ISA_AVX2 || \
+             (flag) == PL_TOPOLOGY_ISA_AVX512F || (flag) == PL_TOPOLOGY_ISA_FMA) \
         fputs("\"os-state\"}", output); \
-    else if ((flag) == PL_TOPOLOGY_ISA_VIRTUALIZE) fputs("\"unknown\"}", output); \
     else fputs("\"cpuid\"}", output); \
 } while (0)
     {
