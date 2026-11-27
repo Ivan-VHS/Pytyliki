@@ -30,6 +30,10 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 
 PCM16 WAV/DSP processing is not part of the current delivered Pytyliki core. See the project contract and feature documentation before depending on partial or planned capabilities.
 
+## Neural framework suite
+
+The C11 core now includes six bounded neural frameworks: Sokk (feed-forward topology), Above AL (versioned contracts), Jumpju (opt-in SGD training), Diogo (batch inference), Ghostery (local-only privacy policy checks) and SELITOL (peer-contract validation). The v1 runtime uses caller-owned buffers and CPU-only dense networks; it does not claim GPU, transformer/generative execution or network-based federation. See [the suite contract](contracts/neuro-suite.v1.json) and [technical reference](docs/NEURO_SUITE.md).
+
 ## Build and verify
 
 Requirements: CMake 3.16+, a C11 compiler (MSVC, GCC or Clang) and Git. The Win32 GUI is built on Windows. Python is optional for supplementary repository-contract tests; it is not the C11 runtime.
