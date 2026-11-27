@@ -13,9 +13,10 @@ C11 discovery, measurement and memory primitives.
 | `memory.rpr` | Memory resize proposals, budget checks and generation planning |
 | `hardware.rpr` | Read-only processor evidence validation |
 | `verification.rpr` | Transition audit, invariant checks and simplified state graph |
+| `tray.rpr` | Versioned system-tray status feed for a separate native GUI adapter |
 | `processor_kernel.rpr` | End-to-end verification and versioned report export |
 
-The runner exposes operation, state-event, thread-lane and memory-plan tables.
+The runner exposes operation, state-event, thread-lane, memory-plan and tray-status tables.
 The report contract is `pytyliki.processor-kernel-report.v1`; its JSON Schema is
 `schemas/processor-kernel-report.v1.schema.json`.
 
@@ -55,7 +56,9 @@ wall-clock timestamp or host-specific random value.
 The scheduler divides a bounded job count across 1–64 logical lanes using
 stable quotient/remainder distribution. Each round visits lanes in ascending
 identifier order. The exported dispatch order, per-lane assignments,
-completion counts and action pulse are reproducible.
+completion counts and action pulse are reproducible. The tray feed exports the
+kernel version, generation, health indicator, action counters and menu model
+without pretending that a native Windows notification-area icon was rendered.
 
 This is a scheduler model, not operating-system concurrency: it starts zero
 native threads and does not change CPU affinity, priorities, process state or
@@ -85,7 +88,8 @@ The Reaper VM runner checks:
 - conservation of 100 jobs across six lanes and stable three-round dispatch;
 - rejection of zero-worker plans and over-budget memory requests;
 - acceptance of read-only evidence and rejection of a writable profile;
-- a non-applied memory plan and a versioned JSON report.
+- a non-applied memory plan and a versioned JSON report;
+- a valid tray-status feed with a separate system-tray adapter requirement.
 
 The Reaper-language GitHub workflow executes the runner. The workflow result,
 not the existence of these source files alone, is the evidence that the VM

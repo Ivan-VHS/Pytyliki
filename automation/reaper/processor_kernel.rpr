@@ -7,6 +7,7 @@ import "processor/scheduler.rpr" as scheduler
 import "processor/memory.rpr" as memory
 import "processor/hardware.rpr" as hardware
 import "processor/verification.rpr" as verification
+import "processor/tray.rpr" as tray
 
 let actions = [
     {"operation": "boot", "target": "ready"},
@@ -27,6 +28,13 @@ let trace_result = verification.verify_trace(
     state
 )
 let state_graph = verification.simplify_graph(state_run.events)
+let tray_status = tray.build_status(
+    state_run.final_snapshot,
+    trace_result,
+    schedule_result,
+    memory_plan,
+    hardware_result
+)
 
 let cpu_profile = hardware.fixture_profile()
 let hardware_result = hardware.validate_profile(cpu_profile)
@@ -128,7 +136,8 @@ let all_passed =
     schedule_result.completed_jobs == 18 and
     schedule_result.active_lanes == 6 and
     size(schedule_result.dispatch_order) == 18 and
-    memory_plan.next_generation == 4
+    memory_plan.next_generation == 4 and
+    tray_status.valid and tray_status.presentation.health == "healthy"
 
 assert(state_run.valid, "state machine must produce a complete event stream")
 assert(trace_result.valid, "every accepted and rejected state transition must reconcile")
@@ -140,6 +149,8 @@ assert(not writable_hardware_result.valid, "writable hardware profiles must be r
 assert(memory_plan.accepted and not memory_plan.applied, "memory changes must remain proposals")
 assert(not denied_memory_plan.accepted, "memory requests above the budget must be rejected")
 assert(replay_is_stable, "the same input must produce the same state and event stream")
+assert(tray_status.valid, "the versioned tray feed must be valid")
+assert(tray_status.host_ui.adapter_required, "the native system-tray renderer must remain a separate adapter")
 assert(all_passed, "processor control-plane verification failed")
 
 let report = {
@@ -181,6 +192,7 @@ let report = {
     "state_snapshot": state_run.final_snapshot,
     "state_event_table": state_run.events,
     "state_graph": state_graph,
+    "tray_status": tray_status,
     "hardware_evidence": hardware_result,
     "scheduler_plan": work_plan,
     "scheduler_execution": schedule_result,
@@ -198,4 +210,6 @@ emit "logical lanes = " ++ text(report.scheduler_plan.worker_count)
 emit "completed logical jobs = " ++ text(report.scheduler_execution.completed_jobs)
 emit "state graph = " ++ text(report.state_graph.node_count) ++
     " nodes / " ++ text(report.state_graph.edge_count) ++ " edges"
+emit "tray status = " ++ report.tray_status.presentation.health ++
+    " / " ++ report.tray_status.presentation.indicator
 emit "report = build/processor-kernel-report.json"
