@@ -46,6 +46,15 @@ int main(void) {
     assert(pl_benchmark_stats_analyze(negative, 2u, &first) != 0);
     assert(pl_benchmark_stats_analyze(invalid, 2u, &first) != 0);
 
+    /* Even finite subnormal samples retain a correctly rounded midpoint. */
+    {
+        const double tiny = nextafter(0.0, 1.0);
+        const double subnormal[] = {tiny, 5.0 * tiny};
+        assert(pl_benchmark_stats_analyze(subnormal, 2u, &first) == 0);
+        assert(first.median == 3.0 * tiny);
+        assert(first.median_absolute_deviation == 2.0 * tiny);
+    }
+
     /* Finite inputs near DBL_MAX must not overflow the variance path. */
     assert(pl_benchmark_stats_analyze(extreme, 2u, &first) == 0);
     assert(isfinite(first.mean) && first.mean == DBL_MAX / 2.0);

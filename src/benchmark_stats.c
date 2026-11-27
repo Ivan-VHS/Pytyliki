@@ -20,7 +20,14 @@ static double percentile_nearest_rank(const double *sorted, size_t count, double
 static double median_of_sorted(const double *sorted, size_t count) {
     const size_t middle = count / 2u;
     if ((count & 1u) != 0u) return sorted[middle];
-    return sorted[middle - 1u] / 2.0 + sorted[middle] / 2.0;
+
+    /*
+     * Inputs are non-negative and sorted, so the difference cannot overflow.
+     * This form preserves subnormal precision that can be lost by halving
+     * both endpoints independently.
+     */
+    return sorted[middle - 1u] +
+        (sorted[middle] - sorted[middle - 1u]) / 2.0;
 }
 
 int pl_benchmark_stats_analyze(
