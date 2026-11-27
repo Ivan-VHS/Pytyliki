@@ -282,7 +282,31 @@ The eventual implementation is a Reaper-owned frontend/grammar profile with Omeg
 
 Each stage is a separate reviewable PR with tests and explicit unsupported behavior. The initial Omega-Null profile remains research-only.
 
-## 11. Source of truth
+## 11. Extended research domains and three verification gates
+
+The experimental concepts from the wider IRON surface are assigned to explicit research modules rather than represented as magical runtime operations.
+
+| Research term | Module | Defined engineering scope |
+|---|---|---|
+| `quantum.bit` | `pyty.quantum` | Qubit, state-vector, circuit and measurement models; qualified device adapters remain separate |
+| `neuro.point` | `pyty.bci` | Neuromorphic network models and consented neural signal adapters |
+| `liquid.ram` | `pyty.material` | Research models for fluidic, phase-change or other emerging memory concepts; no assumed shipping device |
+| `bio.sync` | `pyty.bci` | Timestamp and synchronize biosignal streams with clock provenance and uncertainty |
+| `holo.stack` | `pyty.field` | Three-dimensional scene/spatial visualization; real holographic output requires a named display |
+| `zero.lat` | `pyty.time` | Latency budgets and lower-bound measurement; not literal zero latency |
+| `energy.syn` | `pyty.power` | Dimensioned energy and power models/measurements |
+| `mind.hive` | `pyty.experiment` | Multi-agent or distributed simulation and search; not telepathy or shared consciousness |
+| `dim.jump` | `pyty.sim` | Change simulation resolution or model layer; not travel between physical dimensions |
+
+Every Omega-Null run follows three separate gates:
+
+1. **Syntax/type/effect gate:** parse, type-check, preserve source spans and verify targets, effects and capabilities.
+2. **Model/invariant gate:** check units, conservation constraints, numerical stability, resource budgets and evidence provenance.
+3. **Physical-target gate:** when a real device is involved, verify its exact identity/revision, calibration, approved procedure and measured behavior. A simulator cannot satisfy this gate.
+
+Every experiment also declares wall-clock, compute, memory, output and recursion/branch limits plus cancellation/watchdog behavior. Checkpoints apply only to logical application or model state. Forecasts remain uncertainty-bearing scenarios, not guaranteed future knowledge.
+
+## 12. Source of truth
 
 - [Machine-readable profile](../omega-null/omega-null.v0.json)
 - [JSON Schema](../schemas/omega-null.v0.schema.json)
