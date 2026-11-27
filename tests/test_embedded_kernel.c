@@ -22,11 +22,13 @@ int main(void) {
     assert(model.state == PL_EK_DEGRADED);
     assert(model.fault_mask == PL_EK_FAULT_QUEUE_OVERFLOW);
     assert(pl_ek_transition(&model, PL_EK_IDLE, healthy, model.fault_mask) != 0);
+    assert(pl_ek_transition(&model, PL_EK_IDLE, healthy, 0u) != 0);
     assert(pl_ek_clear_faults(&model, healthy) == 0);
     assert(pl_ek_transition(&model, PL_EK_IDLE, healthy, 0u) == 0);
     assert(pl_ek_transition(&model, PL_EK_HALTED, healthy, 0u) == 0);
     assert(pl_ek_transition(&model, PL_EK_IDLE, healthy, 0u) == -2);
 
+    assert(pl_ek_sample_tick(&model, 3u, 0u) == -1);
     assert(pl_ek_sample_tick(&model, 3u, 5u) == 0);
     assert(model.last_delta == 5u);
     assert(model.peak_jitter == 0u);
