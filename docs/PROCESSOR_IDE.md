@@ -285,8 +285,8 @@ This PR also adds a small C11 API:
 - `src/processor_ide.h/.c` — `pl_ide_session_init`, `pl_ide_session_validate`, status strings and workspace lookup.
 - `pl_ide_session` binds project/session IDs, one of the twenty existing workspace IDs, a validated `pl_ll_target` and an explicit mode.
 - `PL_IDE_MODE_DEFAULT` resolves to `PL_IDE_MODE_INSPECT`.
-- Inspect, plan, static and simulation sessions are metadata-only. Debug, hardware-in-loop and privileged modes require the relevant target provider, capability and operator approval flags.
-- The session validator performs no device access, tool invocation, MMIO operation or hardware mutation.
+- Inspect, plan, static and simulation sessions are metadata-only. Debug, hardware-in-loop and privileged modes require declared target-provider, authorization and operator-approval preconditions; debug additionally requires a debug provider. These session flags are not security tokens or hardware grants.
+- The session validator performs no device access, tool invocation, MMIO operation or hardware mutation. Every actual operation must still pass `pl_ll_bus` capability checks and trusted Duck OS/board-backend authorization.
 - `tests/test_processor_ide.c` and CTest target `processor-ide-session-tests` cover workspace reuse, mode admission, invalid identifiers, target validation and denied-by-default behavior.
 
 This is the first native core slice, not a graphical IDE. The UI, assembler/disassembler, live register/debug providers, pipeline simulator and waveform integration remain separate implementation gates.
