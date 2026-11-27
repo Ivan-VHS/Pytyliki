@@ -135,3 +135,8 @@ pytyliki-semantic --emit-c examples/semantic-hardware/kinematics.shw
 | Physical MMIO, DMA, IRQ or firmware execution | Not provided |
 
 The next gates are Reaper-side schema import and metadata preservation, broader expression/type/ownership/effect semantics, canonical Hardware IR to Reaper typed-IR lowering for pure operations, ISA architectural models and a deterministic emulator, then target-specific object and RTL backends with independent conformance tests.
+
+
+## Cross-repository consumer adapter
+
+The corresponding Reaper-side import and validation adapter is open as [Reaper PR #427](https://github.com/Ivan-VHS/Reaper/pull/427). It validates the `reaper.typed-hardware-ir.v1` envelope, preserves dimensions/effects/source spans beside CanonicalIR, and lowers only the pure host `f64`/quantity subset into Reaper's VM. MMIO and fixed-width integer HIR remain outside that scalar execution path. The consumer PR's CI and independent review are pending.
