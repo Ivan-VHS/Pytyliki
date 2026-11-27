@@ -353,9 +353,9 @@ if(BUILD_TESTING)
 endif()
 
 
-add_executable(pytyliki-mos-switch-tests tests/test_mos_switch.c)
-target_link_libraries(pytyliki-mos-switch-tests PRIVATE pytyliki_core)
 if(BUILD_TESTING)
+  add_executable(pytyliki-mos-switch-tests tests/test_mos_switch.c)
+  target_link_libraries(pytyliki-mos-switch-tests PRIVATE pytyliki_core)
   add_test(NAME mos-switch-level-tests COMMAND pytyliki-mos-switch-tests)
   add_test(NAME mos-inverter-low-smoke COMMAND pytyliki-mos --inverter low)
   set_tests_properties(mos-inverter-low-smoke PROPERTIES PASS_REGULAR_EXPRESSION "output=high")
