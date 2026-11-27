@@ -1,0 +1,1835 @@
+{
+  "schema": "pytyliki.processor-ide.v1",
+  "project": {
+    "id": "processor-ide",
+    "name": "Pytyliki Processor IDE",
+    "repository": "Ivan-VHS/Pytyliki",
+    "version": "1.0.0",
+    "created": "2026-11-28",
+    "purpose": "A unified processor and microarchitecture engineering IDE for target-aware development, assembly and IR inspection, register/memory/pipeline visualization, simulation, debugging, measurement, verification and hardware qualification."
+  },
+  "baseline": {
+    "branch": "main",
+    "commit": "41edd2bd33fbf554c8a8cbdc1ddd97847e1f9a53",
+    "reviewed_at": "2026-11-28",
+    "current_product_boundary": "The audited main branch contains a C11 processor workstation, read-only CPU/usable-ISA discovery, bounded benchmarks, a 20-entry enhancement/workspace registry, memory and trace primitives, reference embedded models, and a capability-gated low-level target/memory/RAM-MMIO/clock-power/IRQ contract tested with a fake backend. It does not yet ship a unified Processor IDE with live register panes, assembly editor/disassembler, pipeline/cycle simulator, physical logic-analyzer transport or vendor debug integration.",
+    "rule_count": 100,
+    "default_status": "planned"
+  },
+  "ownership": {
+    "pytyliki": "Owns the IDE shell, project/target model, processor workspace registry, native processor APIs, simulator orchestration, debug/provider adapters, traces, diagnostics and qualification reports.",
+    "reaper": "Owns canonical source-language grammar, type/effect semantics, Span/SourceMap, typed IR, compiler passes and shared ABI contracts. Processor IDE consumes these; it does not implement a competing language parser or IR.",
+    "duck_os": "Mediates privileged device access, process isolation, drivers, memory mapping, interrupt routing, debug permissions and local hardware services.",
+    "board_and_vendor_backends": "Provide board/SoC/CPU stepping profiles, register maps, debug transports, timing/power data, errata and laboratory instrument adapters with provenance."
+  },
+  "related_contracts": {
+    "iron_core": "iron/iron-core.v1.json",
+    "low_level_contract": "contracts/pytyliki-low-level-rules.v1.json",
+    "system_workspace_registry": {
+      "header": "src/ironclad_systems.h",
+      "source": "src/ironclad_systems.c",
+      "tests": "tests/test_ironclad_systems.c",
+      "existing_count": 20,
+      "reuse_policy": "Reuse the existing twenty named enhancement domains as the Processor IDE's top-level workspace taxonomy. They are workspace groups in one IDE, not twenty separate applications, hardware privilege levels or independent control planes."
+    }
+  },
+  "workspaces": [
+    {
+      "id": "chrome-ironclad",
+      "name": "Chrome Ironclad",
+      "domain": "reliability",
+      "responsibility": "Project and target invariants, state validation and fail-safe readiness.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "velocity-tempest",
+      "name": "Velocity Tempest",
+      "domain": "performance",
+      "responsibility": "Cycle/latency budgets, reproducible benchmarks and throughput comparisons.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "midnight-monolith",
+      "name": "Midnight Monolith",
+      "domain": "modularity",
+      "responsibility": "Subsystem graph, dependency boundaries, profiles and project structure.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "raven-vortex",
+      "name": "Raven Vortex",
+      "domain": "diagnostics",
+      "responsibility": "Compiler, assembler, simulator, hardware and source-mapped diagnostics.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "circuit-cobalt",
+      "name": "Circuit Cobalt",
+      "domain": "low-level",
+      "responsibility": "Registers, bits, bus, memory maps, privilege and device capability inspection.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "thunder-phantom",
+      "name": "Thunder Phantom",
+      "domain": "async",
+      "responsibility": "Threads, cores, event queues, cancellation, interleavings and bounded jobs.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "phantom-radiance",
+      "name": "Phantom Radiance",
+      "domain": "api",
+      "responsibility": "CLI, native API, Reaper bridge, plugin and target contracts.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "velvet-gravitas",
+      "name": "Velvet Gravitas",
+      "domain": "usability",
+      "responsibility": "Editor layout, command palette, accessibility, onboarding and help.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "obsidian-inferno",
+      "name": "Obsidian Inferno",
+      "domain": "recovery",
+      "responsibility": "Snapshots, replay, fault injection, rollback and safe-stop workflow.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "horizon-spectral",
+      "name": "Horizon Spectral",
+      "domain": "portability",
+      "responsibility": "ISA/ABI/OS/board target matrix and cross-target compatibility.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "crimson-overdrive",
+      "name": "Crimson Overdrive",
+      "domain": "compilation",
+      "responsibility": "Reaper frontend, IR, assembler, linker, image generation and build graph.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "voltage-citadel",
+      "name": "Voltage Citadel",
+      "domain": "security",
+      "responsibility": "Capabilities, privilege, secrets, W^X, constant-time and secure debugging.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "shadow-nemesis",
+      "name": "Shadow Nemesis",
+      "domain": "testing",
+      "responsibility": "Unit, golden, differential, model, HIL and regression tests.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "mirage-aether",
+      "name": "Mirage Aether",
+      "domain": "distributed",
+      "responsibility": "Multi-core, multi-target and remote lab session orchestration with explicit transport.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "titanium-riptide",
+      "name": "Titanium Riptide",
+      "domain": "memory",
+      "responsibility": "Memory regions, cache/TLB, stack/heap, DMA buffers and address inspection.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "eclipse-outlaw",
+      "name": "Eclipse Outlaw",
+      "domain": "extensibility",
+      "responsibility": "Target packs, ISA plugins, HDL/EDA adapters and compatible extensions.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "neutron-zenith",
+      "name": "Neutron Zenith",
+      "domain": "profiling",
+      "responsibility": "Hot-path analysis, cycles, waits, cache events and energy measurements.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "scarlet-avalanche",
+      "name": "Scarlet Avalanche",
+      "domain": "automation",
+      "responsibility": "Build/test pipelines, reproducible artifacts and pull-request gates.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "quantum-paradox",
+      "name": "Quantum Paradox",
+      "domain": "experimental",
+      "responsibility": "Isolated CPU, logic, transistor, quantum and speculative research models.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    },
+    {
+      "id": "reactor-afterglow",
+      "name": "Reactor Afterglow",
+      "domain": "observability",
+      "responsibility": "Live/simulated status, event stream, health and evidence provenance.",
+      "source_registry": "src/ironclad_systems.c",
+      "source_enum": "src/ironclad_systems.h",
+      "registry_status": "implemented",
+      "ide_workspace_status": "planned",
+      "description": "A workspace/panel group inside one Processor IDE application, not a separate IDE, authority domain or privilege level."
+    }
+  ],
+  "shell": {
+    "product_mode": "single_target_aware_processor_ide",
+    "default_mode": "inspect",
+    "panes": [
+      {
+        "id": "project_target",
+        "purpose": "Project, target, ISA/ABI, stepping, board, OS and execution-mode identity."
+      },
+      {
+        "id": "source_ir",
+        "purpose": "Source editor, Reaper typed IR, spans, diagnostics and source-to-machine navigation."
+      },
+      {
+        "id": "assembly_image",
+        "purpose": "Assembler, disassembler, bytes, symbols, relocations, sections and memory map."
+      },
+      {
+        "id": "registers_flags",
+        "purpose": "Target-specific architectural registers, flags, access class and before/after diff."
+      },
+      {
+        "id": "memory_address",
+        "purpose": "Virtual/physical/bus/MMIO address spaces, pages, regions, permissions and DMA ownership."
+      },
+      {
+        "id": "pipeline_microarchitecture",
+        "purpose": "Model-dependent stages, queues, stalls, hazards, predictor, issue and retirement timeline."
+      },
+      {
+        "id": "signals_timing",
+        "purpose": "Clock domains, waveforms, cycle/timing/latency evidence, power and thermal signals."
+      },
+      {
+        "id": "trace_replay",
+        "purpose": "Bounded event capture, breakpoints, checkpoints, replay and divergence analysis."
+      },
+      {
+        "id": "build_test",
+        "purpose": "Reproducible build graph, target matrix, golden tests, CI and artifact verification."
+      },
+      {
+        "id": "diagnostics_diff",
+        "purpose": "Source-mapped diagnostics, register/memory/trace/project diffs and remediation."
+      }
+    ],
+    "selection_rule": "All panes bind to the same project, target profile, execution mode and evidence context; each pane may show a different abstraction but may not silently switch target identity."
+  },
+  "target_model": {
+    "required_identity": [
+      "architecture",
+      "isa_revision",
+      "abi",
+      "address_width",
+      "word_width",
+      "endianness",
+      "execution_environment"
+    ],
+    "optional_identity": [
+      "cpu_vendor",
+      "cpu_family",
+      "cpu_model",
+      "silicon_stepping",
+      "board_revision",
+      "core_topology",
+      "cache_geometry",
+      "clock_domains",
+      "debug_transport",
+      "device_revision"
+    ],
+    "unknown_policy": "Unknown target fields remain explicitly unknown; no default assumption about endian, register names, cache line, instruction width or privilege model.",
+    "modes": [
+      {
+        "id": "inspect",
+        "mutation": false,
+        "description": "Read-only host/target metadata and existing evidence."
+      },
+      {
+        "id": "plan",
+        "mutation": false,
+        "description": "Inert build, debug, target or lab operation plans."
+      },
+      {
+        "id": "static",
+        "mutation": false,
+        "description": "Parsing, type/effect analysis, lint and artifact inspection."
+      },
+      {
+        "id": "simulate",
+        "mutation": false,
+        "description": "Execution against a named CPU/device/circuit model."
+      },
+      {
+        "id": "debug",
+        "mutation": "provider-dependent",
+        "description": "Debug sessions with explicit halt/read/write side effects and permission."
+      },
+      {
+        "id": "hardware_in_loop",
+        "mutation": "capability-gated",
+        "description": "Named physical target tests under a documented lab/board procedure."
+      },
+      {
+        "id": "privileged",
+        "mutation": "capability-gated",
+        "description": "Narrow OS/driver-mediated access to privileged CPU or device operations."
+      }
+    ]
+  },
+  "evidence": {
+    "modes": [
+      "live_os_observation",
+      "bounded_host_measurement",
+      "static_analysis",
+      "reference_fixture",
+      "deterministic_simulation",
+      "probabilistic_simulation",
+      "hardware_in_loop",
+      "physical_signoff"
+    ],
+    "quality": [
+      "observed",
+      "estimated",
+      "simulated",
+      "unknown",
+      "disputed"
+    ],
+    "required_fields": [
+      "target_id",
+      "source_revision",
+      "toolchain_version",
+      "provider",
+      "evidence_mode",
+      "clock_source",
+      "unit",
+      "sample_window",
+      "sample_count",
+      "uncertainty",
+      "dropped_samples",
+      "intrusion_or_overhead",
+      "limitations"
+    ],
+    "invariants": [
+      "Live, simulated, estimated, fixture and unknown values are visually and structurally distinct.",
+      "A UI refresh rate is not a hardware sampling rate.",
+      "TSC ticks, core cycles, device ticks and wall-clock time are separate units unless a calibrated mapping is supplied.",
+      "Unbuffered sampling is not a prerequisite; bounded capture buffers report overflow and dropped events.",
+      "A CPU profile, instruction catalogue or model cannot certify an untested physical target.",
+      "A debugger or probe may perturb, halt or change target execution; its effect is recorded.",
+      "Hardware observations, architectural documentation and errata are compared rather than silently treating one as infallible."
+    ]
+  },
+  "safety": {
+    "default_mode": "inspect",
+    "deny_by_default": true,
+    "no_implicit_hardware_access": true,
+    "no_hidden_tool_invocation": true,
+    "no_automatic_driver_firmware_install": true,
+    "no_unreviewed_mmio_or_privileged_write": true,
+    "no_secret_logging": true,
+    "no_silent_source_rewrite": true
+  },
+  "rule_status_legend": {
+    "partial": "A supporting primitive exists in main, but the integrated Processor IDE behavior is not shipped.",
+    "planned": "A concrete IDE requirement with an acceptance condition; no integrated implementation is claimed.",
+    "research": "Requires validated microarchitecture, analog, physical-design or external laboratory models/tooling."
+  },
+  "rules": [
+    {
+      "id": "PIDE-001",
+      "group": "IDE_CORE",
+      "title": "Target-bound project entry",
+      "workspace": "chrome-ironclad",
+      "requirement": "Open a project with an explicit target profile, ISA, ABI, silicon/board revision when known, OS/runtime context and selected execution mode.",
+      "acceptance": "A project cannot start a build or target session with an unresolved target; unknown fields remain unknown and are never guessed.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/processor.c",
+        "src/processor.h",
+        "src/ironclad_systems.c"
+      ]
+    },
+    {
+      "id": "PIDE-002",
+      "group": "IDE_CORE",
+      "title": "Signal and phase workspace",
+      "workspace": "reactor-afterglow",
+      "requirement": "Display signal transitions, trace timestamps, sample cadence, measured latency and uncertainty for the selected model or instrumented target.",
+      "acceptance": "Each plotted series identifies live, simulated, estimated or unknown provenance, sampling method, clock source and dropped-sample count.",
+      "interpretation_adjustment": "Do not promise unbuffered display or a universal 1 ns UI response; preserve bounded capture and report measurement/display latency.",
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-003",
+      "group": "IDE_CORE",
+      "title": "Versioned machine platform description",
+      "workspace": "horizon-spectral",
+      "requirement": "Keep register maps, memory regions, buses, interrupt vectors, clock domains, timing constraints and feature gates in one versioned target description.",
+      "acceptance": "Schema validation rejects overlaps, invalid widths, impossible alignments and incompatible target revisions.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c"
+      ]
+    },
+    {
+      "id": "PIDE-004",
+      "group": "IDE_CORE",
+      "title": "Direct tool integration without hidden layers",
+      "workspace": "midnight-monolith",
+      "requirement": "Connect assembler, compiler, simulator, trace analyzer and code generator through explicit versioned contracts and visible data transformations.",
+      "acceptance": "Every adapter declares input/output schema, version, failure mode, provenance and resource limits; no hidden background operation occurs.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "docs/REAPER_INTEGRATION.md",
+        "src/interop.c"
+      ]
+    },
+    {
+      "id": "PIDE-005",
+      "group": "IDE_CORE",
+      "title": "Reproducible native build infrastructure",
+      "workspace": "scarlet-avalanche",
+      "requirement": "Build target images, symbol tables, descriptor tables and map files from pinned, inspectable inputs.",
+      "acceptance": "Repeated builds from pinned inputs are byte-identical except for documented non-deterministic fields; output includes toolchain and target metadata.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "PIDE-006",
+      "group": "IDE_CORE",
+      "title": "Assembly-first machine view",
+      "workspace": "crimson-overdrive",
+      "requirement": "Allow direct inspection and editing of target assembly/machine code while preserving source, IR, symbol, Span and ABI context.",
+      "acceptance": "A selected instruction can be traced to its source/IR origin when available and to its address/encoding in the target image.",
+      "interpretation_adjustment": "Assembly-first does not ban Reaper, C, HDL or other declared source layers; it exposes explicit lowering rather than hiding it.",
+      "status": "partial",
+      "evidence": [
+        "docs/REAPER_INTEGRATION.md",
+        "src/interop.h"
+      ]
+    },
+    {
+      "id": "PIDE-007",
+      "group": "IDE_CORE",
+      "title": "Unified processor execution timeline",
+      "workspace": "reactor-afterglow",
+      "requirement": "Synchronize simulator state, pipeline, cache/TLB, memory, interrupts and events into a single logical timeline.",
+      "acceptance": "A simulation step updates all modeled components atomically; live hardware streams use timestamp correlation and declare skew rather than pretending all devices share one clock.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h"
+      ]
+    },
+    {
+      "id": "PIDE-008",
+      "group": "IDE_CORE",
+      "title": "Microprocessor execution context",
+      "workspace": "circuit-cobalt",
+      "requirement": "Show active target mode, privilege, execution context, core/thread, clock domain, memory permissions and capabilities at the selected node.",
+      "acceptance": "The context panel shows unknown/unavailable separately from false/disabled and displays the provider of every detected field.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-009",
+      "group": "IDE_CORE",
+      "title": "Live and simulated register inspector",
+      "workspace": "circuit-cobalt",
+      "requirement": "Display the target's documented architectural register set, aliases, flags and register classes, including R0-R7 when defined, PC and status registers.",
+      "acceptance": "Register names, widths, access classes and read/write effects derive from the selected ISA/target descriptor; changed values are diffed per trace event.",
+      "interpretation_adjustment": "Do not invent universal registers such as regit or assume all architectures expose R0-R7; hardware watch may be sampled or disruptive.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-010",
+      "group": "IDE_CORE",
+      "title": "Bit-level construction interface",
+      "workspace": "titanium-riptide",
+      "requirement": "Provide exact bit/field views for masks, slices, shifts, rotates, sign extension, overflow and descriptor layouts.",
+      "acceptance": "Round-trip tests prove bit offsets, widths and endian interpretation against target fixtures; dangerous truncation is surfaced before emission.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-011",
+      "group": "IDE_CORE",
+      "title": "Instruction workbench",
+      "workspace": "crimson-overdrive",
+      "requirement": "Correlate source line, typed IR operation, assembly mnemonic, encoded bytes, decoded operands, target feature requirements and available cost evidence.",
+      "acceptance": "A selected instruction shows origin, exact encoding and whether cost is static estimate, simulator result or live measurement.",
+      "interpretation_adjustment": "Cycle costs must be target/model-specific and cannot be inferred universally from mnemonic alone.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-012",
+      "group": "IDE_CORE",
+      "title": "Typed address execution map",
+      "workspace": "titanium-riptide",
+      "requirement": "Visualize virtual, physical, bus, I/O-port and MMIO addresses with page boundaries, permissions, alignment and mappings.",
+      "acceptance": "Address-space types cannot be mixed implicitly; every live physical/device map comes from a capability-gated target provider.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-013",
+      "group": "IDE_CORE",
+      "title": "Microarchitecture profile library",
+      "workspace": "horizon-spectral",
+      "requirement": "Store versioned reference profiles for pipeline stages, branch prediction, queues, execution units, cache hierarchy and retirement policy.",
+      "acceptance": "Every profile identifies source/revision, scope, assumptions and modeled features; custom models pass schema and conformance tests.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-014",
+      "group": "IDE_CORE",
+      "title": "Scenario execution platform",
+      "workspace": "shadow-nemesis",
+      "requirement": "Run programs against reference CPU/device models, instruction emulators and declared hardware fixtures before any target session.",
+      "acceptance": "The result includes simulator version, model identity, seed, supported-instruction coverage and divergence from expected fixtures.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/embedded.c",
+        "docs/EMBEDDED_C.md"
+      ]
+    },
+    {
+      "id": "PIDE-015",
+      "group": "IDE_CORE",
+      "title": "Privilege and reset verification",
+      "workspace": "voltage-citadel",
+      "requirement": "Check boot/reset entry, privilege transitions, interrupt vectors, protected regions and OS-mediated capabilities against the selected target.",
+      "acceptance": "Negative tests prove unprivileged actions cannot reach privileged callbacks; reset/boot claims require a board or emulator backend.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-016",
+      "group": "IDE_CORE",
+      "title": "Snapshot and before/after comparison",
+      "workspace": "obsidian-inferno",
+      "requirement": "Capture and diff register state, flags, memory ranges, pipeline model state and relevant device-model state before and after an operation.",
+      "acceptance": "Snapshots identify captured fields and omitted state; diffs are deterministic and respect permissions and sensitive-memory policies.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/snapshot_store.c",
+        "tests/test_snapshot_store.c"
+      ]
+    },
+    {
+      "id": "PIDE-017",
+      "group": "IDE_CORE",
+      "title": "Core activity and synchronization monitor",
+      "workspace": "thunder-phantom",
+      "requirement": "Inspect core/thread load, queue occupancy, locks, barriers, waits and memory-order events where providers expose them.",
+      "acceptance": "Every metric identifies sample interval and scope; simulated and OS-observed data are never mixed.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-018",
+      "group": "IDE_CORE",
+      "title": "Digital logic and FSM workbench",
+      "workspace": "quantum-paradox",
+      "requirement": "Model Boolean logic, sequential elements, finite-state machines, truth tables, state reachability and transition conditions.",
+      "acceptance": "Exhaustive small-state tests or bounded model checks identify unreachable states, dead ends and invalid transitions.",
+      "interpretation_adjustment": null,
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-019",
+      "group": "IDE_CORE",
+      "title": "Hardware dependency map",
+      "workspace": "eclipse-outlaw",
+      "requirement": "Mark instructions, registers, timing assumptions, MMIO layouts and bus behavior tied to specific silicon, stepping or board revisions.",
+      "acceptance": "A target incompatibility is reported before build/launch; portable paths and unsupported target-specific paths are visibly separated.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-020",
+      "group": "IDE_CORE",
+      "title": "No-hidden-runtime execution profile",
+      "workspace": "crimson-overdrive",
+      "requirement": "Provide explicit no_alloc, no_std/bare-metal and bounded-runtime build profiles for critical code and target artifacts.",
+      "acceptance": "The build report lists runtime, allocator, TLS, exception, dynamic-loader and background-service dependencies; each profile fails closed on disallowed dependencies.",
+      "interpretation_adjustment": "No-runtime is an opt-in target profile, not a blanket ban on useful IDE/runtime features.",
+      "status": [
+        "src/embedded.c",
+        "docs/EMBEDDED_C.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-021",
+      "group": "IDE_CORE",
+      "title": "Measured and estimated operation cost",
+      "workspace": "velocity-tempest",
+      "requirement": "Show cycles, latency, memory traffic and energy costs before simulation where static target data exists, then compare against execution evidence.",
+      "acceptance": "Each value is labeled measured, estimated, simulated or unknown and includes units, target, method and uncertainty.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-022",
+      "group": "IDE_CORE",
+      "title": "Explicit narrowing and signedness",
+      "workspace": "raven-vortex",
+      "requirement": "Require visible casts for narrowing, signedness changes, pointer-width conversions and truncating bitfields.",
+      "acceptance": "Static diagnostics flag potential value loss and provide boundary tests for accepted conversions.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-023",
+      "group": "IDE_CORE",
+      "title": "Alignment checking",
+      "workspace": "titanium-riptide",
+      "requirement": "Validate alignment for buffers, page tables, instruction fetch, descriptor rings and target structures.",
+      "acceptance": "The diagnostic states required and actual alignment and distinguishes architecturally faulting accesses from merely slower ones.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-024",
+      "group": "IDE_CORE",
+      "title": "FSM reachability and deadlock checks",
+      "workspace": "shadow-nemesis",
+      "requirement": "Analyze state-machine reachability, terminal states, deadlocks and event-triggered transition completeness.",
+      "acceptance": "A bounded or formal check produces a counterexample trace for each detected deadlock or unreachable state.",
+      "interpretation_adjustment": null,
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-025",
+      "group": "IDE_CORE",
+      "title": "Clock-domain crossing contracts",
+      "workspace": "quantum-paradox",
+      "requirement": "Require explicit synchronizers, async FIFOs or documented CDC bridges between unrelated clock domains.",
+      "acceptance": "CDC lint rejects unbridged crossings and records synchronizer depth, reset behavior and metastability assumptions.",
+      "interpretation_adjustment": null,
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-026",
+      "group": "IDE_CORE",
+      "title": "Energy and time windows",
+      "workspace": "velocity-tempest",
+      "requirement": "Validate declared timing and energy budgets such as within_window<N> and energy_cap<E> against measured or modeled data.",
+      "acceptance": "The run fails or reports indeterminate when a required budget is exceeded or the evidence is insufficient; units and tolerances are explicit.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-027",
+      "group": "IDE_CORE",
+      "title": "Constant-time security inspection",
+      "workspace": "voltage-citadel",
+      "requirement": "Warn about secret-dependent branches, memory addresses, lookup tables and variable-latency operations inside constant-time regions.",
+      "acceptance": "Static findings and target-specific timing tests are reported as risk evidence, not as a proof of universal side-channel absence.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": [
+        "src/processor.c",
+        "src/processor.h",
+        "tests/test_core.c"
+      ]
+    },
+    {
+      "id": "PIDE-028",
+      "group": "IDE_CORE",
+      "title": "Stable diagnostic status vocabulary",
+      "workspace": "raven-vortex",
+      "requirement": "Use stable machine-readable codes for parse/type/ABI/permission/timeout/overflow/device/simulation failures.",
+      "acceptance": "Every error has a code, severity, source span or target location, remediation and stable serialization.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/qcs.c",
+        "src/system_array.c"
+      ]
+    },
+    {
+      "id": "PIDE-029",
+      "group": "IDE_CORE",
+      "title": "Named constants and physical units",
+      "workspace": "crimson-overdrive",
+      "requirement": "Require named constants for masks, slot addresses, thresholds and timing/power/energy quantities with explicit units.",
+      "acceptance": "Lint identifies raw numeric literals in policy-sensitive contexts; values use unit-safe types or documented suffixes such as _cyc, _bytes and _pj.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-030",
+      "group": "IDE_CORE",
+      "title": "Readable control-flow assistance",
+      "workspace": "velvet-gravitas",
+      "requirement": "Offer refactor suggestions for excessive nesting, duplicated predicates and unclear early-exit structure.",
+      "acceptance": "Suggestions preserve semantics, show a diff and require user acceptance; no silent source rewrite occurs.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-031",
+      "group": "IDE_CORE",
+      "title": "Deterministic crash reproduction",
+      "workspace": "obsidian-inferno",
+      "requirement": "Record input, instruction position, target/model revision, register checkpoint and event ordering for replayable failures.",
+      "acceptance": "Replay reproduces the same modeled state or identifies the first divergence; live-hardware nondeterminism is explicitly captured as evidence rather than claimed deterministic.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h"
+      ]
+    },
+    {
+      "id": "PIDE-032",
+      "group": "IDE_CORE",
+      "title": "Precise before/after diff",
+      "workspace": "obsidian-inferno",
+      "requirement": "Compare register, memory, flags, device model, build artifacts and pull-request changes by named ranges and provenance.",
+      "acceptance": "Diffs identify changed fields and omitted/unreadable regions; secret data is redacted by policy.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/snapshot_store.c",
+        "tests/test_snapshot_store.c"
+      ]
+    },
+    {
+      "id": "PIDE-033",
+      "group": "IDE_CORE",
+      "title": "Dead-code and dead-state analysis",
+      "workspace": "raven-vortex",
+      "requirement": "Detect unreachable labels, unused registers, unreferenced symbols, dead flags and unreachable basic blocks where target semantics permit.",
+      "acceptance": "Findings are source-mapped and architecture-aware; special-register side effects and inline assembly clobbers prevent unsafe false positives.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/system_array.c",
+        "src/system_array.h",
+        "tests/test_system_array.c",
+        "docs/SYSTEM_ARRAY_SYNTAX.md"
+      ]
+    },
+    {
+      "id": "PIDE-034",
+      "group": "IDE_CORE",
+      "title": "Safe rollback and recovery",
+      "workspace": "obsidian-inferno",
+      "requirement": "Record failure points and restore only supported logical snapshots, simulator state or version-controlled artifacts.",
+      "acceptance": "Rollback reports restored and non-restorable state; it never implies reversal of external device or physical events.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/snapshot_store.c",
+        "tests/test_snapshot_store.c"
+      ]
+    },
+    {
+      "id": "PIDE-035",
+      "group": "IDE_CORE",
+      "title": "No hidden IDE side effects",
+      "workspace": "voltage-citadel",
+      "requirement": "Autocomplete, navigation, analysis and suggested actions must remain observational until the user explicitly runs a command.",
+      "acceptance": "Tests prove editor suggestions do not launch tools, change devices, write MMIO, install drivers or alter target state.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-036",
+      "group": "IDE_CORE",
+      "title": "Canonical operation forms",
+      "workspace": "phantom-radiance",
+      "requirement": "Prefer one canonical spelling/API per operation while keeping explicit aliases where compatibility or ISA syntax requires them.",
+      "acceptance": "Aliases normalize to one stable semantic ID and preserve original source spans for diagnostics.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/system_array.c",
+        "src/system_array.h",
+        "tests/test_system_array.c",
+        "docs/SYSTEM_ARRAY_SYNTAX.md"
+      ]
+    },
+    {
+      "id": "PIDE-037",
+      "group": "IDE_CORE",
+      "title": "Positive state names",
+      "workspace": "crimson-overdrive",
+      "requirement": "Prefer positive names such as is_ready, is_locked and is_valid in new APIs and generated examples.",
+      "acceptance": "Lint detects confusing double negatives in new declarations without renaming externally specified ISA symbols.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-038",
+      "group": "IDE_CORE",
+      "title": "Intent-first comments",
+      "workspace": "velvet-gravitas",
+      "requirement": "Explain why an implementation choice exists and which hardware/toolchain limitation it respects.",
+      "acceptance": "Documentation review flags comments that merely restate code; public hardware assumptions are documented.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-039",
+      "group": "IDE_CORE",
+      "title": "Novice-readable onboarding",
+      "workspace": "velvet-gravitas",
+      "requirement": "Provide guided target setup, project tour, register/trace explanations and working examples for the main IDE screens.",
+      "acceptance": "A new user can open a sample target project, run a safe simulation and inspect a trace using only in-product guidance.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-040",
+      "group": "IDE_CORE",
+      "title": "Fast feedback loop",
+      "workspace": "scarlet-avalanche",
+      "requirement": "Keep edit, syntax/type checks, contract validation, incremental build and trace inspection responsive through caching and incremental work.",
+      "acceptance": "CI records timings for each stage; local performance budgets are target-class-specific rather than a universal seconds guarantee.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": [
+        "CMakeLists.txt",
+        "tests/test_core.c"
+      ]
+    },
+    {
+      "id": "PIDE-041",
+      "group": "IDE_CORE",
+      "title": "Small, reviewable PR flow",
+      "workspace": "scarlet-avalanche",
+      "requirement": "Generate focused change sets with a clear acceptance criterion and independent tests for each subsystem.",
+      "acceptance": "A PR checklist identifies affected contracts, target profiles, tests, docs, migrations and downstream repositories.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-042",
+      "group": "IDE_CORE",
+      "title": "Sequential integration into main",
+      "workspace": "scarlet-avalanche",
+      "requirement": "Rebase/update each next integration PR against the latest accepted mainline and honor branch protection/rulesets.",
+      "acceptance": "Merge automation refuses stale base commits, failed required checks, unresolved conflicts and dependency-order violations.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-043",
+      "group": "IDE_CORE",
+      "title": "Automatic validation pipeline",
+      "workspace": "scarlet-avalanche",
+      "requirement": "Run format/lint, unit tests, schema validation, simulator golden tests, sanitizers and target-specific checks on relevant changes.",
+      "acceptance": "CI reports each gate separately and cannot pass a hardware gate using only a host fixture.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "PIDE-044",
+      "group": "IDE_CORE",
+      "title": "Unified engineering metrics",
+      "workspace": "neutron-zenith",
+      "requirement": "Normalize cycles, instruction count, code size, cache events, stalls, tests, coverage, energy and thermal measurements across modules.",
+      "acceptance": "Metric records include unit, target, evidence mode, provider, context and uncertainty; incompatible samples cannot be compared.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/cpu_suite.c"
+      ]
+    },
+    {
+      "id": "PIDE-045",
+      "group": "IDE_CORE",
+      "title": "External toolchain interoperability",
+      "workspace": "eclipse-outlaw",
+      "requirement": "Integrate C/ASM, linker/debugger, HDL, waveform, EDA and vendor tools through declared adapters and versioned artifacts.",
+      "acceptance": "Tool support matrix distinguishes installed, detected, validated, invoked and fully integrated states.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "tools/systems_languages.py",
+        "tools/systems_languages.json"
+      ]
+    },
+    {
+      "id": "PIDE-046",
+      "group": "IDE_CORE",
+      "title": "Compact core and opt-in extensions",
+      "workspace": "midnight-monolith",
+      "requirement": "Keep the IDE shell and core contracts small; load experimental target packs, EDA tools and debug adapters explicitly.",
+      "acceptance": "Extension manifests declare permissions, ABI, target support and dependencies; unknown extensions are rejected safely.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/ironclad_systems.c",
+        "src/ironclad_systems.h",
+        "tests/test_ironclad_systems.c"
+      ]
+    },
+    {
+      "id": "PIDE-047",
+      "group": "IDE_CORE",
+      "title": "Fast navigation and keyboard workflow",
+      "workspace": "velvet-gravitas",
+      "requirement": "Provide command palette, symbol search, register search, go-to-definition, history and configurable hotkeys.",
+      "acceptance": "UI interaction latency is benchmarked on named reference machines and large projects; no instant-response guarantee is assumed.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-048",
+      "group": "IDE_CORE",
+      "title": "Hot-path and resource profiler",
+      "workspace": "neutron-zenith",
+      "requirement": "Rank expensive instructions, pipeline waits, memory stalls, cache events and power/thermal costs from available evidence.",
+      "acceptance": "Profiles distinguish actual counters, simulator estimates and sampling bias, and identify profiler overhead.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/cpu_suite.c",
+        "src/trace.c"
+      ]
+    },
+    {
+      "id": "PIDE-049",
+      "group": "IDE_CORE",
+      "title": "Workspace lifecycle and deprecation",
+      "workspace": "midnight-monolith",
+      "requirement": "Retire obsolete panels, rules and adapters through versioned migration notes while preserving old project readability.",
+      "acceptance": "Deprecated features carry removal versions and migration paths; no accepted project is silently reinterpreted.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/ironclad_systems.c",
+        "src/ironclad_systems.h"
+      ]
+    },
+    {
+      "id": "PIDE-050",
+      "group": "IDE_CORE",
+      "title": "Backward-compatible evolution",
+      "workspace": "eclipse-outlaw",
+      "requirement": "Version project formats, target descriptions, plugins, AST/IR interchange and trace formats with explicit migration policy.",
+      "acceptance": "Golden fixtures prove supported prior versions remain readable or receive an explicit migration diagnostic.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/system_array.c",
+        "src/system_array.h",
+        "tests/test_system_array.c",
+        "docs/SYSTEM_ARRAY_SYNTAX.md"
+      ]
+    },
+    {
+      "id": "PIDE-051",
+      "group": "SILICON_DEPTH",
+      "title": "Assembly-first, not abstraction-blind",
+      "workspace": "crimson-overdrive",
+      "requirement": "The default machine view leads with decoded instructions and registers, while retaining source, Reaper IR, C, HDL and model layers as explicit navigable levels.",
+      "acceptance": "Every supported source layer has a visible lowering path; target assembly and machine bytes are inspectable for built artifacts.",
+      "interpretation_adjustment": "Reject the blanket ban on all languages above ASM: the IDE must expose abstractions without hiding or forbidding them.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-052",
+      "group": "SILICON_DEPTH",
+      "title": "Instrumented bus timeline",
+      "workspace": "reactor-afterglow",
+      "requirement": "Display sampled bus transactions and logic signals from a simulator or explicitly instrumented target with timestamps and capture metadata.",
+      "acceptance": "The UI declares sample rate, buffer depth, trigger, drop count, transport delay and probe intrusion; no universal 1 ns UI deadline is claimed.",
+      "interpretation_adjustment": "Use bounded capture buffers for reliability; distinguish hardware event time from UI render latency.",
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h"
+      ]
+    },
+    {
+      "id": "PIDE-053",
+      "group": "SILICON_DEPTH",
+      "title": "Voltage and signal-state palette",
+      "workspace": "velvet-gravitas",
+      "requirement": "Provide a signal-specific legend for VCC/high, GND/low, floating, contended, unknown and high-impedance states.",
+      "acceptance": "Color is redundant with labels/patterns and meets contrast/accessibility checks; palette is configurable per project.",
+      "interpretation_adjustment": "Do not conflate voltage colors with the global editor/status palette; electrical states need more than three colors.",
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-054",
+      "group": "SILICON_DEPTH",
+      "title": "Versioned physical layout artifacts",
+      "workspace": "eclipse-outlaw",
+      "requirement": "Treat floorplan, placement, routing, pin map, constraints and cell/library references as versioned project artifacts.",
+      "acceptance": "Every layout artifact references process/library version, die revision, units, source RTL/netlist digest and tool provenance.",
+      "interpretation_adjustment": null,
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-055",
+      "group": "SILICON_DEPTH",
+      "title": "Area and utilization analysis",
+      "workspace": "neutron-zenith",
+      "requirement": "Measure cell area, macro area, density, congestion, whitespace, timing and power for a declared process/library.",
+      "acceptance": "Reports distinguish utilization and routability constraints; empty area is not filled with arbitrary structures.",
+      "interpretation_adjustment": "Reject automatic insertion of noise structures to fill all whitespace; floorplanning must satisfy DRC/timing/thermal constraints.",
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-056",
+      "group": "SILICON_DEPTH",
+      "title": "Thermal and power prediction",
+      "workspace": "velocity-tempest",
+      "requirement": "Estimate thermal hotspots from a validated power map, package/cooling model and boundary conditions; compare with available sensors.",
+      "acceptance": "Predictions include model, calibration, time horizon, uncertainty and safety margin; target writes remain capability-gated.",
+      "interpretation_adjustment": "A prediction cannot guarantee warning before damage without validated sensors and conservative limits.",
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-057",
+      "group": "SILICON_DEPTH",
+      "title": "Clocked and asynchronous domains",
+      "workspace": "quantum-paradox",
+      "requirement": "Model synchronous domains by declared clock edges and asynchronous crossings through explicit CDC primitives.",
+      "acceptance": "CDC checks validate synchronizers, reset crossings and handshake/FIFO protocols; asynchronous subsystems are not forced into one global clock.",
+      "interpretation_adjustment": null,
+      "status": "research",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-058",
+      "group": "SILICON_DEPTH",
+      "title": "Pipeline hazard and stall accounting",
+      "workspace": "neutron-zenith",
+      "requirement": "Represent stalls, bubbles, replay, flushes and hazard reasons in the selected pipeline model and trace.",
+      "acceptance": "Every modeled stall has an explicit cause and cycle interval; optimizer changes preserve architectural behavior and the model's constraints.",
+      "interpretation_adjustment": "Never delete a required stall or hazard to satisfy a cosmetic no-bubble rule.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-059",
+      "group": "SILICON_DEPTH",
+      "title": "Target-specific branch prediction policy",
+      "workspace": "horizon-spectral",
+      "requirement": "Describe predictor profile, branch hints and history behavior per ISA/microarchitecture.",
+      "acceptance": "Static hints are explicit and benchmarked; unsupported hints are rejected or ignored only under documented target rules.",
+      "interpretation_adjustment": "Do not assume every branch is taken by default; predictor behavior varies by core and workload.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-060",
+      "group": "SILICON_DEPTH",
+      "title": "Silicon stepping compatibility",
+      "workspace": "horizon-spectral",
+      "requirement": "Bind images and target operations to compatible silicon stepping, board revision, errata and feature sets.",
+      "acceptance": "An incompatible revision is blocked; compatible revisions follow an explicit tested compatibility matrix.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/ironclad_systems.c",
+        "src/ironclad_systems.h"
+      ]
+    },
+    {
+      "id": "PIDE-061",
+      "group": "SILICON_DEPTH",
+      "title": "Glitch and fault artifact capture",
+      "workspace": "obsidian-inferno",
+      "requirement": "Capture glitches, malformed waveforms, transient model states and fault-injection cases as reproducible test artifacts.",
+      "acceptance": "Artifacts include model/target, trigger, capture window, seed, expected/observed state and recovery outcome.",
+      "interpretation_adjustment": "A glitch is a diagnostic/fault artifact, not accepted corrupted production state.",
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-062",
+      "group": "SILICON_DEPTH",
+      "title": "Failure-analysis export",
+      "workspace": "raven-vortex",
+      "requirement": "Export crash bundles, traces, waveform windows, register snapshots, netlists and metadata for external failure-analysis tools/labs.",
+      "acceptance": "Exports use documented formats and redact secrets; microscope/FA equipment is never automatically controlled by a crash handler.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-063",
+      "group": "SILICON_DEPTH",
+      "title": "Source as canonical; binary as derived artifact",
+      "workspace": "crimson-overdrive",
+      "requirement": "Keep human-readable source, declarative hardware models and versioned binary outputs linked through digests and reproducible build metadata.",
+      "acceptance": "A clean checkout can rebuild artifacts and verify source-to-binary provenance.",
+      "interpretation_adjustment": "Reject binary-only source-of-truth storage; preserve inspectable and reviewable source.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-064",
+      "group": "SILICON_DEPTH",
+      "title": "Static or monolithic image profiles",
+      "workspace": "crimson-overdrive",
+      "requirement": "Offer fully static/monolithic bare-metal images where target requirements demand them while allowing dynamic linking when ABI and runtime policy permit.",
+      "acceptance": "Build report lists every linked module, relocation, runtime dependency, load region and reproducibility input.",
+      "interpretation_adjustment": "Dynamic libraries are not inherently nondeterministic; policy is target/profile-specific.",
+      "status": [
+        "CMakeLists.txt",
+        "tests/test_core.c"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-065",
+      "group": "SILICON_DEPTH",
+      "title": "Hardware-backed key and entropy providers",
+      "workspace": "voltage-citadel",
+      "requirement": "Use approved entropy sources and platform key providers such as TPM/secure elements where available; keep keys opaque to the IDE.",
+      "acceptance": "Randomness health tests and key-provider provenance are explicit; secrets are not derived from an assumed CPU noise source.",
+      "interpretation_adjustment": "Do not encrypt all code by default or claim CPU noise is a secure key generator without validated entropy conditioning.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-066",
+      "group": "SILICON_DEPTH",
+      "title": "Canonical ISA mnemonic registry",
+      "workspace": "crimson-overdrive",
+      "requirement": "Expose each target ISA's canonical instruction names, encoding, aliases and disassembly spelling in a versioned registry.",
+      "acceptance": "Aliases normalize to canonical semantic IDs while preserving source spelling and assembler compatibility.",
+      "interpretation_adjustment": "Do not force MOV/LOAD/STORE names across unrelated ISAs or delete valid architectural aliases.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-067",
+      "group": "SILICON_DEPTH",
+      "title": "Register change and dirty-state visualization",
+      "workspace": "circuit-cobalt",
+      "requirement": "Highlight registers changed by a selected instruction/event and distinguish dirty compiler values, architectural writes and debugger modifications.",
+      "acceptance": "Diff markers are tied to trace sequence and access provenance; animation can be disabled and is not the only indicator.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-068",
+      "group": "SILICON_DEPTH",
+      "title": "Typed condition flags",
+      "workspace": "circuit-cobalt",
+      "requirement": "Model target flags such as zero, carry, overflow, sign and interrupt state as typed architecture-specific state.",
+      "acceptance": "Flag reads/writes and preservation are validated from instruction metadata and calling-convention rules.",
+      "interpretation_adjustment": "Flags can be represented in APIs where the target ABI permits; they are not forced into ordinary function parameters.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-069",
+      "group": "SILICON_DEPTH",
+      "title": "Interrupt priority and affinity policy",
+      "workspace": "thunder-phantom",
+      "requirement": "Model interrupt routing, priority, affinity, masking, nesting and coalescing according to the target interrupt controller.",
+      "acceptance": "No interrupt is silently dropped; coalescing is allowed only for declared edge/level semantics and documented loss policy.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-070",
+      "group": "SILICON_DEPTH",
+      "title": "Atomic operation semantics",
+      "workspace": "circuit-cobalt",
+      "requirement": "Describe atomicity, width, memory order, lock-free guarantees and bus/device scope per ISA and target.",
+      "acceptance": "Litmus tests and target fixtures verify compare-exchange/RMW ordering; unavailable widths or semantics fail explicitly.",
+      "interpretation_adjustment": "Do not require every RMW to take one cycle or globally lock a bus; hardware guarantees are architecture-specific.",
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-071",
+      "group": "SILICON_DEPTH",
+      "title": "Inter-core coherency and communication",
+      "workspace": "thunder-phantom",
+      "requirement": "Model cache coherence, shared memory ordering, message passing, barriers and synchronization channels across cores.",
+      "acceptance": "Concurrency tests validate visibility and race freedom under the selected memory model; coherence capabilities are target-specific.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-072",
+      "group": "SILICON_DEPTH",
+      "title": "Micro-operation and microcode inspection",
+      "workspace": "circuit-cobalt",
+      "requirement": "Expose uop decomposition and microcode metadata only when documented or provided by a supported softcore/vendor tool.",
+      "acceptance": "A view records source/provenance and separates observed uops from inferred decomposition.",
+      "interpretation_adjustment": "Do not promise arbitrary microcode editing on commercial CPUs; edits require a supported programmable core and vendor contract.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-073",
+      "group": "SILICON_DEPTH",
+      "title": "Cache-line and transfer geometry",
+      "workspace": "titanium-riptide",
+      "requirement": "Use target-described cache-line size, burst length, sector size and memory transfer granularity for visualization and warnings.",
+      "acceptance": "Alignment and efficiency warnings derive from target profile and measured data; byte-granular valid operations remain valid.",
+      "interpretation_adjustment": "Never hard-code 64 bytes as a universal cache line or call every sub-line access inefficient.",
+      "status": [
+        "src/processor.c",
+        "src/processor.h",
+        "tests/test_core.c"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-074",
+      "group": "SILICON_DEPTH",
+      "title": "TLB invalidation and shootdown model",
+      "workspace": "titanium-riptide",
+      "requirement": "Describe address-space invalidation scope, required barriers, interprocessor notifications and completion acknowledgements per architecture/OS.",
+      "acceptance": "Model or target adapter verifies required ordering and completion before affected mappings are reused.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-075",
+      "group": "SILICON_DEPTH",
+      "title": "Architectural register names and semantic aliases",
+      "workspace": "circuit-cobalt",
+      "requirement": "Retain canonical ISA register names while allowing contextual aliases such as ACCUMULATOR or INDEX_PTR in source/debug views.",
+      "acceptance": "Aliases resolve to a canonical register identity and never obscure width, role or ABI constraints.",
+      "interpretation_adjustment": "Do not rename architectural registers based only on local variable roles.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-076",
+      "group": "SILICON_DEPTH",
+      "title": "Context save/restore and ABI volatility",
+      "workspace": "horizon-spectral",
+      "requirement": "Generate save/restore sets from ABI caller/callee-saved rules, interrupt frames, vector state and target context requirements.",
+      "acceptance": "Conformance tests verify preserved state across calls, interrupts and context switches for each target ABI.",
+      "interpretation_adjustment": "Do not assume only a generic minimal register set is saved; lazy vector state and nested interrupts change the contract.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-077",
+      "group": "SILICON_DEPTH",
+      "title": "Privileged register access policy",
+      "workspace": "voltage-citadel",
+      "requirement": "Gate MSR/control/debug register access by ISA privilege state, OS permission, target capability and backend support.",
+      "acceptance": "Denied accesses fail before backend invocation; policy accounts for x86 rings, ARM exception levels, RISC-V privilege modes and other targets.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ]
+    },
+    {
+      "id": "PIDE-078",
+      "group": "SILICON_DEPTH",
+      "title": "Bit-shift and carry semantics",
+      "workspace": "circuit-cobalt",
+      "requirement": "Expose whether shifts/rotates produce carry/overflow flags and how lost bits are represented according to the target ISA.",
+      "acceptance": "Instruction-level tests cover each shift width, count boundary and target flag result.",
+      "interpretation_adjustment": "A discarded bit is not automatically a data leak; flags and results follow ISA-defined semantics.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-079",
+      "group": "SILICON_DEPTH",
+      "title": "Masking and branch trade-off analysis",
+      "workspace": "velocity-tempest",
+      "requirement": "Offer bitmask lowering as an optimization candidate when it is semantically correct and improves the target cost/security profile.",
+      "acceptance": "Differential tests prove equivalence; benchmark evidence includes branch predictability, vectorization and side-channel constraints.",
+      "interpretation_adjustment": "Do not automatically replace every conditional with a mask; inspect target/workload effects.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-080",
+      "group": "SILICON_DEPTH",
+      "title": "Endianness as target property",
+      "workspace": "horizon-spectral",
+      "requirement": "Honor the declared target, ABI, device and file-format byte order, with explicit conversion at boundaries.",
+      "acceptance": "Big- and little-endian fixtures decode correctly; mixed-endian device fields are explicitly documented.",
+      "interpretation_adjustment": "Do not require Little-Endian globally.",
+      "status": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-081",
+      "group": "SILICON_DEPTH",
+      "title": "Variable-length instruction decoding",
+      "workspace": "crimson-overdrive",
+      "requirement": "Decode instruction boundaries using the target ISA specification and machine-mode state.",
+      "acceptance": "Golden byte streams validate length, alignment, prefixes and malformed encoding behavior.",
+      "interpretation_adjustment": "Do not ban variable-length instruction sets; fixed-width rules apply only to the selected ISA.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-082",
+      "group": "SILICON_DEPTH",
+      "title": "NOP and alignment planning",
+      "workspace": "crimson-overdrive",
+      "requirement": "Insert NOP/alignment padding only when required by ISA, ABI, errata, timing or explicit layout constraints.",
+      "acceptance": "The map file records every inserted NOP and its reason; generated output passes functional and timing tests.",
+      "interpretation_adjustment": "Do not insert NOPs automatically merely to fill cache-line boundaries.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-083",
+      "group": "SILICON_DEPTH",
+      "title": "Undefined and reserved instruction handling",
+      "workspace": "raven-vortex",
+      "requirement": "Represent invalid, reserved, unsupported and implementation-defined encodings distinctly in assemblers, decoders and simulators.",
+      "acceptance": "Negative fixtures verify architectural exception/diagnostic behavior without silently assigning invented semantics.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-084",
+      "group": "SILICON_DEPTH",
+      "title": "Target-width address model",
+      "workspace": "titanium-riptide",
+      "requirement": "Derive virtual/physical address widths, canonical forms and sign-extension rules from the selected ISA/MMU profile.",
+      "acceptance": "Boundary fixtures reject noncanonical/out-of-range addresses and never silently ignore high bits.",
+      "interpretation_adjustment": "Do not force 64-bit virtual addresses on 32-bit targets.",
+      "status": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-085",
+      "group": "SILICON_DEPTH",
+      "title": "Page permission and W^X policy",
+      "workspace": "voltage-citadel",
+      "requirement": "Represent read/write/execute and device permissions per page/region and enforce W^X where supported by target policy.",
+      "acceptance": "Negative tests prove disallowed W+X mappings are rejected; deliberate exceptions require an explicit reviewed policy.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-086",
+      "group": "SILICON_DEPTH",
+      "title": "DMA and IOMMU ownership",
+      "workspace": "titanium-riptide",
+      "requirement": "Track device ownership, DMA direction, mapping, pinning, lifetime, IOMMU domain and cache synchronization.",
+      "acceptance": "State-machine tests reject use-after-unmap, out-of-range descriptor and CPU/device concurrent ownership violations.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h"
+      ]
+    },
+    {
+      "id": "PIDE-087",
+      "group": "SILICON_DEPTH",
+      "title": "Out-of-order and retirement model",
+      "workspace": "quantum-paradox",
+      "requirement": "Model OoO issue, reorder buffers, speculation, precise retirement and architectural program-order visibility when the selected core supports them.",
+      "acceptance": "Deterministic traces distinguish issue/execute/retire order and validate architectural state against a reference model.",
+      "interpretation_adjustment": "Do not assume all CPUs are OoO; in-order cores have separate profiles.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-088",
+      "group": "SILICON_DEPTH",
+      "title": "Speculative execution and side-channel analysis",
+      "workspace": "voltage-citadel",
+      "requirement": "Analyze speculative/transient execution and observable cache/timing channels with target-specific mitigations and test cases.",
+      "acceptance": "Reports identify known attack surface and mitigation status; no blanket guarantee of eliminating all side channels is made.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-089",
+      "group": "SILICON_DEPTH",
+      "title": "Power gating and idle-state model",
+      "workspace": "voltage-citadel",
+      "requirement": "Describe supported clock/power domains, idle states, gating dependencies and approved control hooks for the target.",
+      "acceptance": "A model validates sequencing and safety interlocks; physical control requires an exact board/vendor backend and capability.",
+      "interpretation_adjustment": "Power-gating is not a portable software write to arbitrary transistors.",
+      "status": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-090",
+      "group": "SILICON_DEPTH",
+      "title": "Cycle-accurate simulator qualification",
+      "workspace": "shadow-nemesis",
+      "requirement": "Provide cycle-accurate simulation only for fully declared microarchitecture models with validated timing inputs.",
+      "acceptance": "Golden traces match the declared model and reference tests; real silicon correlation reports measured deviation and uncertainty.",
+      "interpretation_adjustment": "Do not promise exact cycle matching for undocumented commercial silicon.",
+      "status": [],
+      "evidence": []
+    },
+    {
+      "id": "PIDE-091",
+      "group": "SILICON_DEPTH",
+      "title": "Bounded instruction trace recording",
+      "workspace": "obsidian-inferno",
+      "requirement": "Record instruction/event traces into a bounded ring buffer with trigger, wrap, loss, sampling and privacy policy.",
+      "acceptance": "Overflow and dropped events are explicit; trace overhead and perturbation are measured.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h"
+      ]
+    },
+    {
+      "id": "PIDE-092",
+      "group": "SILICON_DEPTH",
+      "title": "Fault injection and safety modes",
+      "workspace": "shadow-nemesis",
+      "requirement": "Inject bit flips, timing faults and device errors in simulation by default; physical fault injection is a separately approved lab mode.",
+      "acceptance": "Every injection is reproducible and bounded; live injection requires isolation, operator approval and safe-stop procedure.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-093",
+      "group": "SILICON_DEPTH",
+      "title": "Kernel and driver separation",
+      "workspace": "midnight-monolith",
+      "requirement": "Model kernel responsibilities, user-mode services, driver privilege and hardware mediation according to the selected OS.",
+      "acceptance": "Architecture docs and tests show which components execute in user/kernel/firmware context; no IDE process silently elevates.",
+      "interpretation_adjustment": "Do not dictate a universal minimal-kernel architecture for all target OSes.",
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-094",
+      "group": "SILICON_DEPTH",
+      "title": "Hard real-time evidence gate",
+      "workspace": "velocity-tempest",
+      "requirement": "Support deadline analysis, WCET budgets, interrupt load, jitter, scheduling and platform qualification for hard real-time targets.",
+      "acceptance": "A guarantee is issued only for a named platform/workload with schedulability analysis and HIL evidence; otherwise label estimate or best effort.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-095",
+      "group": "SILICON_DEPTH",
+      "title": "Virtualization and zero-copy observability",
+      "workspace": "mirage-aether",
+      "requirement": "Expose hardware-assisted virtualization, mappings, exits, IOMMU and data-copy paths for supported hosts/targets.",
+      "acceptance": "Metrics show actual copies, mappings and exits; overhead is benchmarked, not assumed zero.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.c",
+        "src/low_level_contract.h"
+      ]
+    },
+    {
+      "id": "PIDE-096",
+      "group": "SILICON_DEPTH",
+      "title": "Hardware breakpoint management",
+      "workspace": "raven-vortex",
+      "requirement": "Manage target-supported hardware breakpoint/watchpoint slots, scope, alignment and debugger side effects.",
+      "acceptance": "UI reports slot availability and impact; breakpoints beyond capacity fail with a target-specific diagnostic.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-097",
+      "group": "SILICON_DEPTH",
+      "title": "Logic analyzer and waveform integration",
+      "workspace": "reactor-afterglow",
+      "requirement": "Show simulator waveforms and optionally ingest physical logic-analyzer/oscilloscope streams through named adapters.",
+      "acceptance": "Signal names, probe points, sample rates, trigger configuration and calibration/provenance are retained.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-098",
+      "group": "SILICON_DEPTH",
+      "title": "Live register watch and debug transport",
+      "workspace": "circuit-cobalt",
+      "requirement": "Support target-appropriate JTAG/SWD/debug providers with explicit halt, sampling, side effects and access permissions.",
+      "acceptance": "The IDE warns when observation halts or perturbs the target and records transport/session state.",
+      "interpretation_adjustment": null,
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "PIDE-099",
+      "group": "SILICON_DEPTH",
+      "title": "Hardware versus model discrepancy workflow",
+      "workspace": "obsidian-inferno",
+      "requirement": "Compare simulator, architectural specification, errata and live hardware observations and record reproducible divergence.",
+      "acceptance": "A mismatch is triaged with exact silicon stepping, test, trace and source; observed behavior is not automatically treated as intended architectural behavior.",
+      "interpretation_adjustment": null,
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "src/trace.h",
+        "tests/test_trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ]
+    },
+    {
+      "id": "PIDE-100",
+      "group": "SILICON_DEPTH",
+      "title": "Begin Iron session bootstrap",
+      "workspace": "chrome-ironclad",
+      "requirement": "Initialize a project session with target profile, toolchain, safety mode, resource budget and provenance before any command runs.",
+      "acceptance": "A session is ready only after required target/toolchain validation; default operations are inspect/plan/simulate and physical actions remain capability-gated.",
+      "interpretation_adjustment": "The marker expresses project/session initialization, not an authority to mutate hardware.",
+      "status": "partial",
+      "evidence": [
+        "src/ironclad_systems.c",
+        "src/low_level_contract.c"
+      ]
+    }
+  ],
+  "implementation_layers": [
+    {
+      "id": "IDE-0",
+      "name": "Target/session foundation",
+      "gate": "A project opens with a validated target identity, mode and evidence context."
+    },
+    {
+      "id": "IDE-1",
+      "name": "Source, IR and machine inspection",
+      "gate": "Source/IR/ASM/bytes/register navigation preserves symbol and source provenance."
+    },
+    {
+      "id": "IDE-2",
+      "name": "Memory, device and privilege",
+      "gate": "Address, permission, MMIO and device state are explicit and capability-gated."
+    },
+    {
+      "id": "IDE-3",
+      "name": "Simulator and microarchitecture",
+      "gate": "Named reference CPU models execute deterministic fixtures and emit synchronized traces."
+    },
+    {
+      "id": "IDE-4",
+      "name": "Debug, trace and replay",
+      "gate": "Bounded snapshots, breakpoints, before/after diffs and reproducible simulator replay pass tests."
+    },
+    {
+      "id": "IDE-5",
+      "name": "Timing, power and signal labs",
+      "gate": "Measured/estimated/simulated evidence has units, provenance and uncertainty."
+    },
+    {
+      "id": "IDE-6",
+      "name": "HDL, physical design and lab integration",
+      "gate": "RTL/EDA/lab adapters pass external tool and physical qualification; research claims remain scoped."
+    },
+    {
+      "id": "IDE-7",
+      "name": "Release and ecosystem maturity",
+      "gate": "Windows/Linux builds, target matrix, compatibility migrations and independent qualification pass."
+    }
+  ],
+  "integration_workstreams": [
+    {
+      "pr": 280,
+      "title": "Deterministic Reaper processor control plane",
+      "relation": "Logical state transitions, plans and replay contracts; not kernel scheduler control."
+    },
+    {
+      "pr": 281,
+      "title": "Reaper Processor Intelligence",
+      "relation": "Pinned Reaper policy fixtures and report bridge; fixture data is not live hardware telemetry."
+    },
+    {
+      "pr": 282,
+      "title": "Processor policy and native C11 engine",
+      "relation": "Read-only topology/evidence, affinity-constrained work planning and admission contracts."
+    },
+    {
+      "pr": 285,
+      "title": "Explicit silicon runtime primitives",
+      "relation": "ISA barriers/cycle sources/MMIO-region concepts; reconcile against main low-level target contract."
+    },
+    {
+      "pr": 286,
+      "title": "Bounded thread fault recovery",
+      "relation": "Failure correlation and bounded recovery plans."
+    },
+    {
+      "pr": 287,
+      "title": "Embedded silicon runtime",
+      "relation": "Board HAL/cycle/MMIO callback model; reconcile overlap with #285."
+    },
+    {
+      "pr": 290,
+      "title": "Processor platform evidence adapters",
+      "relation": "Stacked on #286; read-only WHEA/EDAC evidence and calling-thread affinity lease."
+    },
+    {
+      "pr": 294,
+      "title": "Processor engineering report",
+      "relation": "Versioned evidence/report envelope; JSON validity is not hardware certification."
+    },
+    {
+      "pr": 298,
+      "title": "66-profile processor language workbench",
+      "relation": "Profile registry and inert build planning, not 66 bundled compilers."
+    }
+  ],
+  "safety_adjustments": [
+    "Assembly-first means deep machine visibility, not a prohibition on Reaper, C, HDL or other explicit source layers.",
+    "Sub-nanosecond bus events may be captured by hardware instrumentation; IDE rendering latency is a separate metric and cannot be promised universally.",
+    "Endianness, register names, address width, instruction length, cache geometry and privilege levels are target properties, not global constants.",
+    "Required stalls, synchronization, speculation barriers and interrupt events cannot be removed for visual neatness.",
+    "Physical target writes, fault injection, power gating and debug register writes require named target capabilities and explicit operator approval."
+  ]
+}
