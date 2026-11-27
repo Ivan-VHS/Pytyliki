@@ -269,6 +269,36 @@ if(BUILD_TESTING)
   add_test(NAME hardware-construct-catalog COMMAND pytyliki-hw-syntax --catalog)
   set_tests_properties(hardware-construct-catalog PROPERTIES PASS_REGULAR_EXPRESSION "trace_script")
 
+  set(PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES
+    01_irq_dispatch
+    02_cpu_pulse
+    03_boot_guard
+    04_core_power_state
+    05_bus_alignment_rule
+    06_microcode_section
+    07_cache_react
+    08_trace_mode_matrix
+    09_fold_address_tree
+    10_quantum_wheel
+    11_apocrypha_noise_gate
+    12_register_transaction
+    13_pipeline_graph
+    14_vector_lane_shift
+    15_overlay_swap
+    16_ipc_watch
+    17_dma_ring_worker
+    18_hardware_sanity
+    19_cpu_window_layout
+    20_step_debugger
+  )
+  foreach(example IN LISTS PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES)
+    add_test(
+      NAME hardware-syntax-example-${example}
+      COMMAND pytyliki-hw-syntax --check
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/hardware-constructs/${example}.syntax
+    )
+  endforeach()
+
 endif()
 
 
