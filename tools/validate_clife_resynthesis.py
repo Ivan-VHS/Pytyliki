@@ -37,7 +37,7 @@ def validate_policy(data: dict[str, Any], root: Path = ROOT) -> list[str]:
     """Return policy/schema/evidence violations; this function never changes files."""
     errors: list[str] = []
     if data.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
-        errors.append("policy must declare JSON Schema draft 2020-12")
+        errors.append("policy schema dialect must be JSON Schema draft 2020-12")
     if data.get("schema") != SCHEMA_ID:
         errors.append("unsupported CLife schema identifier")
     if data.get("version") != 1:
