@@ -441,7 +441,10 @@
       "owner": "joint",
       "status": "research",
       "evidence": [],
-      "tracking_prs": []
+      "tracking_prs": [
+        299,
+        300
+      ]
     },
     {
       "id": "pyty.quantum",
@@ -510,7 +513,7 @@
     {
       "id": "pyty.target",
       "responsibility": "Capability-gated target descriptor, bounded memory map, RAM/MMIO backend, clock/power request and IRQ registry contract.",
-      "owner": "duck-os",
+      "owner": "pytyliki",
       "status": "partial",
       "evidence": [
         "src/low_level_contract.h",
@@ -1930,7 +1933,10 @@
       "branch": "feat/processor-platform-adapters-v1",
       "base": "feat/processor-thread-fault-recovery-v1",
       "state": "open",
-      "scope": "Read-only WHEA/EDAC evidence, evidence chain and reversible calling-thread affinity lease; stacked on PR 286."
+      "scope": "Read-only WHEA/EDAC evidence, evidence chain and reversible calling-thread affinity lease; stacked on PR 286.",
+      "depends_on": [
+        286
+      ]
     },
     {
       "pr": 294,
@@ -1957,7 +1963,10 @@
       "branch": "feat/ptfr-platform-adapters-polyglot-v1",
       "base": "feat/processor-thread-fault-recovery-v1",
       "state": "open-draft",
-      "scope": "Stacked Rust/Swift/TypeScript adapters for fault-evidence contracts; draft and not part of main."
+      "scope": "Stacked Rust/Swift/TypeScript adapters for fault-evidence contracts; draft and not part of main.",
+      "depends_on": [
+        286
+      ]
     },
     {
       "pr": 298,
