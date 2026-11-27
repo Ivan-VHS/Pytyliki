@@ -1,0 +1,264 @@
+# Reaper policy for periodic processor-thread fault correlation.
+# ROOT is a policy trust anchor, never an operating-system privilege request.
+# Scenario inputs are deterministic fixtures or explicitly supplied evidence.
+
+craft RULE(minimum_intervals, tolerance_ppm, maximum_retries) {
+    when kind(minimum_intervals) != "number" or minimum_intervals % 1 != 0 or
+         minimum_intervals < 2 or minimum_intervals > 8 {
+        yield ["ERR", "minimum_intervals must be an integer from 2 to 8"]
+    }
+    when kind(tolerance_ppm) != "number" or tolerance_ppm % 1 != 0 or
+         tolerance_ppm < 1 or tolerance_ppm > 500000 {
+        yield ["ERR", "tolerance_ppm must be an integer from 1 to 500000"]
+    }
+    when kind(maximum_retries) != "number" or maximum_retries % 1 != 0 or
+         maximum_retries < 0 or maximum_retries > 3 {
+        yield ["ERR", "maximum_retries must be an integer from 0 to 3"]
+    }
+    yield ["ptfr.rule.v1", minimum_intervals, tolerance_ppm, maximum_retries]
+}
+
+craft ROOT(anchor, scope) {
+    when kind(anchor) != "text" or size(anchor) == 0 or size(anchor) > 96 {
+        yield ["ERR", "ROOT requires a bounded, named policy trust anchor"]
+    }
+    when scope != "observe" and scope != "application_worker" {
+        yield ["ERR", "ROOT scope must be observe or application_worker"]
+    }
+    yield ["ptfr.root.v1", anchor, scope, "caller-declared", "no-privilege"]
+}
+
+craft BOOT(rule, root) {
+    when kind(rule) != "list" or size(rule) != 4 or rule[0] != "ptfr.rule.v1" {
+        yield ["ERR", "BOOT requires a validated RULE operand"]
+    }
+    when kind(root) != "list" or size(root) != 5 or root[0] != "ptfr.root.v1" {
+        yield ["ERR", "BOOT requires a validated ROOT operand"]
+    }
+    yield ["ptfr.state.v1", "ready", rule, root, 0]
+}
+
+craft START(state) {
+    when kind(state) != "list" or size(state) != 5 or state[0] != "ptfr.state.v1" {
+        yield ["ERR", "START requires a valid PTFR state"]
+    }
+    when state[1] != "ready" {
+        yield ["ERR", "START is only valid from ready state"]
+    }
+    yield ["ptfr.state.v1", "running", state[2], state[3], state[4] + 1]
+}
+
+craft SERVICES() {
+    yield [
+        "fault.observe",
+        "cadence.correlate",
+        "recovery.plan",
+        "checkpoint.plan",
+        "worker.quarantine.plan",
+        "hardware.ras.ingest.contract"
+    ]
+}
+
+craft SCENARIO(state, worker_id, timestamps, fault_kind, idempotent, checkpointed, managed_pool) {
+    when kind(state) != "list" or size(state) != 5 or
+         state[0] != "ptfr.state.v1" or state[1] != "running" {
+        yield ["ERR", "SCENARIO requires a running PTFR state"]
+    }
+    when kind(worker_id) != "number" or worker_id % 1 != 0 or worker_id < 1 {
+        yield ["ERR", "worker_id must be a positive integer"]
+    }
+    when kind(timestamps) != "list" or size(timestamps) < 2 or size(timestamps) > 64 {
+        yield ["ERR", "timestamps must contain 2 to 64 observations"]
+    }
+    when fault_kind != "transient" and fault_kind != "corrected_hardware" and
+         fault_kind != "uncorrected_hardware" and fault_kind != "watchdog" and
+         fault_kind != "fatal" {
+        yield ["ERR", "unsupported fault_kind"]
+    }
+    when kind(idempotent) != "boolean" or kind(checkpointed) != "boolean" or
+         kind(managed_pool) != "boolean" {
+        yield ["ERR", "task safety flags must be boolean"]
+    }
+
+    vary intervals := []
+    vary total := 0
+    vary index := 0
+    vary previous := 0
+    loop while index < size(timestamps) {
+        make stamp := timestamps[index]
+        when kind(stamp) != "number" or stamp % 1 != 0 or stamp < 0 {
+            yield ["ERR", "timestamps must be non-negative whole-number monotonic ticks", index]
+        }
+        when index > 0 {
+            when stamp <= previous {
+                yield ["ERR", "timestamps must be strictly increasing", index]
+            }
+            make delta := stamp - previous
+            change intervals := push(intervals, delta)
+            change total := total + delta
+        }
+        change previous := stamp
+        change index := index + 1
+    }
+
+    make ordered := sorted(intervals, "asc")
+    vary upper_middle := 0
+    loop while upper_middle * 2 + 1 < size(ordered) {
+        change upper_middle := upper_middle + 1
+    }
+    vary period := ordered[upper_middle]
+    when size(ordered) % 2 == 0 {
+        change period := ordered[upper_middle - 1] +
+            (ordered[upper_middle] - ordered[upper_middle - 1]) / 2
+    }
+
+    vary maximum_deviation := 0
+    change index := 0
+    loop while index < size(ordered) {
+        vary delta := ordered[index] - period
+        when delta < 0 { change delta := 0 - delta }
+        when delta > maximum_deviation { change maximum_deviation := delta }
+        change index := index + 1
+    }
+
+    make jitter_ppm := maximum_deviation * 1000000 / period
+    make periodic := size(intervals) >= state[2][1] and jitter_ppm <= state[2][2]
+    vary periodicity := "unknown"
+    when size(intervals) >= state[2][1] {
+        change periodicity := "irregular"
+        when periodic { change periodicity := "periodic" }
+    }
+
+    vary action := "observe"
+    vary retry_budget := 0
+    vary operator_review := false
+    vary reason := "insufficient recurrence evidence; observe without changing host CPU state"
+
+    when fault_kind == "fatal" or fault_kind == "uncorrected_hardware" {
+        change action := "safe_stop"
+        change operator_review := true
+        change reason := "uncorrected or fatal fault requires platform-level containment"
+    } otherwise {
+        when fault_kind == "watchdog" {
+            change operator_review := true
+            when checkpointed {
+                change action := "checkpoint_and_stop"
+                change reason := "watchdog fault: preserve the checkpoint and stop this task"
+            } otherwise {
+                change action := "safe_stop"
+                change reason := "watchdog fault without a checkpoint: stop this task"
+            }
+        } otherwise {
+            when fault_kind == "corrected_hardware" {
+                change operator_review := true
+                when periodic {
+                    when managed_pool {
+                        change action := "quarantine_application_worker"
+                        change reason := "periodic corrected hardware reports correlate with this worker; quarantine only the application-managed worker"
+                    } otherwise {
+                        when checkpointed {
+                            change action := "checkpoint_and_stop"
+                            change reason := "periodic corrected hardware reports correlate with this worker; checkpoint and stop because no managed worker pool is available"
+                        } otherwise {
+                            change reason := "periodic corrected hardware reports correlate with this worker; request platform review without changing host CPU state"
+                        }
+                    }
+                } otherwise {
+                    change reason := "corrected hardware report recorded; wait for recurrence evidence and platform correlation"
+                }
+            } otherwise {
+                when fault_kind == "transient" and periodic {
+                    when idempotent and managed_pool {
+                        change action := "redistribute_task"
+                        change retry_budget := state[2][3]
+                        change reason := "periodic transient fault: redistribute an idempotent task inside the application-managed pool"
+                    } otherwise {
+                        when checkpointed {
+                            change action := "checkpoint_and_stop"
+                            change reason := "periodic transient fault without safe redistribution: checkpoint and stop"
+                        }
+                    }
+                } otherwise {
+                    when fault_kind == "transient" and idempotent and state[2][3] > 0 {
+                        change action := "retry_idempotent"
+                        change retry_budget := state[2][3]
+                        change reason := "transient fault: bounded retry of an idempotent task"
+                    } otherwise {
+                        when checkpointed {
+                            change action := "checkpoint_and_stop"
+                            change reason := "task is checkpointed; stop after the fault without unsafe retry"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    yield [
+        "ptfr.scenario.v1",
+        true,
+        worker_id,
+        fault_kind,
+        size(timestamps),
+        size(intervals),
+        period,
+        jitter_ppm,
+        periodicity,
+        action,
+        retry_budget,
+        operator_review,
+        false,
+        false,
+        false,
+        reason,
+        "caller-supplied-evidence"
+    ]
+}
+
+make policy := RULE(4, 100000, 1)
+assert(policy[0] == "ptfr.rule.v1", "RULE must produce a typed policy")
+make root := ROOT("pytyliki.local.policy.v1", "application_worker")
+assert(root[0] == "ptfr.root.v1" and root[4] == "no-privilege", "ROOT must not imply OS privilege")
+make booted := BOOT(policy, root)
+assert(booted[1] == "ready", "BOOT must create a ready state")
+make running := START(booted)
+assert(running[1] == "running", "START must activate the policy state")
+make services := SERVICES()
+assert(size(services) == 6, "PTFR service contract count mismatch")
+
+make periodic := SCENARIO(
+    running, 7,
+    [1000000000, 2000000000, 3000000000, 4000000000, 5000000000, 6000000000],
+    "corrected_hardware", true, false, true
+)
+assert(periodic[0] == "ptfr.scenario.v1" and periodic[8] == "periodic", "periodic cadence was not detected")
+assert(periodic[9] == "quarantine_application_worker", "periodic corrected fault must isolate only the application worker")
+assert(periodic[12] == false and periodic[13] == false and periodic[14] == false, "scenario must not mutate the host")
+
+make redistributed := SCENARIO(
+    running, 8, [100, 200, 300, 400, 500, 600],
+    "transient", true, false, true
+)
+assert(redistributed[9] == "redistribute_task", "managed idempotent workload must be eligible for redistribution")
+
+make unsafe_retry := SCENARIO(
+    running, 9, [100, 130], "transient", false, false, false
+)
+assert(unsafe_retry[9] == "observe", "non-idempotent task must not be retried")
+
+make irregular := SCENARIO(
+    running, 11, [100, 200, 300, 900, 1000, 1100],
+    "corrected_hardware", true, false, true
+)
+assert(irregular[8] == "irregular", "irregular event bursts must not be classified as periodic")
+assert(irregular[9] == "observe", "irregular corrected events must not quarantine an application worker")
+
+make fatal := SCENARIO(
+    running, 10, [100, 200], "uncorrected_hardware", true, true, true
+)
+assert(fatal[9] == "safe_stop" and fatal[11] == true, "uncorrected hardware faults must request safe stop")
+
+make invalid_root := ROOT("local", "kernel_root")
+assert(invalid_root[0] == "ERR", "ROOT must reject privilege escalation scopes")
+
+emit "PYTYLIKI_PROCESSOR_THREAD_RECOVERY:PASS"

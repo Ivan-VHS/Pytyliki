@@ -14,11 +14,12 @@ Pytyliki is a local processor-systems workstation built around a bounded C11 cor
 ## Capabilities
 
 - CPU topology, ISA and memory inventory; bounded CPU/memory measurements and workload-partition examples.
+- Periodic thread-fault analysis and bounded recovery plans for application-managed workers.
 - Profile import and analysis, folded stacks and SVG flamegraphs.
 - Source diagnostics, QCS syntax inspection and embedded-MCU FLASH/SRAM reference estimates.
 - Versioned C ABI and structured reports with provenance and explicit limitations.
 
-See [Features](docs/FEATURES.md), [Architecture](docs/ARCHITECTURE.md), [Benchmark statistics](docs/BENCHMARK_STATISTICS.md), [Embedded C](docs/EMBEDDED_C.md) and [QCS](docs/QCS_NATIVE.md).
+See [Features](docs/FEATURES.md), [Architecture](docs/ARCHITECTURE.md), [Benchmark statistics](docs/BENCHMARK_STATISTICS.md), [Embedded C](docs/EMBEDDED_C.md) and [QCS](docs/QCS_NATIVE.md) and [Processor Thread Fault Recovery](docs/PROCESSOR_THREAD_RECOVERY.md).
 
 ## Build and test
 

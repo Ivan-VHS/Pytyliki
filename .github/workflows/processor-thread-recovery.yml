@@ -1,0 +1,64 @@
+name: Processor thread fault recovery
+
+on:
+  pull_request:
+    paths:
+      - "src/processor_thread_recovery.c"
+      - "src/processor_thread_recovery.h"
+      - "tests/test_processor_thread_recovery.c"
+      - "automation/reaper/processor_thread_recovery.rpr"
+      - "docs/PROCESSOR_THREAD_RECOVERY.md"
+      - "CMakeLists.txt"
+      - ".github/workflows/processor-thread-recovery.yml"
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "src/processor_thread_recovery.c"
+      - "src/processor_thread_recovery.h"
+      - "tests/test_processor_thread_recovery.c"
+      - "automation/reaper/processor_thread_recovery.rpr"
+      - "docs/PROCESSOR_THREAD_RECOVERY.md"
+      - "CMakeLists.txt"
+      - ".github/workflows/processor-thread-recovery.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure native tests
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+      - name: Build PTFR tests
+        run: cmake --build build --target pytyliki-processor-thread-recovery-tests --parallel
+      - name: Run PTFR tests
+        run: ctest --test-dir build --output-on-failure -R "^processor-thread-recovery-tests$"
+
+  reaper-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Pytyliki
+        uses: actions/checkout@v7
+      - name: Check out pinned Reaper toolchain
+        uses: actions/checkout@v7
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: c3d89dd91da880e523867bd8d0724a6edc6b3cf6
+          path: _deps/Reaper
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check the Reaper PTFR policy
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/processor_thread_recovery.rpr
+      - name: Execute the Reaper VM policy scenarios
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          set -euo pipefail
+          python -m reaper --engine vm automation/reaper/processor_thread_recovery.rpr | tee ptfr-reaper.txt
+          grep -qx "PYTYLIKI_PROCESSOR_THREAD_RECOVERY:PASS" ptfr-reaper.txt

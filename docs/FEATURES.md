@@ -3,6 +3,7 @@
 | Area | Scope | Boundary |
 |---|---|---|
 | CPU | identity, topology, memory, ISA/XCR0 | read-only |
+| PTFR | periodic fault correlation and bounded recovery plans | caller-supplied evidence; no host CPU control |
 | Benchmarks | CPU, memory, matrices, partitioning | bounded local tests |
 | Source review | static diagnostics | no compile/run/rewrite |
 | Memory | typed views, checked slices, arenas, pools | fixed limits |
