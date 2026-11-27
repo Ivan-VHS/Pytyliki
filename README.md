@@ -51,7 +51,8 @@ Windows-only event-log inspection and bounded fault-history analysis:
 ```
 
 PTFR emits advisory recovery decisions for application-managed workers. WHEA records remain system-level evidence; severity and worker attribution are not inferred.
-\n## Specifications and integration
+
+## Specifications and integration
 
 - [Documentation index](docs/README.md) · [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
 - [Reaper policy integration](docs/REAPER_INTEGRATION.md) is an optional CI validation example, not an application runtime dependency.
