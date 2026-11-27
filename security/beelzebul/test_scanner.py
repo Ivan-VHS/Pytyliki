@@ -95,6 +95,42 @@ jobs:
         self.assertTrue(workflow_has_unscoped_write(writable_build))
         self.assertTrue(workflow_has_unscoped_write(global_write))
 
+    def test_auto_merge_write_permission_requires_independent_review(self):
+        safe_auto_merge = """permissions:
+  contents: read
+jobs:
+  validate:
+    permissions:
+      contents: read
+  sanitizer:
+    permissions:
+      contents: read
+  auto-merge:
+    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [validate, sanitizer]
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Wait for every pull-request workflow on the validated head
+        env:
+          EXPECTED_HEAD_SHA: sha
+      - name: Confirm validated PR head is unchanged
+      - name: Require independent current-head approval and resolved review threads
+        env:
+          REVIEW_STATE: missing-current-head-human-approval
+        run: |
+          reviewThreads(first: 100) { nodes { isResolved } }
+      - name: Enable squash auto-merge
+"""
+        unsafe_auto_merge = safe_auto_merge.replace(
+            "Require independent current-head approval and resolved review threads",
+            "Approve without reviewer checks",
+        )
+        self.assertFalse(workflow_has_unscoped_write(safe_auto_merge))
+        self.assertTrue(workflow_has_unscoped_write(unsafe_auto_merge))
+
     def test_policy_contract_has_66_unique_rules(self):
         findings=[];policy=validate_policy(Path(__file__).resolve().parents[2],findings)
         self.assertEqual(policy.get("codex"),"BEELZEBUL-66")
