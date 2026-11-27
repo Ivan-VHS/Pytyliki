@@ -111,4 +111,5 @@ pytyliki-system-array --json 'system(array) ^>'
 \`\`\`
 
 The CLI is a bounded syntax validator only. It never executes source or touches
-hardware.
+hardware. `examples/system_array.syntax` is a conformance corpus: each non-empty
+line is an independent directive sample, not a multi-statement program.
