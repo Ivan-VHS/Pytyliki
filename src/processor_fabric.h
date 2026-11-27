@@ -10,10 +10,10 @@
 extern "C" {
 #endif
 
-#define PL_PROCESSOR_FABRIC_ABI_MAJOR 1u
+#define PL_PROCESSOR_FABRIC_ABI_MAJOR 2u
 #define PL_PROCESSOR_FABRIC_MAX_NODES 256u
 #define PL_PROCESSOR_FABRIC_MAX_EDGES 512u
-#define PL_PROCESSOR_FABRIC_SCHEMA "pytyliki.processor-fabric-report.v1"
+#define PL_PROCESSOR_FABRIC_SCHEMA "pytyliki.processor-fabric-report.v2"
 #define PL_PROCESSOR_FABRIC_CATALOG_COUNT 5u
 #define PL_PROCESSOR_FABRIC_BASIS_POINTS 10000u
 
