@@ -7,6 +7,8 @@ typedef struct {
     uint32_t task_id;
     uint32_t logical_id;
     uint32_t core_id;
+    uint32_t package_id;
+    uint32_t die_id;
     uint32_t numa_node_id;
     uint64_t bandwidth;
     uint64_t working_set;
@@ -236,12 +238,16 @@ pl_placement_status pl_processor_placement_plan(
                     candidate.numa_cost = 3000u;
                 }
             }
-            if (worker->core_id == PL_TOPOLOGY_UNKNOWN_ID) {
+            if (worker->core_id == PL_TOPOLOGY_UNKNOWN_ID ||
+                worker->package_id == PL_TOPOLOGY_UNKNOWN_ID ||
+                worker->die_id == PL_TOPOLOGY_UNKNOWN_ID) {
                 reasons |= PL_PLACEMENT_REASON_CORE_UNKNOWN;
                 candidate.smt_cost = add_saturating(candidate.smt_cost, 500u);
             } else {
                 for (previous = 0u; previous < assigned_count; ++previous) {
-                    if (assigned[previous].core_id == worker->core_id) {
+                    if (assigned[previous].core_id == worker->core_id &&
+                        assigned[previous].package_id == worker->package_id &&
+                        assigned[previous].die_id == worker->die_id) {
                         reasons |= PL_PLACEMENT_REASON_SHARED_CORE;
                         candidate.smt_cost = add_saturating(candidate.smt_cost, 1800u);
                     }
@@ -296,6 +302,8 @@ pl_placement_status pl_processor_placement_plan(
             assigned[assigned_count].task_id = task->task_id;
             assigned[assigned_count].logical_id = best.logical_id;
             assigned[assigned_count].core_id = PL_TOPOLOGY_UNKNOWN_ID;
+            assigned[assigned_count].package_id = PL_TOPOLOGY_UNKNOWN_ID;
+            assigned[assigned_count].die_id = PL_TOPOLOGY_UNKNOWN_ID;
             assigned[assigned_count].numa_node_id = PL_TOPOLOGY_UNKNOWN_ID;
             assigned[assigned_count].bandwidth = task->bandwidth_demand_bytes_per_sec;
             assigned[assigned_count].working_set = task->working_set_bytes;
@@ -303,6 +311,8 @@ pl_placement_status pl_processor_placement_plan(
             for (worker_index = 0u; worker_index < input->worker_count; ++worker_index)
                 if (input->workers[worker_index].logical_id == best.logical_id) {
                     assigned[assigned_count].core_id = input->workers[worker_index].core_id;
+                    assigned[assigned_count].package_id = input->workers[worker_index].package_id;
+                    assigned[assigned_count].die_id = input->workers[worker_index].die_id;
                     assigned[assigned_count].numa_node_id = input->workers[worker_index].numa_node_id;
                     break;
                 }
