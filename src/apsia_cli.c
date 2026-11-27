@@ -46,7 +46,8 @@ static void usage(void) {
          "Options: --gpu --wasm --deterministic --sandbox\n"
          "         --capabilities NAME[,NAME...]\n"
          "Capabilities: network, filesystem, clock, gpu, shared-memory\n"
-         "Legacy positional form: WORKLOAD SPEEDUP FFI HOST_OPT CAPS GPU WASM DETERMINISTIC SANDBOX\n"
+         "Legacy positional form: WORKLOAD SPEEDUP FFI HOST_OPT CAPS GPU DETERMINISTIC SANDBOX\n"
+         "Extended positional form adds WASM after GPU.\n"
          "Routing is advisory; it never loads or executes generated code.");
 }
 
