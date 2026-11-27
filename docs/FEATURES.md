@@ -9,6 +9,7 @@
 | Metrics/TRACE | norms, distances, provenance, variance | context-checked |
 | Embedded C | MCU profiles, FLASH/SRAM, masked MMIO | simulation |
 | QCS | lexer, parser, AST | syntax-only |
+| Processor languages | 66 unique assembly, systems, VM/IR and HDL profiles; detect, bounded inspection, target checks and argv planning | static; no tool execution |
 | ABI | versioned C ABI v1 | explicit load |
 
-Catalogue: 66 language capabilities, 14 processor profiles, 33 systems-lab functions. Counts are inventory, not certification.
+Catalogues: 66 unique processor-language profiles, 14 processor profiles and 33 systems-lab functions. Counts are inventory, not compiler coverage or certification.
