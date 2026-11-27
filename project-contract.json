@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded analysis, memory and DSP operations, source diagnostics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, and versioned native interoperability.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -28,7 +28,8 @@
       "summary": "Read-only CPU, memory and usable ISA discovery with operating-system vector-state checks.",
       "evidence": [
         "src/processor.c",
-        "src/cli.c"
+        "src/cli.c",
+        "tests/test_core.c"
       ]
     },
     {
@@ -37,7 +38,9 @@
       "summary": "Bounded processor, memory and matrix workloads for local, hardware-dependent comparison.",
       "evidence": [
         "src/cpu_suite.c",
-        "src/cli.c"
+        "src/cli.c",
+        "tests/test_cpu_suite.c",
+        "tests/test_core.c"
       ]
     },
     {
@@ -46,16 +49,16 @@
       "summary": "Static source diagnostics that inspect supported files without executing or rewriting them.",
       "evidence": [
         "src/core.c",
-        "src/cli.c"
+        "src/cli.c",
+        "tests/test_core.c"
       ]
     },
     {
       "id": "audio.pcm16-dsp",
-      "status": "implemented",
-      "summary": "PCM16 WAV processing, test-tone generation, metering and bounded DSP operations.",
+      "status": "partial",
+      "summary": "PCM16 WAV and DSP processing are not present in the current source tree; this capability is incomplete and must not be advertised as shipped.",
       "evidence": [
-        "src/dsp.c",
-        "src/dsp_engine.c"
+        "README.md"
       ]
     },
     {
@@ -64,7 +67,8 @@
       "summary": "Typed views, overflow-checked slices, bounded arenas, rewind checkpoints and fixed-block pools.",
       "evidence": [
         "src/memory.c",
-        "docs/MEMORY_ARENA.md"
+        "docs/MEMORY_ARENA.md",
+        "tests/test_memory.c"
       ]
     },
     {
@@ -73,7 +77,8 @@
       "summary": "C11 vector, distance, geometry and quadratic-form metrics with a stable native API.",
       "evidence": [
         "src/metric_geometry.c",
-        "src/metric_registry.c"
+        "src/metric_registry.c",
+        "tests/test_metric_geometry.c"
       ]
     },
     {
@@ -124,16 +129,6 @@
         "tools/validate_octa_pyramid.py",
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
-      ]
-    },
-    {
-      "id": "benchmark.report-comparison",
-      "status": "implemented",
-      "summary": "Compares repeat-suite JSON reports using warmup-excluded medians and explicit improvement/regression thresholds.",
-      "evidence": [
-        "scripts/compare_benchmarks.py",
-        "tests/test_benchmark_compare.py",
-        "CMakeLists.txt"
       ]
     }
   ],

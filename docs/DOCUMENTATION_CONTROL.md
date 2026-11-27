@@ -1,45 +1,31 @@
 # Documentation control
 
-This file is the maintenance contract for the repository's human-readable and machine-readable documentation.
+**Scope:** Pytyliki documentation, Markdown entry points, visual assets, architecture diagrams and linked machine-readable contracts.
 
-| # | Gate | Acceptance |
-|---:|---|---|
-| 1 | Evidence | Every implemented claim links to source, tests or a reproducible workflow. |
-| 2 | Status | Separate implemented, partial, planned and unsupported behavior. |
-| 3 | Privacy | Never publish secrets, private uploads, device identifiers, local paths or personal data. |
-| 4 | Contract | State accepted formats, versions, limits, error behavior and exclusions. |
-| 5 | Compatibility | Version breaking API, schema, manifest, CLI and runtime changes; include migration notes. |
-| 6 | Visual evidence | Screenshots are genuine application captures, dated where useful, with alt text and no sensitive data. |
-| 7 | Localization | Keep language variants aligned on capabilities, warnings, commands and versioned contracts. |
-| 8 | Links | Verify relative links, anchors, commands and generated asset paths. |
-| 9 | Security | Describe trust boundaries and safe failure; never infer enforcement from a catalog entry. |
-| 10 | Release review | Re-run documented build/tests and review docs index plus root README before release. |
+## Acceptance rules
 
-## Source-of-truth order
+| Gate | Requirement | Evidence |
+|---|---|---|
+| Evidence before claims | Implemented claims point to current source or tests | Source path, test or CI link |
+| Explicit maturity | Separate implemented, partial, reference/simulated and planned behavior | Feature matrix and implementation source |
+| Privacy | Exclude secrets, personal identifiers and local machine paths | Diff and fixture review |
+| Contract accuracy | State accepted formats, bounds, defaults and exclusions | Schemas, code and tests |
+| Compatibility | Version public ABI/schema changes and explain migration | Versioned contract and tests |
+| Documentation structure | Every important page has an owner and information-map entry | Documentation index and topic hub |
+| Visual integrity | Screenshots are real captures; diagrams are labelled | Asset provenance and alt text |
+| Adaptive rendering | Hero has matching light/dark SVGs and a fallback | Both SVG assets and README picture block |
+| Example accuracy | Clone/build/run/test commands match build files | CI/build configuration |
+| Localization | Language variants preserve scope, limits and commands | README language comparison |
+| Review hygiene | Links, code fences, Mermaid, tables and diffs are checked | Link check and git diff --check |
 
-1. Executable source and automated tests define behavior.
-2. Schemas and versioned machine-readable manifests define accepted data contracts.
-3. CI workflows define repeatable validation commands.
-4. Architecture and feature documents explain verified behavior and limitations.
-5. README files summarize the project and link to detailed documentation.
+## Maturity vocabulary
 
-If sources disagree, correct the documentation or code and tests together. Do not silently choose the more optimistic claim.
+- **Implemented:** behavior exists in current source.
+- **Partial:** only a documented subset is implemented.
+- **Reference / simulated:** a model or simulation, not physical hardware operation.
+- **Planned:** design intent without an available implementation.
+- **Verified:** a defined check passed on a stated revision and environment; it is not a synonym for implemented.
 
-## Required status labels
+## Publication checklist
 
-- **Implemented:** code exists and focused tests exercise it.
-- **Partial:** only the explicitly named subset exists.
-- **Planned:** design or registry entry only.
-- **Unsupported:** intentionally unavailable or outside the current product boundary.
-
-A documentation page, screenshot, registry count or passing catalog validator is not implementation evidence by itself.
-
-## Review checklist
-
-- [ ] Claims match the current source branch.
-- [ ] Numeric limits match code, schemas and tests.
-- [ ] Build and test commands were executed or clearly labelled unverified.
-- [ ] Security boundaries and failure modes are explicit.
-- [ ] Links and image paths resolve.
-- [ ] No private or sensitive data is included.
-- [ ] AppGuard states are evidence-backed; no catalog-only control is marked active.
+When behavior changes, update the root README and the owning detailed contract together. Add new documents to the information architecture map and topic hub. Do not infer performance, compatibility, safety or certification from a successful build alone.

@@ -1,36 +1,38 @@
 # Contributing to Pytyliki
 
-Thank you for helping improve Pytyliki. The project is a native C11 processor-systems workstation with a Windows GUI and portable command-line tools. Contributions should make its implemented behavior clearer, safer to inspect, and easier to reproduce.
-
-## Preserve the project boundary
-
-Processor inventory remains read-only. Benchmarks are bounded, host-dependent measurements, not promises of speedup. Do not add scheduler, affinity, clock, firmware, register-write, or hardware-control behavior under the name of inspection. DSP and file-processing changes must document their input limits and output-format effects.
+Pytyliki is a native C11 processor-systems workstation. Contributions should keep hardware inspection read-only, numerical work bounded and public contracts evidence-backed.
 
 ## Before opening a pull request
 
-1. Read README.md and the relevant architecture and quality documents under docs/.
-2. Keep public C interfaces explicit and preserve existing behavior unless a change is intentional and documented.
-3. Add a focused regression test for every bug fix and boundary case.
-4. Update README.md, README.uk.md, README.ru.md, and README.zh-CN.md when user-visible behavior, supported limits, commands, or examples change.
-5. Update the relevant JSON contract or schema when a machine-readable format changes.
-6. Describe limitations and platform-specific behavior instead of silently skipping unsupported work.
+1. Describe the user-visible problem and provide a minimal reproduction, host OS and compiler version.
+2. Do not add implicit register writes, firmware changes, CPU affinity changes, clock/voltage control or hardware deployment.
+3. Validate malformed input, numeric limits, allocation sizes and error paths.
+4. Preserve the public C ABI unless the change explicitly versions it; add tests for public contract changes.
+5. Distinguish measured host data from synthetic fixtures, estimates and reference models.
+6. Update affected English, Ukrainian, Russian and Simplified Chinese documentation.
 
-## Local checks
+## Local verification
 
-Use the same compiler family and commands as the CI workflow where possible.
+~~~sh
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+python scripts/validate_errors.py
+git diff --check
+~~~
 
-    cmake -S . -B build -DBUILD_TESTING=ON
-    cmake --build build --config Release --parallel
-    ctest --test-dir build -C Release --output-on-failure
-    python .github/scripts/check_readme_links.py
-    python .github/scripts/check_readme_parity.py
+Optional sanitizer build on supported GCC/Clang toolchains:
 
-Run the architecture and project-contract validators used by CI when their related files change.
+~~~sh
+cmake -S . -B build-sanitized -DBUILD_TESTING=ON -DPYTYLIKI_ENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-sanitized --parallel
+ctest --test-dir build-sanitized --output-on-failure
+~~~
 
 ## Pull request expectations
 
-A good pull request explains the user problem, the smallest viable change, compatibility effects, tests run, and any known limitations. Do not include generated binaries, machine-specific benchmark results, private data, or screenshots presented as genuine captures unless they were produced by the repository workflow.
+Explain the affected layer, compatibility impact, resource bounds, safety implications and test evidence. Attach screenshots only for real application captures; label authored diagrams as illustrations. Keep claims aligned with [FEATURES.md](docs/FEATURES.md) and [DOCUMENTATION_CONTROL.md](docs/DOCUMENTATION_CONTROL.md).
 
-## Security and review
+## Security
 
-Do not execute untrusted input in tests without explicit bounds. Report security concerns privately using the contact route in SECURITY.md. Keep changes focused; avoid broad formatting or unrelated generated-file churn.
+Do not include private hardware identifiers, secrets or personal machine data in fixtures. See [SECURITY.md](SECURITY.md) for the repository security policy.

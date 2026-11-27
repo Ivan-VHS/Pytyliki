@@ -1,0 +1,63 @@
+{
+  "schema": "katyuhen.project.v1",
+  "version": 1,
+  "id": "pytyliki",
+  "name": "Pytyliki",
+  "role": "processor-workstation",
+  "repository": "https://github.com/Ivan-VHS/Pytyliki",
+  "entrypoints": [
+    {
+      "id": "pytyliki-workstation",
+      "path": "README.md",
+      "kind": "project-index",
+      "maturity": "implemented"
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "pytyliki.cabi.v1",
+      "direction": "provides",
+      "version": "1",
+      "transport": "explicit-trusted-c-abi",
+      "maturity": "implemented",
+      "description": "Versioned C ABI v1; consumers must select a trusted library explicitly."
+    },
+    {
+      "id": "device-snapshot.v1",
+      "direction": "consumes",
+      "version": "1",
+      "transport": "versioned-json-file",
+      "maturity": "specified",
+      "description": "Read-only device snapshot input for bounded inspection and analysis."
+    },
+    {
+      "id": "ventusample.pack.v1",
+      "direction": "consumes",
+      "version": "1",
+      "transport": "versioned-json-file",
+      "maturity": "specified",
+      "description": "Manifest and measurement metadata may be cross-checked without opening or rendering audio."
+    }
+  ],
+  "capabilities": [
+    "cpu.inventory",
+    "bounded.cpu-memory.measurements",
+    "profile.import-export",
+    "benchmark.statistics",
+    "source.diagnostics",
+    "qcs.syntax-analysis",
+    "embedded.reference-models",
+    "native-c-abi"
+  ],
+  "limits": [
+    "Processor discovery and exposed sensor reads are observational; no frequency, voltage or scheduler changes are made.",
+    "Benchmark summaries depend on supplied or locally measured host data.",
+    "Embedded MCU/MMIO models are reference or simulation data, not firmware deployment."
+  ],
+  "security": {
+    "network_policy": "not_required",
+    "native_library_policy": "explicit_path_only",
+    "driver_mutation_policy": "not_supported",
+    "process_execution_policy": "bounded_local_tools"
+  }
+}
