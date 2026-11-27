@@ -90,10 +90,20 @@ jobs:
             "  contents: read",
             "  contents: write",
         )
+        global_write_all = safe_release.replace(
+            "  contents: read",
+            "  permissions: write-all",
+        )
+        job_write_all = safe_release.replace(
+            "  build-windows:\\n    runs-on: windows-latest",
+            "  build-windows:\\n    permissions:\\n      permissions: write-all\\n    runs-on: windows-latest",
+        )
         self.assertFalse(workflow_has_unscoped_write(safe_release))
         self.assertTrue(workflow_has_unscoped_write(broad_release))
         self.assertTrue(workflow_has_unscoped_write(writable_build))
         self.assertTrue(workflow_has_unscoped_write(global_write))
+        self.assertTrue(workflow_has_unscoped_write(global_write_all))
+        self.assertTrue(workflow_has_unscoped_write(job_write_all))
 
     def test_auto_merge_write_permission_requires_independent_review(self):
         safe_auto_merge = """permissions:
