@@ -1,31 +1,26 @@
-## Purpose
-What user or engineering problem does this change solve?
+This PR explains one coherent change to Pytyliki and the reason it belongs in the processor workstation.
 
-## Smallest coherent change
-What behavior is added, changed or removed? Why is this the right boundary?
+## What changed
+Describe the observable behavior, public API or user workflow. Name affected modules and keep the explanation concrete.
 
-## Function interactions
-- [ ] Public contracts and side effects are documented.
-- [ ] Valid function pairs / representative composition chains are tested.
-- [ ] Invalid combinations and boundary cases are tested or explicitly justified.
-- [ ] No placeholder or duplicate function was added just to increase counts.
+## Why
+What problem does this solve? Why is this the smallest useful change?
+
+## Native implementation
+- [ ] C11 interfaces, ownership and error behavior are documented where relevant.
+- [ ] Memory bounds, arithmetic limits and resource lifetimes are handled.
+- [ ] Platform-specific behavior and portable-core boundaries are clear.
+- [ ] ABI changes are additive or explicitly versioned.
 
 ## Verification
-- [ ] Unit tests pass.
-- [ ] Integration / regression tests pass.
-- [ ] CI checks pass on the supported platforms and runtimes.
-- [ ] Examples and documentation match the actual implementation.
+List the exact CMake, CTest, CLI or platform commands that were run. Mark checks that were not run as pending; do not imply that CI has passed before it has.
 
-## UX and design (when applicable)
-- [ ] White / blue / red tokens are used semantically.
-- [ ] Keyboard access, visible focus, labels and contrast are checked.
-- [ ] Platform limitations are stated accurately.
+- [ ] Unit and regression tests cover normal and boundary cases.
+- [ ] Integration or ABI tests cover affected consumers.
+- [ ] Documentation and examples match the implementation.
 
-## Automation and integration
-- [ ] No direct push to main and no force-push.
-- [ ] Workflow permissions are least-privilege and jobs are bounded.
-- [ ] An independent human review is required before merge.
-- [ ] Rollback is clear.
+## Compatibility and safety
+Explain hardware access, permissions, input limits, persistence and any unsupported behavior. Pytyliki remains within its declared processor-analysis and workstation boundary.
 
-## Evidence and limitations
-List test commands, CI run links, measured results where relevant, and anything not yet implemented.
+## Dependencies
+Link related PRs and branches. State merge order for stacked or cross-repository work.
