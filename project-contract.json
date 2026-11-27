@@ -158,7 +158,7 @@
     {
       "id": "processor-ide.contract.v1",
       "status": "partial",
-      "summary": "Versioned 100-rule Processor IDE architecture contract with two fifty-rule layers and reuse of the existing 20-domain workspace registry; the unified graphical IDE, integrated register/assembly/debug panes and physical tool adapters are not shipped.",
+      "summary": "Versioned 100-rule Processor IDE architecture contract with two fifty-rule layers, twenty named engineering perspectives mapped to the existing 20-domain workspace registry, and an initial native C11 target-aware session API; the unified graphical IDE and physical debug/tool adapters are not shipped.",
       "evidence": [
         "contracts/processor-ide.v1.json",
         "schemas/processor-ide.v1.schema.json",
@@ -166,7 +166,11 @@
         "tools/validate_processor_ide.py",
         "tests/test_processor_ide_contract.py",
         "src/ironclad_systems.c",
-        "tests/test_ironclad_systems.c"
+        "tests/test_ironclad_systems.c",
+        "src/processor_ide.h",
+        "src/processor_ide.c",
+        "tests/test_processor_ide.c",
+        "CMakeLists.txt"
       ]
     }
   ],
@@ -205,14 +209,17 @@
     },
     {
       "id": "processor-ide.contract.v1",
-      "format": "pytyliki.processor-ide.v1 JSON contract + Draft 2020-12 JSON Schema",
+      "format": "pytyliki.processor-ide.v1 JSON contract + JSON Schema + C11 target-aware session API",
       "direction": "provides",
       "status": "partial",
       "evidence": [
         "contracts/processor-ide.v1.json",
         "schemas/processor-ide.v1.schema.json",
         "tools/validate_processor_ide.py",
-        "tests/test_processor_ide_contract.py"
+        "tests/test_processor_ide_contract.py",
+        "src/processor_ide.h",
+        "src/processor_ide.c",
+        "tests/test_processor_ide.c"
       ]
     }
   ],
