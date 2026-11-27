@@ -18,3 +18,5 @@ The dedicated .github/workflows/reaper-policy.yml workflow checks out an immutab
 - The workflow pins Reaper by commit SHA so a language update is deliberate and reviewable.
 
 The Reaper policy layer adds repeatable admission and evidence checks without taking over hardware ownership or the measurement path.
+
+For the separate simulator-only robotics subsystem, see [Reaper Robotics Core](REAPER_ROBOTICS.md). Its Reaper source contracts run in CI; the native C11 implementation owns the fixed buffers, logical timers, simulated registers, control operations and deterministic simulator. This does not add an installed Reaper runtime dependency and does not enable physical MMIO, firmware flashing, IRQ or DMA.

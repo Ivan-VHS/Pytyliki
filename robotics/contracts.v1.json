@@ -1,0 +1,337 @@
+{
+  "contract": "pytyliki.reaper-robotics.v1",
+  "version": 1,
+  "status": "implemented-core-contract",
+  "language": "Reaper",
+  "native_host": "Pytyliki Embedded C11",
+  "numeric_model": {
+    "native_c": "IEEE-754 binary64 for geometry/control calculations; uint64 logical ticks; fixed-width protocol integers",
+    "reaper_source": "signed integer Q15 fixed-point vectors; Q15_ONE=32768; division rounds toward negative infinity as defined by Reaper",
+    "length": "millimetres",
+    "time": "milliseconds at API boundaries; seconds only when explicitly stated",
+    "angle": "radians in native C API; Q15 sine/cosine pairs in Reaper source",
+    "overflow": "reject non-finite native results and checked integer/tick overflow; do not silently wrap"
+  },
+  "limits": {
+    "axes": 6,
+    "buffer_bytes": 256,
+    "sensor_filter_window": 16,
+    "packet_payload_bytes": 48,
+    "simulator_step_ms": {
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "timer_tick": "uint64",
+    "registers": 64
+  },
+  "operations": [
+    {
+      "id": "sensor.sample",
+      "reaper": "sensor_sample",
+      "native": "pl_robotics_sensor_sample",
+      "inputs": [
+        "raw:f64",
+        "scale:f64",
+        "offset:f64",
+        "minimum:f64",
+        "maximum:f64"
+      ],
+      "output": "Result<f64,SensorRangeError>",
+      "model": "value = raw * scale + offset",
+      "invariants": [
+        "all inputs finite",
+        "minimum <= maximum",
+        "value in [minimum, maximum]"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "sensor.calibrate",
+      "reaper": "sensor_calibrate",
+      "native": "pl_robotics_sensor_calibrate",
+      "inputs": [
+        "raw_zero:f64",
+        "raw_reference:f64",
+        "reference_value:f64"
+      ],
+      "output": "Result<Calibration,CalibrationError>",
+      "model": "scale = reference_value / (raw_reference - raw_zero); offset = -raw_zero * scale",
+      "invariants": [
+        "raw_reference != raw_zero",
+        "scale and offset finite"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "sensor.filter",
+      "reaper": "sensor_filter",
+      "native": "pl_robotics_sensor_filter",
+      "inputs": [
+        "samples:Slice<f64>",
+        "window:u8"
+      ],
+      "output": "Result<f64,FilterError>",
+      "model": "mean(last(samples, window)) with compensated accumulation in native C",
+      "invariants": [
+        "1 <= window <= sample_count <= 16",
+        "all selected samples finite"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "geometry.transform2d",
+      "reaper": "coordinate_transform_q15",
+      "native": "pl_robotics_transform_2d",
+      "inputs": [
+        "x:f64",
+        "y:f64",
+        "translation_x:f64",
+        "translation_y:f64",
+        "cosine:f64",
+        "sine:f64"
+      ],
+      "output": "Result<Point2,GeometryError>",
+      "model": "x' = tx + x*cos - y*sin; y' = ty + x*sin + y*cos",
+      "invariants": [
+        "cosine^2 + sine^2 ~= 1"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "kinematics.forward2r",
+      "reaper": "forward_kinematics_q15",
+      "native": "pl_robotics_forward_kinematics",
+      "inputs": [
+        "link_a:f64",
+        "link_b:f64",
+        "cos_a:f64",
+        "sin_a:f64",
+        "cos_ab:f64",
+        "sin_ab:f64"
+      ],
+      "output": "Result<Point2,KinematicsError>",
+      "model": "x = a*cos(a0) + b*cos(a0+a1); y = a*sin(a0) + b*sin(a0+a1)",
+      "invariants": [
+        "link lengths positive",
+        "each sine/cosine pair normalized"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "kinematics.inverse2r",
+      "reaper": "inverse_kinematics_q15",
+      "native": "pl_robotics_inverse_kinematics",
+      "inputs": [
+        "x:f64",
+        "y:f64",
+        "link_a:f64",
+        "link_b:f64",
+        "elbow_sign:i8"
+      ],
+      "output": "Result<JointAngles,ReachabilityError>",
+      "model": "cos(a1) = (x^2+y^2-a^2-b^2)/(2ab); solve both elbow branches",
+      "invariants": [
+        "links positive",
+        "elbow_sign in {-1,1}",
+        "target inside two-link reachable annulus"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "motion.trajectory",
+      "reaper": "trajectory_interpolate",
+      "native": "pl_robotics_trajectory_interpolate",
+      "inputs": [
+        "start:f64",
+        "finish:f64",
+        "elapsed_ms:u64",
+        "duration_ms:u64"
+      ],
+      "output": "Result<f64,TrajectoryError>",
+      "model": "start + (finish-start) * clamp(elapsed/duration, 0, 1)",
+      "invariants": [
+        "duration_ms > 0",
+        "output is bounded by endpoints"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "actuator.command",
+      "reaper": "actuator_command",
+      "native": "pl_robotics_actuator_command",
+      "inputs": [
+        "requested:f64",
+        "current:f64",
+        "minimum:f64",
+        "maximum:f64",
+        "maximum_step:f64"
+      ],
+      "output": "Result<f64,ActuatorError>",
+      "model": "clamp(requested, limits), then clamp delta by maximum_step",
+      "invariants": [
+        "minimum <= maximum",
+        "maximum_step >= 0",
+        "command remains within configured limits"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "control.pid",
+      "reaper": "pid_step",
+      "native": "pl_robotics_pid_step",
+      "inputs": [
+        "setpoint:f64",
+        "measurement:f64",
+        "delta_seconds:f64",
+        "kp:f64",
+        "ki:f64",
+        "kd:f64",
+        "integral_limit:f64",
+        "output_minimum:f64",
+        "output_maximum:f64",
+        "integral:inout f64",
+        "previous_error:inout f64"
+      ],
+      "output": "Result<f64,PidError>",
+      "model": "u = kp*e + ki*clamp(I+e*dt) + kd*(e-e_prev)/dt",
+      "invariants": [
+        "dt > 0",
+        "integral and output are clamped",
+        "state updates only after finite output is computed"
+      ],
+      "effect": "state"
+    },
+    {
+      "id": "motion.axis_sync",
+      "reaper": "axis_synchronize",
+      "native": "pl_robotics_axis_synchronize",
+      "inputs": [
+        "current:Slice<f64>",
+        "target:Slice<f64>",
+        "maximum_step:f64"
+      ],
+      "output": "Result<Array<f64,1..6>,AxisError>",
+      "model": "next[i] = current[i] + clamp(target[i]-current[i], -maximum_step, maximum_step)",
+      "invariants": [
+        "1 <= axis_count <= 6",
+        "current and target lengths equal",
+        "all inputs finite"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "safety.supervise",
+      "reaper": "safety_supervise",
+      "native": "pl_robotics_safety_supervise",
+      "inputs": [
+        "positions:Slice<f64>",
+        "minimum:Slice<f64>",
+        "maximum:Slice<f64>",
+        "temperature:f64",
+        "temperature_limit:f64",
+        "now_tick:u64",
+        "heartbeat_tick:u64",
+        "watchdog_limit:u64"
+      ],
+      "output": "Result<SafetyReport,SafetyViolation>",
+      "model": "check axis bounds, thermal bound, and now-heartbeat <= watchdog_limit",
+      "invariants": [
+        "heartbeat_tick <= now_tick",
+        "all axis limits ordered",
+        "reject unsafe state before actuator publication"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "protocol.frame",
+      "reaper": "protocol_frame",
+      "native": "pl_robotics_packet_encode / pl_robotics_packet_decode",
+      "inputs": [
+        "sequence:u16",
+        "payload:Bytes<0..48>"
+      ],
+      "output": "Result<Packet,ProtocolError>",
+      "model": "magic RB | version 1 | sequence LE16 | length LE16 | payload | CRC16-CCITT",
+      "invariants": [
+        "exact frame length",
+        "payload <= 48 bytes",
+        "CRC checked before payload publication"
+      ],
+      "effect": "pure"
+    },
+    {
+      "id": "simulator.step",
+      "reaper": "simulator_step",
+      "native": "pl_robotics_simulator_step",
+      "inputs": [
+        "state:RobotState",
+        "delta_ms:u32",
+        "stiffness:f64",
+        "maximum_velocity:f64"
+      ],
+      "output": "Result<RobotState,SimulatorError>",
+      "model": "deterministic bounded integration of axis acceleration, velocity, position, and logical time",
+      "invariants": [
+        "1 <= delta_ms <= 1000",
+        "velocity and position bounded",
+        "same input state yields same next state"
+      ],
+      "effect": "simulator"
+    }
+  ],
+  "runtime_primitives": [
+    {
+      "id": "buffer.fixed",
+      "native": "pl_robotics_buffer_*",
+      "capacity_bytes": 256,
+      "allocation": "none",
+      "atomicity": "each read/write is all-or-nothing"
+    },
+    {
+      "id": "clock.logical",
+      "native": "pl_robotics_timer_*",
+      "wall_clock": false,
+      "overflow": "checked"
+    },
+    {
+      "id": "registers.simulated",
+      "native": "pl_robotics_register_*",
+      "physical_mmio": false,
+      "access": "read/write permissions and writable masks enforced"
+    },
+    {
+      "id": "state.transaction",
+      "native": "pl_robotics_transaction_*",
+      "commit": "optimistic generation check",
+      "rollback": "restore last committed snapshot"
+    },
+    {
+      "id": "diagnostics.v1",
+      "native": "pl_robotics_diagnostic",
+      "source_span": "reserved fields; source mapping supplied by Reaper integration"
+    }
+  ],
+  "hardware_boundary": {
+    "default_mode": "simulator-only",
+    "physical_mmio": false,
+    "driver_installation": false,
+    "firmware_flash": false,
+    "interrupt_registration": false,
+    "dma_transfer": false,
+    "policy": "physical operations require a separately reviewed OS/HAL adapter, explicit capability grant, and target-specific qualification"
+  },
+  "verification": {
+    "native_tests": "tests/test_robotics.c",
+    "reaper_program": "robotics/robotics_core.rpr",
+    "ci": ".github/workflows/reaper-robotics.yml",
+    "required": [
+      "all 13 operation vectors",
+      "buffer and timer boundary tests",
+      "transaction conflict/rollback",
+      "protocol checksum rejection",
+      "safety rejection",
+      "deterministic simulator vector"
+    ]
+  },
+  "format": "reaper-robotics-contract"
+}

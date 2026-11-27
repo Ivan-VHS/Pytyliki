@@ -1,0 +1,71 @@
+name: Reaper robotics contracts
+
+on:
+  push:
+    branches: [main, "feat/**", "integration/**"]
+    paths:
+      - "robotics/**"
+      - "src/robotics.c"
+      - "src/robotics.h"
+      - "tests/test_robotics.c"
+      - "CMakeLists.txt"
+      - "docs/REAPER_ROBOTICS.md"
+      - ".github/workflows/reaper-robotics.yml"
+  pull_request:
+    paths:
+      - "robotics/**"
+      - "src/robotics.c"
+      - "src/robotics.h"
+      - "tests/test_robotics.c"
+      - "CMakeLists.txt"
+      - "docs/REAPER_ROBOTICS.md"
+      - ".github/workflows/reaper-robotics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reaper-reference:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Pytyliki
+        uses: actions/checkout@v7
+      - name: Check out pinned Reaper toolchain
+        uses: actions/checkout@v7
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: c3d89dd91da880e523867bd8d0724a6edc6b3cf6
+          path: _deps/Reaper
+      - name: Set up Reaper host runtime
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Validate versioned robotics contracts
+        run: |
+          jq -e '.operations | length == 13' robotics/contracts.v1.json
+          jq -e '.operations | length == 13' robotics/compiler_contract.v1.json
+      - name: Check Reaper robotics source
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check robotics/robotics_core.rpr
+      - name: Execute Reaper robotics conformance vectors
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          set -euo pipefail
+          python -m reaper robotics/robotics_core.rpr | tee robotics-result.txt
+          grep -qx "PYTYLIKI_REAPER_ROBOTICS:PASS" robotics-result.txt
+
+  native-c11:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Pytyliki
+        uses: actions/checkout@v7
+      - name: Configure native test
+        run: cmake -S . -B build -DBUILD_TESTING=ON
+      - name: Build Reaper Robotics C11 tests
+        run: cmake --build build --target pytyliki-robotics-tests --parallel 2
+      - name: Run Reaper Robotics C11 tests
+        run: ctest --test-dir build --output-on-failure -R reaper-robotics-core-contract-tests
