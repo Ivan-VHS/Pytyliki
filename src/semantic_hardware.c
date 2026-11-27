@@ -372,6 +372,65 @@ static int expression(parser *p,uint32_t *value) {
     *value=left; return 1;
 }
 
+static int bind_literal_initializer(parser *p, uint32_t value_index,
+                                     pl_sh_type expected, double unit_scale,
+                                     const token *where) {
+    uint32_t cursor = value_index;
+    uint32_t constant_index;
+    uint16_t type_index;
+    size_t depth = 0u;
+    int negative = 0;
+    double value;
+
+    while (cursor < p->module->value_count &&
+           p->module->values[cursor].opcode == PL_SH_OP_NEG) {
+        const pl_sh_value *node = &p->module->values[cursor];
+        if (node->lhs == PL_SH_NO_VALUE || ++depth > p->module->value_count) {
+            (void)parser_fail(p, where, "RPR-SH-E047", "invalid unary literal initializer");
+            return -1;
+        }
+        negative = !negative;
+        cursor = node->lhs;
+    }
+    if (cursor >= p->module->value_count ||
+        p->module->values[cursor].opcode != PL_SH_OP_CONST_F64)
+        return 0;
+
+    constant_index = cursor;
+    value = p->module->values[constant_index].immediate * unit_scale;
+    if (negative) value = -value;
+    if (!isfinite(value)) {
+        (void)parser_fail(p, where, "RPR-SH-E047", "unit normalization produced a non-finite initializer");
+        return -1;
+    }
+
+    if (expected.kind == PL_SH_TYPE_I64 || expected.kind == PL_SH_TYPE_U32 ||
+        expected.kind == PL_SH_TYPE_U64) {
+        double minimum = expected.kind == PL_SH_TYPE_I64 ? -9007199254740991.0 : 0.0;
+        double maximum = expected.kind == PL_SH_TYPE_U32 ? 4294967295.0 : 9007199254740991.0;
+        if (floor(value) != value || value < minimum || value > maximum) {
+            (void)parser_fail(p, where, "RPR-SH-E049", "fixed-width integer initializer must be integral and exactly representable in v1");
+            return -1;
+        }
+    }
+
+    type_index = add_type(p->module, expected);
+    if (type_index == UINT16_MAX) {
+        (void)parser_fail(p, where, "RPR-SH-E022", "type table limit exceeded");
+        return -1;
+    }
+    p->module->values[constant_index].immediate = value;
+    p->module->values[constant_index].type_index = type_index;
+    cursor = value_index;
+    while (cursor != constant_index) {
+        pl_sh_value *node = &p->module->values[cursor];
+        node->type_index = type_index;
+        cursor = node->lhs;
+    }
+    p->module->values[value_index].type_index = type_index;
+    return 1;
+}
+
 static int parse_unit_type(parser *p, pl_sh_type *type, double *scale) {
     return parse_type(p,type,scale);
 }
@@ -384,11 +443,12 @@ static int parse_value_decl(parser *p, pl_sh_symbol_kind kind) {
     if(!expect(p,TK_SEMI,"expected ';' after value declaration")) return 0;
     pl_sh_value *v=&p->module->values[value_index];
     pl_sh_type *actual=&p->module->types[v->type_index];
-    if(v->opcode==PL_SH_OP_CONST_F64 && actual->kind==PL_SH_TYPE_F64 &&
-       expected.kind!=PL_SH_TYPE_BOOL && expected.kind!=PL_SH_TYPE_UNIT) {
-        v->immediate *= unit_scale;
-        v->type_index=add_type(p->module,expected);
-        if(v->type_index==UINT16_MAX) return parser_fail(p,start,"RPR-SH-E022","type table limit exceeded");
+    if (v->opcode == PL_SH_OP_CONST_F64 || v->opcode == PL_SH_OP_NEG) {
+        int bound = bind_literal_initializer(p, value_index, expected, unit_scale, start);
+        if (bound < 0) return 0;
+        if (bound == 0 && !type_equal(actual, &expected))
+            return parser_fail(p,start,kind==PL_SH_SYMBOL_INPUT?"RPR-SH-E045":"RPR-SH-E046",
+                               kind==PL_SH_SYMBOL_INPUT?"input initializer must be a finite numeric literal in the declared unit":"derived expression type does not match its declared type");
     } else if(!type_equal(actual,&expected)) {
         return parser_fail(p,start,kind==PL_SH_SYMBOL_INPUT?"RPR-SH-E045":"RPR-SH-E046",
                            kind==PL_SH_SYMBOL_INPUT?"input initializer must be a finite numeric literal in the declared unit":"derived expression type does not match its declared type");
