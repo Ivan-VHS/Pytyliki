@@ -51,7 +51,8 @@ Windows 事件日志查看与有界故障历史分析：
 ```
 
 PTFR 仅为应用程序管理的 worker 提供建议性恢复决策。WHEA 记录仍属于系统级证据；不会自动推断错误严重性或 worker 归属。
-\n## 规格与集成
+
+## 规格与集成
 
 - [文档索引](docs/README.md) · [发布流程](docs/RELEASE.md) · [报告格式](docs/REPORT_ENVELOPE.md)
 - [Reaper 集成](docs/REAPER_INTEGRATION.md) — 可选的 CI 策略检查，不是应用运行时依赖。
