@@ -1,0 +1,732 @@
+#define _POSIX_C_SOURCE 200809L
+#include "processor_topology.h"
+#include "processor.h"
+
+#include <ctype.h>
+#include <errno.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#elif defined(__linux__)
+#include <dirent.h>
+#include <sys/utsname.h>
+#include <unistd.h>
+#endif
+
+#if defined(_WIN32)
+static volatile LONG topology_generation = 0;
+static uint32_t next_generation(void) {
+    return (uint32_t)InterlockedIncrement(&topology_generation);
+}
+#else
+#include <stdatomic.h>
+static atomic_uint topology_generation = ATOMIC_VAR_INIT(0u);
+static uint32_t next_generation(void) {
+    return atomic_fetch_add_explicit(&topology_generation, 1u,
+                                     memory_order_relaxed) + 1u;
+}
+#endif
+
+static void set_unknown_cpu(pl_topology_logical_cpu *cpu) {
+    memset(cpu, 0, sizeof(*cpu));
+    cpu->group_id = PL_TOPOLOGY_UNKNOWN;
+    cpu->package_id = PL_TOPOLOGY_UNKNOWN;
+    cpu->die_id = PL_TOPOLOGY_UNKNOWN;
+    cpu->core_id = PL_TOPOLOGY_UNKNOWN;
+    cpu->numa_node_id = PL_TOPOLOGY_UNKNOWN;
+    cpu->evidence = PL_TOPOLOGY_EVIDENCE_UNKNOWN;
+}
+
+static void set_string(char *target, size_t capacity, const char *source) {
+    if (capacity == 0u) return;
+    (void)snprintf(target, capacity, "%s", source != NULL ? source : "");
+}
+
+static void capture_time(char output[32]) {
+    time_t now = time(NULL);
+    struct tm value;
+    memset(&value, 0, sizeof(value));
+#if defined(_WIN32)
+    if (gmtime_s(&value, &now) != 0) {
+        set_string(output, 32u, "unknown");
+        return;
+    }
+#else
+    if (gmtime_r(&now, &value) == NULL) {
+        set_string(output, 32u, "unknown");
+        return;
+    }
+#endif
+    (void)strftime(output, 32u, "%Y-%m-%dT%H:%M:%SZ", &value);
+}
+
+static void set_isa_from_profile(pl_processor_topology_snapshot *out) {
+    pl_processor_snapshot profile;
+    memset(&profile, 0, sizeof(profile));
+    if (pl_processor_scan(&profile) != 0) return;
+
+#define SET_ISA(feature, hw, usable, source) do { \
+    out->isa[(feature)].hardware_present = (int8_t)(hw); \
+    out->isa[(feature)].os_usable = (int8_t)(usable); \
+    out->isa[(feature)].evidence = (uint8_t)(source); \
+} while (0)
+    SET_ISA(PL_TOPOLOGY_ISA_SSE2, profile.sse2 ? 1 : 0,
+            profile.sse2 ? 1 : 0, 1u);
+    SET_ISA(PL_TOPOLOGY_ISA_SSE42, profile.sse42 ? 1 : 0,
+            profile.sse42 ? 1 : 0, 1u);
+    SET_ISA(PL_TOPOLOGY_ISA_AES, profile.aes ? 1 : 0,
+            profile.aes ? 1 : 0, 1u);
+    SET_ISA(PL_TOPOLOGY_ISA_AVX, profile.avx_hw ? 1 : 0,
+            profile.avx ? 1 : 0, 2u);
+    SET_ISA(PL_TOPOLOGY_ISA_AVX2, profile.avx2 ? 1 : 0,
+            profile.avx2 ? 1 : 0, 1u);
+    SET_ISA(PL_TOPOLOGY_ISA_AVX512F, profile.avx512f ? 1 : 0,
+            profile.avx512f ? 1 : 0, 1u);
+    SET_ISA(PL_TOPOLOGY_ISA_FMA, profile.fma ? 1 : 0,
+            profile.fma ? 1 : 0, 1u);
+    SET_ISA(PL_TOPOLOGY_ISA_VIRTUALIZATION,
+            profile.virtualization ? 1 : 0,
+            profile.virtualization ? 1 : 0, 1u);
+#undef SET_ISA
+}
+
+static size_t find_cpu(const pl_processor_topology_snapshot *out,
+                       uint32_t group_id, uint32_t os_id) {
+    for (size_t i = 0u; i < out->logical_cpu_count; ++i) {
+        if (out->logical_cpus[i].group_id == group_id &&
+            out->logical_cpus[i].os_id == os_id) return i;
+    }
+    return out->logical_cpu_count;
+}
+
+static size_t add_cpu(pl_processor_topology_snapshot *out,
+                      uint32_t group_id, uint32_t os_id, int online) {
+    size_t found = find_cpu(out, group_id, os_id);
+    if (found < out->logical_cpu_count) {
+        if (online) out->logical_cpus[found].online = 1u;
+        return found;
+    }
+    if (out->logical_cpu_count >= PL_TOPOLOGY_MAX_LOGICAL_CPUS) return SIZE_MAX;
+    found = out->logical_cpu_count++;
+    set_unknown_cpu(&out->logical_cpus[found]);
+    out->logical_cpus[found].logical_id = (uint32_t)found;
+    out->logical_cpus[found].group_id = group_id;
+    out->logical_cpus[found].os_id = os_id;
+    out->logical_cpus[found].online = online ? 1u : 0u;
+    if (online) ++out->online_logical_cpu_count;
+    return found;
+}
+
+static void set_mask_bit(uint64_t mask[PL_TOPOLOGY_MASK_WORDS],
+                         uint32_t logical_id) {
+    if (logical_id < PL_TOPOLOGY_MAX_LOGICAL_CPUS)
+        mask[logical_id / 64u] |= UINT64_C(1) << (logical_id % 64u);
+}
+
+static uint64_t parse_size_bytes(const char *text) {
+    char *end = NULL;
+    unsigned long long amount;
+    if (text == NULL || text[0] == '\0') return 0u;
+    errno = 0;
+    amount = strtoull(text, &end, 10);
+    if (errno != 0 || end == text) return 0u;
+    while (*end == ' ' || *end == '\t') ++end;
+    if (*end == 'K' || *end == 'k') amount *= 1024ULL;
+    else if (*end == 'M' || *end == 'm') amount *= 1024ULL * 1024ULL;
+    else if (*end == 'G' || *end == 'g') amount *= 1024ULL * 1024ULL * 1024ULL;
+    if (amount > UINT64_MAX) return 0u;
+    return (uint64_t)amount;
+}
+
+#if defined(__linux__)
+static int read_text(const char *path, char *buffer, size_t capacity) {
+    FILE *file = fopen(path, "r");
+    if (file == NULL) return 0;
+    if (fgets(buffer, (int)capacity, file) == NULL) {
+        (void)fclose(file);
+        return 0;
+    }
+    (void)fclose(file);
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    return 1;
+}
+
+static uint32_t read_u32_file(const char *path) {
+    char buffer[64];
+    char *end = NULL;
+    unsigned long value;
+    if (!read_text(path, buffer, sizeof(buffer))) return PL_TOPOLOGY_UNKNOWN;
+    errno = 0;
+    value = strtoul(buffer, &end, 10);
+    if (errno != 0 || end == buffer || *end != '\0' || value > UINT32_MAX)
+        return PL_TOPOLOGY_UNKNOWN;
+    return (uint32_t)value;
+}
+
+static int parse_cpu_list(const char *text, uint64_t mask[PL_TOPOLOGY_MASK_WORDS],
+                          uint32_t *count) {
+    const char *cursor = text;
+    uint32_t total = 0u;
+    memset(mask, 0, sizeof(uint64_t) * PL_TOPOLOGY_MASK_WORDS);
+    while (*cursor != '\0') {
+        char *end = NULL;
+        unsigned long first, last;
+        while (*cursor == ',' || isspace((unsigned char)*cursor)) ++cursor;
+        if (*cursor == '\0') break;
+        errno = 0;
+        first = strtoul(cursor, &end, 10);
+        if (errno != 0 || end == cursor || first >= PL_TOPOLOGY_MAX_LOGICAL_CPUS)
+            return 0;
+        cursor = end;
+        last = first;
+        if (*cursor == '-') {
+            ++cursor;
+            errno = 0;
+            last = strtoul(cursor, &end, 10);
+            if (errno != 0 || end == cursor || last < first ||
+                last >= PL_TOPOLOGY_MAX_LOGICAL_CPUS) return 0;
+            cursor = end;
+        }
+        for (unsigned long cpu = first; cpu <= last; ++cpu) {
+            uint64_t before = mask[cpu / 64u];
+            set_mask_bit(mask, (uint32_t)cpu);
+            if (before != mask[cpu / 64u] ||
+                (before & (UINT64_C(1) << (cpu % 64u))) == 0u) ++total;
+        }
+        if (*cursor != '\0' && *cursor != ',' && !isspace((unsigned char)*cursor))
+            return 0;
+    }
+    if (count != NULL) *count = total;
+    return total != 0u;
+}
+
+static int same_cache(const pl_topology_cache *cache,
+                      uint32_t level, pl_topology_cache_kind kind,
+                      uint64_t size_bytes, uint32_t line_bytes,
+                      const uint64_t mask[PL_TOPOLOGY_MASK_WORDS]) {
+    return cache->level == level && cache->kind == kind &&
+           cache->size_bytes == size_bytes && cache->line_bytes == line_bytes &&
+           memcmp(cache->sharing_mask, mask,
+                  sizeof(uint64_t) * PL_TOPOLOGY_MASK_WORDS) == 0;
+}
+
+static void scan_linux_numa(pl_processor_topology_snapshot *out) {
+    DIR *directory = opendir("/sys/devices/system/node");
+    struct dirent *entry;
+    if (directory == NULL) return;
+    while ((entry = readdir(directory)) != NULL) {
+        unsigned node_id;
+        char *end = NULL;
+        char path[256];
+        char text[512];
+        pl_topology_numa_node node;
+        if (strncmp(entry->d_name, "node", 4u) != 0) continue;
+        errno = 0;
+        node_id = (unsigned)strtoul(entry->d_name + 4u, &end, 10);
+        if (errno != 0 || end == entry->d_name + 4u || *end != '\0') continue;
+        if (out->numa_node_count >= PL_TOPOLOGY_MAX_NUMA_NODES) break;
+        memset(&node, 0, sizeof(node));
+        node.node_id = node_id;
+        node.evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
+        (void)snprintf(path, sizeof(path), "/sys/devices/system/node/%s/cpulist", entry->d_name);
+        if (read_text(path, text, sizeof(text)) &&
+            parse_cpu_list(text, node.logical_mask, &node.logical_count)) {
+            node.evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+            for (size_t i = 0u; i < out->logical_cpu_count; ++i) {
+                const uint32_t id = out->logical_cpus[i].os_id;
+                if (id < PL_TOPOLOGY_MAX_LOGICAL_CPUS &&
+                    (node.logical_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u)
+                    out->logical_cpus[i].numa_node_id = node_id;
+            }
+        }
+        (void)snprintf(path, sizeof(path), "/sys/devices/system/node/%s/meminfo", entry->d_name);
+        if (read_text(path, text, sizeof(text))) {
+            char *total = strstr(text, "MemTotal:");
+            char *free_value = strstr(text, "MemFree:");
+            if (total != NULL) {
+                unsigned long long kib = strtoull(total + 9, NULL, 10);
+                node.memory_total_bytes = (uint64_t)kib * UINT64_C(1024);
+            }
+            if (free_value != NULL) {
+                unsigned long long kib = strtoull(free_value + 8, NULL, 10);
+                node.memory_available_bytes = (uint64_t)kib * UINT64_C(1024);
+            }
+        }
+        out->numa_nodes[out->numa_node_count++] = node;
+    }
+    (void)closedir(directory);
+}
+
+static void scan_linux_caches(pl_processor_topology_snapshot *out) {
+    for (size_t cpu_index = 0u; cpu_index < out->logical_cpu_count; ++cpu_index) {
+        const uint32_t os_id = out->logical_cpus[cpu_index].os_id;
+        char directory_path[256];
+        DIR *directory;
+        struct dirent *entry;
+        (void)snprintf(directory_path, sizeof(directory_path),
+                       "/sys/devices/system/cpu/cpu%u/cache", os_id);
+        directory = opendir(directory_path);
+        if (directory == NULL) continue;
+        while ((entry = readdir(directory)) != NULL) {
+            char path[320];
+            char value[256];
+            uint32_t level, line_bytes, sharing_count = 0u;
+            uint64_t size_bytes;
+            uint64_t mask[PL_TOPOLOGY_MASK_WORDS];
+            pl_topology_cache_kind kind = PL_TOPOLOGY_CACHE_UNKNOWN;
+            pl_topology_cache *cache = NULL;
+            if (strncmp(entry->d_name, "index", 5u) != 0) continue;
+            (void)snprintf(path, sizeof(path), "%s/%s/level", directory_path, entry->d_name);
+            level = read_u32_file(path);
+            (void)snprintf(path, sizeof(path), "%s/%s/type", directory_path, entry->d_name);
+            if (read_text(path, value, sizeof(value))) {
+                if (strcmp(value, "Data") == 0) kind = PL_TOPOLOGY_CACHE_DATA;
+                else if (strcmp(value, "Instruction") == 0) kind = PL_TOPOLOGY_CACHE_INSTRUCTION;
+                else if (strcmp(value, "Unified") == 0) kind = PL_TOPOLOGY_CACHE_UNIFIED;
+            }
+            (void)snprintf(path, sizeof(path), "%s/%s/size", directory_path, entry->d_name);
+            size_bytes = read_text(path, value, sizeof(value)) ? parse_size_bytes(value) : 0u;
+            (void)snprintf(path, sizeof(path), "%s/%s/coherency_line_size", directory_path, entry->d_name);
+            line_bytes = read_u32_file(path);
+            (void)snprintf(path, sizeof(path), "%s/%s/shared_cpu_list", directory_path, entry->d_name);
+            if (!read_text(path, value, sizeof(value)) ||
+                !parse_cpu_list(value, mask, &sharing_count)) continue;
+            for (size_t i = 0u; i < out->cache_count; ++i) {
+                if (same_cache(&out->caches[i], level, kind, size_bytes,
+                               line_bytes, mask)) {
+                    cache = &out->caches[i];
+                    break;
+                }
+            }
+            if (cache == NULL) {
+                if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) continue;
+                cache = &out->caches[out->cache_count];
+                memset(cache, 0, sizeof(*cache));
+                cache->cache_id = out->cache_count;
+                cache->level = level;
+                cache->kind = kind;
+                cache->size_bytes = size_bytes;
+                cache->line_bytes = line_bytes;
+                memcpy(cache->sharing_mask, mask, sizeof(mask));
+                cache->sharing_count = sharing_count;
+                cache->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+                ++out->cache_count;
+            }
+        }
+        (void)closedir(directory);
+    }
+}
+
+static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
+    DIR *directory = opendir("/sys/devices/system/cpu");
+    struct dirent *entry;
+    struct utsname system_info;
+    if (directory == NULL) return PL_TOPOLOGY_IO_ERROR;
+    while ((entry = readdir(directory)) != NULL) {
+        char *end = NULL;
+        unsigned long os_id;
+        char path[256];
+        pl_topology_logical_cpu *cpu;
+        size_t index;
+        if (strncmp(entry->d_name, "cpu", 3u) != 0 ||
+            !isdigit((unsigned char)entry->d_name[3])) continue;
+        errno = 0;
+        os_id = strtoul(entry->d_name + 3u, &end, 10);
+        if (errno != 0 || end == entry->d_name + 3u || *end != '\0' ||
+            os_id >= PL_TOPOLOGY_MAX_LOGICAL_CPUS) continue;
+        index = add_cpu(out, 0u, (uint32_t)os_id, 1);
+        if (index == SIZE_MAX) { (void)closedir(directory); return PL_TOPOLOGY_LIMIT_EXCEEDED; }
+        cpu = &out->logical_cpus[index];
+        (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/online", os_id);
+        cpu->online = (uint8_t)(read_u32_file(path) == 0u ? 0u : 1u);
+        (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/topology/physical_package_id", os_id);
+        cpu->package_id = read_u32_file(path);
+        (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/topology/die_id", os_id);
+        cpu->die_id = read_u32_file(path);
+        (void)snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%lu/topology/core_id", os_id);
+        cpu->core_id = read_u32_file(path);
+        if (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
+            cpu->core_id != PL_TOPOLOGY_UNKNOWN)
+            cpu->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+        else cpu->evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
+    }
+    (void)closedir(directory);
+    out->online_logical_cpu_count = 0u;
+    for (size_t i = 0u; i < out->logical_cpu_count; ++i)
+        if (out->logical_cpus[i].online != 0u) ++out->online_logical_cpu_count;
+    scan_linux_numa(out);
+    scan_linux_caches(out);
+    if (uname(&system_info) == 0) set_string(out->platform_release, sizeof(out->platform_release), system_info.release);
+    return PL_TOPOLOGY_OK;
+}
+#endif
+
+#if defined(_WIN32)
+static size_t find_or_add_windows_mask(pl_processor_topology_snapshot *out,
+                                       WORD group, KAFFINITY mask,
+                                       uint32_t package_id, uint32_t core_id,
+                                       uint32_t numa_id, int cache_record,
+                                       uint32_t cache_level, uint64_t cache_size,
+                                       uint32_t line_size, pl_topology_cache_kind cache_kind) {
+    for (unsigned bit = 0u; bit < sizeof(KAFFINITY) * 8u; ++bit) {
+        if ((mask & ((KAFFINITY)1u << bit)) != 0u) {
+            size_t index = add_cpu(out, (uint32_t)group, bit, 1);
+            pl_topology_logical_cpu *cpu;
+            if (index == SIZE_MAX) return SIZE_MAX;
+            cpu = &out->logical_cpus[index];
+            if (package_id != PL_TOPOLOGY_UNKNOWN) cpu->package_id = package_id;
+            if (core_id != PL_TOPOLOGY_UNKNOWN) cpu->core_id = core_id;
+            if (numa_id != PL_TOPOLOGY_UNKNOWN) cpu->numa_node_id = numa_id;
+            cpu->evidence = (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
+                             cpu->core_id != PL_TOPOLOGY_UNKNOWN)
+                                ? PL_TOPOLOGY_EVIDENCE_OBSERVED
+                                : PL_TOPOLOGY_EVIDENCE_PARTIAL;
+            if (cache_record) {
+                pl_topology_cache *cache = NULL;
+                for (size_t c = 0u; c < out->cache_count; ++c) {
+                    if (out->caches[c].level == cache_level &&
+                        out->caches[c].size_bytes == cache_size &&
+                        out->caches[c].line_bytes == line_size &&
+                        out->caches[c].kind == cache_kind &&
+                        (out->caches[c].sharing_mask[index / 64u] &
+                         (UINT64_C(1) << (index % 64u))) != 0u) {
+                        cache = &out->caches[c];
+                        break;
+                    }
+                }
+                if (cache == NULL && out->cache_count < PL_TOPOLOGY_MAX_CACHES) {
+                    cache = &out->caches[out->cache_count];
+                    memset(cache, 0, sizeof(*cache));
+                    cache->cache_id = out->cache_count++;
+                    cache->level = cache_level;
+                    cache->size_bytes = cache_size;
+                    cache->line_bytes = line_size;
+                    cache->kind = cache_kind;
+                    cache->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+                }
+                if (cache != NULL) {
+                    set_mask_bit(cache->sharing_mask, (uint32_t)index);
+                    ++cache->sharing_count;
+                }
+            }
+        }
+    }
+    return 0u;
+}
+
+static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
+    DWORD bytes = 0u;
+    SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *records = NULL;
+    uint32_t core_id = 0u;
+    uint32_t package_id = 0u;
+    uint32_t numa_id = 0u;
+    if (!GetLogicalProcessorInformationEx(RelationAll, NULL, &bytes) &&
+        GetLastError() != ERROR_INSUFFICIENT_BUFFER) return PL_TOPOLOGY_IO_ERROR;
+    if (bytes == 0u || bytes > 16u * 1024u * 1024u) return PL_TOPOLOGY_LIMIT_EXCEEDED;
+    records = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *)malloc(bytes);
+    if (records == NULL) return PL_TOPOLOGY_IO_ERROR;
+    if (!GetLogicalProcessorInformationEx(RelationAll, records, &bytes)) {
+        free(records);
+        return PL_TOPOLOGY_IO_ERROR;
+    }
+    for (DWORD offset = 0u; offset < bytes;) {
+        SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *item =
+            (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *)((unsigned char *)records + offset);
+        if (item->Size == 0u || offset + item->Size > bytes) {
+            free(records);
+            return PL_TOPOLOGY_IO_ERROR;
+        }
+        if (item->Relationship == RelationProcessorPackage) {
+            for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
+                (void)find_or_add_windows_mask(out,
+                    item->Processor.GroupMask[i].Group,
+                    item->Processor.GroupMask[i].Mask,
+                    package_id, PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+            }
+            ++package_id;
+        } else if (item->Relationship == RelationProcessorCore) {
+            for (WORD i = 0u; i < item->Processor.GroupCount; ++i) {
+                (void)find_or_add_windows_mask(out,
+                    item->Processor.GroupMask[i].Group,
+                    item->Processor.GroupMask[i].Mask,
+                    PL_TOPOLOGY_UNKNOWN, core_id, PL_TOPOLOGY_UNKNOWN,
+                    0, 0u, 0u, 0u, PL_TOPOLOGY_CACHE_UNKNOWN);
+            }
+            ++core_id;
+        } else if (item->Relationship == RelationNumaNode) {
+            (void)find_or_add_windows_mask(out,
+                item->NumaNode.GroupMask.Group,
+                item->NumaNode.GroupMask.Mask,
+                PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                item->NumaNode.NodeNumber, 0, 0u, 0u, 0u,
+                PL_TOPOLOGY_CACHE_UNKNOWN);
+            if (out->numa_node_count < PL_TOPOLOGY_MAX_NUMA_NODES) {
+                pl_topology_numa_node *node = &out->numa_nodes[out->numa_node_count++];
+                memset(node, 0, sizeof(*node));
+                node->node_id = item->NumaNode.NodeNumber;
+                node->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+            }
+        } else if (item->Relationship == RelationCache) {
+            pl_topology_cache_kind kind = PL_TOPOLOGY_CACHE_UNKNOWN;
+            if (item->Cache.Type == CacheData) kind = PL_TOPOLOGY_CACHE_DATA;
+            else if (item->Cache.Type == CacheInstruction) kind = PL_TOPOLOGY_CACHE_INSTRUCTION;
+            else if (item->Cache.Type == CacheUnified) kind = PL_TOPOLOGY_CACHE_UNIFIED;
+            (void)find_or_add_windows_mask(out,
+                item->Cache.GroupMask.Group, item->Cache.GroupMask.Mask,
+                PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                1, item->Cache.Level, item->Cache.CacheSize,
+                item->Cache.LineSize, kind);
+        }
+        offset += item->Size;
+    }
+    free(records);
+    out->online_logical_cpu_count = out->logical_cpu_count;
+    return out->logical_cpu_count == 0u ? PL_TOPOLOGY_IO_ERROR : PL_TOPOLOGY_OK;
+}
+#endif
+
+pl_topology_status pl_processor_topology_validate(
+    const pl_processor_topology_snapshot *snapshot) {
+    if (snapshot == NULL) return PL_TOPOLOGY_INVALID_ARGUMENT;
+    if (snapshot->generation == 0u || snapshot->logical_cpu_count == 0u ||
+        snapshot->logical_cpu_count > PL_TOPOLOGY_MAX_LOGICAL_CPUS ||
+        snapshot->online_logical_cpu_count > snapshot->logical_cpu_count ||
+        snapshot->cache_count > PL_TOPOLOGY_MAX_CACHES ||
+        snapshot->numa_node_count > PL_TOPOLOGY_MAX_NUMA_NODES)
+        return PL_TOPOLOGY_LIMIT_EXCEEDED;
+    for (uint32_t i = 0u; i < snapshot->logical_cpu_count; ++i) {
+        const pl_topology_logical_cpu *cpu = &snapshot->logical_cpus[i];
+        if (cpu->logical_id != i || cpu->online > 1u ||
+            cpu->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            return PL_TOPOLOGY_INVALID_REFERENCE;
+        for (uint32_t j = i + 1u; j < snapshot->logical_cpu_count; ++j) {
+            if (cpu->group_id == snapshot->logical_cpus[j].group_id &&
+                cpu->os_id == snapshot->logical_cpus[j].os_id)
+                return PL_TOPOLOGY_DUPLICATE_CPU;
+        }
+    }
+    for (uint32_t i = 0u; i < snapshot->cache_count; ++i) {
+        const pl_topology_cache *cache = &snapshot->caches[i];
+        uint32_t count = 0u;
+        for (size_t word = 0u; word < PL_TOPOLOGY_MASK_WORDS; ++word) {
+            uint64_t bits = cache->sharing_mask[word];
+            while (bits != 0u) { count += (uint32_t)(bits & 1u); bits >>= 1u; }
+        }
+        if (count != cache->sharing_count || cache->level == 0u ||
+            cache->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            return PL_TOPOLOGY_INVALID_MASK;
+        if (snapshot->logical_cpu_count < PL_TOPOLOGY_MAX_LOGICAL_CPUS) {
+            for (uint32_t id = snapshot->logical_cpu_count; id < PL_TOPOLOGY_MAX_LOGICAL_CPUS; ++id) {
+                if ((cache->sharing_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u)
+                    return PL_TOPOLOGY_INVALID_MASK;
+            }
+        }
+    }
+    for (uint32_t i = 0u; i < snapshot->numa_node_count; ++i) {
+        const pl_topology_numa_node *node = &snapshot->numa_nodes[i];
+        uint32_t count = 0u;
+        for (size_t word = 0u; word < PL_TOPOLOGY_MASK_WORDS; ++word) {
+            uint64_t bits = node->logical_mask[word];
+            while (bits != 0u) { count += (uint32_t)(bits & 1u); bits >>= 1u; }
+        }
+        if (count != node->logical_count || node->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED)
+            return PL_TOPOLOGY_INVALID_MASK;
+    }
+    return PL_TOPOLOGY_OK;
+}
+
+pl_topology_status pl_processor_topology_scan(pl_processor_topology_snapshot *out) {
+    if (out == NULL) return PL_TOPOLOGY_INVALID_ARGUMENT;
+    memset(out, 0, sizeof(*out));
+    out->generation = next_generation();
+#if defined(_WIN32)
+    set_string(out->provider, sizeof(out->provider), "Windows");
+    set_string(out->interface_name, sizeof(out->interface_name), "windows-processor-topology-api");
+    {
+        DWORD groups = GetActiveProcessorGroupCount();
+        for (WORD group = 0u; group < groups; ++group) {
+            DWORD active = GetActiveProcessorCount(group);
+            if (active > PL_TOPOLOGY_MAX_LOGICAL_CPUS ||
+                out->logical_cpu_count + active > PL_TOPOLOGY_MAX_LOGICAL_CPUS)
+                return PL_TOPOLOGY_LIMIT_EXCEEDED;
+            for (DWORD cpu = 0u; cpu < active; ++cpu) {
+                if (add_cpu(out, group, cpu, 1) == SIZE_MAX)
+                    return PL_TOPOLOGY_LIMIT_EXCEEDED;
+            }
+        }
+        if (scan_windows(out) != PL_TOPOLOGY_OK) return PL_TOPOLOGY_IO_ERROR;
+    }
+#elif defined(__linux__)
+    set_string(out->provider, sizeof(out->provider), "Linux");
+    set_string(out->interface_name, sizeof(out->interface_name), "linux-sysfs");
+    if (scan_linux(out) != PL_TOPOLOGY_OK) return PL_TOPOLOGY_IO_ERROR;
+#else
+    set_string(out->provider, sizeof(out->provider), "unsupported");
+    set_string(out->interface_name, sizeof(out->interface_name), "unknown");
+    return PL_TOPOLOGY_UNSUPPORTED;
+#endif
+    capture_time(out->captured_at);
+    set_isa_from_profile(out);
+    out->completeness = PL_TOPOLOGY_COMPLETE;
+    for (uint32_t i = 0u; i < out->logical_cpu_count; ++i) {
+        const pl_topology_logical_cpu *cpu = &out->logical_cpus[i];
+        if (cpu->package_id == PL_TOPOLOGY_UNKNOWN ||
+            cpu->core_id == PL_TOPOLOGY_UNKNOWN ||
+            cpu->evidence != PL_TOPOLOGY_EVIDENCE_OBSERVED) {
+            out->completeness = PL_TOPOLOGY_PARTIAL;
+            break;
+        }
+    }
+    if (pl_processor_topology_validate(out) != PL_TOPOLOGY_OK)
+        return PL_TOPOLOGY_INVALID_REFERENCE;
+    return PL_TOPOLOGY_OK;
+}
+
+static int write_optional_u32(FILE *output, uint32_t value) {
+    if (value == PL_TOPOLOGY_UNKNOWN) return fputs("null", output) >= 0;
+    return fprintf(output, "%" PRIu32, value) >= 0;
+}
+
+static int write_json_string(FILE *output, const char *value) {
+    if (fputc('"', output) == EOF) return 0;
+    for (const unsigned char *p = (const unsigned char *)value; *p != 0u; ++p) {
+        if (*p == '"' || *p == '\\') {
+            if (fputc('\\', output) == EOF || fputc(*p, output) == EOF) return 0;
+        } else if (*p < 0x20u) {
+            if (fprintf(output, "\\u%04x", (unsigned)*p) < 0) return 0;
+        } else if (fputc(*p, output) == EOF) return 0;
+    }
+    return fputc('"', output) != EOF;
+}
+
+pl_topology_status pl_processor_topology_write_json(
+    const pl_processor_topology_snapshot *snapshot, FILE *output) {
+    static const char *const feature_names[PL_TOPOLOGY_ISA_FEATURE_COUNT] = {
+        "sse2", "sse4_2", "aes", "avx", "avx2", "avx512f", "fma", "virtualization"
+    };
+    if (output == NULL || pl_processor_topology_validate(snapshot) != PL_TOPOLOGY_OK)
+        return PL_TOPOLOGY_INVALID_ARGUMENT;
+    if (fprintf(output, "{\"schema\":\"%s\",\"version\":2,\"generation\":%" PRIu32
+                 ",\"captured_at\":", PL_TOPOLOGY_SCHEMA, snapshot->generation) < 0 ||
+        !write_json_string(output, snapshot->captured_at) ||
+        fputs(",\"collector\":{\"provider\":", output) < 0 ||
+        !write_json_string(output, snapshot->provider) ||
+        fputs(",\"interface\":", output) < 0 ||
+        !write_json_string(output, snapshot->interface_name) ||
+        fputs(",\"read_only\":true,\"platform_release\":", output) < 0 ||
+        !write_json_string(output, snapshot->platform_release) ||
+        fputs("},\"completeness\":", output) < 0) return PL_TOPOLOGY_IO_ERROR;
+    if (fputs(snapshot->completeness == PL_TOPOLOGY_COMPLETE ? "\"complete\"" : "\"partial\"",
+              output) < 0 ||
+        fprintf(output, ",\"topology\":{\"logical_processor_count\":%" PRIu32
+                ",\"online_logical_processor_count\":%" PRIu32 ",\"logical_processors\":[",
+                snapshot->logical_cpu_count, snapshot->online_logical_cpu_count) < 0)
+        return PL_TOPOLOGY_IO_ERROR;
+    for (uint32_t i = 0u; i < snapshot->logical_cpu_count; ++i) {
+        const pl_topology_logical_cpu *cpu = &snapshot->logical_cpus[i];
+        if ((i != 0u && fputc(',', output) == EOF) ||
+            fprintf(output, "{\"logical_id\":%" PRIu32 ",\"os_id\":%" PRIu32
+                    ",\"group_id\":", cpu->logical_id, cpu->os_id) < 0 ||
+            !write_optional_u32(output, cpu->group_id) ||
+            fputs(",\"online\":", output) < 0 ||
+            fputs(cpu->online ? "true" : "false", output) < 0 ||
+            fputs(",\"package_id\":", output) < 0 ||
+            !write_optional_u32(output, cpu->package_id) ||
+            fputs(",\"die_id\":", output) < 0 ||
+            !write_optional_u32(output, cpu->die_id) ||
+            fputs(",\"core_id\":", output) < 0 ||
+            !write_optional_u32(output, cpu->core_id) ||
+            fputs(",\"numa_node_id\":", output) < 0 ||
+            !write_optional_u32(output, cpu->numa_node_id) ||
+            fputs(cpu->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED
+                    ? ",\"evidence\":\"observed\"}"
+                    : (cpu->evidence == PL_TOPOLOGY_EVIDENCE_PARTIAL
+                       ? ",\"evidence\":\"partially-observed\"}"
+                       : ",\"evidence\":\"unknown\"}"), output) < 0)
+            return PL_TOPOLOGY_IO_ERROR;
+    }
+    if (fputs("],\"caches\":[", output) < 0) return PL_TOPOLOGY_IO_ERROR;
+    for (uint32_t i = 0u; i < snapshot->cache_count; ++i) {
+        const pl_topology_cache *cache = &snapshot->caches[i];
+        if ((i != 0u && fputc(',', output) == EOF) ||
+            fprintf(output, "{\"cache_id\":%" PRIu32 ",\"level\":%" PRIu32
+                    ",\"kind\":\"%s\",\"size_bytes\":%" PRIu64
+                    ",\"line_bytes\":%" PRIu32 ",\"sharing_logical_ids\":[",
+                    cache->cache_id, cache->level,
+                    cache->kind == PL_TOPOLOGY_CACHE_DATA ? "data" :
+                    cache->kind == PL_TOPOLOGY_CACHE_INSTRUCTION ? "instruction" :
+                    cache->kind == PL_TOPOLOGY_CACHE_UNIFIED ? "unified" : "unknown",
+                    cache->size_bytes, cache->line_bytes) < 0) return PL_TOPOLOGY_IO_ERROR;
+        int first = 1;
+        for (uint32_t id = 0u; id < snapshot->logical_cpu_count; ++id) {
+            if ((cache->sharing_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u) {
+                if ((!first && fputc(',', output) == EOF) ||
+                    fprintf(output, "%" PRIu32, id) < 0) return PL_TOPOLOGY_IO_ERROR;
+                first = 0;
+            }
+        }
+        if (fputs(cache->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED
+                    ? "],\"evidence\":\"observed\"}"
+                    : "],\"evidence\":\"partially-observed\"}", output) < 0)
+            return PL_TOPOLOGY_IO_ERROR;
+    }
+    if (fputs("],\"numa_nodes\":[", output) < 0) return PL_TOPOLOGY_IO_ERROR;
+    for (uint32_t i = 0u; i < snapshot->numa_node_count; ++i) {
+        const pl_topology_numa_node *node = &snapshot->numa_nodes[i];
+        if ((i != 0u && fputc(',', output) == EOF) ||
+            fprintf(output, "{\"node_id\":%" PRIu32 ",\"logical_ids\":[", node->node_id) < 0)
+            return PL_TOPOLOGY_IO_ERROR;
+        int first = 1;
+        for (uint32_t id = 0u; id < snapshot->logical_cpu_count; ++id) {
+            if ((node->logical_mask[id / 64u] & (UINT64_C(1) << (id % 64u))) != 0u) {
+                if ((!first && fputc(',', output) == EOF) ||
+                    fprintf(output, "%" PRIu32, id) < 0) return PL_TOPOLOGY_IO_ERROR;
+                first = 0;
+            }
+        }
+        if (fprintf(output, "],\"memory_total_bytes\":%" PRIu64
+                    ",\"memory_available_bytes\":%" PRIu64 ",\"evidence\":\"%s\"}",
+                    node->memory_total_bytes, node->memory_available_bytes,
+                    node->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED ? "observed" : "partially-observed") < 0)
+            return PL_TOPOLOGY_IO_ERROR;
+    }
+    if (fputs("]},\"isa\":{\"architecture\":\"host\",\"vendor\":null,\"model\":null,\"features\":{", output) < 0)
+        return PL_TOPOLOGY_IO_ERROR;
+    for (size_t i = 0u; i < PL_TOPOLOGY_ISA_FEATURE_COUNT; ++i) {
+        const pl_topology_isa_state *feature = &snapshot->isa[i];
+        const char *hardware = feature->hardware_present < 0 ? "null" :
+                               (feature->hardware_present ? "true" : "false");
+        const char *usable = feature->os_usable < 0 ? "null" :
+                             (feature->os_usable ? "true" : "false");
+        if ((i != 0u && fputc(',', output) == EOF) ||
+            fprintf(output, "\"%s\":{\"hardware_present\":%s,\"os_usable\":%s,\"evidence\":\"%s\"}",
+                    feature_names[i], hardware, usable,
+                    feature->evidence == 2u ? "os-state" :
+                    feature->evidence == 1u ? "cpuid" : "unknown") < 0)
+            return PL_TOPOLOGY_IO_ERROR;
+    }
+    if (fputs("}},\"execution_performed\":false,\"hardware_access_performed\":false,\"processor_state_changed\":false}\n",
+              output) < 0 || ferror(output)) return PL_TOPOLOGY_IO_ERROR;
+    return PL_TOPOLOGY_OK;
+}
+
+const char *pl_topology_status_name(pl_topology_status status) {
+    switch (status) {
+    case PL_TOPOLOGY_OK: return "ok";
+    case PL_TOPOLOGY_INVALID_ARGUMENT: return "invalid-argument";
+    case PL_TOPOLOGY_LIMIT_EXCEEDED: return "limit-exceeded";
+    case PL_TOPOLOGY_DUPLICATE_CPU: return "duplicate-cpu";
+    case PL_TOPOLOGY_INVALID_REFERENCE: return "invalid-reference";
+    case PL_TOPOLOGY_INVALID_MASK: return "invalid-mask";
+    case PL_TOPOLOGY_IO_ERROR: return "io-error";
+    case PL_TOPOLOGY_UNSUPPORTED: return "unsupported";
+    }
+    return "unknown";
+}
