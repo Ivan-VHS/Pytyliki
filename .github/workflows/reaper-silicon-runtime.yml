@@ -1,0 +1,59 @@
+name: Reaper silicon runtime contract
+
+on:
+  pull_request:
+    paths:
+      - "src/silicon_runtime.*"
+      - "tests/test_silicon_runtime.c"
+      - "automation/reaper/silicon_profile.rpr"
+      - "docs/EMBEDDED_C.md"
+      - "docs/EMBEDDED_SILICON*.md"
+      - "CMakeLists.txt"
+      - ".github/workflows/reaper-silicon-runtime.yml"
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "src/silicon_runtime.*"
+      - "tests/test_silicon_runtime.c"
+      - "automation/reaper/silicon_profile.rpr"
+      - "docs/EMBEDDED_C.md"
+      - "docs/EMBEDDED_SILICON*.md"
+      - "CMakeLists.txt"
+      - ".github/workflows/reaper-silicon-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  silicon-runtime:
+    name: C11 silicon runtime and Reaper contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/checkout@v7
+        with:
+          repository: Ivan-VHS/Reaper
+          ref: 0903c60e8831477d98583ab1d2927c5f318f8038
+          path: _deps/Reaper
+      - name: Configure C11 runtime
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - name: Build silicon runtime tests
+        run: cmake --build build --config Release --parallel --target pytyliki-silicon-runtime-tests
+      - name: Run silicon runtime contract
+        run: ctest --test-dir build -C Release --output-on-failure -R '^silicon-runtime-contract-tests$'
+      - name: Check Reaper silicon profile
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/silicon_profile.rpr
+      - name: Execute Reaper silicon profile in VM
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --engine vm automation/reaper/silicon_profile.rpr
+      - name: Verify deterministic Reaper contract report
+        run: |
+          python -c "import json,pathlib; p=json.loads(pathlib.Path('build/reaper-silicon-profile.json').read_text()); assert p['schema']=='pytyliki.silicon-profile.v1'; assert p['runtime_abi']=='0x00010000'; assert p['native_execution'] is False; assert p['mmio']['requires_exact_allowlist'] is True; assert p['machine_code']['default_mode']=='verify_only'; assert p['machine_code']['jit_trampoline'] is False; assert p['patching']['flash_write'] is False; assert p['targets']==['arm-cortex-m','riscv32','x86','x86_64']"

@@ -1,4 +1,5 @@
 #include "embedded.h"
+#include "silicon_runtime.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -163,6 +164,40 @@ int pl_embedded_template_write(const char *path) {
     return fclose(file) == 0 ? 0 : -1;
 }
 
+
+static const char *silicon_arch_name(pl_silicon_arch arch) {
+    switch (arch) {
+    case PL_SILICON_ARCH_ARM_CORTEX_M: return "ARM Cortex-M";
+    case PL_SILICON_ARCH_RISCV32: return "RISC-V 32-bit";
+    case PL_SILICON_ARCH_X86: return "x86";
+    case PL_SILICON_ARCH_X86_64: return "x86_64";
+    case PL_SILICON_ARCH_SIMULATOR: return "HAL simulator";
+    default: return "unknown / unsupported";
+    }
+}
+
+static void print_native_silicon_target(void) {
+    const pl_silicon_arch arch = pl_silicon_native_architecture();
+    printf("Build target: %s\n", silicon_arch_name(arch));
+#if defined(__arm__) && defined(__ARM_ARCH_PROFILE) && (__ARM_ARCH_PROFILE == 'M') && defined(PL_SILICON_ENABLE_CORTEX_M_DWT)
+    puts("Cycle source: Cortex-M DWT CYCCNT (opt-in; verify target support and clock configuration)");
+#elif defined(__riscv) && ((__riscv_xlen == 32) || (__riscv_xlen == 64))
+    puts("Cycle source: RISC-V rdcycle (may be privilege-disabled)");
+#elif defined(_M_X64) || defined(__x86_64__) || defined(_M_IX86) || defined(__i386__)
+    puts("Cycle source: x86 TSC ticks (not guaranteed core cycles; calibrate before conversion)");
+#else
+    puts("Cycle source: no native counter backend for this build target");
+#endif
+#if defined(PL_SILICON_ENABLE_DIRECT_MMIO)
+    puts("Native volatile MMIO callbacks: compiled in; access still requires an exact registered allowlist");
+#else
+    puts("Native volatile MMIO callbacks: disabled (HAL callbacks only)");
+#endif
+    puts("Machine streams: Thumb-16 / RV32I restricted verifier; x86 decoding is not implemented");
+    puts("Native/JIT execution: disabled; RPR32 interpreter is bounded and allowlist-gated");
+    puts("This is build-target metadata only: no board probe, MMIO read/write, firmware or OS setting change.");
+}
+
 static int parse_u64(const char *text, uint64_t *out) {
     char *end = NULL;
     unsigned long long value;
@@ -193,10 +228,15 @@ static void print_profiles(void) {
 int pl_embedded_cli(int argc, char **argv) {
     const char *command;
     if (argc < 2 || !argv) {
-        fprintf(stderr, "Usage: pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n");
+        fprintf(stderr, "Usage: pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c|silicon\n");
         return 2;
     }
     command = argv[1];
+    if (strcmp(command, "silicon") == 0) {
+        if (argc != 2) return 2;
+        print_native_silicon_target();
+        return 0;
+    }
     if (strcmp(command, "profiles") == 0) {
         if (argc != 2) return 2;
         print_profiles();

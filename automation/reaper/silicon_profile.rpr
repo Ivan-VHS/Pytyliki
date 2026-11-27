@@ -1,0 +1,51 @@
+# Reaper-side contract profile for Pytyliki silicon-runtime v1.
+# This describes supported interfaces; it does not access physical hardware.
+
+let silicon_profile = {
+    "schema": "pytyliki.silicon-profile.v1",
+    "runtime_abi": "0x00010000",
+    "targets": ["arm-cortex-m", "riscv32", "x86", "x86_64"],
+    "cycle_sources": {
+        "arm-cortex-m": "DWT_CYCCNT (opt-in)",
+        "riscv32": "rdcycle (privilege-gated)",
+        "x86": "RDTSC (TSC ticks)",
+        "x86_64": "RDTSC (TSC ticks)"
+    },
+    "native_execution": false,
+    "mmio": {
+        "default_enabled": false,
+        "requires_exact_allowlist": true,
+        "requires_board_hal": true
+    },
+    "machine_code": {
+        "default_mode": "verify_only",
+        "thumb16_whitelist": true,
+        "rv32i_whitelist": true,
+        "x86_decoder": false,
+        "jit_trampoline": false
+    },
+    "fault_trace": {
+        "ring": "bounded-spsc",
+        "overflow": "drop-newest",
+        "isr_logging": false
+    },
+    "patching": {
+        "staging_only": true,
+        "crc": "crc16-ccitt",
+        "flash_write": false,
+        "execute_payload": false
+    }
+}
+
+assert(silicon_profile.schema == "pytyliki.silicon-profile.v1", "silicon profile schema mismatch")
+assert(silicon_profile.runtime_abi == "0x00010000", "silicon ABI mismatch")
+assert(size(silicon_profile.targets) == 4, "target matrix mismatch")
+assert(silicon_profile.native_execution == false, "native execution must remain disabled")
+assert(silicon_profile.mmio.requires_exact_allowlist == true, "MMIO allowlist is mandatory")
+assert(silicon_profile.machine_code.default_mode == "verify_only", "verification-only must be default")
+assert(silicon_profile.machine_code.jit_trampoline == false, "JIT trampoline must remain disabled")
+assert(silicon_profile.patching.flash_write == false, "generic patcher must not write Flash")
+
+write_json("build/reaper-silicon-profile.json", silicon_profile)
+emit "Pytyliki silicon-runtime contract: PASS"
+emit silicon_profile
