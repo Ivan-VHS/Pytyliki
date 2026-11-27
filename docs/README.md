@@ -10,6 +10,7 @@ Start with the [project README](../README.md) for product scope, build steps, fi
 
 - [Feature matrix](FEATURES.md) — implemented behavior and explicit limits.
 - [Architecture](ARCHITECTURE.md) — components, ownership and data flow.
+- [Early Mathematics Numerical Workbench v1](EARLY_MATHEMATICS_NUMERICAL_WORKBENCH_V1.md) — proposed checked-count, measurement, geometry and pattern-summary compute profile.
 - [Engineering gates](ENGINEERING.md) — build, quality and safety checks.
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
