@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "processor_topology.h"
+#include "processor_placement.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -210,6 +211,17 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
     const pl_processor_topology_snapshot *topology,
     pl_processor_fabric_node *nodes, size_t node_capacity, size_t *node_count,
     pl_processor_fabric_edge *edges, size_t edge_capacity, size_t *edge_count,
+    pl_processor_fabric_error *error);
+
+/* NUMA/cache-aware advisory placement for READY process nodes in this graph. */
+pl_processor_fabric_status pl_processor_fabric_place_v2(
+    const pl_processor_fabric_model *model,
+    const pl_processor_topology_snapshot *topology,
+    const pl_placement_task *tasks, size_t task_count,
+    pl_placement_pressure *pressure,
+    pl_placement_result *out,
+    pl_processor_fabric_workspace *workspace,
+    pl_processor_fabric_summary *summary,
     pl_processor_fabric_error *error);
 
 /* Serialize a validated summary and plan to a caller-owned JSON buffer. */
