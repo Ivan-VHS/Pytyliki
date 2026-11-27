@@ -16,6 +16,7 @@ extern "C" {
 #define PL_IDE_SESSION_ID_MAX 48u
 
 typedef enum {
+    PL_IDE_MODE_DEFAULT = 0,
     PL_IDE_MODE_INSPECT = 1,
     PL_IDE_MODE_PLAN = 2,
     PL_IDE_MODE_STATIC = 3,
