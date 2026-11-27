@@ -19,6 +19,11 @@ on:
     branches: [main]
     paths:
       - "iron/**"
+      - "omega-null/**"
+      - "schemas/omega-null.v0.schema.json"
+      - "docs/OMEGA_NULL.md"
+      - "tools/validate_omega_null.py"
+      - "tests/test_omega_null_contract.py"
       - "schemas/iron-core.v1.schema.json"
       - "docs/IRON_CORE.md"
       - "docs/clusters/processor-labs.md"
