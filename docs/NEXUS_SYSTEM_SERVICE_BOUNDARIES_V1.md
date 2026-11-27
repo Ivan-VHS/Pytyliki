@@ -4,11 +4,11 @@
 **NEXUS role:** processor, memory and metric evidence provider  
 **Status:** additive federation contract
 
-Pytyliki remains a native C11 processor-systems workstation with a portable CLI and Windows desktop. NEXUS does not convert it into a DuckOS kernel module, memory manager or privileged hardware controller.
+Pytyliki remains a native C11 processor-systems workstation with a portable CLI and Windows desktop. NEXUS does not convert it into a DAK kernel module, memory manager or privileged hardware controller.
 
 ## Service relationships
 
-| DuckOS service / app | Permitted use of Pytyliki | Prohibited inference |
+| DAK service / app | Permitted use of Pytyliki | Prohibited inference |
 |---|---|---|
 | MEMORY_FORGE | Consume bounded processor/memory measurements, arena metrics and exported reports | Pytyliki does not provide page tables, per-process kernel accounting, allocator control, swap mutation or VRAM mapping |
 | DATA_ORCHESTRATOR | Display workload and partition evidence as advisory input | A benchmark does not authorize affinity, priority, scheduler, clock or voltage changes |

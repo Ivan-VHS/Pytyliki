@@ -1,19 +1,31 @@
-# Reference-only memory budget policy for CI.
-# Values are deterministic fixtures, not live MCU telemetry.
+# Reference-only Reaper policy for Pytyliki's native C11 diagnostics.
+# These fixtures are deterministic and are not live CPU or memory telemetry.
 
-craft allocation_fits(used, budget) {
-    yield budget > 0 and used >= 0 and used <= budget
+craft resource_budget_valid(budget, reserved) {
+    when kind(budget) != "number" or kind(reserved) != "number" { yield false }
+    when budget % 1 != 0 or reserved % 1 != 0 { yield false }
+    when budget <= 0 or reserved < 0 { yield false }
+    yield reserved <= budget
 }
 
-craft available_budget(budget, reserved) {
-    when allocation_fits(reserved, budget) {
-        yield budget - reserved
+craft metric_evidence_valid(metric) {
+    # [provider, metric_id, unit, value, minimum, maximum, sample_count, workload_id]
+    when kind(metric) != "list" or size(metric) != 8 { yield false }
+    when kind(metric[0]) != "text" or kind(metric[1]) != "text" or kind(metric[2]) != "text" { yield false }
+    when kind(metric[3]) != "number" or kind(metric[4]) != "number" or kind(metric[5]) != "number" or kind(metric[6]) != "number" { yield false }
+    when kind(metric[7]) != "text" { yield false }
+    when size(metric[0]) == 0 or size(metric[0]) > 64 or size(metric[1]) == 0 or size(metric[1]) > 128 or size(metric[2]) == 0 or size(metric[2]) > 64 or size(metric[7]) == 0 or size(metric[7]) > 128 { yield false }
+    when metric[4] > metric[5] { yield false }
+    when metric[3] < metric[4] or metric[3] > metric[5] { yield false }
+    when metric[6] % 1 != 0 or metric[6] <= 0 or metric[6] > 1000000 { yield false }
+    yield true
+}
+
+craft metrics_comparable(left, right) {
+    when not metric_evidence_valid(left) or not metric_evidence_valid(right) {
+        yield false
     }
-    yield -1
-}
-
-craft valid_layout(flash_used, flash_total, sram_used, sram_total, stack_used, stack_total) {
-    yield allocation_fits(flash_used, flash_total) and allocation_fits(sram_used, sram_total) and allocation_fits(stack_used, stack_total) and stack_used <= sram_used
+    yield left[0] == right[0] and left[1] == right[1] and left[2] == right[2] and left[7] == right[7]
 }
 
 make flash_budget := 524288
@@ -23,33 +35,25 @@ make sram_reserved := 65536
 make stack_budget := 8192
 make stack_reserved := 4096
 
-make available := [
-    available_budget(flash_budget, flash_reserved),
-    available_budget(sram_budget, sram_reserved),
-    available_budget(stack_budget, stack_reserved)
-]
+make cpu_sample := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-a"]
+make memory_sample := ["pytyliki.c11", "memory.used", "bytes", 32768, 0, 131072, 8, "fixture/workload-a"]
+make other_workload := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-b"]
+make other_provider := ["external.probe", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-a"]
+make fractional_samples := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 1.5, "fixture/workload-a"]
+make malformed_metric := ["pytyliki.c11", "cpu.utilization", "percent", "37", 0, 100, 64, "fixture/workload-a"]
 
-assert(available[0] == 393216, "flash headroom must be deterministic")
-assert(available[1] == 65536, "SRAM headroom must be deterministic")
-assert(available[2] == 4096, "stack headroom must be deterministic")
-assert(allocation_fits(0, flash_budget), "zero-byte allocation must fit")
-assert(not allocation_fits(1, 0), "zero budget must reject allocation")
-assert(not allocation_fits(-1, sram_budget), "negative allocation must be rejected")
-assert(not allocation_fits(sram_budget + 1, sram_budget), "over-budget allocation must be rejected")
+make budgets_valid := resource_budget_valid(flash_budget, flash_reserved) and resource_budget_valid(sram_budget, sram_reserved) and resource_budget_valid(stack_budget, stack_reserved)
+make metrics_valid := metric_evidence_valid(cpu_sample) and metric_evidence_valid(memory_sample)
+make workload_isolated := not metrics_comparable(cpu_sample, other_workload)
+make provider_isolated := not metrics_comparable(cpu_sample, other_provider)
 
-make layout_ok := valid_layout(
-    flash_reserved, flash_budget,
-    sram_reserved, sram_budget,
-    stack_reserved, stack_budget
-)
-assert(layout_ok, "reference memory layout must satisfy all budgets")
-assert(not valid_layout(
-    flash_budget + 1, flash_budget,
-    sram_reserved, sram_budget,
-    stack_reserved, stack_budget
-), "overcommitted flash layout must fail")
+assert(not resource_budget_valid(8192.5, 1024), "fractional budgets must be rejected")
+assert(not resource_budget_valid(8192, -1), "negative reservations must be rejected")
+assert(not metric_evidence_valid(fractional_samples), "fractional sample counts must be rejected")
+assert(not metric_evidence_valid(malformed_metric), "wrong metric field types must be rejected")
+assert(not metrics_comparable(cpu_sample, other_provider), "metrics from different providers must not be compared")
 
-when layout_ok {
+when budgets_valid and metrics_valid and workload_isolated and provider_isolated {
     emit "PYTYLIKI_REAPER_POLICY:PASS"
 } otherwise {
     emit "PYTYLIKI_REAPER_POLICY:FAIL"

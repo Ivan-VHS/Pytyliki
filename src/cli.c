@@ -15,7 +15,6 @@
 #include "systems_accel.h"
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
-#include "errors.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -156,9 +155,7 @@ static void usage(void) {
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
-
-         "  pytyliki --profile --json | --suite --repeat N --json\n"
-         "Processor inspection is read-only. Execution workloads are bounded.");
+         "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }
 static void print_berry_core_catalog(void) {
     const pl_berry_core_command *items = NULL;
@@ -219,7 +216,7 @@ static void print_improvement_plan(void) {
     printf("Evidence-gated iteration target: %llu (maximum %llu)\n",
            (unsigned long long)PL_IMPROVEMENT_DEFAULT_ITERATIONS,
            (unsigned long long)PL_IMPROVEMENT_MAX_ITERATIONS);
-    puts("The 66,666,666x ambition is not a guaranteed multiplier; progress requires measured evidence.");
+    puts("The performance ambition is not a guaranteed multiplier; progress requires measured evidence.");
     puts("Integration requires human approval. This command displays the plan; it does not rewrite or merge code.");
 }
 static void print_system_enhancements(void) {
@@ -344,19 +341,6 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
-    if (argc > 1 && strcmp(argv[1], "--explain") == 0) {
-        if (argc != 3) {
-            fputs("Usage: pytyliki --explain ERROR_CODE\n", stderr);
-            return 2;
-        }
-        const pl_error_entry *entry = pl_error_find(argv[2]);
-        if (!entry) {
-            fprintf(stderr, "Unknown Pytyliki error code: %s\n", argv[2]);
-            return 2;
-        }
-        pl_error_print(stdout, entry);
-        return ferror(stdout) ? 1 : 0;
-    }
     if (argc > 1) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;

@@ -1,34 +1,150 @@
 {
-  "schema": "ivan-vhs.project-ladder.v1",
+  "schema": "dak.project-maturity.v1",
   "version": 1,
   "project": "Pytyliki",
   "repository": "Ivan-VHS/Pytyliki",
-  "current_rung": 4,
+  "current_stage": 4,
   "current_name": "Ascension",
   "assessment": "provisional",
   "assessment_date": "2026-11-25",
-  "assessment_basis": "Static review of the repository README and linked feature, architecture or roadmap documentation. Source-level deep audit and CI/test rerun were not performed for this adoption.",
-  "evidence": [
+  "assessment_basis": "Repository README, architecture, source, tests and CI definitions were inspected for the recorded gates. The full project test matrix was not re-run as part of this maturity adoption; this is not a new CI certification.",
+  "stages": [
     {
-      "path": "docs/FEATURES.md",
-      "claim": "The feature matrix documents bounded CPU, benchmark, source-review, memory, metrics, embedded-C and QCS capabilities with a versioned C ABI.",
-      "verification": "documentation_only"
+      "number": 1,
+      "name": "Genesis",
+      "status": "met",
+      "evidence": [
+        {
+          "kind": "scope",
+          "path": "README.md",
+          "claim": "Defines the processor-workstation purpose, users, supported targets and read-only non-goals.",
+          "verification": "documentation_only"
+        }
+      ]
     },
     {
-      "path": "docs/ARCHITECTURE.md",
-      "claim": "The CLI, Win32 GUI, C11 core, safety layer, TRACE and tests are described as an integrated local workflow.",
-      "verification": "documentation_only"
+      "number": 2,
+      "name": "Foundation",
+      "status": "met",
+      "evidence": [
+        {
+          "kind": "architecture",
+          "path": "docs/ARCHITECTURE.md",
+          "claim": "Defines the bounded C11 core, portable CLI and Windows desktop boundaries.",
+          "verification": "documentation_only"
+        },
+        {
+          "kind": "policy",
+          "path": "SECURITY.md",
+          "claim": "Provides repository security and vulnerability-reporting guidance.",
+          "verification": "documentation_only"
+        },
+        {
+          "kind": "build",
+          "path": "CMakeLists.txt",
+          "claim": "Defines the C11 core, CLI, desktop and CTest build targets.",
+          "verification": "documentation_only"
+        },
+        {
+          "kind": "ci",
+          "path": ".github/workflows/ci.yml",
+          "claim": "Builds and tests the project on Linux and Windows and runs sanitizer checks.",
+          "verification": "documentation_only"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "name": "Evolution",
+      "status": "met",
+      "evidence": [
+        {
+          "kind": "source",
+          "path": "src/interop.h",
+          "claim": "Defines the versioned C ABI v1 surface and fixed-width interop records.",
+          "verification": "source_reviewed"
+        },
+        {
+          "kind": "tests",
+          "path": "tests",
+          "claim": "Contains CTest and repository-contract regression tests.",
+          "verification": "documentation_only"
+        },
+        {
+          "kind": "runtime",
+          "path": "CMakeLists.txt",
+          "claim": "Defines the compiled core and CLI targets used by the documented runtime workflow.",
+          "verification": "documentation_only"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "name": "Ascension",
+      "status": "met",
+      "evidence": [
+        {
+          "kind": "integration",
+          "path": "src/interop.h",
+          "claim": "Defines the explicit versioned ABI boundary consumed by Reaper integrations.",
+          "verification": "source_reviewed"
+        },
+        {
+          "kind": "contract_tests",
+          "path": "scripts/check_architecture_contract.py",
+          "claim": "Checks C11, module linkage, CTest registration and bounded architecture invariants.",
+          "verification": "source_reviewed"
+        },
+        {
+          "kind": "ci",
+          "path": ".github/workflows/ci.yml",
+          "claim": "Runs architecture-contract checks and native build/test jobs in CI.",
+          "verification": "documentation_only"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "name": "Vanguard",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "number": 6,
+      "name": "Frontier",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "number": 7,
+      "name": "Dominion",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "number": 8,
+      "name": "Apex",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "number": 9,
+      "name": "Zenith",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "number": 10,
+      "name": "Singularity",
+      "status": "pending",
+      "evidence": []
     }
   ],
-  "limitations": [
-    "Catalogue counts are inventories, not certification or proof of every listed capability.",
-    "No test or CI workflow was re-run during ladder adoption."
-  ],
-  "next_rung": 5,
+  "next_stage": 5,
   "next_gate": [
-    "Run the declared C11 core and ABI target/compiler matrix in CI.",
-    "Preserve bounded behavior with boundary, failure and ABI compatibility tests on each supported target.",
-    "Record repeatable performance baselines with workload, hardware and measurement method."
+    "Exercise the primary C11 core and CLI on each declared x86-64 target in CI.",
+    "Record compiler-matrix, sanitizer and repeatable resource/performance evidence.",
+    "Keep hardware inspection read-only and tie every target claim to named evidence."
   ],
   "semver_independent": true
 }

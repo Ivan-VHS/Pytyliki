@@ -1,6 +1,6 @@
 # Mora integration · Pytyliki
 
-Pytyliki's Win32 workstation reads its desktop page, surface, header, log, selection, border and primary-action colors from `src/mora_theme.h`. The shared neutral surfaces align with DuckOS Imperial Noir & Glass; the processor/telemetry layer keeps its specialist cyan measurement identity.
+Pytyliki's Win32 workstation reads its desktop page, surface, header, log, selection, border and primary-action colors from `src/mora_theme.h`. The shared neutral surfaces align with DAK Imperial Noir & Glass; the processor/telemetry layer keeps its specialist cyan measurement identity.
 
 The processor data model, measurement paths, command IDs, read-only behavior and native window layout remain unchanged. Mora supplies the shared desktop frame and action language; Pytyliki keeps its cyan processor/telemetry identity where those colors encode domain information.
 

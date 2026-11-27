@@ -1,29 +1,23 @@
-# Project Evolution Ladder — Pytyliki
+# Pytyliki project maturity
 
-**Current rung:** 04 — **Ascension**  
-**Assessment:** Provisional documentation review · 25 November 2026  
-**Next rung:** 05 — **Vanguard**
+**Current stage:** 04 — Ascension  
+**Assessment:** provisional  
+**Next stage:** 05 — Vanguard  
+**Canonical ladder:** [DAK Engineering Maturity Ladder](https://github.com/Ivan-VHS/DAK/blob/main/docs/PROJECT_EVOLUTION_LADDER.md)  
+**Machine record:** [`.github/project-ladder.v1.json`](../.github/project-ladder.v1.json)
 
-This is a project-level maturity snapshot under the [canonical Ivan-VHS Project Evolution Ladder](https://github.com/Ivan-VHS/DuckOS/blob/main/docs/PROJECT_EVOLUTION_LADDER.md). It does not replace capability statuses, release versioning or domain-specific stage names. SemVer remains unchanged.
+The recorded stage is the highest cumulative gate currently supported by repository evidence. It is not a release-quality score and does not imply that later-stage capabilities exist.
 
-## Evidence considered
+## Next gate — Vanguard
 
-- [`docs/FEATURES.md`](https://github.com/Ivan-VHS/Pytyliki/blob/main/docs/FEATURES.md) — The feature matrix documents bounded CPU, benchmark, source-review, memory, metrics, embedded-C and QCS capabilities with a versioned C ABI.
-- [`docs/ARCHITECTURE.md`](https://github.com/Ivan-VHS/Pytyliki/blob/main/docs/ARCHITECTURE.md) — The CLI, Win32 GUI, C11 core, safety layer, TRACE and tests are described as an integrated local workflow.
+- Exercise the primary C11 core and CLI on each declared x86-64 target in CI.
+- Record compiler-matrix, sanitizer and repeatable resource/performance evidence.
+- Keep hardware inspection read-only and tie every target claim to named evidence.
 
-The initial rung is **provisional**: it was assigned from documented implementation boundaries. No source-level deep audit, test run or CI rerun was performed as part of ladder adoption. It is not a new certification and must not upgrade individual capability statuses.
+## Assessment limits
 
-## Known limits
+This record is provisional because the full target build, test matrix and relevant integration workflow were not re-run during ladder adoption. Existing documentation and CI definitions are evidence references, not a new certification.
 
-- Catalogue counts are inventories, not certification or proof of every listed capability.
-- No test or CI workflow was re-run during ladder adoption.
+## Promotion procedure
 
-## Next promotion gate — 05 Vanguard
-
-- Run the declared C11 core and ABI target/compiler matrix in CI.
-- Preserve bounded behavior with boundary, failure and ABI compatibility tests on each supported target.
-- Record repeatable performance baselines with workload, hardware and measurement method.
-
-## Machine-readable record
-
-The [`.github/project-ladder.v1.json`](https://github.com/Ivan-VHS/Pytyliki/blob/main/.github/project-ladder.v1.json) file is the repository-owned record. Update it in the same PR as a material change to project scope, runtime, integration boundaries or acceptance evidence. Promote only when the full cumulative gate is supported by source and reproducible verification.
+Update this record in the same pull request as implementation. A stage may be marked `met` only when every required evidence category is linked to an existing repository artifact. `verified` additionally requires a pinned commit, workflow, environment, CI run URL, passing test evidence and passing CI evidence. Higher stages remain pending until all lower cumulative gates remain satisfied.

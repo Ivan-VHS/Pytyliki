@@ -1,6 +1,6 @@
-# 666-rule implementation profile
+# Engineering Constitution Implementation Profile
 
-The profile is a crosswalk, not a claim that 666 capabilities exist.
+This profile maps the engineering constitution to evidence-backed implementation status. It does not claim that every capability is implemented.
 
 | Rule range | Domain | State vocabulary |
 |---|---|---|

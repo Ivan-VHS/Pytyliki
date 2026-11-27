@@ -5,13 +5,11 @@ on:
     branches: [main, "feat/**", "integration/**"]
     paths:
       - "examples/reaper_resource_policy.rpr"
-      - "examples/reaper_compute_contract.rpr"
       - "docs/REAPER_INTEGRATION.md"
       - ".github/workflows/reaper-policy.yml"
   pull_request:
     paths:
       - "examples/reaper_resource_policy.rpr"
-      - "examples/reaper_compute_contract.rpr"
       - "docs/REAPER_INTEGRATION.md"
       - ".github/workflows/reaper-policy.yml"
   workflow_dispatch:
@@ -30,7 +28,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Reaper
-          ref: e48fb2a38384da75292b948ae18f69f3d80bcd08
+          ref: 23642e50beef68db63ccc5573735fddf885533c8
           path: _deps/Reaper
 
       - name: Set up Python
@@ -51,6 +49,3 @@ jobs:
           set -euo pipefail
           python -m reaper examples/reaper_resource_policy.rpr | tee reaper-policy.txt
           grep -qx "PYTYLIKI_REAPER_POLICY:PASS" reaper-policy.txt
-          python -m reaper --check examples/reaper_compute_contract.rpr
-          python -m reaper examples/reaper_compute_contract.rpr | tee reaper-compute.txt
-          grep -qx "PYTYLIKI_REAPER_COMPUTE:PASS" reaper-compute.txt

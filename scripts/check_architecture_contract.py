@@ -19,7 +19,7 @@ def main() -> int:
     cmake_path = ROOT / "CMakeLists.txt"
     architecture_path = ROOT / "docs" / "ARCHITECTURE.md"
     contract_path = ROOT / "docs" / "ARCHITECTURE_66.md"
-    constitution_path = ROOT / "docs" / "CONSTITUTION_666_PROFILE.md"
+    constitution_path = ROOT / "docs" / "ENGINEERING_CONSTITUTION_PROFILE.md"
     evolution_path = ROOT / "docs" / "RECURSIVE_EVOLUTION.md"
 
     for path in (cmake_path, architecture_path, contract_path, constitution_path, evolution_path):
@@ -49,11 +49,11 @@ def main() -> int:
         require(term in contract, f"architecture contract must include '{term}'")
     for term in ("1–111", "112–222", "223–333", "334–444", "445–555", "556–666",
                  "implemented", "partial", "planned", "not applicable", "exact pr head"):
-        require(term in constitution, f"666-rule profile must include '{term}'")
+        require(term in constitution, f"engineering constitution profile must include '{term}'")
     require("human maintainer authorizes merge" in evolution,
             "recursive evolution policy must retain human-controlled promotion")
 
-    print("architecture contract: PASS (C11 core, CTest, policy, bounded/read-only scope, 666-rule profile)")
+    print("architecture contract: PASS (C11 core, CTest, policy, bounded/read-only scope, engineering constitution profile)")
     return 0
 
 
