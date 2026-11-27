@@ -25,7 +25,7 @@ Pytyliki 在本地采集并分析处理器系统信息。C11 核心与命令行�
 - **硬件语法结构：**C11 结构解析前端为二十种 Pytyliki 硬件构造提供目录和边界检查；尚未实现类型检查、编译、执行、RTL 综合或硬件访问。
 - **SystemArray 符号运算符注册表：**C11 元数据前端描述 13 个运算符、类型签名和效果约束；尚未实现重载解析、计划求值或硬件访问。
 - **MOS 开关级模型：**有界 N/P 型 MOS 理想开关网络，显式解析 high、low、floating、contended 和 indeterminate 状态。这是确定性的拓扑仿真，不是模拟/SPICE 仿真，也不访问物理设备。
-- **Processor Fabric v1：**有界 C11 图模型聚合 CPU 层级、寄存器/ISA/地址空间目录、进程池及资源依赖。它验证进程图并生成确定性的建议分配计划，但不会启动任务或控制操作系统调度器。
+- **Processor Fabric v2 实现切片：**Windows/Linux 只读 CPU 拓扑与 ISA 证据收集器、PPF 拓扑图桥接、考虑 NUMA/cache/SMT/内存带宽的建议式 Placement，以及类型化寄存器/地址空间/DMA 描述验证。收集器最多支持 256 个逻辑 CPU；PPF v1 图构建和规划仍受 64 位 affinity mask 限制。参见 `docs/PROCESSOR_FABRIC_IMPLEMENTATION_V2.md`。这些功能在平台 CI 和完整 CTest 通过前仍标记为 partial；不会执行物理 MMIO/DMA 或更改 OS 调度。
 - **System-array 语法前端：**有界 C11 解析器将已记录的框定别名规范化为 `system(array)`；仅做语法验证，不执行源码，也不访问硬件。
 - **数值指标：** 通过稳定的原生 API 提供 C11 向量、距离、几何及二次型运算。
 - **内存工具：** 类型化视图、切片溢出检查、有界 arena、回退检查点和固定块池。
