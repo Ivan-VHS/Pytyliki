@@ -2021,5 +2021,42 @@
       "authority": "no_privilege_elevation",
       "status": "planned"
     }
-  ]
+  ],
+  "signal_palette": {
+    "scope": "waveform_and_electrical_signal_views_only",
+    "theme_independent": true,
+    "states": [
+      {
+        "id": "high",
+        "label": "VCC / logic high",
+        "default_color": "#E53935",
+        "pattern": "solid"
+      },
+      {
+        "id": "low",
+        "label": "GND / logic low",
+        "default_color": "#070707",
+        "pattern": "solid"
+      },
+      {
+        "id": "floating",
+        "label": "floating / high impedance",
+        "default_color": "#2878D0",
+        "pattern": "dashed"
+      },
+      {
+        "id": "contended",
+        "label": "contended",
+        "default_color": "#FFD400",
+        "pattern": "crosshatch"
+      },
+      {
+        "id": "unknown",
+        "label": "unknown / indeterminate",
+        "default_color": "#8B8B8B",
+        "pattern": "dotted"
+      }
+    ],
+    "accessibility": "Every state is labeled and has a non-color visual encoding; users can change the palette without changing signal semantics."
+  }
 }
