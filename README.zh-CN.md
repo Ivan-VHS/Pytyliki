@@ -70,7 +70,7 @@ GCC/Clang 构建可通过 `-DPYTYLIKI_ENABLE_SANITIZERS=ON` 启用 AddressSaniti
 - [基准统计](docs/BENCHMARK_STATISTICS.md) · [Embedded C 参考工作台](docs/EMBEDDED_C.md)
 - [QCS 原生检查](docs/QCS_NATIVE.md) · [文档索引](docs/README.md)
 - [发布流程](docs/RELEASE.md) · [报告封装格式](docs/REPORT_ENVELOPE.md)
-- [Reaper 集成](docs/REAPER_INTEGRATION.md) · [生态共享标准](https://github.com/Ivan-VHS/DAK/blob/main/docs/SHARED_STANDARDS.md)
+- [Reaper 集成](docs/REAPER_INTEGRATION.md) · [生态共享标准](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
 
 ## 安全与贡献
 
