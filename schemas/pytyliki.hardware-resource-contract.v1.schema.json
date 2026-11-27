@@ -1,0 +1,402 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pytyliki.dev/schemas/pytyliki.hardware-resource-contract.v1.schema.json",
+  "title": "Pytyliki Hardware Resource Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "generation",
+    "address_spaces",
+    "memory_regions",
+    "register_banks",
+    "dma_buffers"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.hardware-resource-contract.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "address_spaces": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "address_bits",
+          "endianness",
+          "owner"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "kind": {
+            "enum": [
+              "virtual",
+              "physical",
+              "io-port",
+              "device-bar",
+              "dma-iova"
+            ]
+          },
+          "address_bits": {
+            "enum": [
+              16,
+              20,
+              24,
+              32,
+              40,
+              48,
+              52,
+              64,
+              128
+            ]
+          },
+          "endianness": {
+            "enum": [
+              "little",
+              "big",
+              "target"
+            ]
+          },
+          "owner": {
+            "enum": [
+              "cpu",
+              "device",
+              "shared",
+              "unowned"
+            ]
+          },
+          "device_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 96
+          },
+          "translation_domain": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 96
+          }
+        }
+      }
+    },
+    "memory_regions": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "space_id",
+          "base",
+          "length",
+          "alignment",
+          "permissions",
+          "cache_policy",
+          "owner"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "space_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^0x[0-9A-Fa-f]+$"
+          },
+          "length": {
+            "type": "string",
+            "pattern": "^0x[0-9A-Fa-f]+$"
+          },
+          "alignment": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "permissions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "read",
+                "write",
+                "execute"
+              ]
+            }
+          },
+          "cache_policy": {
+            "enum": [
+              "default",
+              "uncached",
+              "write-combining",
+              "write-through",
+              "write-back",
+              "device"
+            ]
+          },
+          "owner": {
+            "enum": [
+              "cpu",
+              "device",
+              "shared",
+              "unowned"
+            ]
+          },
+          "device_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 96
+          }
+        }
+      }
+    },
+    "register_banks": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "space_id",
+          "region_id",
+          "registers"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "space_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "region_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "registers": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "offset",
+                "width_bits",
+                "access",
+                "volatile",
+                "alignment",
+                "side_effects",
+                "owner"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 96
+                },
+                "offset": {
+                  "type": "string",
+                  "pattern": "^0x[0-9A-Fa-f]+$"
+                },
+                "width_bits": {
+                  "enum": [
+                    8,
+                    16,
+                    32,
+                    64,
+                    128
+                  ]
+                },
+                "access": {
+                  "enum": [
+                    "read-only",
+                    "write-only",
+                    "read-write",
+                    "write-one-to-clear",
+                    "write-one-to-set",
+                    "read-clear"
+                  ]
+                },
+                "volatile": {
+                  "type": "boolean"
+                },
+                "alignment": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "side_effects": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "none",
+                      "acknowledge",
+                      "clear-on-read",
+                      "trigger",
+                      "doorbell",
+                      "reset",
+                      "power-state"
+                    ]
+                  }
+                },
+                "owner": {
+                  "enum": [
+                    "cpu",
+                    "device",
+                    "shared",
+                    "unowned"
+                  ]
+                },
+                "reserved_mask": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^0x[0-9A-Fa-f]+$"
+                },
+                "reset_value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^0x[0-9A-Fa-f]+$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "dma_buffers": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "device_id",
+          "space_id",
+          "base",
+          "length",
+          "alignment",
+          "direction",
+          "coherency",
+          "owner",
+          "state",
+          "generation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "space_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^0x[0-9A-Fa-f]+$"
+          },
+          "length": {
+            "type": "string",
+            "pattern": "^0x[0-9A-Fa-f]+$"
+          },
+          "alignment": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "direction": {
+            "enum": [
+              "to-device",
+              "from-device",
+              "bidirectional"
+            ]
+          },
+          "coherency": {
+            "enum": [
+              "coherent",
+              "non-coherent-explicit-sync",
+              "unknown"
+            ]
+          },
+          "owner": {
+            "enum": [
+              "cpu",
+              "device",
+              "shared"
+            ]
+          },
+          "state": {
+            "enum": [
+              "cpu_owned",
+              "prepared_for_device",
+              "device_owned",
+              "completed_for_cpu",
+              "released"
+            ]
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lease_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 96
+          }
+        }
+      }
+    },
+    "access_performed": {
+      "const": false
+    },
+    "memory_mapped": {
+      "const": false
+    },
+    "dma_submitted": {
+      "const": false
+    }
+  }
+}

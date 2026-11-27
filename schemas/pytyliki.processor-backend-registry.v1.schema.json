@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pytyliki.dev/schemas/pytyliki.processor-backend-registry.v1.schema.json",
+  "title": "Pytyliki Processor Backend Registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "generation",
+    "backends"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.processor-backend-registry.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "backends": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "input_schema",
+          "output_artifacts",
+          "targets",
+          "abi_contracts",
+          "deterministic",
+          "execution_performed"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "kind": {
+            "enum": [
+              "native-assembler",
+              "native-linker",
+              "emulator",
+              "rtl",
+              "formal-verification"
+            ]
+          },
+          "status": {
+            "enum": [
+              "specified",
+              "prototype",
+              "implemented",
+              "qualified",
+              "disabled"
+            ]
+          },
+          "input_schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "output_artifacts": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "targets": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "maxLength": 96
+            }
+          },
+          "abi_contracts": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "maxLength": 96
+            }
+          },
+          "deterministic": {
+            "type": "boolean"
+          },
+          "toolchain": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 128
+          },
+          "evidence_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "maxLength": 256
+            }
+          },
+          "execution_performed": {
+            "const": false
+          }
+        }
+      }
+    },
+    "registry_is_implementation_proof": {
+      "const": false
+    }
+  }
+}
