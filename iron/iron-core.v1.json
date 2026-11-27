@@ -10,9 +10,9 @@
   },
   "baseline": {
     "branch": "main",
-    "commit": "43dd56fa39b960de129aa98bcca87aec53f7e1cb",
-    "reviewed_at": "2026-11-27",
-    "current_product_boundary": "The inspected main branch is a C11 processor-systems workstation with read-only host discovery, bounded local measurements, source diagnostics, memory utilities, numerical metrics and reference/simulated embedded models. It is not yet a complete general-purpose hardware programming language or a physical hardware-control environment.",
+    "commit": "41edd2bd33fbf554c8a8cbdc1ddd97847e1f9a53",
+    "reviewed_at": "2026-11-28",
+    "current_product_boundary": "The audited main branch is a C11 processor-systems workstation with read-only host discovery, bounded measurements, source diagnostics, memory utilities, numerical metrics, reference/simulated embedded models, and a merged capability-gated low-level C11 target contract. That target contract provides target descriptors, bounded non-overlapping memory maps, RAM/MMIO backend callbacks, capability checks, clock/power requests and a bounded IRQ registry tested with a fake backend. It does not ship a physical target backend, production kernel driver, complete typed hardware-language frontend, MMU, DMA engine or universal device map.",
     "rule_count": 100,
     "default_status": "planned"
   },
@@ -172,6 +172,7 @@
         "docs/PROCESSOR_TAXONOMY.md"
       ],
       "tracking_prs": [
+        281,
         282
       ]
     },
@@ -226,8 +227,13 @@
       "id": "pyty.mmio",
       "responsibility": "Typed MMIO maps and capability-bounded device register access.",
       "owner": "duck-os",
-      "status": "open_pr",
-      "evidence": [],
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
       "tracking_prs": [
         285,
         287
@@ -245,9 +251,16 @@
       "id": "pyty.irq",
       "responsibility": "Interrupt routing, vector and execution-context contracts.",
       "owner": "duck-os",
-      "status": "planned",
-      "evidence": [],
-      "tracking_prs": []
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "tracking_prs": [
+        287
+      ]
     },
     {
       "id": "pyty.timer",
@@ -305,9 +318,17 @@
       "id": "pyty.power",
       "responsibility": "Power/thermal observation and vendor-specific control adapters.",
       "owner": "duck-os",
-      "status": "planned",
-      "evidence": [],
-      "tracking_prs": []
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "tracking_prs": [
+        285,
+        287
+      ]
     },
     {
       "id": "pyty.logic",
@@ -485,6 +506,61 @@
       "status": "research",
       "evidence": [],
       "tracking_prs": []
+    },
+    {
+      "id": "pyty.target",
+      "responsibility": "Capability-gated target descriptor, bounded memory map, RAM/MMIO backend, clock/power request and IRQ registry contract.",
+      "owner": "duck-os",
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.hardware-syntax",
+      "responsibility": "Bounded structural hardware construct and Iron marker frontend, stable source spans and AST interchange; no type/effect lowering is implied.",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        299,
+        300,
+        304
+      ]
+    },
+    {
+      "id": "pyty.mos-switch",
+      "responsibility": "Ideal MOS switch-topology model for rail reachability, floating/contended/indeterminate nodes and digital switch behavior.",
+      "owner": "board-backend",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        302
+      ]
+    },
+    {
+      "id": "pyty.processor-domain",
+      "responsibility": "Processor and physical-model source forms covering target profiles, pipelines, address spaces, DMA ownership and scientific model specimens.",
+      "owner": "pytyliki",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        304
+      ]
+    },
+    {
+      "id": "pyty.neuro",
+      "responsibility": "Bounded neural-network model/inference/training framework registry, distinct from physical BCI sensor acquisition.",
+      "owner": "pytyliki",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        295
+      ]
     }
   ],
   "rules": [
@@ -995,8 +1071,13 @@
       "acceptance": "Register access validates mapping bounds, alignment, width, permission and reserved bits before touching the backend.",
       "module": "pyty.mmio",
       "owner": "duck-os",
-      "status": "open_pr",
-      "evidence": [],
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
       "tracking_prs": [
         285,
         287
@@ -1032,11 +1113,18 @@
       "title": "Interrupt-controller integration",
       "requirement": "Model vector tables, interrupt routing, masking, priorities, nesting and architecture-specific entry constraints.",
       "acceptance": "Target tests validate vector bounds and priority rules; privileged registration is available only via a trusted OS/board backend.",
-      "module": "pyty.mmio",
+      "module": "pyty.irq",
       "owner": "duck-os",
-      "status": "planned",
-      "evidence": [],
-      "tracking_prs": []
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "tracking_prs": [
+        287
+      ]
     },
     {
       "id": "IRON-045",
@@ -1044,10 +1132,15 @@
       "title": "Clock and watchdog controls",
       "requirement": "Inspect and, where explicitly supported, configure timers, clock sources and watchdogs through a board-specific HAL.",
       "acceptance": "Every write requires an exact board/revision profile, capability, safe-state plan and simulator/target conformance test.",
-      "module": "pyty.mmio",
+      "module": "pyty.power",
       "owner": "duck-os",
-      "status": "open_pr",
-      "evidence": [],
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
       "tracking_prs": [
         285,
         287
@@ -1637,7 +1730,11 @@
       "status": "partial",
       "evidence": [
         "src/hw_rules.c",
-        "docs/HARDWARE_RULE_ENGINE.md"
+        "docs/HARDWARE_RULE_ENGINE.md",
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
       ],
       "tracking_prs": []
     },
@@ -1661,8 +1758,14 @@
       "acceptance": "Unprivileged builds cannot silently elevate; privileged adapters are separate, signed/reviewed and target-specific.",
       "module": "pyty.security",
       "owner": "joint",
-      "status": "planned",
-      "evidence": [],
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md",
+        "docs/HARDWARE_RULE_ENGINE.md"
+      ],
       "tracking_prs": []
     },
     {
@@ -1776,6 +1879,15 @@
       "scope": "Reaper-owned processor state model, logical scheduling, replay order and report contracts."
     },
     {
+      "pr": 281,
+      "title": "Integrate Reaper Processor Intelligence",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/281",
+      "branch": "feat/reaper-processor-intelligence-2026-11-27",
+      "base": "main",
+      "state": "open",
+      "scope": "Pinned Reaper-owned processor intelligence policy fixture; data in this report is deterministic fixture evidence, not live hardware telemetry."
+    },
+    {
       "pr": 282,
       "title": "Processor policy and native C11 engine",
       "url": "https://github.com/Ivan-VHS/Pytyliki/pull/282",
@@ -1830,6 +1942,15 @@
       "scope": "Versioned JSON Schema and semantic validation for processor profile/benchmark evidence."
     },
     {
+      "pr": 295,
+      "title": "Six bounded neural C11 frameworks",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/295",
+      "branch": "feat/pytyliki-neuro-framework-suite",
+      "base": "main",
+      "state": "open-draft",
+      "scope": "CPU-only neural model/inference frameworks; not a BCI sensor adapter or direct brain interface."
+    },
+    {
       "pr": 297,
       "title": "PTFR polyglot platform adapters",
       "url": "https://github.com/Ivan-VHS/Pytyliki/pull/297",
@@ -1846,6 +1967,48 @@
       "base": "main",
       "state": "open-draft",
       "scope": "66-profile registry, structural inspection, target validation and inert build planning; not 66 bundled compilers."
+    },
+    {
+      "pr": 299,
+      "title": "Hardware constructs, SystemArray sigils and Iron Core frontend",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/299",
+      "branch": "feat/hardware-construct-syntax-v1",
+      "base": "main",
+      "state": "open",
+      "scope": "Twenty hardware construct forms, structural parser, exact Iron marker framing and speculative-profile specimens; no type/effect checking or execution."
+    },
+    {
+      "pr": 300,
+      "title": "Standalone Iron syntax frontend",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/300",
+      "branch": "feat/iron-syntax-v1",
+      "base": "main",
+      "state": "open",
+      "scope": "Separate bounded parser for the 20 Iron markers; reconcile overlap with the Iron marker parser in PR #299 before both are merged."
+    },
+    {
+      "pr": 302,
+      "title": "MOS switch-level model v1",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/302",
+      "branch": "feat/mos-switch-model-v1",
+      "base": "feat/hardware-construct-syntax-v1",
+      "state": "merged-to-open-branch",
+      "scope": "Ideal MOS switch connectivity model; merged into the still-open PR #299 branch, not main. It is not a continuous analog/SPICE transistor simulator.",
+      "depends_on": [
+        299
+      ]
+    },
+    {
+      "pr": 304,
+      "title": "Processor and physical-model domain",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/304",
+      "branch": "feat/processor-domain-core",
+      "base": "feat/hardware-construct-syntax-v1",
+      "state": "open-draft",
+      "scope": "Structural physical_model and processor-domain specimens; no full nested type checking, Reaper IR lowering, CPU execution or physical simulation.",
+      "depends_on": [
+        299
+      ]
     }
   ],
   "evidence_modes": [
@@ -1868,5 +2031,268 @@
     "No CPU, OS, firmware, driver, voltage, clock or device state is modified by ordinary workstation inspection.",
     "No hardware access is inferred from the presence of syntax, profile catalogue entries or simulator models.",
     "Claims of lowest-level coverage are generated from rule statuses and evidence, not from marketing text."
-  ]
+  ],
+  "related_contracts": {
+    "low_level_contract": {
+      "schema": "pytyliki.low-level-rules.v1",
+      "path": "contracts/pytyliki-low-level-rules.v1.json",
+      "schema_path": "schemas/pytyliki-low-level-rules.v1.schema.json",
+      "rule_count": 100,
+      "status": "merged_in_main",
+      "implementation": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md"
+      ],
+      "summary": "Existing C11 target/memory/bus/IRQ contract. It defines versioned target descriptors, bounded non-overlapping memory maps, capability-separated RAM/MMIO callbacks, bus fences/audit, bounded clock/power requests and fixed-capacity IRQ registration. Tests use a fake backend; no physical target backend ships.",
+      "reuse_policy": "IRON and Omega-Null must reuse this target/capability/memory/bus/IRQ contract and extend it through reviewed adapters. Do not introduce a parallel target descriptor, MMIO permission model, IRQ registry or low-level rule catalogue."
+    },
+    "coverage_crosswalk": [
+      {
+        "iron_rule": "IRON-001",
+        "low_level_rules": [
+          "PLL-033",
+          "PLL-034"
+        ],
+        "relationship": "byte and word representation foundations"
+      },
+      {
+        "iron_rule": "IRON-003",
+        "low_level_rules": [
+          "PLL-032",
+          "PLL-041"
+        ],
+        "relationship": "bit and typed condition foundations"
+      },
+      {
+        "iron_rule": "IRON-006",
+        "low_level_rules": [
+          "PLL-021",
+          "PLL-022",
+          "PLL-023"
+        ],
+        "relationship": "memory extent, lifetime and allocator foundations"
+      },
+      {
+        "iron_rule": "IRON-007",
+        "low_level_rules": [
+          "PLL-002",
+          "PLL-033",
+          "PLL-034"
+        ],
+        "relationship": "target byte order and serialized representation"
+      },
+      {
+        "iron_rule": "IRON-008",
+        "low_level_rules": [
+          "PLL-012",
+          "PLL-027"
+        ],
+        "relationship": "capability and bus effect foundations"
+      },
+      {
+        "iron_rule": "IRON-011",
+        "low_level_rules": [
+          "PLL-032"
+        ],
+        "relationship": "fixed-width bit operations"
+      },
+      {
+        "iron_rule": "IRON-013",
+        "low_level_rules": [
+          "PLL-026"
+        ],
+        "relationship": "register descriptor foundations"
+      },
+      {
+        "iron_rule": "IRON-014",
+        "low_level_rules": [
+          "PLL-005",
+          "PLL-017",
+          "PLL-037"
+        ],
+        "relationship": "privilege, transition and memory permission boundaries"
+      },
+      {
+        "iron_rule": "IRON-015",
+        "low_level_rules": [
+          "PLL-043"
+        ],
+        "relationship": "ABI and clobber foundations"
+      },
+      {
+        "iron_rule": "IRON-031",
+        "low_level_rules": [
+          "PLL-002",
+          "PLL-011",
+          "PLL-035",
+          "PLL-036"
+        ],
+        "relationship": "target address width, region bounds and virtual/physical distinction"
+      },
+      {
+        "iron_rule": "IRON-035",
+        "low_level_rules": [
+          "PLL-013",
+          "PLL-025",
+          "PLL-037"
+        ],
+        "relationship": "fence, cacheability and memory permission foundations"
+      },
+      {
+        "iron_rule": "IRON-038",
+        "low_level_rules": [
+          "PLL-008",
+          "PLL-021",
+          "PLL-024"
+        ],
+        "relationship": "bounded memory, pools and stack layout"
+      },
+      {
+        "iron_rule": "IRON-041",
+        "low_level_rules": [
+          "PLL-011",
+          "PLL-027"
+        ],
+        "relationship": "bounded MMIO region and capability-checked bus access"
+      },
+      {
+        "iron_rule": "IRON-044",
+        "low_level_rules": [
+          "PLL-028"
+        ],
+        "relationship": "bounded non-blocking IRQ registry"
+      },
+      {
+        "iron_rule": "IRON-045",
+        "low_level_rules": [
+          "PLL-016",
+          "PLL-029"
+        ],
+        "relationship": "clock and power-state request foundations"
+      },
+      {
+        "iron_rule": "IRON-052",
+        "low_level_rules": [
+          "PLL-045",
+          "PLL-050",
+          "PLL-051"
+        ],
+        "relationship": "parallel admission, priority and scheduler policy foundations"
+      },
+      {
+        "iron_rule": "IRON-053",
+        "low_level_rules": [
+          "PLL-046",
+          "PLL-047",
+          "PLL-048",
+          "PLL-050"
+        ],
+        "relationship": "concurrency primitive policy foundations"
+      },
+      {
+        "iron_rule": "IRON-055",
+        "low_level_rules": [
+          "PLL-029",
+          "PLL-042"
+        ],
+        "relationship": "clock source and bounded timer foundations"
+      },
+      {
+        "iron_rule": "IRON-059",
+        "low_level_rules": [
+          "PLL-039",
+          "PLL-042",
+          "PLL-077"
+        ],
+        "relationship": "trace, deadline and replay evidence foundations"
+      },
+      {
+        "iron_rule": "IRON-071",
+        "low_level_rules": [
+          "PLL-084"
+        ],
+        "relationship": "layered syntax/IR/target architecture"
+      },
+      {
+        "iron_rule": "IRON-075",
+        "low_level_rules": [
+          "PLL-043"
+        ],
+        "relationship": "ABI and calling-convention rules"
+      },
+      {
+        "iron_rule": "IRON-078",
+        "low_level_rules": [
+          "PLL-001",
+          "PLL-009",
+          "PLL-024",
+          "PLL-059"
+        ],
+        "relationship": "startup, stack and embedded lifecycle foundations"
+      },
+      {
+        "iron_rule": "IRON-081",
+        "low_level_rules": [
+          "PLL-060",
+          "PLL-067",
+          "PLL-079"
+        ],
+        "relationship": "bounded inspection, import and test foundations"
+      },
+      {
+        "iron_rule": "IRON-088",
+        "low_level_rules": [
+          "PLL-073",
+          "PLL-079"
+        ],
+        "relationship": "regression and conformance test foundations"
+      },
+      {
+        "iron_rule": "IRON-089",
+        "low_level_rules": [
+          "PLL-020",
+          "PLL-063",
+          "PLL-077"
+        ],
+        "relationship": "integrity, digest and structured trace provenance"
+      },
+      {
+        "iron_rule": "IRON-091",
+        "low_level_rules": [
+          "PLL-012",
+          "PLL-027",
+          "PLL-037"
+        ],
+        "relationship": "capability catalogue, bus permission and W^X foundations"
+      },
+      {
+        "iron_rule": "IRON-093",
+        "low_level_rules": [
+          "PLL-005",
+          "PLL-017",
+          "PLL-055",
+          "PLL-058"
+        ],
+        "relationship": "privilege, address-space isolation and explicit driver boundary"
+      },
+      {
+        "iron_rule": "IRON-097",
+        "low_level_rules": [
+          "PLL-074",
+          "PLL-075",
+          "PLL-082"
+        ],
+        "relationship": "capability maturity, documentation and reviewed code standards"
+      },
+      {
+        "iron_rule": "IRON-099",
+        "low_level_rules": [
+          "PLL-079"
+        ],
+        "relationship": "test evidence and hardware-in-loop qualification boundary"
+      }
+    ]
+  }
 }
