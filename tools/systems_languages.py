@@ -1,4 +1,4 @@
-"""Read-only 66-slot systems-language and toolchain capability matrix."""
+"""Read-only, unique 66-entry systems-language and toolchain capability matrix."""
 from __future__ import annotations
 import argparse, json, shutil, sys
 from pathlib import Path
@@ -88,7 +88,7 @@ def render_text(items: list[dict[str, Any]]) -> str:
 
 def main(argv: list[str] | None = None, matrix_path: str | Path | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inspect systems-language toolchains and rank capability profiles.")
-    parser.add_argument("--verify", action="store_true", help="validate all 66 catalogue positions")
+    parser.add_argument("--verify", action="store_true", help="validate all 66 unique catalogue entries")
     parser.add_argument("--profile", choices=("pytyliki", "reaper", "oplague"))
     parser.add_argument("--tag", help="comma-separated capability tags")
     parser.add_argument("--available-only", action="store_true")
