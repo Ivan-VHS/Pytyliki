@@ -413,6 +413,78 @@
       "tracking_prs": [
         294
       ]
+    },
+    {
+      "id": "pyty.omega",
+      "responsibility": "Omega-Null marker profile, semantic normalization and Reaper IR effect mapping; experimental DSL surface, not an independent compiler.",
+      "owner": "joint",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.quantum",
+      "responsibility": "Quantum circuit/state simulation, state preparation, noise models, measurement statistics and future hardware adapters.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.field",
+      "responsibility": "Numerical field and spacetime-model simulation with declared equations, units, boundary conditions and discretization.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.experiment",
+      "responsibility": "Reproducible candidate evaluation, parameter sweeps, branch-and-bound and resource-bounded tournaments.",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.sandbox",
+      "responsibility": "Process/model isolation, resource quotas, deterministic test domains and safe failure containment.",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.chrono",
+      "responsibility": "Logical checkpoints, deterministic trace/replay and simulation-time branching; no physical time reversal.",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.material",
+      "responsibility": "Atomic/molecular/material models, structure validation and material-property simulation.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.fabrication",
+      "responsibility": "CAD/RTL/manufacturing job planning and external tool adapters with declared feedstock, process and machine constraints.",
+      "owner": "board-backend",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.bci",
+      "responsibility": "Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input.",
+      "owner": "duck-os",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
     }
   ],
   "rules": [
