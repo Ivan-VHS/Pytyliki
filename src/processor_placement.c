@@ -65,11 +65,30 @@ static uint64_t assigned_working_set_on_cache(
 }
 
 static uint64_t ratio_basis_points(uint64_t value, uint64_t capacity) {
+    uint64_t quotient = 0u;
+    uint64_t remainder = 0u;
+    int bit;
     if (capacity == 0u) return value == 0u ? 0u : 10000u;
     if (value >= capacity) return 10000u;
-    /* Avoid overflow by scaling the smaller operand in bounded chunks. */
-    return (uint64_t)(((long double)value * 10000.0L) /
-                      (long double)capacity);
+    for (bit = 13; bit >= 0; --bit) {
+        uint64_t carry = 0u;
+        if (remainder >= capacity - remainder) {
+            remainder -= capacity - remainder;
+            carry = 1u;
+        } else {
+            remainder += remainder;
+        }
+        if (((UINT32_C(10000) >> (unsigned)bit) & 1u) != 0u) {
+            if (remainder >= capacity - value) {
+                remainder -= capacity - value;
+                ++carry;
+            } else {
+                remainder += value;
+            }
+        }
+        quotient = quotient * 2u + carry;
+    }
+    return quotient;
 }
 
 static int better(const pl_placement_result *candidate,
@@ -105,6 +124,30 @@ pl_placement_status pl_processor_placement_plan(
         input->numa_capacity_count > PL_TOPOLOGY_MAX_NUMA_NODES)
         return PL_PLACEMENT_LIMIT_EXCEEDED;
     if (result_capacity < input->task_count) return PL_PLACEMENT_OUTPUT_TOO_SMALL;
+    for (i = 0u; i < input->worker_count; ++i) {
+        const pl_placement_worker *worker = &input->workers[i];
+        size_t other;
+        if (worker->logical_id >= PL_PLACEMENT_MAX_WORKERS ||
+            worker->online > 1u || worker->capacity_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS ||
+            worker->current_load_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS ||
+            worker->interrupt_load_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS ||
+            worker->current_load_basis_points >
+                PL_PROCESSOR_FABRIC_BASIS_POINTS - worker->interrupt_load_basis_points)
+            return PL_PLACEMENT_INVALID_LOAD;
+        for (other = 0u; other < i; ++other)
+            if (input->workers[other].logical_id == worker->logical_id)
+                return PL_PLACEMENT_INVALID_ARGUMENT;
+    }
+    for (i = 0u; i < input->task_count; ++i) {
+        size_t other;
+        const pl_placement_task *task = &input->tasks[i];
+        if (task->locality_required > 1u || task->dependencies_ready > 1u ||
+            task->requested_load_basis_points > PL_PROCESSOR_FABRIC_BASIS_POINTS)
+            return PL_PLACEMENT_INVALID_LOAD;
+        for (other = 0u; other < i; ++other)
+            if (input->tasks[other].task_id == task->task_id)
+                return PL_PLACEMENT_INVALID_ARGUMENT;
+    }
     memset(assigned, 0, sizeof(assigned));
     memset(task_done, 0, sizeof(task_done));
 
@@ -133,6 +176,7 @@ pl_placement_status pl_processor_placement_plan(
         results[output_count].reasons = 0u;
         if (task->requested_load_basis_points > 10000u) return PL_PLACEMENT_INVALID_LOAD;
         if (!task->dependencies_ready) {
+            results[output_count].reasons |= PL_PLACEMENT_REASON_DEPENDENCY_WAIT;
             ++output_count;
             continue;
         }
@@ -140,7 +184,7 @@ pl_placement_status pl_processor_placement_plan(
         for (worker_index = 0u; worker_index < input->worker_count; ++worker_index) {
             const pl_placement_worker *worker = &input->workers[worker_index];
             pl_placement_result candidate;
-            uint64_t load, bandwidth_after, cache_pressure = 0u;
+            uint64_t load, projected_load, bandwidth_after;
             uint32_t reasons = 0u;
             size_t previous;
             if (!worker->online) {
@@ -168,15 +212,16 @@ pl_placement_status pl_processor_placement_plan(
                    worker->interrupt_load_basis_points;
             for (previous = 0u; previous < assigned_count; ++previous) {
                 if (assigned[previous].logical_id == worker->logical_id)
-                    load = add_saturating(load, task->requested_load_basis_points);
+                    load = add_saturating(load, assigned[previous].load_basis_points);
             }
-            candidate.load_cost = add_saturating(load, task->requested_load_basis_points);
+            projected_load = add_saturating(load, task->requested_load_basis_points);
             if (worker->capacity_basis_points == 0u ||
-                load + task->requested_load_basis_points >
-                    worker->capacity_basis_points) {
+                projected_load > worker->capacity_basis_points) {
                 reasons |= PL_PLACEMENT_REASON_CAPACITY_PRESSURE;
-                candidate.load_cost = add_saturating(candidate.load_cost, 10000u);
+                results[output_count].reasons |= reasons;
+                continue;
             }
+            candidate.load_cost = projected_load;
             if (task->preferred_numa_node_id != PL_TOPOLOGY_UNKNOWN_ID) {
                 if (worker->numa_node_id == PL_TOPOLOGY_UNKNOWN_ID) {
                     reasons |= PL_PLACEMENT_REASON_NUMA_UNKNOWN;
@@ -188,27 +233,38 @@ pl_placement_status pl_processor_placement_plan(
                     candidate.numa_cost = 3000u;
                 }
             }
-            for (previous = 0u; previous < assigned_count; ++previous) {
-                if (worker->core_id != PL_TOPOLOGY_UNKNOWN_ID &&
-                    assigned[previous].core_id == worker->core_id) {
-                    reasons |= PL_PLACEMENT_REASON_SHARED_CORE;
-                    candidate.smt_cost = add_saturating(candidate.smt_cost, 1800u);
+            if (worker->core_id == PL_TOPOLOGY_UNKNOWN_ID) {
+                reasons |= PL_PLACEMENT_REASON_CORE_UNKNOWN;
+                candidate.smt_cost = add_saturating(candidate.smt_cost, 500u);
+            } else {
+                for (previous = 0u; previous < assigned_count; ++previous) {
+                    if (assigned[previous].core_id == worker->core_id) {
+                        reasons |= PL_PLACEMENT_REASON_SHARED_CORE;
+                        candidate.smt_cost = add_saturating(candidate.smt_cost, 1800u);
+                    }
                 }
             }
             if (task->working_set_bytes != 0u && input->cache_count == 0u) {
                 reasons |= PL_PLACEMENT_REASON_CACHE_UNKNOWN;
                 candidate.cache_cost = 700u;
             }
-            for (previous = 0u; previous < input->cache_count; ++previous) {
-                const pl_topology_cache *cache = &input->caches[previous];
-                uint64_t working, pressure;
-                if (!mask_contains(cache->sharing_mask, worker->logical_id)) continue;
-                working = add_saturating(task->working_set_bytes,
-                    assigned_working_set_on_cache(input, assigned, assigned_count, cache));
-                pressure = ratio_basis_points(working, cache->size_bytes);
-                if (pressure > 10000u) pressure = 10000u;
-                candidate.cache_cost = add_saturating(candidate.cache_cost, pressure / 4u);
-                if (assigned_count != 0u) reasons |= PL_PLACEMENT_REASON_SHARED_CACHE;
+            {
+                int cache_evidence_seen = 0;
+                for (previous = 0u; previous < input->cache_count; ++previous) {
+                    const pl_topology_cache *cache = &input->caches[previous];
+                    uint64_t working, pressure;
+                    if (!mask_contains(cache->sharing_mask, worker->logical_id)) continue;
+                    cache_evidence_seen = 1;
+                    working = add_saturating(task->working_set_bytes,
+                        assigned_working_set_on_cache(input, assigned, assigned_count, cache));
+                    pressure = ratio_basis_points(working, cache->size_bytes);
+                    candidate.cache_cost = add_saturating(candidate.cache_cost, pressure / 4u);
+                    if (assigned_count != 0u) reasons |= PL_PLACEMENT_REASON_SHARED_CACHE;
+                }
+                if (!cache_evidence_seen && task->working_set_bytes != 0u) {
+                    reasons |= PL_PLACEMENT_REASON_CACHE_UNKNOWN;
+                    candidate.cache_cost = add_saturating(candidate.cache_cost, 700u);
+                }
             }
             if (task->bandwidth_demand_bytes_per_sec != 0u) {
                 const pl_placement_numa_capacity *capacity =
