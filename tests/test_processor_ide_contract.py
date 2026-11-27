@@ -37,6 +37,12 @@ class ProcessorIDEContractTests(unittest.TestCase):
         self.assertEqual(len(self.data["workspaces"]), 20)
         self.assertEqual(len({workspace["id"] for workspace in self.data["workspaces"]}), 20)
 
+    def test_native_target_session_foundation_is_present(self) -> None:
+        native = self.data["related_contracts"]["native_session_foundation"]
+        self.assertEqual(native["api"], "pl_ide_session_init")
+        for key in ("header", "source", "tests", "build"):
+            self.assertTrue((ROOT / native[key]).is_file())
+
     def test_every_rule_uses_a_known_workspace(self) -> None:
         workspaces = {item["id"] for item in self.data["workspaces"]}
         for rule in self.data["rules"]:
