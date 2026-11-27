@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static const char *const valid_constructs[PL_HW_SYNTAX_CONSTRUCT_COUNT] = {
