@@ -10,5 +10,6 @@
 | Embedded C | MCU profiles, FLASH/SRAM, masked MMIO | simulation |
 | QCS | lexer, parser, AST | syntax-only |
 | ABI | versioned C ABI v1 | explicit load |
+| Neural models | dense feed-forward inference, contract checks, opt-in SGD, batch execution | fixed C11 bounds; no GPU, network transport or distributed training |
 
 Catalogue: 66 language capabilities, 14 processor profiles, 33 systems-lab functions. Counts are inventory, not certification.
