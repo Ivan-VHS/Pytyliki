@@ -84,6 +84,10 @@ def validate_data(data: dict[str, Any]) -> list[str]:
             errors.append(f"{operation_id}: effect declaration must be explicit")
         if item.get("status") == "implemented":
             errors.append(f"{operation_id}: research catalogue cannot assert backend implementation")
+        if "target" in item.get("mode", []) and item.get("required_capability") in (None, "", "none"):
+            errors.append(f"{operation_id}: target mode requires an explicit capability")
+        if item.get("operator_approval_required") is not isinstance(item.get("operator_approval_required"), bool):
+            errors.append(f"{operation_id}: operator_approval_required must be boolean")
         constraints = " ".join(item.get("constraints", [])).lower()
         if not constraints:
             errors.append(f"{operation_id}: constraints are required")
