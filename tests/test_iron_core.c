@@ -2,6 +2,18 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+static FILE *open_test_stream(void) {
+    FILE *stream = NULL;
+#if defined(_MSC_VER)
+    if (fopen_s(&stream, "pytyliki-iron-core-test.tmp", "w+b") != 0) {
+        return NULL;
+    }
+#else
+    stream = fopen("pytyliki-iron-core-test.tmp", "w+b");
+#endif
+    return stream;
+}
+
 static const char valid[]=
 "verison ///. * PYTYLIKI_IRON_CORE_V1\nCC based rules ^^^ BASELINE_V1\nbegin iron )\n"
 "() core --\ncore_id = 1;\nstop option ;\n[ system ]-\nmode = read_only;\nstop option ;\n"
