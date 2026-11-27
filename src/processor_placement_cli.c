@@ -19,26 +19,26 @@ static int parse_u64(const char *text, uint64_t *value) {
 
 static int parse_task(const char *argument, pl_placement_task *task) {
     char buffer[256];
-    char *parts[9];
+    char *parts[12];
     char *cursor;
     size_t count = 0u;
-    uint64_t values[9];
+    uint64_t values[12];
     if (argument == NULL || strlen(argument) >= sizeof(buffer)) return 0;
     (void)snprintf(buffer, sizeof(buffer), "%s", argument);
     cursor = buffer;
     for (;;) {
         char *comma;
-        if (count >= 9u) return 0;
+        if (count >= 12u) return 0;
         parts[count++] = cursor;
         comma = strchr(cursor, ',');
         if (comma == NULL) break;
         *comma = '\0';
         cursor = comma + 1;
     }
-    if (count != 9u) return 0;
+    if (count != 12u) return 0;
     if (strcmp(parts[2], "unknown") == 0) values[2] = PL_TOPOLOGY_UNKNOWN;
     else if (!parse_u64(parts[2], &values[2])) return 0;
-    for (size_t i = 0u; i < 9u; ++i) {
+    for (size_t i = 0u; i < 12u; ++i) {
         if (i == 2u && values[2] == PL_TOPOLOGY_UNKNOWN) continue;
         if (!parse_u64(parts[i], &values[i])) return 0;
     }
@@ -46,7 +46,7 @@ static int parse_task(const char *argument, pl_placement_task *task) {
         values[1] > UINT8_MAX ||
         (values[2] != PL_TOPOLOGY_UNKNOWN && values[2] > UINT32_MAX) ||
         values[3] > 10000u || values[6] > UINT32_MAX ||
-        values[8] > 1u)
+        values[11] > 1u)
         return 0;
 
     memset(task, 0, sizeof(*task));
@@ -57,8 +57,9 @@ static int parse_task(const char *argument, pl_placement_task *task) {
     task->working_set_bytes = values[4];
     task->memory_bandwidth_bytes_per_second = values[5];
     task->required_isa_mask = (uint32_t)values[6];
-    task->affinity_mask[0] = values[7];
-    task->require_local_numa = (uint8_t)values[8];
+    for (size_t word = 0u; word < PL_TOPOLOGY_MASK_WORDS; ++word)
+        task->affinity_mask[word] = values[7u + word];
+    task->require_local_numa = (uint8_t)values[11];
     return 1;
 }
 
@@ -72,7 +73,8 @@ int main(int argc, char **argv) {
     if (argc < 3) {
         fprintf(stderr,
             "usage: pytyliki-placement --task ID,PRIORITY,NUMA|unknown,LOAD_BP,"
-            "WORKSET_BYTES,BANDWIDTH_BPS,ISA_MASK,AFFINITY_MASK,REQUIRE_LOCAL [--task ...]\n");
+            "WORKSET_BYTES,BANDWIDTH_BPS,ISA_MASK,AFFINITY0,AFFINITY1,"
+            "AFFINITY2,AFFINITY3,REQUIRE_LOCAL [--task ...]\n");
         return 2;
     }
     for (int i = 1; i < argc; ++i) {
