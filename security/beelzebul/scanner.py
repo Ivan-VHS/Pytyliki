@@ -172,6 +172,8 @@ def workflow_has_unscoped_write(text):
             if not stripped or stripped.startswith("#"):
                 continue
             indent = len(line) - len(line.lstrip())
+            if indent == permission_indent and stripped.lower() == "permissions: write-all":
+                return True
             if indent == permission_indent and stripped == "permissions:":
                 in_permissions = True
                 continue
