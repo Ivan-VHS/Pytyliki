@@ -57,7 +57,9 @@ static void test_lookup_and_parse_all_operators(void) {
         assert(pl_system_sigil_parse(input, &directive, &error));
         assert(directive.kind == info->kind);
         assert(directive.system_array.suffix_marker == cases[index].marker_id);
-        assert(strcmp(pl_system_array_canonical_name(), "system(array)") == 0);
+        assert(strcmp(PL_SYSTEM_SIGIL_CANONICAL_SOURCE, "system::array") == 0);
+        assert(strcmp(PL_SYSTEM_SIGIL_LEGACY_AST_NAME, "system(array)") == 0);
+        assert(strcmp(pl_system_array_canonical_name(), PL_SYSTEM_SIGIL_LEGACY_AST_NAME) == 0);
     }
 }
 
