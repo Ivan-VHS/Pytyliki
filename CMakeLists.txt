@@ -404,7 +404,7 @@ target_link_libraries(pytyliki-placement PRIVATE pytyliki_core)
 
 if(BUILD_TESTING)
   add_test(NAME processor-placement-report-cli COMMAND pytyliki-placement
-    --task 1,1,unknown,100,1024,0,0,0,0)
+    --task 1,1,unknown,100,1024,0,0,0,0,0,0,0)
   set_tests_properties(processor-placement-report-cli PROPERTIES
     PASS_REGULAR_EXPRESSION "processor-placement-report.v2.*execution_performed")
 endif()
