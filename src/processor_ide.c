@@ -121,7 +121,7 @@ pl_ide_status pl_ide_session_init(
     }
 
     out->workspace_id = workspace_id;
-    out->mode = mode;
+    out->mode = mode == PL_IDE_MODE_DEFAULT ? PL_IDE_MODE_INSPECT : mode;
     out->flags = flags;
     out->target = *target;
 
