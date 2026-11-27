@@ -1,0 +1,246 @@
+{
+  "schema": "pytyliki.neuro-suite.v1",
+  "version": 1,
+  "repository": "Ivan-VHS/Pytyliki",
+  "runtime": {
+    "language": "C11",
+    "numeric_type": "IEEE-754 binary64 double",
+    "model_kind": "bounded dense feed-forward network",
+    "weight_layout": "row-major [output_neuron][input_neuron]",
+    "activations": [
+      "linear",
+      "relu",
+      "tanh",
+      "sigmoid"
+    ],
+    "memory_policy": "caller-owned fixed-capacity buffers; no runtime allocation",
+    "execution_policy": "local CPU execution; no network, telemetry or dynamic code"
+  },
+  "limits": {
+    "max_layers": 32,
+    "max_neurons_per_layer": 4096,
+    "max_parameters": 4194304,
+    "max_batch": 1024,
+    "max_peers": 32,
+    "max_peer_id_ascii_bytes": 64,
+    "max_learning_rate": 1
+  },
+  "frameworks": [
+    {
+      "id": "sokk",
+      "name": "Sokk",
+      "neural_model": "Bounded dense artificial neural network",
+      "contract": "Neural topology contract",
+      "discipline": "System design and feed-forward programming",
+      "implemented_api": [
+        "pl_neuro_sokk_infer",
+        "pl_neuro_model_validate",
+        "pl_neuro_inference_workspace_size"
+      ]
+    },
+    {
+      "id": "above-al",
+      "name": "Above AL",
+      "neural_model": "Typed neural model and intelligent system",
+      "contract": "Versioned neural model contract",
+      "discipline": "System architecture and contract engineering",
+      "implemented_api": [
+        "pl_neuro_contract_default",
+        "pl_neuro_contract_validate",
+        "pl_neuro_above_al_check_contract"
+      ]
+    },
+    {
+      "id": "jumpju",
+      "name": "Jumpju",
+      "neural_model": "Trainable adaptive neural model",
+      "contract": "Bounded learning contract",
+      "discipline": "Model training and optimization",
+      "implemented_api": [
+        "pl_neuro_jumpju_train_step",
+        "pl_neuro_training_workspace_size"
+      ]
+    },
+    {
+      "id": "diogo",
+      "name": "Diogo",
+      "neural_model": "Deterministic multi-sample neural execution",
+      "contract": "Batch inference agreement",
+      "discipline": "Modular and multi-level development",
+      "implemented_api": [
+        "pl_neuro_diogo_infer_batch"
+      ]
+    },
+    {
+      "id": "ghostery",
+      "name": "Ghostery",
+      "neural_model": "Privacy-constrained cognitive execution",
+      "contract": "Local-only privacy contract",
+      "discipline": "Trust, privacy and safe system construction",
+      "implemented_api": [
+        "pl_neuro_ghostery_validate_privacy"
+      ]
+    },
+    {
+      "id": "selitol",
+      "name": "SELITOL",
+      "neural_model": "Distributed neural-system compatibility",
+      "contract": "Federation and peer contract",
+      "discipline": "Platform and infrastructure integration",
+      "implemented_api": [
+        "pl_neuro_selitol_validate_federation"
+      ]
+    }
+  ],
+  "contract_flags": [
+    "allow_training",
+    "allow_batch",
+    "allow_federation"
+  ],
+  "implemented_features": [
+    "Versioned framework registry and model/contract compatibility validation",
+    "Dense feed-forward inference with bounded caller-owned ping-pong workspace",
+    "Single-example SGD backpropagation with mean-squared-error loss and all-parameter preflight before mutation",
+    "Row-major batch inference with explicit batch limits",
+    "Privacy admission checks that reject external transfer, telemetry, input persistence, remote updates and dynamic code",
+    "Peer manifest, ABI/version, uniqueness, framework and generation validation with quorum checks"
+  ],
+  "conceptual_matrix": [
+    {
+      "framework": "Sokk",
+      "neural_system": "Искусственная нейронная сеть",
+      "contract": "Нейросетевой контракт",
+      "engineering": "Системное проектирование"
+    },
+    {
+      "framework": "Sokk",
+      "neural_system": "Нейронная сеть",
+      "contract": "Нейросетевое соглашение",
+      "engineering": "Системное конструирование"
+    },
+    {
+      "framework": "Sokk",
+      "neural_system": "ИНС",
+      "contract": "Сетевой нейродоговор",
+      "engineering": "Системное программирование"
+    },
+    {
+      "framework": "Above AL",
+      "neural_system": "Нейронная модель",
+      "contract": "Нейронный контракт",
+      "engineering": "Комплексная разработка"
+    },
+    {
+      "framework": "Above AL",
+      "neural_system": "Искусственный интеллект",
+      "contract": "Цифровой нейроконтракт",
+      "engineering": "Архитектурная разработка"
+    },
+    {
+      "framework": "Above AL",
+      "neural_system": "Интеллектуальная система",
+      "contract": "Интеллектуальный контракт",
+      "engineering": "Инженерная разработка"
+    },
+    {
+      "framework": "Jumpju",
+      "neural_system": "Машинная модель",
+      "contract": "Когнитивный контракт",
+      "engineering": "Комплексное проектирование"
+    },
+    {
+      "framework": "Jumpju",
+      "neural_system": "Вычислительная сеть",
+      "contract": "Искусственно-интеллектуальный контракт",
+      "engineering": "Разработка систем"
+    },
+    {
+      "framework": "Jumpju",
+      "neural_system": "Когнитивная система",
+      "contract": "Автономный нейроконтракт",
+      "engineering": "Создание систем"
+    },
+    {
+      "framework": "Jumpju",
+      "neural_system": "Интеллектуальная модель",
+      "contract": "Распределённый нейроконтракт",
+      "engineering": "Системная инженерия"
+    },
+    {
+      "framework": "Diogo",
+      "neural_system": "Обучаемая система",
+      "contract": "Децентрализованный нейроконтракт",
+      "engineering": "Архитектурное проектирование"
+    },
+    {
+      "framework": "Diogo",
+      "neural_system": "Самообучающаяся модель",
+      "contract": "Машинный нейроконтракт",
+      "engineering": "Технологическая разработка"
+    },
+    {
+      "framework": "Diogo",
+      "neural_system": "Алгоритмическая сеть",
+      "contract": "Нейросетевой договор",
+      "engineering": "Интеграционная разработка"
+    },
+    {
+      "framework": "Diogo",
+      "neural_system": "Цифровой интеллект",
+      "contract": "Интеллектуальное соглашение",
+      "engineering": "Модульная разработка"
+    },
+    {
+      "framework": "Ghostery",
+      "neural_system": "Машинный интеллект",
+      "contract": "Цифровой нейродоговор",
+      "engineering": "Многоуровневая разработка"
+    },
+    {
+      "framework": "Ghostery",
+      "neural_system": "Генеративная модель",
+      "contract": "Нейросетевое обязательство",
+      "engineering": "Платформенная разработка"
+    },
+    {
+      "framework": "Ghostery",
+      "neural_system": "Нейрокомпьютерная система",
+      "contract": "Сетевой интеллектуальный договор",
+      "engineering": "Инфраструктурная разработка"
+    },
+    {
+      "framework": "SELITOL",
+      "neural_system": "Программный интеллект",
+      "contract": "Автономное нейросетевое соглашение",
+      "engineering": "Системное моделирование"
+    },
+    {
+      "framework": "SELITOL",
+      "neural_system": "Адаптивная модель",
+      "contract": "Распределённое нейросетевое соглашение",
+      "engineering": "Проектирование архитектуры"
+    },
+    {
+      "framework": "SELITOL",
+      "neural_system": "Искусственный разум",
+      "contract": "Программируемый нейроконтракт",
+      "engineering": "Комплексная системная инженерия"
+    }
+  ],
+  "not_claimed": [
+    "Convolutional, recurrent, transformer or generative model execution",
+    "GPU, accelerator, distributed training or network transport",
+    "Model serialization, cryptographic signing or secure aggregation",
+    "OS sandboxing, differential privacy or formal proof of model safety",
+    "Cross-platform bitwise floating-point reproducibility"
+  ],
+  "safety_boundaries": [
+    "The runtime is local and CPU-only; this contract adds no network client or telemetry path.",
+    "All tensors, parameters and workspaces are supplied and owned by the caller; the runtime does not allocate or retain them.",
+    "Model dimensions, parameter counts, layer counts, batch size and federation peer counts are bounded before execution.",
+    "Training is opt-in through a versioned contract flag and each SGD step validates all candidate parameter updates before mutation.",
+    "Ghostery is a policy admission gate, not an OS sandbox or a cryptographic privacy mechanism.",
+    "SELITOL validates peer metadata and quorum only; it does not connect to peers or exchange model weights.",
+    "A validated contract is not evidence that a model is accurate, unbiased or safe for high-stakes decisions."
+  ]
+}
