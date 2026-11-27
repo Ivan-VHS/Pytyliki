@@ -601,7 +601,6 @@ pl_processor_fabric_status pl_processor_fabric_build_host_model(
     size_t package_count = 0u, die_count = 0u, core_count = 0u;
     size_t node_count = 0u, cpu_index;
     if (model == NULL || topology == NULL || nodes == NULL ||
-        topology->logical_processors == NULL ||
         topology->generation == 0u || topology->logical_processor_count == 0u)
         return fail(error, PL_PROCESSOR_FABRIC_INVALID_ARGUMENT, 0u, 0u, 0u,
                     "topology snapshot, node buffer and model are required");
