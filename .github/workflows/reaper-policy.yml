@@ -5,12 +5,18 @@ on:
     branches: [main, "feat/**", "integration/**"]
     paths:
       - "examples/reaper_resource_policy.rpr"
+      - "examples/reaper_processor_policy.rpr"
+      - "examples/reaper_processor_policy_tests.rpr"
       - "docs/REAPER_INTEGRATION.md"
+      - "docs/PROCESSOR_CONTROL.md"
       - ".github/workflows/reaper-policy.yml"
   pull_request:
     paths:
       - "examples/reaper_resource_policy.rpr"
+      - "examples/reaper_processor_policy.rpr"
+      - "examples/reaper_processor_policy_tests.rpr"
       - "docs/REAPER_INTEGRATION.md"
+      - "docs/PROCESSOR_CONTROL.md"
       - ".github/workflows/reaper-policy.yml"
   workflow_dispatch:
 
@@ -36,16 +42,32 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate Reaper source and syntax
+      - name: Validate existing Reaper resource policy
         env:
           PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
         run: python -m reaper --check examples/reaper_resource_policy.rpr
 
-      - name: Execute deterministic policy and assert the result
+      - name: Validate processor policy module and fixtures
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          python -m reaper --check examples/reaper_processor_policy.rpr
+          python -m reaper --check examples/reaper_processor_policy_tests.rpr
+
+      - name: Execute existing deterministic resource policy
         shell: bash
         env:
           PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
         run: |
           set -euo pipefail
-          python -m reaper examples/reaper_resource_policy.rpr | tee reaper-policy.txt
-          grep -qx "PYTYLIKI_REAPER_POLICY:PASS" reaper-policy.txt
+          python -m reaper examples/reaper_resource_policy.rpr | tee reaper-resource-policy.txt
+          grep -qx "PYTYLIKI_REAPER_POLICY:PASS" reaper-resource-policy.txt
+
+      - name: Execute processor policy regression fixtures
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          set -euo pipefail
+          python -m reaper examples/reaper_processor_policy_tests.rpr | tee reaper-processor-policy.txt
+          grep -qx "PYTYLIKI_PROCESSOR_POLICY:PASS" reaper-processor-policy.txt

@@ -1,0 +1,46 @@
+# Pytyliki processor-control policy regression fixtures.
+# No fixture value represents a live machine sample or a hardware-control command.
+
+import "reaper_processor_policy.rpr" as policy
+
+make digest := "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+make snapshot := [
+    "pytyliki.processor-snapshot.v1", "fixture/processor-01", "x86_64", "genuineIntel",
+    1, 1, 8, 16, 16, 3, ["sse2", "avx2"], "fixture://inventory"
+]
+make invalid_snapshot := [
+    "pytyliki.processor-snapshot.v1", "fixture/processor-02", "x86_64", "genuineIntel",
+    1, 1, 8, 8, 12, 3, [], "fixture://invalid"
+]
+make cores := [
+    [0, 0, 0, "performance", "online", true, [0, 1], 3],
+    [1, 0, 0, "efficiency", "online", true, [2, 3], 3]
+]
+make bad_cores := [
+    [0, 0, 0, "performance", "online", true, [0, 1], 3],
+    [0, 0, 0, "efficiency", "online", true, [2, 3], 3]
+]
+make cpu_metric := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-a", "fixture/t0", "fixture"]
+make incompatible_workload := ["pytyliki.c11", "cpu.utilization", "percent", 37, 0, 100, 64, "fixture/workload-b", "fixture/t0", "fixture"]
+make evidence := ["processor-policy", 96, 96, 0, 9500, 1400, digest, "reaper-ci"]
+make active := ["processor-policy", 1, 0, 0, "parent", digest, 1, 5, "active"]
+make candidate := ["processor-policy", 1, 1, 0, "parent", digest, 1, 6, "staged"]
+make read_request := ["inventory", "pytyliki.c11", "cpu", true, true, "none"]
+make write_request := ["frequency-cap", "pytyliki.c11", "cpu0", true, true, "host-admin"]
+
+assert(policy["processor_snapshot_valid"](snapshot), "well-formed processor snapshot must pass")
+assert(not policy["processor_snapshot_valid"](invalid_snapshot), "online logical CPUs cannot exceed discovered topology")
+assert(policy["topology_valid"](cores, 2, 16), "unique and bounded core inventory must pass")
+assert(not policy["topology_valid"](bad_cores, 2, 16), "duplicate core identifiers must fail")
+assert(policy["affinity_valid"]([0, 2], 16), "valid affinity set must pass")
+assert(not policy["affinity_valid"]([0, 16], 16), "out-of-range affinity must fail")
+assert(policy["split_work"](17, 4) == [5, 4, 4, 4], "parallel partition must be balanced and deterministic")
+assert(policy["metric_evidence_valid"](cpu_metric), "metric provenance envelope must pass")
+assert(not policy["metrics_comparable"](cpu_metric, incompatible_workload), "different workloads must not be compared")
+assert(policy["verification_evidence_valid"](evidence), "passing verification evidence must pass")
+assert(policy["live_change_admission"](active, candidate, evidence, true, true, true, true) == "admit-policy-rehearsal", "staged policy change must pass all gates")
+assert(policy["live_change_admission"](active, candidate, evidence, false, true, true, true) == "defer-quiescence", "live change must wait for a safe point")
+assert(policy["operation_admission"](read_request) == "admit-read-only", "bounded inventory must remain available")
+assert(policy["operation_admission"](write_request) == "reject-native-control-out-of-scope", "workstation policy must not claim host CPU control")
+
+emit "PYTYLIKI_PROCESSOR_POLICY:PASS"
