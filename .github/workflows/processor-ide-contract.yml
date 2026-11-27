@@ -4,6 +4,12 @@ on:
   pull_request:
     paths:
       - "contracts/processor-ide.v1.json"
+      - "CMakeLists.txt"
+      - "src/processor_ide.h"
+      - "src/processor_ide.c"
+      - "tests/test_processor_ide.c"
+      - "src/low_level_contract.h"
+      - "src/ironclad_systems.h"
       - "schemas/processor-ide.v1.schema.json"
       - "docs/PROCESSOR_IDE.md"
       - "project-contract.json"
@@ -44,3 +50,9 @@ jobs:
         run: python tools/validate_processor_ide.py
       - name: Run Processor IDE contract tests
         run: python -m unittest discover -s tests -p "test_processor_ide_contract.py" -v
+      - name: Configure native test build
+        run: cmake -S . -B build -DBUILD_TESTING=ON
+      - name: Build native Processor IDE session tests
+        run: cmake --build build --target pytyliki-processor-ide-tests --config Release
+      - name: Run native Processor IDE session tests
+        run: ctest --test-dir build -C Release -R "^processor-ide-session-tests$" --output-on-failure
