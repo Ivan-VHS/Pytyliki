@@ -30,6 +30,10 @@ Pytyliki 在本地采集并分析处理器系统信息。C11 核心与命令行�
 
 PCM16 WAV/DSP 处理不属于当前 Pytyliki 核心的已交付功能。依赖部分或计划中的能力前，请查阅项目契约和功能文档。
 
+## 神经网络框架套件
+
+C11 核心新增六个有界神经网络框架：Sokk（前馈拓扑）、Above AL（版本化契约）、Jumpju（显式启用的 SGD 训练）、Diogo（批量推理）、Ghostery（本地隐私策略检查）和 SELITOL（节点契约验证）。v1 使用调用方提供的缓冲区和 CPU 密集型网络；不宣称支持 GPU、生成式/Transformer 模型或网络联邦训练。参见[套件契约](contracts/neuro-suite.v1.json)和[技术文档](docs/NEURO_SUITE.md)。
+
 ## 构建与验证
 
 需要 CMake 3.16+、C11 编译器（MSVC、GCC 或 Clang）和 Git。Win32 GUI 在 Windows 上构建。Python 仅用于可选的仓库契约辅助检查，并非 C11 核心的运行时。
