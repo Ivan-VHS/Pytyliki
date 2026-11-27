@@ -557,24 +557,60 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
             }
             ++core_id;
         } else if (item->Relationship == RelationNumaNode) {
-            (void)find_or_add_windows_mask(out,
-                item->NumaNode.GroupMask.Group,
-                item->NumaNode.GroupMask.Mask,
-                PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
-                item->NumaNode.NodeNumber, 0, 0u, 0u, 0u,
-                PL_TOPOLOGY_CACHE_UNKNOWN);
+            WORD group_count = item->NumaNode.GroupCount;
+            if (group_count == 0u) group_count = 1u;
+            for (WORD i = 0u; i < group_count; ++i) {
+                const GROUP_AFFINITY *affinity =
+                    item->NumaNode.GroupCount == 0u
+                        ? &item->NumaNode.GroupMask
+                        : &item->NumaNode.GroupMasks[i];
+                (void)find_or_add_windows_mask(out,
+                    affinity->Group, affinity->Mask,
+                    PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                    item->NumaNode.NodeNumber, 0, 0u, 0u, 0u,
+                    PL_TOPOLOGY_CACHE_UNKNOWN);
+            }
         } else if (item->Relationship == RelationCache) {
             pl_topology_cache_kind kind = PL_TOPOLOGY_CACHE_UNKNOWN;
+            WORD group_count = item->Cache.GroupCount;
+            pl_topology_cache *cache;
             if (item->Cache.Type == CacheData) kind = PL_TOPOLOGY_CACHE_DATA;
             else if (item->Cache.Type == CacheInstruction) kind = PL_TOPOLOGY_CACHE_INSTRUCTION;
             else if (item->Cache.Type == CacheUnified) kind = PL_TOPOLOGY_CACHE_UNIFIED;
-            (void)find_or_add_windows_mask(out,
-                item->Cache.GroupMask.Group, item->Cache.GroupMask.Mask,
-                PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
-                1, item->Cache.Level, item->Cache.CacheSize,
-                item->Cache.LineSize, kind);
-        }
-        offset += item->Size;
+            if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) continue;
+            cache = &out->caches[out->cache_count];
+            memset(cache, 0, sizeof(*cache));
+            cache->cache_id = out->cache_count++;
+            cache->level = item->Cache.Level;
+            cache->kind = kind;
+            cache->size_bytes = item->Cache.CacheSize;
+            cache->line_bytes = item->Cache.LineSize;
+            cache->evidence = (item->Cache.Level != 0u && kind != PL_TOPOLOGY_CACHE_UNKNOWN &&
+                               item->Cache.CacheSize != 0u && item->Cache.LineSize != 0u)
+                                  ? PL_TOPOLOGY_EVIDENCE_OBSERVED
+                                  : PL_TOPOLOGY_EVIDENCE_PARTIAL;
+            if (group_count == 0u) group_count = 1u;
+            for (WORD i = 0u; i < group_count; ++i) {
+                const GROUP_AFFINITY *affinity =
+                    item->Cache.GroupCount == 0u
+                        ? &item->Cache.GroupMask
+                        : &item->Cache.GroupMasks[i];
+                (void)find_or_add_windows_mask(out,
+                    affinity->Group, affinity->Mask,
+                    PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+                    PL_TOPOLOGY_UNKNOWN, 0, 0u, 0u, 0u,
+                    PL_TOPOLOGY_CACHE_UNKNOWN);
+                for (unsigned bit = 0u; bit < sizeof(KAFFINITY) * 8u; ++bit) {
+                    if ((affinity->Mask & ((KAFFINITY)1u << bit)) != 0u) {
+                        size_t cpu_index = find_cpu(out, (uint32_t)affinity->Group, bit);
+                        if (cpu_index < out->logical_cpu_count)
+                            set_mask_bit(cache->sharing_mask,
+                                out->logical_cpus[cpu_index].logical_id);
+                    }
+                }
+            }
+            cache->sharing_count = mask_popcount(cache->sharing_mask);
+        }        offset += item->Size;
     }
     free(records);
     for (size_t i = 0u; i < out->numa_node_count; ++i) {
@@ -584,10 +620,7 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
             out->numa_nodes[i].memory_available_bytes = (uint64_t)available;
             out->numa_nodes[i].memory_available_observed = 1u;
         }
-        out->numa_nodes[i].evidence =
-            out->numa_nodes[i].memory_available_bytes != 0u
-                ? PL_TOPOLOGY_EVIDENCE_PARTIAL
-                : PL_TOPOLOGY_EVIDENCE_PARTIAL;
+        out->numa_nodes[i].evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
     }
     out->online_logical_cpu_count = out->logical_cpu_count;
     return out->logical_cpu_count == 0u ? PL_TOPOLOGY_IO_ERROR : PL_TOPOLOGY_OK;
