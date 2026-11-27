@@ -124,7 +124,7 @@ def validate_data(data: dict[str, Any]) -> list[str]:
     if len(domain_ids) != len(set(domain_ids)):
         errors.append("research domain IDs must be unique")
     allowed_modules = {
-        "pyty.quantum", "pyty.bci", "pyty.material", "pyty.field",
+        "pyty.quantum", "pyty.bci", "pyty.neuro", "pyty.material", "pyty.field",
         "pyty.time", "pyty.power", "pyty.experiment", "pyty.sim"
     }
     for item in research_domains:
