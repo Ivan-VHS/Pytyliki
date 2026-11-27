@@ -1,38 +1,40 @@
 # Pytyliki documentation
 
-> **Psychoporter 666 documentation profile v1.0** · Reviewed 2026-11-25 (UTC)
+**Documentation baseline:** 2026-11-26 · **Project status:** development / bounded C11 workstation.
 
-[Project overview](../README.md) · [Source](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md)
+Start with the [root README](../README.md) for scope, build commands, first checks and read-only boundaries. The [Information Architecture](INFORMATION_ARCHITECTURE.md) page catalogs the complete library.
 
-Start with the [project README](../README.md) for product scope, build steps, first checks and limitations.
+## Key technical references
 
-## Key references
-
-- [Feature matrix](FEATURES.md) — implemented behavior and explicit limits.
-- [Architecture](ARCHITECTURE.md) — components, ownership and data flow.
-- [Early Mathematics Numerical Workbench v1](EARLY_MATHEMATICS_NUMERICAL_WORKBENCH_V1.md) — proposed checked-count, measurement, geometry and pattern-summary compute profile.
-- [Engineering gates](ENGINEERING.md) — build, quality and safety checks.
-- [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
-- [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
-- [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
+- [Feature matrix](FEATURES.md) — capability scope and limits.
+- [Architecture](ARCHITECTURE.md) — C11 core and data flow.
+- [Engineering baseline](ENGINEERING_BASELINE.md) — project-level quality gates.
+- [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement methodology and provenance.
+- [Memory arena](MEMORY_ARENA.md) — checked views, arenas and pools.
+- [Embedded C](EMBEDDED_C.md) — reference MCU workbench and simulated MMIO.
+- [QCS native](QCS_NATIVE.md) — syntax/structure validation.
+- [Report envelope](REPORT_ENVELOPE.md) — versioned report metadata.
+- [Reaper integration](REAPER_INTEGRATION.md) — explicit ABI integration boundary.
+- [Unified project contract](UNIFIED_PROJECT_CONTRACT.md) — machine-readable capabilities and interfaces.
 
 ## Browse by topic
 
-- [architecture](clusters/architecture.md)
-- [processor labs](clusters/processor-labs.md)
-- [quality evidence](clusters/quality-evidence.md)
-- [ui visual](clusters/ui-visual.md)
-- [federation](clusters/federation.md)
-- [governance planning](clusters/governance-planning.md)
+- [Architecture and system contracts](clusters/architecture.md)
+- [Processor and computational labs](clusters/processor-labs.md)
+- [Quality and evidence](clusters/quality-evidence.md)
+- [UI and visual documentation](clusters/ui-visual.md)
+- [Federation and integrations](clusters/federation.md)
+- [Governance and planning](clusters/governance-planning.md)
 
-## Shared engineering rules
+## Shared standards
 
-- [Unified documentation standard](UNIFIED_DOCUMENTATION_STANDARD.md)
+- [Documentation publication standard](UNIFIED_DOCUMENTATION_STANDARD.md)
+- [Documentation control](DOCUMENTATION_CONTROL.md)
 - [Engineering evolution framework](ENGINEERING_EVOLUTION_FRAMEWORK.md)
 - [Repository evolution directives](REPOSITORY_EVOLUTION_DIRECTIVES.md)
+- [Contributing](../CONTRIBUTING.md)
+- [Security](../SECURITY.md)
 
-## Evidence and maturity
+## Evidence rule
 
-Describe behavior from source, build configuration, schemas, tests and CI evidence. Mark proposals and roadmap items as planned. Do not invent benchmarks, security certifications, platform support, API surfaces or release status.
-
-**The index is navigation, not proof of implementation.**
+Inventory counts and capability catalogues describe registered material, not certification. Hardware discovery is read-only; embedded MMIO is reference-only; source review is static; FFI is explicit and trusted-library-only. Benchmark output is machine-dependent.
