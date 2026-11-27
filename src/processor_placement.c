@@ -185,11 +185,12 @@ pl_placement_status pl_processor_placement_plan(
         if (pressure->cache_working_set_bytes[i] != 0u)
             out->report.pressure_input_present=1u;
     for (size_t i=0u;i<topology->numa_node_count;++i)
-        if (pressure->numa_bandwidth_used_bytes_per_second[i] != 0u)
+        if (pressure->numa_bandwidth_used_bytes_per_second[i] != 0u ||
+            pressure->numa_bandwidth_capacity_bytes_per_second[i] != 0u)
             out->report.pressure_input_present=1u;
     for(size_t i=0u;i<task_count;++i) {
         if(tasks[i].task_id==0u || tasks[i].requested_load_basis_points>10000u ||
-           tasks[i].require_local_numa>1u ||
+           tasks[i].require_local_numa>1u || tasks[i].dependencies_pending>1u ||
            (tasks[i].require_local_numa!=0u &&
             tasks[i].preferred_numa_node_id==PL_TOPOLOGY_UNKNOWN))
             return PL_PLACEMENT_INVALID_ARGUMENT;
