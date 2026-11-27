@@ -13,7 +13,7 @@ SPEC.loader.exec_module(module)
 
 def make_report(values, *, profile=None, workload=None, warmup=None, integrity=True):
     profile = profile or {
-        "architecture": "x86_64", "cpu": $", "vendor": "Example Vendor",
+        "architecture": "x86_64", "cpu": "Example CPU", "vendor": "Example Vendor",
         "logical_processors": 8,
     }
     workload = workload or {"iterations": 12000000, "memory_mib": 8, "passes": 4}
