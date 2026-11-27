@@ -147,6 +147,28 @@ static void request_dpi_awareness(void) {
     }
     SetProcessDPIAware();
 }
+
+static int apply_native_backdrop(HWND window) {
+    HMODULE dwmapi = LoadLibraryA("dwmapi.dll");
+    if (!dwmapi) return 0;
+
+    typedef HRESULT (WINAPI *dwm_set_window_attribute_fn)(
+        HWND, DWORD, LPCVOID, DWORD
+    );
+    dwm_set_window_attribute_fn set_attribute =
+        (dwm_set_window_attribute_fn)GetProcAddress(dwmapi, "DwmSetWindowAttribute");
+    if (!set_attribute) {
+        FreeLibrary(dwmapi);
+        return 0;
+    }
+
+    const DWORD backdrop_type = MORA_GLASS_BACKDROP_MAIN_WINDOW;
+    const HRESULT result = set_attribute(
+        window, MORA_GLASS_BACKDROP_ATTRIBUTE, &backdrop_type, sizeof(backdrop_type)
+    );
+    FreeLibrary(dwmapi);
+    return result >= 0;
+}
 static void apply_theme_mode(int mode) {
     g_mora_theme = mode == 2;
     g_dark_mode = mode == 1;
@@ -583,6 +605,7 @@ int WINAPI WinMain(HINSTANCE h,HINSTANCE prev,LPSTR cmd,int show) {
     if(!RegisterClassA(&motion_wc)) return 1;
     HWND w=CreateWindowA(wc.lpszClassName,"Pytyliki - Processor Systems Workstation",WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
         CW_USEDEFAULT,CW_USEDEFAULT,1180,840,NULL,NULL,h,NULL); if(!w)return 1;
+    (void)apply_native_backdrop(w);
     load_motion_settings();
     BOOL animations_enabled=(g_motion_mode == 2 || g_eco_visuals) ? FALSE : TRUE;
     char reduced_motion[8]={0};

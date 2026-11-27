@@ -1,6 +1,10 @@
 #ifndef PYTYLIKI_MORA_THEME_H
 #define PYTYLIKI_MORA_THEME_H
 
+/* Optional Windows 11 system material; runtime fallback remains the solid theme. */
+#define MORA_GLASS_BACKDROP_ATTRIBUTE 38
+#define MORA_GLASS_BACKDROP_MAIN_WINDOW 2
+
 /* Mora desktop tokens for the native Win32 workstation.
  * Include after windows.h so the RGB macro is available.
  */
