@@ -11,7 +11,8 @@
     "address_spaces",
     "memory_regions",
     "register_banks",
-    "dma_buffers"
+    "dma_buffers",
+    "devices"
   ],
   "properties": {
     "schema": {
@@ -396,6 +397,29 @@
     },
     "dma_submitted": {
       "const": false
+    },
+    "devices": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "generation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
     }
   }
 }
