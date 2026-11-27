@@ -15,7 +15,9 @@
     "frameworks",
     "claim_translation",
     "evidence_policy",
-    "access_model"
+    "access_model",
+    "research_domains",
+    "engineering_practices"
   ],
   "properties": {
     "schema": {
@@ -424,6 +426,88 @@
         },
         "no_reality_mutation_api": {
           "const": true
+        }
+      }
+    },
+    "research_domains": {
+      "type": "array",
+      "minItems": 9,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "module",
+          "meaning"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.]*$"
+          },
+          "module": {
+            "type": "string",
+            "pattern": "^pyty\\.[a-z][a-z0-9.-]*$"
+          },
+          "meaning": {
+            "type": "string",
+            "minLength": 20
+          }
+        }
+      }
+    },
+    "engineering_practices": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verification_gates",
+        "resource_control",
+        "state_backup",
+        "forecast_policy"
+      ],
+      "properties": {
+        "verification_gates": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name",
+              "purpose"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "syntax_type_effect",
+                  "model_invariants",
+                  "physical_target_qualification"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "minLength": 5
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 20
+              }
+            }
+          }
+        },
+        "resource_control": {
+          "type": "string",
+          "minLength": 30
+        },
+        "state_backup": {
+          "type": "string",
+          "minLength": 30
+        },
+        "forecast_policy": {
+          "type": "string",
+          "minLength": 30
         }
       }
     }
