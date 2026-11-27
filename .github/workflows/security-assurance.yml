@@ -43,31 +43,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check out Pytyliki for federation audit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Pytyliki
           ref: ${{ (github.event_name == 'pull_request' && github.head_ref == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || (github.event_name != 'pull_request' && github.ref_name == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || 'main' }}
           path: .federation/Pytyliki
 
       - name: Check out Reaper for federation audit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Reaper
           ref: ${{ (github.event_name == 'pull_request' && github.head_ref == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || (github.event_name != 'pull_request' && github.ref_name == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || 'main' }}
           path: .federation/Reaper
 
       - name: Check out OPlague for federation audit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/OPlague
           ref: ${{ (github.event_name == 'pull_request' && github.head_ref == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || (github.event_name != 'pull_request' && github.ref_name == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || 'main' }}
           path: .federation/OPlague
 
       - name: Check out VentuSample for federation audit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/VentuSample
           ref: ${{ (github.event_name == 'pull_request' && github.head_ref == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || (github.event_name != 'pull_request' && github.ref_name == 'feat/mental-wellbeing-code-safety-v1') && 'feat/mental-wellbeing-code-safety-v1' || 'main' }}

@@ -16,7 +16,7 @@ jobs:
     name: Windows x64 Win32 workstation
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref || github.ref_name }}
       - name: Configure C11 release build
