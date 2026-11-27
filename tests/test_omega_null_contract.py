@@ -74,6 +74,19 @@ class OmegaNullContractTests(unittest.TestCase):
             {"aegis-shield", "chrono-weave", "matter-forge", "mind-link"},
         )
 
+    def test_experimental_domains_map_to_named_modules(self) -> None:
+        self.assertGreaterEqual(len(self.data["research_domains"]), 9)
+        for domain in self.data["research_domains"]:
+            self.assertTrue(domain["module"].startswith("pyty."))
+
+    def test_three_verification_gates_are_ordered(self) -> None:
+        ids = [item["id"] for item in self.data["engineering_practices"]["verification_gates"]]
+        self.assertEqual(ids, [
+            "syntax_type_effect",
+            "model_invariants",
+            "physical_target_qualification",
+        ])
+
     def test_no_physical_reality_mutation_api(self) -> None:
         access = self.data["access_model"]
         self.assertTrue(access["deny_by_default"])
