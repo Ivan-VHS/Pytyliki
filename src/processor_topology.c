@@ -304,6 +304,7 @@ static pl_topology_status scan_linux_numa(pl_processor_topology_snapshot *out) {
         out->numa_nodes[out->numa_node_count++] = node;
     }
     (void)closedir(directory);
+    return PL_TOPOLOGY_OK;
 }
 
 static pl_topology_status scan_linux_caches(pl_processor_topology_snapshot *out) {
@@ -394,7 +395,7 @@ static pl_topology_status scan_linux(pl_processor_topology_snapshot *out) {
             (void)closedir(directory);
             return PL_TOPOLOGY_LIMIT_EXCEEDED;
         }
-        index = add_cpu(out, 0u, (uint32_t)os_id, 1);
+        index = add_cpu(out, PL_TOPOLOGY_UNKNOWN, (uint32_t)os_id, 1);
         if (index == SIZE_MAX) { (void)closedir(directory); return PL_TOPOLOGY_LIMIT_EXCEEDED; }
         cpu = &out->logical_cpus[index];
         cpu->logical_id = (uint32_t)os_id;
