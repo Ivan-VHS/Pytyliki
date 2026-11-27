@@ -16,6 +16,7 @@
 #include "systems_accel.h"
 #include "trimatrix_autoforge.h"
 #include "embedded.h"
+#include "processor_languages_cli.h"
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -156,6 +157,7 @@ static void usage(void) {
          "  pytyliki --divide INTEGER INTEGER | --partition ITEMS WORKERS [MIN_GRAIN]\n"
          "  pytyliki --partition-auto ITEMS [MIN_GRAIN]\n"
          "  pytyliki --embedded profiles|profile ID|budget ID TEXT RODATA DATA BSS STACK|template FILE.c\n"
+         "  pytyliki --language catalog|show ID|detect FILE|inspect ID FILE|target ID ARCH|plan ID ARCH SOURCE OUTPUT\n"
          "Processor inspection is read-only. Measurements and workload planning are bounded.");
 }
 static void print_berry_core_catalog(void) {
@@ -346,6 +348,8 @@ static void print_profile(void) {
     puts("AVX-family usable flags include OS-managed XCR0 vector-state validation; capability reporting does not execute SIMD instructions.");
 }
 int main(int argc,char **argv) {
+    if (argc > 1 && strcmp(argv[1], "--language") == 0)
+        return pl_language_cli(argc - 1, argv + 1);
     if (argc > 1) {
         int division_status = pl_division_cli(argc, argv);
         if (division_status >= 0) return division_status;
