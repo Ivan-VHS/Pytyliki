@@ -81,12 +81,12 @@ static void test_registers_and_state_transactions(void) {
 
     initial.position[0] = 10.0;
     published.position[0] = -99.0;
-    assert(pl_robotics_transaction_begin(&transaction, &initial) == PL_ROBOTICS_OK);
+    assert(pl_robotics_transaction_begin(&transaction, &initial, 7u) == PL_ROBOTICS_OK);
     assert(pl_robotics_transaction_set_axis(&transaction, 0u, 12.0, 1.5, 15.0) == PL_ROBOTICS_OK);
-    assert(pl_robotics_transaction_commit(&transaction, 1u, &published) == PL_ROBOTICS_CONFLICT);
+    assert(pl_robotics_transaction_commit(&transaction, 8u, &published) == PL_ROBOTICS_CONFLICT);
     assert(published.position[0] == -99.0);
-    assert(pl_robotics_transaction_commit(&transaction, 0u, &published) == PL_ROBOTICS_OK);
-    assert(published.position[0] == 12.0 && transaction.generation == 1u);
+    assert(pl_robotics_transaction_commit(&transaction, 7u, &published) == PL_ROBOTICS_OK);
+    assert(published.position[0] == 12.0 && transaction.generation == 8u);
     assert(pl_robotics_transaction_set_axis(&transaction, 0u, 99.0, 0.0, 0.0) == PL_ROBOTICS_OK);
     assert(pl_robotics_transaction_rollback(&transaction) == PL_ROBOTICS_OK);
     assert(transaction.staged.position[0] == 12.0);

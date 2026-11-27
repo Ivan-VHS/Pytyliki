@@ -165,11 +165,13 @@ pl_robotics_status pl_robotics_register_write(pl_robotics_registers *registers,
 }
 
 pl_robotics_status pl_robotics_transaction_begin(pl_robotics_transaction *transaction,
-                                                   const pl_robotics_state *current) {
+                                                   const pl_robotics_state *current,
+                                                   uint64_t base_generation) {
     if (!transaction || !state_valid(current)) return PL_ROBOTICS_INVALID_ARGUMENT;
     memset(transaction, 0, sizeof(*transaction));
     transaction->committed = *current;
     transaction->staged = *current;
+    transaction->generation = base_generation;
     transaction->active = 1;
     return PL_ROBOTICS_OK;
 }

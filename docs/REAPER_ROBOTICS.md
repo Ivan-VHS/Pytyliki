@@ -29,7 +29,7 @@ The native API in `src/robotics.h` and `src/robotics.c` exposes thirteen operati
 
 The supporting runtime primitives are an allocation-free 256-byte ring buffer, an explicit logical timer, a permission/mask-checked in-memory register bank, optimistic generation-checked state transactions, rollback, and structured diagnostics.
 
-The native C interface uses `double` for geometry and control calculations, caller-selected length units, radians for inverse-kinematics angles, milliseconds for trajectory time, and seconds for PID delta time. The Reaper contract uses signed integer Q15 values (`32768 == 1.0`) for coordinates and trigonometric components. Conversion boundaries must be explicit; values from the two representations must not be mixed without conversion.
+The native C interface uses `double` for geometry and control calculations, millimetres for lengths, radians for inverse-kinematics angles, milliseconds for trajectory time, and seconds for PID delta time. The Reaper contract uses signed integer Q15 values (`32768 == 1.0`) for coordinates and trigonometric components. Conversion boundaries must be explicit; values from the two representations must not be mixed without conversion.
 
 ### 2. Reaper Robotics Compiler — contracts integrated; full native AOT remains open
 

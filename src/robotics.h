@@ -123,7 +123,8 @@ pl_robotics_status pl_robotics_register_write(pl_robotics_registers *registers,
 
 /* Optimistic state transaction: publish staged state only for the expected generation. */
 pl_robotics_status pl_robotics_transaction_begin(pl_robotics_transaction *transaction,
-                                                   const pl_robotics_state *current);
+                                                   const pl_robotics_state *current,
+                                                   uint64_t base_generation);
 pl_robotics_status pl_robotics_transaction_set_axis(pl_robotics_transaction *transaction,
                                                       size_t axis, double position,
                                                       double velocity, double command);
@@ -132,7 +133,7 @@ pl_robotics_status pl_robotics_transaction_commit(pl_robotics_transaction *trans
                                                     pl_robotics_state *published);
 pl_robotics_status pl_robotics_transaction_rollback(pl_robotics_transaction *transaction);
 
-/* The thirteen robotics operations. Geometry preserves the caller's length unit; trajectory time is milliseconds and PID delta is seconds. */
+/* The thirteen robotics operations. Geometry uses millimetres, inverse-kinematics angles use radians, trajectory time is milliseconds and PID delta is seconds. */
 pl_robotics_status pl_robotics_sensor_sample(double raw, double scale, double offset,
                                                double minimum, double maximum, double *out);
 pl_robotics_status pl_robotics_sensor_calibrate(double raw_zero, double raw_reference,
