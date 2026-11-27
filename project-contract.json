@@ -4,14 +4,15 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation with an optional Reaper 0.2 deterministic control plane for versioned state, logical scheduling, memory planning and read-only processor evidence.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
     "languages": [
       "C11",
       "CMake",
-      "Python 3 tooling"
+      "Python 3 tooling",
+      "Reaper 0.2"
     ],
     "runtime_platforms": [
       "Windows",
@@ -130,6 +131,20 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "processor.control-plane.reaper",
+      "status": "implemented",
+      "summary": "Reaper 0.2 implements deterministic processor-state transitions, action accounting, logical-lane scheduling, memory resize planning, read-only hardware evidence validation, trace verification and versioned report export.",
+      "evidence": [
+        "automation/reaper/processor/state.rpr",
+        "automation/reaper/processor/scheduler.rpr",
+        "automation/reaper/processor/memory.rpr",
+        "automation/reaper/processor/hardware.rpr",
+        "automation/reaper/processor/verification.rpr",
+        "automation/reaper/processor_kernel.rpr",
+        "schemas/processor-kernel-report.v1.schema.json"
+      ]
     }
   ],
   "interfaces": [
@@ -152,6 +167,17 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "pytyliki.reaper-processor-kernel.v1",
+      "format": "Reaper 0.2 processor control modules and versioned JSON report",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "automation/reaper/processor_kernel.rpr",
+        "schemas/processor-kernel-report.v1.schema.json",
+        "docs/REAPER_PROCESSOR_KERNEL.md"
       ]
     }
   ],
@@ -195,19 +221,29 @@
       "status": "planned",
       "opt_in": true,
       "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+    },
+    {
+      "project": "reaper",
+      "interface": "pytyliki.reaper-processor-kernel.v1",
+      "mode": "json-file",
+      "status": "implemented",
+      "opt_in": true,
+      "summary": "The Reaper VM runs the deterministic Pytyliki processor control-plane modules and emits the versioned processor-kernel report; physical hardware and OS scheduling remain outside this interface."
     }
   ],
   "safety_boundaries": [
     "Processor and hardware inspection is read-only; no firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.",
     "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
-    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable."
+    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
+    "The Reaper processor control plane models logical lanes only; it does not start OS threads, change affinity, allocate process memory, or write processor/device registers."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
     "CMake library boundaries for adding independently tested C11 modules.",
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
-    "Bounded saturating matrix self-product for repeated vertical architecture analysis."
+    "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
+    "Versioned Reaper processor-state, scheduler, memory-plan and evidence modules with a JSON report contract for a future explicitly reviewed host adapter."
   ]
 }

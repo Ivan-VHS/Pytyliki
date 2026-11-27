@@ -1,0 +1,201 @@
+# Pytyliki processor control plane, implemented in Reaper 0.2.
+# The fixture is deterministic. This program plans and verifies; it does not
+# touch physical registers, allocate process memory or start OS threads.
+
+import "processor/state.rpr" as state
+import "processor/scheduler.rpr" as scheduler
+import "processor/memory.rpr" as memory
+import "processor/hardware.rpr" as hardware
+import "processor/verification.rpr" as verification
+
+let actions = [
+    {"operation": "boot", "target": "ready"},
+    {"operation": "dispatch", "target": "running"},
+    {"operation": "page-wait", "target": "blocked"},
+    {"operation": "page-ready", "target": "ready"},
+    {"operation": "halt", "target": "stopped"},
+    {"operation": "restart", "target": "ready"},
+    {"operation": "illegal-direct-block", "target": "blocked"}
+]
+
+let state_run = state.run_actions(actions)
+let replay_run = state.run_actions(actions)
+let trace_result = verification.verify_trace(
+    state_run.initial_snapshot,
+    state_run.events,
+    state_run.final_snapshot,
+    state
+)
+let state_graph = verification.simplify_graph(state_run.events)
+
+let cpu_profile = hardware.fixture_profile()
+let hardware_result = hardware.validate_profile(cpu_profile)
+let writable_profile = {
+    "schema": "pytyliki.cpu-evidence.v1",
+    "source": "fixture/must-be-rejected",
+    "architecture": "x86_64",
+    "physical_cores": 8,
+    "logical_processors": 16,
+    "memory_bytes": 34359738368,
+    "features": ["sse2", "avx2"],
+    "read_only": false
+}
+let writable_hardware_result = hardware.validate_profile(writable_profile)
+
+let work_plan = scheduler.create_plan(100, 6)
+let schedule_result = scheduler.advance(work_plan, 3)
+let invalid_worker_plan = scheduler.create_plan(10, 0)
+let plan_result_valid = scheduler.verify_plan(work_plan)
+
+let memory_plan = memory.propose_resize(268435456, 402653184, 536870912, 3)
+let denied_memory_plan = memory.propose_resize(268435456, 805306368, 536870912, 3)
+
+let replay_is_stable =
+    state_run.valid and replay_run.valid and
+    state_run.events == replay_run.events and
+    state_run.final_snapshot == replay_run.final_snapshot
+
+let operation_table = [
+    {
+        "id": "state.transition",
+        "domain": "state",
+        "effect": "versioned-snapshot",
+        "verification": "finite-state-transition-table"
+    },
+    {
+        "id": "action.ledger",
+        "domain": "audit",
+        "effect": "monotonic-action-counters",
+        "verification": "sequence-and-counter-reconciliation"
+    },
+    {
+        "id": "trace.verify",
+        "domain": "verification",
+        "effect": "read-only-validation",
+        "verification": "transition-replay"
+    },
+    {
+        "id": "scheduler.plan",
+        "domain": "threads",
+        "effect": "logical-lane-allocation",
+        "verification": "work-conservation"
+    },
+    {
+        "id": "scheduler.advance",
+        "domain": "threads",
+        "effect": "deterministic-dispatch-order",
+        "verification": "round-robin-replay"
+    },
+    {
+        "id": "memory.resize.plan",
+        "domain": "memory",
+        "effect": "proposal-only",
+        "verification": "budget-and-generation-check"
+    },
+    {
+        "id": "hardware.evidence.inspect",
+        "domain": "hardware",
+        "effect": "read-only-profile-validation",
+        "verification": "schema-and-range-check"
+    },
+    {
+        "id": "state.graph.simplify",
+        "domain": "graph",
+        "effect": "deduplicated-transition-table",
+        "verification": "edge-count-reconciliation"
+    },
+    {
+        "id": "report.export",
+        "domain": "export",
+        "effect": "versioned-json",
+        "verification": "report-invariants"
+    }
+]
+
+let all_passed =
+    trace_result.valid and
+    plan_result_valid and schedule_result.valid and
+    hardware_result.valid and not writable_hardware_result.valid and
+    memory_plan.valid_input and memory_plan.accepted and not memory_plan.applied and
+    not denied_memory_plan.accepted and not invalid_worker_plan.valid and
+    replay_is_stable and
+    state_run.final_snapshot.action_count == 7 and
+    state_run.final_snapshot.accepted_count == 6 and
+    state_run.final_snapshot.rejected_count == 1 and
+    state_run.final_snapshot.phase == "ready" and
+    state_graph.node_count == 5 and state_graph.edge_count == 7 and
+    work_plan.allocations == [17, 17, 17, 17, 16, 16] and
+    schedule_result.completed_jobs == 18 and
+    schedule_result.active_lanes == 6 and
+    size(schedule_result.dispatch_order) == 18 and
+    memory_plan.next_generation == 4
+
+assert(state_run.valid, "state machine must produce a complete event stream")
+assert(trace_result.valid, "every accepted and rejected state transition must reconcile")
+assert(plan_result_valid, "balanced worker assignments must conserve all jobs")
+assert(schedule_result.completed_jobs == 18, "three logical rounds must complete eighteen jobs")
+assert(not invalid_worker_plan.valid, "zero workers must be rejected")
+assert(hardware_result.valid and hardware_result.read_only, "hardware evidence must remain read-only")
+assert(not writable_hardware_result.valid, "writable hardware profiles must be rejected")
+assert(memory_plan.accepted and not memory_plan.applied, "memory changes must remain proposals")
+assert(not denied_memory_plan.accepted, "memory requests above the budget must be rejected")
+assert(replay_is_stable, "the same input must produce the same state and event stream")
+assert(all_passed, "processor control-plane verification failed")
+
+let report = {
+    "schema": "pytyliki.processor-kernel-report.v1",
+    "runtime": {
+        "language": "Reaper",
+        "language_version": "0.2",
+        "engine": "verified-stack-vm",
+        "mode": "read-only-control-plane",
+        "native_threads_started": 0
+    },
+    "verification": {
+        "trace_valid": trace_result.valid,
+        "events_checked": trace_result.events_checked,
+        "accepted_events": trace_result.accepted_events,
+        "rejected_events": trace_result.rejected_events,
+        "errors": trace_result.errors,
+        "scheduler_plan_valid": plan_result_valid and schedule_result.valid,
+        "hardware_evidence_valid": hardware_result.valid and not writable_hardware_result.valid,
+        "memory_plan_valid": memory_plan.accepted and not memory_plan.applied,
+        "invalid_thread_plan_rejected": not invalid_worker_plan.valid,
+        "over_budget_memory_rejected": not denied_memory_plan.accepted,
+        "writable_hardware_profile_rejected": not writable_hardware_result.valid,
+        "all_passed": all_passed
+    },
+    "determinism": {
+        "repeatable": replay_is_stable,
+        "event_stream_equal": state_run.events == replay_run.events,
+        "final_snapshot_equal": state_run.final_snapshot == replay_run.final_snapshot
+    },
+    "action_pulse": {
+        "total_actions": state_run.final_snapshot.action_count,
+        "accepted_actions": state_run.final_snapshot.accepted_count,
+        "rejected_actions": state_run.final_snapshot.rejected_count,
+        "generation": state_run.final_snapshot.generation,
+        "state_version": state_run.final_snapshot.state_version
+    },
+    "initial_snapshot": state_run.initial_snapshot,
+    "state_snapshot": state_run.final_snapshot,
+    "state_event_table": state_run.events,
+    "state_graph": state_graph,
+    "hardware_evidence": hardware_result,
+    "scheduler_plan": work_plan,
+    "scheduler_execution": schedule_result,
+    "memory_resize_plan": memory_plan,
+    "memory_rejected_example": denied_memory_plan,
+    "operation_table": operation_table,
+    "thread_table": schedule_result.lanes,
+    "memory_table": [memory_plan, denied_memory_plan]
+}
+
+write_json("build/processor-kernel-report.json", report)
+emit "PYTYLIKI_REAPER_PROCESSOR_KERNEL:PASS"
+emit "state actions = " ++ text(report.action_pulse.total_actions)
+emit "logical lanes = " ++ text(report.scheduler_execution.worker_count)
+emit "completed logical jobs = " ++ text(report.scheduler_execution.completed_jobs)
+emit "state graph = " ++ text(report.state_graph.node_count) ++
+    " nodes / " ++ text(report.state_graph.edge_count) ++ " edges"
+emit "report = build/processor-kernel-report.json"

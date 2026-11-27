@@ -1,0 +1,61 @@
+# Memory growth planner. It emits proposals only; it never allocates or maps memory.
+
+const MAX_TRACKED_BYTES = 1099511627776
+const MAX_GENERATION = 1000000
+
+fn whole_between(value, minimum, maximum) {
+    return kind(value) == "number" and value % 1 == 0 and value >= minimum and value <= maximum
+}
+
+export fn propose_resize(current_bytes, requested_bytes, budget_bytes, generation) {
+    let valid_input =
+        whole_between(current_bytes, 0, MAX_TRACKED_BYTES) and
+        whole_between(requested_bytes, 0, MAX_TRACKED_BYTES) and
+        whole_between(budget_bytes, 1, MAX_TRACKED_BYTES) and
+        whole_between(generation, 0, MAX_GENERATION)
+
+    let accepted = false
+    let status = "rejected"
+    let reason = "invalid-input"
+    let next_bytes = current_bytes
+    let next_generation = generation
+    let delta_bytes = 0
+
+    if valid_input {
+        if current_bytes > budget_bytes {
+            reason = "current-allocation-exceeds-budget"
+        } else if requested_bytes > budget_bytes {
+            reason = "request-exceeds-budget"
+        } else {
+            accepted = true
+            next_bytes = requested_bytes
+            delta_bytes = requested_bytes - current_bytes
+            reason = "within-budget"
+            status = "planned"
+            if requested_bytes == current_bytes {
+                reason = "unchanged"
+                status = "no-op"
+            } else {
+                next_generation = generation + 1
+            }
+        }
+    }
+
+    return {
+        "schema": "pytyliki.memory-resize-plan.v1",
+        "mode": "plan-only",
+        "valid_input": valid_input,
+        "accepted": accepted,
+        "status": status,
+        "reason": reason,
+        "previous_bytes": current_bytes,
+        "requested_bytes": requested_bytes,
+        "budget_bytes": budget_bytes,
+        "next_bytes": next_bytes,
+        "delta_bytes": delta_bytes,
+        "generation": generation,
+        "next_generation": next_generation,
+        "applied": false,
+        "requires_host_adapter": accepted and delta_bytes != 0
+    }
+}

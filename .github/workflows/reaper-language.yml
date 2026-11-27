@@ -5,6 +5,7 @@ on:
     paths:
       - "automation/reaper/**"
       - "docs/REAPER_LANGUAGE_INTEGRATION.md"
+      - "docs/REAPER_PROCESSOR_KERNEL.md"
       - "src/interop.*"
       - "CMakeLists.txt"
       - ".github/workflows/reaper-language.yml"
@@ -12,6 +13,7 @@ on:
     branches: [main, "feat/**"]
     paths:
       - "automation/reaper/**"
+      - "docs/REAPER_PROCESSOR_KERNEL.md"
       - "src/interop.*"
       - "CMakeLists.txt"
       - ".github/workflows/reaper-language.yml"
@@ -48,3 +50,17 @@ jobs:
       - name: Verify the versioned Reaper report
         run: |
           python -c "import json,pathlib; p=json.loads(pathlib.Path('build/reaper-metrics-report.json').read_text()); assert p['schema']=='pytyliki.reaper-metrics.v1'; assert p['vector_norm']==5.0; assert p['dot_product']==11.0; assert p['euclidean_distance']==5.0; assert p['orthogonal'] is True; assert p['plugin_count']==18; assert p['primary_plugin']=='operandu'; assert p['primary_plugin_service']=='inspect_value'"
+
+      - name: Check the Reaper processor control kernel
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/processor_kernel.rpr
+      - name: Execute the Reaper processor control kernel in the verified VM
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --engine vm automation/reaper/processor_kernel.rpr
+      - name: Verify the deterministic processor report
+        run: |
+          test -s build/processor-kernel-report.json
+          grep -Fq 'pytyliki.processor-kernel-report.v1' build/processor-kernel-report.json
+          grep -Fq 'all_passed' build/processor-kernel-report.json
