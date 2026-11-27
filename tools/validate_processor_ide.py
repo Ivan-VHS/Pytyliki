@@ -91,6 +91,19 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
     if set(mode_ids) != EXPECTED_MODES or len(mode_ids) != len(EXPECTED_MODES):
         errors.append("target_model.modes must define all seven unique execution modes")
 
+    palette = data.get("signal_palette", {})
+    palette_states = palette.get("states", [])
+    expected_signal_states = {"high", "low", "floating", "contended", "unknown"}
+    signal_ids = [item.get("id") for item in palette_states]
+    if set(signal_ids) != expected_signal_states or len(signal_ids) != len(expected_signal_states):
+        errors.append("signal_palette must define high, low, floating, contended and unknown states")
+    if palette.get("scope") != "waveform_and_electrical_signal_views_only":
+        errors.append("signal palette must remain scoped to signal views")
+    if palette.get("theme_independent") is not True:
+        errors.append("signal palette must be independent from the global IDE theme")
+    if not isinstance(palette.get("accessibility"), str) or len(palette["accessibility"]) < 40:
+        errors.append("signal palette must include non-color accessibility guidance")
+
     evidence = data.get("evidence", {})
     if len(evidence.get("modes", [])) < 8:
         errors.append("evidence must distinguish at least eight evidence modes")
