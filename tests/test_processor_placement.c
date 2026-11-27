@@ -57,8 +57,8 @@ static void test_unknown_locality_fails_closed_when_required(void) {
     input.numa_capacity = NULL; input.numa_capacity_count = 0u;
     input.tasks = &task; input.task_count = 1u;
     assert(pl_processor_placement_plan(&input, &result, 1u, &count) == PL_PLACEMENT_OK);
-    assert(result.assigned == 1u);
-    assert(result.numa_cost == 100000u);
+    assert(result.assigned == 0u);
+    assert((result.reasons & PL_PLACEMENT_REASON_NUMA_UNKNOWN) != 0u);
 }
 
 int main(void) {
