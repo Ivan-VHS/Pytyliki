@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "processor_topology.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,6 +57,9 @@ typedef enum {
     PL_PROCESSOR_FABRIC_PROCESS_POOL,
     PL_PROCESSOR_FABRIC_PROCESS,
     PL_PROCESSOR_FABRIC_ARTIFACT,
+    PL_PROCESSOR_FABRIC_PROCESSOR_GROUP,
+    PL_PROCESSOR_FABRIC_NUMA_NODE,
+    PL_PROCESSOR_FABRIC_CACHE,
     PL_PROCESSOR_FABRIC_NODE_KIND_COUNT
 } pl_processor_fabric_node_kind;
 
@@ -77,6 +81,7 @@ typedef enum {
     PL_PROCESSOR_FABRIC_MAPS_TO,
     PL_PROCESSOR_FABRIC_USES,
     PL_PROCESSOR_FABRIC_PRODUCES,
+    PL_PROCESSOR_FABRIC_SHARES_CACHE,
     PL_PROCESSOR_FABRIC_EDGE_KIND_COUNT
 } pl_processor_fabric_edge_kind;
 
@@ -195,6 +200,13 @@ pl_processor_fabric_status pl_processor_fabric_plan(
 /* Counts the existing static catalogues without copying or executing them. */
 pl_processor_fabric_status pl_processor_fabric_collect_catalogues(
     pl_processor_fabric_catalogues *out);
+
+/* Build a bounded PPF topology graph from one read-only OS evidence snapshot. */
+pl_processor_fabric_status pl_processor_fabric_from_topology(
+    const pl_processor_topology_snapshot *topology,
+    pl_processor_fabric_node *nodes, size_t node_capacity, size_t *node_count,
+    pl_processor_fabric_edge *edges, size_t edge_capacity, size_t *edge_count,
+    pl_processor_fabric_error *error);
 
 /* Serialize a validated summary and plan to a caller-owned JSON buffer. */
 pl_processor_fabric_status pl_processor_fabric_report_json(
