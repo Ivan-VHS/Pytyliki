@@ -37,7 +37,7 @@ A marker is never a secret hardware instruction. It normalizes into a documented
 
 - **Reaper** owns canonical grammar, parsing, type/effect semantics, diagnostics, `Span`/`SourceMap`, typed IR and compiler passes.
 - **Pytyliki** owns the Omega-Null research profile, physics/hardware model descriptors, adapters, simulation orchestration, evidence and qualification.
-- **Duck OS** mediates process isolation, protected device access, sensors, BCI devices, driver lifecycle and privileged services.
+- **DAK OS** mediates process isolation, protected device access, sensors, BCI devices, driver lifecycle and privileged services.
 - **Board and laboratory backends** supply exact board, quantum-device, materials, manufacturing and EDA tool interfaces, including calibration and revision metadata.
 
 Omega-Null must not fork Reaper's language grammar or invent a parallel IR. Its markers map into canonical Reaper AST/typed IR nodes plus explicit effects. A syntax prototype is not considered an executable frontend until the pinned Reaper checker accepts it and golden Span/IR tests pass.
@@ -277,7 +277,7 @@ The eventual implementation is a Reaper-owned frontend/grammar profile with Omeg
 3. **Model-only core:** implement bounded experiment orchestration, model sandbox, checkpoint/replay and evidence metadata in Pytyliki.
 4. **Quantum/field adapters:** add reference models and seeded simulation, then differential tests against independently specified fixtures.
 5. **Material pipeline:** add versioned species/material models and design artifacts; only later integrate actual CAD/manufacturing tools.
-6. **BCI adapters:** require an explicitly supported device, Duck OS permissions, user consent and privacy review.
+6. **BCI adapters:** require an explicitly supported device, DAK OS permissions, user consent and privacy review.
 7. **Hardware qualification:** introduce named lab targets and operator-approved tests; do not generalize one device result to all hardware.
 
 Each stage is a separate reviewable PR with tests and explicit unsupported behavior. The initial Omega-Null profile remains research-only.
