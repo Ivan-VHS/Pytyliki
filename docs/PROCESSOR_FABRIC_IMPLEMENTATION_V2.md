@@ -25,7 +25,7 @@ The report uses `pytyliki.processor-topology-evidence.v2`. Collection is local a
 
 `pl_processor_fabric_from_topology()` converts one validated topology snapshot to bounded PPF nodes and edges. It creates only parent nodes backed by observed identifiers; a logical processor whose parent is unknown remains a root. NUMA and processor-group associations are explicit `maps-to` edges. Cache-sharing is represented by `shares-cache` edges.
 
-PPF v1 still uses a 64-bit worker-affinity mask. Therefore the graph bridge rejects logical IDs >=64 rather than dropping workers or aliasing their affinity bits. The topology collector itself can retain IDs up to 255. A future PPF ABI generation must widen the worker mask before the full 256-CPU graph can be planned.
+Processor Fabric ABI v2 widens worker affinity to four 64-bit words (256 logical processor IDs). The graph bridge preserves sparse IDs, including IDs above 63, and the planner evaluates the corresponding bit without truncating it. Consumers must pin ABI major 2 and must not pass v1 node layouts to v2 functions.
 
 ## NUMA/cache-aware Placement v2
 
@@ -47,7 +47,7 @@ CLI for a bounded advisory cost report:
 ./build/pytyliki-placement --task 1,10,0,1200,1048576,25000000,1,0x4,1
 ```
 
-Repeat `--task` to add tasks. The fields are task ID, priority, preferred NUMA node (or `unknown`), requested load in basis points, working set in bytes, bandwidth demand in bytes/second, ISA feature mask, first 64-bit affinity mask (zero means unrestricted), and require-local-NUMA (0/1).
+Repeat `--task` to add tasks. The fields are task ID, priority, preferred NUMA node (or `unknown`), requested load in basis points, working set in bytes, bandwidth demand in bytes/second, ISA feature mask, first 64-bit affinity word (zero across all four words means unrestricted), and require-local-NUMA (0/1).
 
 The CLI starts with a zero pressure baseline because it has no live per-core utilization or memory-controller telemetry source yet. The report explicitly says whether caller pressure input was present. This is a reproducible estimate, not a measurement or OS scheduling decision. It never pins threads, changes affinity, reserves CPUs, launches processes or alters scheduling policy.
 
@@ -78,7 +78,7 @@ This library validates descriptors and changes only the caller-owned in-memory m
 | Area | Source added in this slice | Still required |
 |---|---|---|
 | Windows/Linux topology | Read-only collectors and JSON serializer | CI build on both OSes, fixture comparisons and Windows SDK compatibility |
-| PPF topology bridge | Graph builder and sparse-ID tests | Wider PPF ABI for IDs >=64 |
+| PPF topology bridge | Graph builder, 256-bit affinity and sparse-ID tests | Windows/Linux CI, schema-to-C report checks and full test runs |
 | Placement v2 | NUMA/cache/SMT/bandwidth cost model and CLI | Calibrated pressure providers, negative/edge-case CI and schema validation |
 | Hardware resources | Native descriptor validator and DMA state transitions | Extended fuzz/property tests, schema-to-C conformance, richer device and IOMMU models |
 | Reaper PPF importer | No native importer in this repository | Reaper local JSON importer, digest/generation/reference checks and Canonical Typed IR adapter |
