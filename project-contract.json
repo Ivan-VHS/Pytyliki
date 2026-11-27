@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, versioned native interoperability, and bounded local neural-model execution.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -130,6 +130,18 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "neuro.bounded-framework-suite",
+      "status": "implemented",
+      "summary": "Six named C11 neural frameworks provide bounded feed-forward inference, opt-in SGD training, batch execution, privacy-policy admission and peer-contract validation.",
+      "evidence": [
+        "src/neuro_suite.h",
+        "src/neuro_suite.c",
+        "contracts/neuro-suite.v1.json",
+        "tests/test_neuro_suite.c",
+        "docs/NEURO_SUITE.md"
+      ]
     }
   ],
   "interfaces": [
@@ -152,6 +164,19 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "pytyliki.neuro-suite.v1",
+      "format": "Versioned caller-owned-buffer C11 neural model and contract API",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "src/neuro_suite.h",
+        "src/neuro_suite.c",
+        "contracts/neuro-suite.v1.json",
+        "schemas/neuro-suite.v1.schema.json",
+        "tests/test_neuro_suite.c"
       ]
     }
   ],
@@ -201,7 +226,10 @@
     "Processor and hardware inspection is read-only; no firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.",
     "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
-    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable."
+    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
+    "Neural model execution is bounded, local and CPU-only; inputs, weights and workspace are caller-owned and the runtime does not perform network transfer or telemetry.",
+    "Training, batch execution and federation checks require explicit versioned contract flags.",
+    "The six-framework registry and its contract do not certify accuracy, fairness, privacy or decision suitability."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
