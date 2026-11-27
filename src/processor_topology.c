@@ -381,11 +381,14 @@ static pl_topology_status collect_linux(pl_processor_topology_snapshot *out) {
     collect_linux_caches(out, &cache_id);
     (void)snprintf(out->collector, sizeof(out->collector), "linux-sysfs");
     out->complete = 1u;
+    if (out->numa_node_count == 0u || out->cache_count == 0u)
+        out->complete = 0u;
     for (cpu_index = 0u; cpu_index < os_count; ++cpu_index) {
         const pl_topology_logical_processor *cpu = &out->logical_processors[cpu_index];
         if (cpu->package_id == PL_TOPOLOGY_UNKNOWN_ID ||
             cpu->core_id == PL_TOPOLOGY_UNKNOWN_ID ||
-            cpu->thread_id == PL_TOPOLOGY_UNKNOWN_ID)
+            cpu->thread_id == PL_TOPOLOGY_UNKNOWN_ID ||
+            cpu->numa_node_id == PL_TOPOLOGY_UNKNOWN_ID)
             out->complete = 0u;
     }
     return PL_TOPOLOGY_OK;
