@@ -177,9 +177,9 @@ def workflow_has_unscoped_write(text):
                 continue
             if in_permissions and indent <= permission_indent:
                 in_permissions = False
-            if in_permissions and re.match(r"^contents\\s*:\\s*write\\b", stripped, re.I):
+            if in_permissions and re.match(r"^contents\s*:\s*write\b", stripped, re.I):
                 return True
-            if in_permissions and re.match(r"^permissions\\s*:\\s*write-all\\b", stripped, re.I):
+            if in_permissions and re.match(r"^permissions\s*:\s*write-all\b", stripped, re.I):
                 return True
         return False
 
@@ -188,7 +188,7 @@ def workflow_has_unscoped_write(text):
         return True
 
     job_headers = [
-        (i, re.match(r"^  ([A-Za-z0-9_-]+):\\s*$", line))
+        (i, re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line))
         for i, line in enumerate(lines[jobs_index + 1:], jobs_index + 1)
     ]
     job_headers = [(i, match.group(1)) for i, match in job_headers if match]
@@ -200,8 +200,8 @@ def workflow_has_unscoped_write(text):
 
         guarded_release = (
             job_name == "publish-release"
-            and any(re.search(r"^\\s{4}if:\\s*startsWith\\(github\\.ref,\\s*['\\\"]refs/tags/['\\\"]\\)", line) for line in block)
-            and any(re.match(r"^\\s{4}needs:\\s*build-windows\\s*$", line) for line in block)
+            and any(re.search(r"^\s{4}if:\s*startsWith\(github\.ref,\s*['\"]refs/tags/['\"]\)", line) for line in block)
+            and any(re.match(r"^\s{4}needs:\s*build-windows\s*$", line) for line in block)
         )
         if not guarded_release:
             return True
