@@ -28,10 +28,6 @@ static int range_valid(uint64_t base,uint64_t length,uint8_t bits) {
     if (bits<64u && (end>>bits)!=0u) return 0;
     return 1;
 }
-static int duplicate_u32(uint32_t value,const uint32_t *values,size_t count,size_t self) {
-    for(size_t i=0u;i<count;++i) if(i!=self && values[i]==value) return 1;
-    return 0;
-}
 pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
     if(m==NULL || m->generation==0u ||
        (m->space_count!=0u && m->spaces==NULL) ||
@@ -93,7 +89,8 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
                 if(r->base<=o_end && other->base<=r_end &&
                    (r->alias_group==0u || r->alias_group!=other->alias_group ||
                     r->owner!=other->owner))
-                    return PL_HW_RESOURCE_OVERLAP;
+                        return PL_HW_RESOURCE_OVERLAP;
+                }
             }
         }
     }
@@ -139,10 +136,14 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
             if(r->bank_id==other->bank_id &&
                (other->width_bits==8u || other->width_bits==16u ||
                 other->width_bits==32u || other->width_bits==64u)) {
-                uint64_t r_end=r->offset+width_bytes-1u;
-                uint64_t o_end=other->offset+(uint64_t)other->width_bits/8u-1u;
-                if(r->offset<=o_end && other->offset<=r_end)
-                    return PL_HW_RESOURCE_OVERLAP;
+                uint64_t other_width=(uint64_t)other->width_bits/8u;
+                if(other->offset<=region->length &&
+                   other_width<=region->length-other->offset) {
+                    uint64_t r_end=r->offset+width_bytes-1u;
+                    uint64_t o_end=other->offset+other_width-1u;
+                    if(r->offset<=o_end && other->offset<=r_end)
+                        return PL_HW_RESOURCE_OVERLAP;
+                }
             }
         }
     }
