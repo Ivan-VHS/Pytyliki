@@ -1,0 +1,43 @@
+name: Pytyliki Iron Syntax v1
+
+on:
+  pull_request:
+    paths:
+      - "src/iron_syntax.*"
+      - "src/iron_syntax_cli.c"
+      - "tests/test_iron_syntax.c"
+      - "examples/iron.syntax"
+      - "docs/IRON_SYNTAX_V1.md"
+      - ".github/workflows/iron-syntax.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/iron_syntax.*"
+      - "src/iron_syntax_cli.c"
+      - "tests/test_iron_syntax.c"
+      - "examples/iron.syntax"
+      - "docs/IRON_SYNTAX_V1.md"
+      - ".github/workflows/iron-syntax.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  iron-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Compile with strict C11 diagnostics
+        run: |
+          cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror \
+            -Isrc src/iron_syntax.c tests/test_iron_syntax.c -o iron-syntax-tests
+          cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror \
+            -Isrc src/iron_syntax.c src/iron_syntax_cli.c -o pytyliki-iron
+      - name: Run exact vocabulary conformance tests
+        run: ./iron-syntax-tests
+      - name: Validate canonical corpus and AST envelope
+        run: |
+          ./pytyliki-iron --check examples/iron.syntax
+          ./pytyliki-iron --ast-json examples/iron.syntax > iron-ast.json
+          grep -q '"schema":"pytyliki.iron-syntax-ast.v1"' iron-ast.json
+          grep -q '"execution_performed":false' iron-ast.json
