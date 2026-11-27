@@ -8,7 +8,7 @@ This increment connects PTFR to real operating-system hardware-error reporting s
 
 Source: \`src/platform_windows_whea.c\`.
 
-The adapter queries the local \`System\` event log for records from \`Microsoft-Windows-WHEA-Logger\` with the Windows Event Log API (\`EvtQuery\`, \`EvtNext\`, \`EvtRender\`). WHEA publishes hardware-error notifications as ETW events and records them in the system event log. This is a bounded pull reader, not a persistent ETW session or a subscription callback.
+The adapter queries the local \`System\` event log for records from \`Microsoft-Windows-WHEA-Logger\` with the Windows Event Log API (\`EvtQuery\`, \`EvtNext\`, \`EvtRender\`). WHEA publishes hardware-error notifications as ETW events and records them in the system event log. This is a bounded pull reader. The same adapter also exposes `pl_tr_windows_whea_wait_next`, a bounded one-event notification subscription to `Microsoft-Windows-Kernel-WHEA/Errors`, whose event payload follows the ACPI/UEFI CPER format. The notification callback is stopped before the function returns; the Event Log service owns and closes callback event handles. No long-running ETW session or WHEA management operation is enabled by the application.
 
 - Maximum batch: 128 events.
 - Resume watermark: caller-provided WHEA event-record ID.

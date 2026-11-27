@@ -13,6 +13,10 @@ int pl_tr_windows_whea_collect(pl_tr_evidence_ledger *ledger,
                                uint64_t after_record_id,
                                size_t maximum_events,
                                size_t *events_added);
+/* Waits for one new CPER event on Microsoft-Windows-Kernel-WHEA/Errors.
+ * timeout_ms is bounded to 1..60000; the API is read-only. */
+int pl_tr_windows_whea_wait_next(uint32_t timeout_ms,
+                                 pl_tr_platform_event *event);
 #endif
 
 /* Optional Rust static adapter; reads EDAC sysfs counters without writing to sysfs. */

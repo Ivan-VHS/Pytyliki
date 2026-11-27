@@ -25,7 +25,8 @@ static uint32_t event_level_to_severity(BYTE level) {
     default: return PL_TR_SEVERITY_UNKNOWN;
     }
 }
-static int render_event(EVT_HANDLE handle,pl_tr_platform_event *out) {
+static int render_event(EVT_HANDLE handle,const char *source_identity,
+                        pl_tr_platform_event *out) {
     EVT_VARIANT values[EvtSystemPropertyIdEND];
     DWORD buffer_used=0u,property_count=0u;
     DWORD xml_bytes=0u,xml_props=0u;
@@ -74,8 +75,12 @@ static int render_event(EVT_HANDLE handle,pl_tr_platform_event *out) {
     out->cpu_id=PL_TR_UNKNOWN_CPU;
     out->severity=event_level_to_severity(level);
     out->kind=PL_TR_EVIDENCE_UNKNOWN;
-    memcpy(out->source_identity,"Microsoft-Windows-WHEA-Logger",
-           sizeof "Microsoft-Windows-WHEA-Logger");
+    if(source_identity==NULL ||
+       strlen(source_identity)>=sizeof out->source_identity) {
+        free(xml);
+        return -5;
+    }
+    memcpy(out->source_identity,source_identity,strlen(source_identity)+1u);
     status=pl_tr_sha256_hex(xml,(size_t)xml_chars*sizeof(wchar_t),
                             out->payload_sha256);
     free(xml);
@@ -108,7 +113,7 @@ int pl_tr_windows_whea_collect(pl_tr_evidence_ledger *ledger,
             if(error!=ERROR_NO_MORE_ITEMS) result=-3;
             break;
         }
-        if(render_event(event,&normalized)!=0) {
+        if(render_event(event,"Microsoft-Windows-WHEA-Logger",&normalized)!=0) {
             EvtClose(event);
             result=-4;
             break;
@@ -131,3 +136,64 @@ int pl_tr_windows_whea_collect(pl_tr_evidence_ledger *ledger,
     return 0;
 }
 #endif
+
+
+typedef struct {
+    HANDLE ready_event;
+    volatile LONG active_callbacks;
+    volatile LONG delivered;
+    int result;
+    pl_tr_platform_event event;
+} pl_tr_whea_wait_context;
+
+static DWORD WINAPI whea_wait_callback(EVT_SUBSCRIBE_NOTIFY_ACTION action,
+                                       PVOID context,EVT_HANDLE event_handle) {
+    pl_tr_whea_wait_context *wait=(pl_tr_whea_wait_context *)context;
+    InterlockedIncrement(&wait->active_callbacks);
+    if(InterlockedCompareExchange(&wait->delivered,1,0)==0) {
+        if(action==EvtSubscribeActionDeliver && event_handle!=NULL) {
+            wait->result=render_event(event_handle,
+                "Microsoft-Windows-Kernel-WHEA/Errors",&wait->event);
+            /* Event Log owns this callback event handle and closes it on return. */
+        } else {
+            wait->result=-6;
+        }
+        SetEvent(wait->ready_event);
+    }
+    InterlockedDecrement(&wait->active_callbacks);
+    return ERROR_SUCCESS;
+}
+
+int pl_tr_windows_whea_wait_next(uint32_t timeout_ms,
+                                 pl_tr_platform_event *event) {
+    static const wchar_t channel[]=
+        L"Microsoft-Windows-Kernel-WHEA/Errors";
+    pl_tr_whea_wait_context wait;
+    EVT_HANDLE subscription;
+    DWORD wait_result;
+    if(event==NULL || timeout_ms==0u || timeout_ms>60000u) return -1;
+    memset(&wait,0,sizeof wait);
+    wait.ready_event=CreateEventW(NULL,TRUE,FALSE,NULL);
+    if(wait.ready_event==NULL) return -2;
+
+    /* The kernel WHEA Errors channel carries detailed CPER event records. */
+    subscription=EvtSubscribe(NULL,NULL,channel,L"*",NULL,&wait,
+        whea_wait_callback,EvtSubscribeToFutureEvents);
+    if(subscription==NULL) {
+        CloseHandle(wait.ready_event);
+        return -3;
+    }
+
+    wait_result=WaitForSingleObject(wait.ready_event,(DWORD)timeout_ms);
+    EvtClose(subscription);
+    /* EvtClose stops the subscription; wait for an already-running callback. */
+    while(InterlockedCompareExchange(&wait.active_callbacks,0,0)!=0)
+        Sleep(1u);
+    CloseHandle(wait.ready_event);
+
+    if(wait_result==WAIT_TIMEOUT) return -4;
+    if(wait_result!=WAIT_OBJECT_0) return -5;
+    if(wait.result!=0) return wait.result;
+    *event=wait.event;
+    return 0;
+}

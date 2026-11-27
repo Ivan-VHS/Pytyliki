@@ -7,8 +7,9 @@
 
 #if defined(_WIN32)
 static void usage(void) {
-    puts("Usage: pytyliki-ptfr --whea [after-record-id] --jsonl FILE [--max-events N]");
-    puts("Queries recent Microsoft-Windows-WHEA-Logger records from the local System log.");
+    puts("Usage: pytyliki-ptfr --whea [after-record-id] --jsonl FILE [--max-events N]
+       pytyliki-ptfr --whea-wait-ms 1..60000 --jsonl FILE");
+    puts("Queries recent WHEA Logger records or waits for one Kernel-WHEA CPER notification.");
 }
 #else
 static void usage(void) {
@@ -45,8 +46,13 @@ int main(int argc,char **argv) {
         size_t maximum=64u;
         int i;
         int selected=0;
+        uint64_t wait_ms=0u;
         for(i=1;i<argc;++i) {
             if(strcmp(argv[i],"--whea")==0) selected=1;
+            else if(strcmp(argv[i],"--whea-wait-ms")==0 && i+1<argc) {
+                if(parse_u64(argv[++i],&wait_ms)!=0 || wait_ms<1u || wait_ms>60000u) return 2;
+                selected=2;
+            }
             else if(strcmp(argv[i],"--jsonl")==0 && i+1<argc) output_path=argv[++i];
             else if(strcmp(argv[i],"--max-events")==0 && i+1<argc) {
                 uint64_t parsed;
@@ -59,7 +65,16 @@ int main(int argc,char **argv) {
             }
         }
         if(!selected || output_path==NULL) { usage(); return 2; }
-        status=pl_tr_windows_whea_collect(&ledger,watermark,maximum,&added);
+        if(selected==2) {
+            pl_tr_platform_event event;
+            status=pl_tr_windows_whea_wait_next((uint32_t)wait_ms,&event);
+            if(status==0) {
+                status=pl_tr_evidence_append(&ledger,&event);
+                if(status==PL_TR_EVIDENCE_OK) added=1u;
+            }
+        } else {
+            status=pl_tr_windows_whea_collect(&ledger,watermark,maximum,&added);
+        }
     }
 #else
     {

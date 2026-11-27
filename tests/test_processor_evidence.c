@@ -1,6 +1,7 @@
 #include "processor_evidence.h"
 #include "processor_affinity.h"
 #include "processor_arch.h"
+#include "platform_adapters.h"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -87,6 +88,13 @@ static void test_affinity_rejects_invalid_requests(void) {
     assert(pl_tr_affinity_apply_current(UINT32_MAX,UINT32_MAX,&lease)<0);
     assert(pl_tr_affinity_restore_current(&lease)<0);
 }
+static void test_whea_wait_bounds(void) {
+#if defined(_WIN32)
+    pl_tr_platform_event event;
+    assert(pl_tr_windows_whea_wait_next(0u,&event)==-1);
+    assert(pl_tr_windows_whea_wait_next(60001u,&event)==-1);
+#endif
+}
 static void test_assembly_cpuid(void) {
 #if defined(PYTYLIKI_HAVE_ASM_CPUID)
     uint32_t signature=0u,apic=0u;
@@ -100,6 +108,7 @@ int main(void) {
     test_append_verify_export_and_tamper();
     test_invalid_and_full();
     test_affinity_rejects_invalid_requests();
+    test_whea_wait_bounds();
     test_assembly_cpuid();
     puts("Pytyliki platform evidence tests passed.");
     return 0;
