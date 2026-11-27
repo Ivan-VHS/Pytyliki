@@ -153,7 +153,8 @@
         "src/hardware_syntax_cli.c",
         "tests/test_hardware_syntax.c",
         "docs/PYTYLIKI_HARDWARE_SYNTAX.md",
-        "examples/hardware-constructs"
+        "examples/hardware-constructs",
+        "schemas/pytyliki.hardware-construct-ast.v1.schema.json"
       ]
     }
   ],
