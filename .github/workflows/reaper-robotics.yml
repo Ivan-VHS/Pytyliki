@@ -44,7 +44,7 @@ jobs:
       - name: Validate versioned robotics contracts
         run: |
           jq -e '.operations | length == 13' robotics/contracts.v1.json
-          jq -e '.operations | length == 13' robotics/compiler_contract.v1.json
+          jq -e '.lowering | length == 13' robotics/compiler_contract.v1.json
       - name: Check Reaper robotics source
         env:
           PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
