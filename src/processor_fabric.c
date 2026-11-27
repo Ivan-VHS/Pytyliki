@@ -829,7 +829,9 @@ static uint32_t add_topology_node(
     node->domain_mask = kind == PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR
         ? PL_PROCESSOR_FABRIC_DOMAIN_HOST : 0u;
     node->feature_mask = feature_mask;
-    node->logical_id = logical_id;
+    node->logical_id = kind == PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR
+        ? logical_id : PL_TOPOLOGY_UNKNOWN;
+    node->hardware_local_id = logical_id;
     node->capacity_basis_points = capacity_basis_points;
     ++(*count);
     return node->id;
@@ -873,9 +875,6 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
     if (pl_processor_topology_validate(topology) != PL_TOPOLOGY_OK)
         return fail(error, PL_PROCESSOR_FABRIC_INVALID_GENERATION,
                     0u, 0u, 0u, "topology evidence is invalid");
-    if (topology->logical_cpu_count > 64u)
-        return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED,
-                    0u, 0u, 0u, "PPF v1 worker affinity is limited to 64 logical CPUs");
     if (node_capacity > PL_PROCESSOR_FABRIC_MAX_NODES)
         node_capacity = PL_PROCESSOR_FABRIC_MAX_NODES;
     if (edge_capacity > PL_PROCESSOR_FABRIC_MAX_EDGES)
@@ -959,6 +958,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
         if (cpu_node_id == 0u)
             return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                         cpu->logical_id, 0u, 0u, "node buffer exhausted at logical CPU");
+        nodes[used_nodes - 1u].hardware_local_id = cpu->os_id;
         nodes[used_nodes - 1u].affinity_mask[cpu->logical_id / 64u] =
             UINT64_C(1) << (cpu->logical_id % 64u);
 
