@@ -41,7 +41,7 @@ def validate_data(data: dict[str, Any]) -> list[str]:
         errors.append("Omega-Null grammar cannot be marked implemented by the research profile alone")
 
     ownership = data.get("ownership", {})
-    for owner in ("reaper", "pytyliki", "duck_os", "board_and_lab_backends"):
+    for owner in ("reaper", "pytyliki", "dak_os", "board_and_lab_backends"):
         if not isinstance(ownership.get(owner), str) or len(ownership[owner]) < 40:
             errors.append(f"ownership.{owner} must declare a substantive boundary")
 

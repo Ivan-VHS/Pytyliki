@@ -20,7 +20,7 @@
   "ownership": {
     "reaper": "Owns the canonical parser, syntax/grammar, typing, effects, diagnostics, Span/SourceMap and typed IR. Omega-Null must lower through canonical Reaper contracts, not fork the compiler.",
     "pytyliki": "Owns the research profile, hardware/physics model descriptors, simulation orchestration, evidence and target adapter registry.",
-    "duck_os": "Mediates process isolation, device permissions, sensor/BCI access, driver lifecycle and privileged hardware services.",
+    "dak_os": "Mediates process isolation, device permissions, sensor/BCI access, driver lifecycle and privileged hardware services.",
     "board_and_lab_backends": "Provide exact board, quantum-device, materials, fabrication and laboratory tool adapters; each adapter declares identity, revision, calibration and safety limits."
   },
   "semantic_layers": [

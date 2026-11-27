@@ -37,16 +37,16 @@ The status of the 100 rules is deliberately conservative:
 
 These are rule counts, not a percentage of code completion. A rule is promoted only after its acceptance evidence exists on the integration branch. An open PR must pass review and CI before changing the baseline.
 
-## 3. Ownership: Pytyliki, Reaper, Duck OS and board backends
+## 3. Ownership: Pytyliki, Reaper, DAK OS and board backends
 
 | Owner | Canonical responsibility |
 |---|---|
 | **Pytyliki** | Processor/device profiles, hardware-domain APIs, native adapters, simulators, evidence, diagnostics and qualification workflows |
 | **Reaper** | Canonical language syntax, type/effect semantics, `Span`/`SourceMap`, typed IR, compiler passes and shared ABI/compiler contracts |
-| **Duck OS** | Privileged process/device services, protected memory mappings, driver lifecycle, interrupt routing and OS-mediated permissions |
+| **DAK OS** | Privileged process/device services, protected memory mappings, driver lifecycle, interrupt routing and OS-mediated permissions |
 | **Board backend** | Exact SoC/board memory maps, startup/linker configuration, vendor HAL, electrical/process libraries and physical-design sign-off |
 
-Pytyliki must not fork Reaper's grammar, type system or canonical IR. Its hardware-specific constructs are introduced through versioned Reaper contracts and target modules. Duck OS is an execution and privilege boundary, not a reason to put kernel privileges into the workstation process.
+Pytyliki must not fork Reaper's grammar, type system or canonical IR. Its hardware-specific constructs are introduced through versioned Reaper contracts and target modules. DAK OS is an execution and privilege boundary, not a reason to put kernel privileges into the workstation process.
 
 ## 4. Execution and access modes
 
@@ -80,15 +80,15 @@ The following names are stable design identifiers for the workstream, not claims
 | `pyty.mmu` | Page-table formats, translation and TLB model/adapters. | Planned | joint |
 | `pyty.cache` | Cache hierarchy, maintenance and coherence contracts. | Open PR only | joint |
 | `pyty.atomic` | Atomics, fences and memory-ordering litmus tests. | Open PR only | joint |
-| `pyty.mmio` | Typed MMIO maps and capability-bounded device register access. | Open PR only | duck-os |
-| `pyty.bus` | Bus inventory, protocol adapters and transaction models. | Planned | duck-os |
-| `pyty.irq` | Interrupt routing, vector and execution-context contracts. | Planned | duck-os |
+| `pyty.mmio` | Typed MMIO maps and capability-bounded device register access. | Open PR only | dak-os |
+| `pyty.bus` | Bus inventory, protocol adapters and transaction models. | Planned | dak-os |
+| `pyty.irq` | Interrupt routing, vector and execution-context contracts. | Planned | dak-os |
 | `pyty.timer` | Clock sources, cycle counters, watchdog and timer adapters. | Open PR only | joint |
-| `pyty.device` | Device discovery, lifecycle, binding and failure management. | Planned | duck-os |
-| `pyty.dma` | DMA descriptor and IOMMU ownership/synchronization model. | Planned | duck-os |
+| `pyty.device` | Device discovery, lifecycle, binding and failure management. | Planned | dak-os |
+| `pyty.dma` | DMA descriptor and IOMMU ownership/synchronization model. | Planned | dak-os |
 | `pyty.exec` | Execution contexts, scheduling models, affinity and recovery policies. | Open PR only | joint |
 | `pyty.time` | Clock calibration, latency, jitter and cycle-model interfaces. | Partial | pytyliki |
-| `pyty.power` | Power/thermal observation and vendor-specific control adapters. | Planned | duck-os |
+| `pyty.power` | Power/thermal observation and vendor-specific control adapters. | Planned | dak-os |
 | `pyty.logic` | Gate-level and sequential logic simulation. | Research | board-backend |
 | `pyty.rtl` | RTL import/export, synthesis adapters and constraints. | Research | board-backend |
 | `pyty.transistor` | Transistor and electrical device models. | Research | board-backend |
@@ -108,7 +108,7 @@ The following names are stable design identifiers for the workstream, not claims
 | `pyty.chrono` | Logical checkpoints, deterministic trace/replay and simulation-time branching; no physical time reversal. | Planned | pytyliki |
 | `pyty.material` | Atomic/molecular/material models, structure validation and material-property simulation. | Research | pytyliki |
 | `pyty.fabrication` | CAD/RTL/manufacturing job planning and external tool adapters with declared feedstock, process and machine constraints. | Research | board-backend |
-| `pyty.bci` | Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input. | Research | duck-os |
+| `pyty.bci` | Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input. | Research | dak-os |
 
 ## 6. Proposed language surface
 
@@ -193,16 +193,16 @@ Each rule has a normative requirement and a minimum acceptance condition. The ma
 | IRON-038 | Placement and section control | Place code/data/stack/heap/NOINIT sections into named memory regions with alignment and capacity constraints. | Linker-map checks prove every section fits its declared region and report slack/overflow. | Partial | pytyliki |
 | IRON-039 | DMA buffers and IOMMU mappings | Represent buffer direction, ownership, lifetime, pinning, mapping and IOMMU permissions explicitly. | State-machine tests reject use-after-unmap, CPU/device concurrent ownership and out-of-range descriptors. | Planned | pytyliki |
 | IRON-040 | Memory-system diagnostics | Inspect allocator bounds, fragmentation, locality, bandwidth, faults and address-translation evidence. | Reports identify sample source, method, target and uncertainty; simulated and live evidence are never mixed. | Partial | pytyliki |
-| IRON-041 | Typed MMIO registers | Represent device registers with width, access class, reset value, writable mask, endian and ordering requirements. | Register access validates mapping bounds, alignment, width, permission and reserved bits before touching the backend. | Open PR only | duck-os |
-| IRON-042 | Machine-readable register maps | Import documented CMSIS-SVD, device-tree bindings or vendor register descriptions as versioned input. | Import is deterministic, records source/version and rejects overlapping or malformed register definitions. | Planned | duck-os |
-| IRON-043 | Bus protocol models | Provide explicit models/adapters for PCIe, USB, I2C, SPI, UART and platform-specific interconnects. | Each adapter declares supported transactions, limits, timeouts and whether it is simulated or backed by a live OS service. | Planned | duck-os |
-| IRON-044 | Interrupt-controller integration | Model vector tables, interrupt routing, masking, priorities, nesting and architecture-specific entry constraints. | Target tests validate vector bounds and priority rules; privileged registration is available only via a trusted OS/board backend. | Planned | duck-os |
-| IRON-045 | Clock and watchdog controls | Inspect and, where explicitly supported, configure timers, clock sources and watchdogs through a board-specific HAL. | Every write requires an exact board/revision profile, capability, safe-state plan and simulator/target conformance test. | Open PR only | duck-os |
-| IRON-046 | Device discovery and identity | Enumerate device IDs, topology, functions, resources and driver ownership from trusted platform interfaces. | Reports preserve provider provenance and distinguish absent, inaccessible and unsupported devices. | Planned | duck-os |
-| IRON-047 | Driver lifecycle contracts | Specify probe, bind, start, quiesce, suspend, resume, unbind and failure states for device drivers. | State-machine tests ensure resources are acquired/released once and failed starts roll back safely. | Planned | duck-os |
-| IRON-048 | DMA engine descriptors | Build and validate device-specific DMA descriptor rings and queue ownership through target adapters. | Descriptor validation checks alignment, bounds, chain termination, permissions and memory synchronization. | Planned | duck-os |
-| IRON-049 | Port-mapped I/O | Support architecture-specific I/O port operations only when the target and privilege model expose them. | Compilation and execution are gated by architecture, OS permission and a dedicated backend; unsupported targets fail closed. | Planned | duck-os |
-| IRON-050 | Device failure and recovery | Model bus faults, timeouts, device reset, link retraining and recovery checkpoints. | Fault-injection tests prove bounded retries, idempotency and a documented safe-stop path. | Planned | duck-os |
+| IRON-041 | Typed MMIO registers | Represent device registers with width, access class, reset value, writable mask, endian and ordering requirements. | Register access validates mapping bounds, alignment, width, permission and reserved bits before touching the backend. | Open PR only | dak-os |
+| IRON-042 | Machine-readable register maps | Import documented CMSIS-SVD, device-tree bindings or vendor register descriptions as versioned input. | Import is deterministic, records source/version and rejects overlapping or malformed register definitions. | Planned | dak-os |
+| IRON-043 | Bus protocol models | Provide explicit models/adapters for PCIe, USB, I2C, SPI, UART and platform-specific interconnects. | Each adapter declares supported transactions, limits, timeouts and whether it is simulated or backed by a live OS service. | Planned | dak-os |
+| IRON-044 | Interrupt-controller integration | Model vector tables, interrupt routing, masking, priorities, nesting and architecture-specific entry constraints. | Target tests validate vector bounds and priority rules; privileged registration is available only via a trusted OS/board backend. | Planned | dak-os |
+| IRON-045 | Clock and watchdog controls | Inspect and, where explicitly supported, configure timers, clock sources and watchdogs through a board-specific HAL. | Every write requires an exact board/revision profile, capability, safe-state plan and simulator/target conformance test. | Open PR only | dak-os |
+| IRON-046 | Device discovery and identity | Enumerate device IDs, topology, functions, resources and driver ownership from trusted platform interfaces. | Reports preserve provider provenance and distinguish absent, inaccessible and unsupported devices. | Planned | dak-os |
+| IRON-047 | Driver lifecycle contracts | Specify probe, bind, start, quiesce, suspend, resume, unbind and failure states for device drivers. | State-machine tests ensure resources are acquired/released once and failed starts roll back safely. | Planned | dak-os |
+| IRON-048 | DMA engine descriptors | Build and validate device-specific DMA descriptor rings and queue ownership through target adapters. | Descriptor validation checks alignment, bounds, chain termination, permissions and memory synchronization. | Planned | dak-os |
+| IRON-049 | Port-mapped I/O | Support architecture-specific I/O port operations only when the target and privilege model expose them. | Compilation and execution are gated by architecture, OS permission and a dedicated backend; unsupported targets fail closed. | Planned | dak-os |
+| IRON-050 | Device failure and recovery | Model bus faults, timeouts, device reset, link retraining and recovery checkpoints. | Fault-injection tests prove bounded retries, idempotency and a documented safe-stop path. | Planned | dak-os |
 | IRON-051 | Execution context model | Represent process, thread, interrupt, exception, task and bare-metal contexts with allowed operations. | Context checking rejects blocking, allocation or unsafe calls in restricted ISR/exception contexts. | Planned | joint |
 | IRON-052 | CPU affinity constraints | Represent allowed CPU sets, core preferences and reversible thread-placement leases. | Planning is inert by default; live placement is limited to the calling process/thread and OS-granted CPU set. | Open PR only | joint |
 | IRON-053 | Scheduler semantics | Separate modeled scheduling policy from real OS scheduling and privileged scheduler control. | Simulation is deterministic; live adapters identify the OS policy and do not claim kernel control without a driver/API. | Open PR only | joint |
@@ -313,7 +313,7 @@ Use distinct address spaces and overflow-checked ranges. MMIO must be represente
 
 ### IRQ and execution context
 
-Interrupt handlers have explicit context types, stack and latency budgets, reentrancy constraints and a restricted API set. Blocking operations and unbounded allocation must be rejected where the target context cannot permit them. Real vector registration and interrupt routing belong behind Duck OS or a board-specific trusted backend.
+Interrupt handlers have explicit context types, stack and latency budgets, reentrancy constraints and a restricted API set. Blocking operations and unbounded allocation must be rejected where the target context cannot permit them. Real vector registration and interrupt routing belong behind DAK OS or a board-specific trusted backend.
 
 ### Timing and power
 

@@ -18,7 +18,7 @@
         "additionalProperties": false,
         "properties": {
           "module_id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
-          "language": { "enum": ["rust", "cpp", "zig", "cuda", "wasm", "sql", "duckdb", "lua", "go", "elixir", "python"] },
+          "language": { "enum": ["rust", "cpp", "zig", "cuda", "wasm", "sql", "dakdb", "lua", "go", "elixir", "python"] },
           "contract_version": { "type": "string", "minLength": 1 },
           "artifact_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
           "sbom_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },

@@ -55,7 +55,7 @@ int main(void) {
     request.expected_speedup = 2.0;
     request.wasm_available = 0;
     assert(pl_apsia_route(&request, &decision) == 0);
-    assert(decision.language == PL_APSIA_LANG_DUCKDB);
+    assert(decision.language == PL_APSIA_LANG_DAKDB);
 
     request.workload = PL_APSIA_WORK_CPU_BOUND;
     request.host_optimization_fraction = 0.70;

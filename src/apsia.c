@@ -6,7 +6,7 @@
 const char *pl_apsia_language_name(pl_apsia_language language) {
     static const char *const names[] = {
         "host", "Rust", "C++", "Zig", "CUDA", "WebAssembly",
-        "Go", "Elixir", "SQL", "DuckDB", "Lua", "Python"
+        "Go", "Elixir", "SQL", "DAKDB", "Lua", "Python"
     };
 
     if ((int)language < 0 || language > PL_APSIA_LANG_PYTHON) {
@@ -79,8 +79,8 @@ int pl_apsia_route(const pl_apsia_request *request, pl_apsia_decision *decision)
             reason = "concurrent I/O workload: Go candidate";
             break;
         case PL_APSIA_WORK_ANALYTICS:
-            selected = PL_APSIA_LANG_DUCKDB;
-            reason = "analytical workload: DuckDB candidate";
+            selected = PL_APSIA_LANG_DAKDB;
+            reason = "analytical workload: DAKDB candidate";
             break;
         case PL_APSIA_WORK_EMBEDDED_SCRIPT:
             selected = PL_APSIA_LANG_LUA;

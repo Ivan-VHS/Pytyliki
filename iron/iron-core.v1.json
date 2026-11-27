@@ -19,9 +19,9 @@
   "ownership": {
     "pytyliki": "Owns processor/device profiles, hardware-domain APIs, native adapters, simulator orchestration, target evidence, diagnostics and qualification workflows.",
     "reaper": "Owns canonical language syntax, type/effect semantics, Span/SourceMap, typed IR, compiler passes and shared ABI/compiler contracts. Pytyliki must integrate these rather than fork them.",
-    "duck_os": "Owns privileged process/device services, driver lifecycle, protected memory mapping, interrupt routing and OS-mediated hardware permissions.",
+    "dak_os": "Owns privileged process/device services, driver lifecycle, protected memory mapping, interrupt routing and OS-mediated hardware permissions.",
     "board_backend": "Owns exact SoC/board memory maps, startup/linker configuration, vendor HAL, electrical/process libraries and physical-design sign-off.",
-    "joint": "Requires versioned contracts between Pytyliki, Reaper, Duck OS and/or a board-specific backend."
+    "joint": "Requires versioned contracts between Pytyliki, Reaper, DAK OS and/or a board-specific backend."
   },
   "access_model": {
     "default_mode": "inspect",
@@ -225,7 +225,7 @@
     {
       "id": "pyty.mmio",
       "responsibility": "Typed MMIO maps and capability-bounded device register access.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "open_pr",
       "evidence": [],
       "tracking_prs": [
@@ -236,7 +236,7 @@
     {
       "id": "pyty.bus",
       "responsibility": "Bus inventory, protocol adapters and transaction models.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -244,7 +244,7 @@
     {
       "id": "pyty.irq",
       "responsibility": "Interrupt routing, vector and execution-context contracts.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -263,7 +263,7 @@
     {
       "id": "pyty.device",
       "responsibility": "Device discovery, lifecycle, binding and failure management.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -271,7 +271,7 @@
     {
       "id": "pyty.dma",
       "responsibility": "DMA descriptor and IOMMU ownership/synchronization model.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -304,7 +304,7 @@
     {
       "id": "pyty.power",
       "responsibility": "Power/thermal observation and vendor-specific control adapters.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -481,7 +481,7 @@
     {
       "id": "pyty.bci",
       "responsibility": "Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input.",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "research",
       "evidence": [],
       "tracking_prs": []
@@ -994,7 +994,7 @@
       "requirement": "Represent device registers with width, access class, reset value, writable mask, endian and ordering requirements.",
       "acceptance": "Register access validates mapping bounds, alignment, width, permission and reserved bits before touching the backend.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "open_pr",
       "evidence": [],
       "tracking_prs": [
@@ -1009,7 +1009,7 @@
       "requirement": "Import documented CMSIS-SVD, device-tree bindings or vendor register descriptions as versioned input.",
       "acceptance": "Import is deterministic, records source/version and rejects overlapping or malformed register definitions.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1021,7 +1021,7 @@
       "requirement": "Provide explicit models/adapters for PCIe, USB, I2C, SPI, UART and platform-specific interconnects.",
       "acceptance": "Each adapter declares supported transactions, limits, timeouts and whether it is simulated or backed by a live OS service.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1033,7 +1033,7 @@
       "requirement": "Model vector tables, interrupt routing, masking, priorities, nesting and architecture-specific entry constraints.",
       "acceptance": "Target tests validate vector bounds and priority rules; privileged registration is available only via a trusted OS/board backend.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1045,7 +1045,7 @@
       "requirement": "Inspect and, where explicitly supported, configure timers, clock sources and watchdogs through a board-specific HAL.",
       "acceptance": "Every write requires an exact board/revision profile, capability, safe-state plan and simulator/target conformance test.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "open_pr",
       "evidence": [],
       "tracking_prs": [
@@ -1060,7 +1060,7 @@
       "requirement": "Enumerate device IDs, topology, functions, resources and driver ownership from trusted platform interfaces.",
       "acceptance": "Reports preserve provider provenance and distinguish absent, inaccessible and unsupported devices.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1072,7 +1072,7 @@
       "requirement": "Specify probe, bind, start, quiesce, suspend, resume, unbind and failure states for device drivers.",
       "acceptance": "State-machine tests ensure resources are acquired/released once and failed starts roll back safely.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1084,7 +1084,7 @@
       "requirement": "Build and validate device-specific DMA descriptor rings and queue ownership through target adapters.",
       "acceptance": "Descriptor validation checks alignment, bounds, chain termination, permissions and memory synchronization.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1096,7 +1096,7 @@
       "requirement": "Support architecture-specific I/O port operations only when the target and privilege model expose them.",
       "acceptance": "Compilation and execution are gated by architecture, OS permission and a dedicated backend; unsupported targets fail closed.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []
@@ -1108,7 +1108,7 @@
       "requirement": "Model bus faults, timeouts, device reset, link retraining and recovery checkpoints.",
       "acceptance": "Fault-injection tests prove bounded retries, idempotency and a documented safe-stop path.",
       "module": "pyty.mmio",
-      "owner": "duck-os",
+      "owner": "dak-os",
       "status": "planned",
       "evidence": [],
       "tracking_prs": []

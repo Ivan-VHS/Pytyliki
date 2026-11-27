@@ -89,7 +89,7 @@
       "required": [
         "reaper",
         "pytyliki",
-        "duck_os",
+        "dak_os",
         "board_and_lab_backends"
       ],
       "properties": {
@@ -101,7 +101,7 @@
           "type": "string",
           "minLength": 40
         },
-        "duck_os": {
+        "dak_os": {
           "type": "string",
           "minLength": 40
         },

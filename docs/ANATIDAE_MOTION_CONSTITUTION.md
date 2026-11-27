@@ -1,6 +1,6 @@
 # Anatidae Motion Constitution — shared desktop profile
 
-This profile translates the supplied Pond / Duck Constitution visual language into four native workstations. It is a design-system integration, not a product rename: each application keeps its own information architecture, product vocabulary and toolkit.
+This profile translates the supplied Pond / DAK Constitution visual language into four native workstations. It is a design-system integration, not a product rename: each application keeps its own information architecture, product vocabulary and toolkit.
 
 ## Visual tokens
 
@@ -29,7 +29,7 @@ Use native application fonts for controls and body text. Serif display type belo
 
 ## Pond motifs
 
-Duck bob, tail waggle, waves, ripples, voice particles, floating feathers and parallax are reusable brand-motion vocabulary, not mandatory product chrome. Keep mascot movement small (about 6 px and 2 degrees). Ripples may acknowledge one deliberate action but must not cover values, focus or hit targets. Particles require a pause/disable path. Parallax is limited to low-contrast hero/showcase surfaces; never place it behind editors, tables, plots, device inventory, logs, hashes, package evidence or precision controls. Do not force duck terminology into product features.
+DAK bob, tail waggle, waves, ripples, voice particles, floating feathers and parallax are reusable brand-motion vocabulary, not mandatory product chrome. Keep mascot movement small (about 6 px and 2 degrees). Ripples may acknowledge one deliberate action but must not cover values, focus or hit targets. Particles require a pause/disable path. Parallax is limited to low-contrast hero/showcase surfaces; never place it behind editors, tables, plots, device inventory, logs, hashes, package evidence or precision controls. Do not force dak terminology into product features.
 
 ## Accessibility and performance
 

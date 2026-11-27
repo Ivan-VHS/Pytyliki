@@ -63,7 +63,7 @@ The canonical Russian terms and their order are preserved in the JSON manifest. 
 
 | Repository | Primary application | Non-negotiable boundary |
 |---|---|---|
-| DuckOS | Mora desktop shell, application catalog, shell policy and native-service contracts | Browser UI preferences are not kernel, boot, driver, updater or hardware enforcement services |
+| DAKOS | Mora desktop shell, application catalog, shell policy and native-service contracts | Browser UI preferences are not kernel, boot, driver, updater or hardware enforcement services |
 | Pytyliki | C11 processor, memory, DSP, metrics, benchmarks and native ABI | Hardware inspection remains read-only; numeric optimizations retain reference parity and explicit bounds |
 | Reaper | Language frontend, runtime, IR/VM, modules, resource ledger and native integration | Execution limits and explicit host effects remain in force; native loading is never implicit |
 | OPlague | Windows device/package inspection, evidence graph, snapshots and compatibility analysis | Package inspection remains read-only; no driver install/load, registry write or device mutation |
@@ -187,7 +187,7 @@ The standard is universal; its implementation is deliberately product-specific:
 
 | Project | Apply completeness to | Preserve this boundary |
 |---|---|---|
-| DuckOS | Mora shell, catalogues, native user-space tools and native-service contracts | Browser features are not proof of a bootable OS, kernel enforcement, compositor, driver stack or system service |
+| DAKOS | Mora shell, catalogues, native user-space tools and native-service contracts | Browser features are not proof of a bootable OS, kernel enforcement, compositor, driver stack or system service |
 | Pytyliki | C11 processor discovery, bounded analysis, memory, metrics and native ABI | Hardware inspection remains read-only; capabilities absent from the source tree remain incomplete |
 | Reaper | language frontend, reference runtime, IR/VM, tooling and integrations | Native compiler/self-hosting and hardware workbench stages remain partial until code and tests prove otherwise; native loading is explicit |
 | OPlague | device/package inspection, compatibility analysis, reports and optional bridges | Inspection and dry-run planning do not install, enable, unload or modify drivers |

@@ -21,9 +21,9 @@ Pytyliki is Katyuhen's processor-systems workstation. It owns bounded CPU and me
 
 ## Workspace and visual identity
 
-Mora is the ecosystem's desktop entry point. Pytyliki retains its engineering workstation layout and evidence panels; native adapters may use local aliases for DuckOS's `mora.theme.v1` semantic tokens.
+Mora is the ecosystem's desktop entry point. Pytyliki retains its engineering workstation layout and evidence panels; native adapters may use local aliases for DAKOS's `mora.theme.v1` semantic tokens.
 
-The Katyuhen registry is maintained in [DuckOS](https://github.com/Ivan-VHS/DuckOS/blob/main/ecosystem/katyuhen.v1.json). The local declaration is [integrations/katyuhen/manifest.json](../integrations/katyuhen/manifest.json).
+The Katyuhen registry is maintained in [DAKOS](https://github.com/Ivan-VHS/DAKOS/blob/main/ecosystem/katyuhen.v1.json). The local declaration is [integrations/katyuhen/manifest.json](../integrations/katyuhen/manifest.json).
 
 ## Validation
 

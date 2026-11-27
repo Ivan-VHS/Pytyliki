@@ -12,7 +12,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "iron" / "iron-core.v1.json"
 ALLOWED_STATUS = {"implemented", "partial", "planned", "open_pr", "research"}
-ALLOWED_OWNER = {"pytyliki", "reaper", "duck-os", "board-backend", "joint"}
+ALLOWED_OWNER = {"pytyliki", "reaper", "dak-os", "board-backend", "joint"}
 EXPECTED_MODES = {
     "inspect", "plan", "simulate", "verify", "target", "privileged", "physical_design"
 }
