@@ -24,36 +24,38 @@ bool pl_ek_state_valid(pl_ek_state state) {
 int pl_ek_transition(pl_embedded_kernel_model *model, pl_ek_state next,
                      uint32_t health_mask, uint32_t fault_mask) {
     bool allowed = false;
+    uint32_t effective_fault_mask;
     if (model == NULL || model->version != PL_EK_MODEL_VERSION ||
         !pl_ek_state_valid(model->state) || !pl_ek_state_valid(next)) {
         return -1;
     }
+    effective_fault_mask = model->fault_mask | fault_mask;
     if (model->state == PL_EK_HALTED) {
         return -2;
     }
     if (next == PL_EK_HALTED) {
         allowed = true;
     } else if (next == PL_EK_DEGRADED) {
-        allowed = fault_mask != 0u;
+        allowed = effective_fault_mask != 0u;
     } else if (model->state == PL_EK_BOOT && next == PL_EK_IDLE) {
-        allowed = health_ready(health_mask) && fault_mask == 0u;
+        allowed = health_ready(health_mask) && effective_fault_mask == 0u;
     } else if (model->state == PL_EK_IDLE && next == PL_EK_ACTIVE) {
-        allowed = health_ready(health_mask) && fault_mask == 0u;
+        allowed = health_ready(health_mask) && effective_fault_mask == 0u;
     } else if (model->state == PL_EK_ACTIVE && next == PL_EK_IDLE) {
-        allowed = health_ready(health_mask) && fault_mask == 0u;
+        allowed = health_ready(health_mask) && effective_fault_mask == 0u;
     } else if (model->state == PL_EK_DEGRADED && next == PL_EK_IDLE) {
-        allowed = health_ready(health_mask) && fault_mask == 0u;
+        allowed = health_ready(health_mask) && effective_fault_mask == 0u;
     } else if (model->state == PL_EK_IDLE && next == PL_EK_DIAGNOSTIC) {
-        allowed = fault_mask == 0u;
+        allowed = effective_fault_mask == 0u;
     } else if (model->state == PL_EK_DIAGNOSTIC && next == PL_EK_IDLE) {
-        allowed = health_ready(health_mask) && fault_mask == 0u;
+        allowed = health_ready(health_mask) && effective_fault_mask == 0u;
     }
 
     if (!allowed) {
         return -3;
     }
     model->health_mask = health_mask;
-    model->fault_mask = fault_mask;
+    model->fault_mask = effective_fault_mask;
     model->state = next;
     return 0;
 }
@@ -77,7 +79,10 @@ void pl_ek_add_pressure(pl_embedded_kernel_model *model,
 
 int pl_ek_report_fault(pl_embedded_kernel_model *model, uint32_t fault_mask,
                        pl_ek_pain_source source, uint32_t weight) {
-    if (model == NULL || fault_mask == 0u) {
+    if (model == NULL || model->version != PL_EK_MODEL_VERSION ||
+        !pl_ek_state_valid(model->state) || model->state == PL_EK_HALTED ||
+        fault_mask == 0u || source < PL_EK_PAIN_IRQ_JITTER ||
+        source > PL_EK_PAIN_THERMAL_WARNING) {
         return -1;
     }
     model->fault_mask |= fault_mask;
@@ -105,7 +110,8 @@ int pl_ek_sample_tick(pl_embedded_kernel_model *model, uint32_t now,
                       uint32_t expected_period) {
     uint32_t delta;
     uint32_t jitter;
-    if (model == NULL || model->version != PL_EK_MODEL_VERSION) {
+    if (model == NULL || model->version != PL_EK_MODEL_VERSION ||
+        expected_period == 0u) {
         return -1;
     }
 
@@ -195,6 +201,7 @@ int pl_ek_trace_push(pl_embedded_kernel_model *model, uint32_t timestamp,
     if (model == NULL || model->version != PL_EK_MODEL_VERSION ||
         model->trace_head >= PL_EK_TRACE_CAPACITY ||
         model->trace_count > PL_EK_TRACE_CAPACITY ||
+        !pl_ek_state_valid(model->state) ||
         model->trace_sequence == UINT64_MAX) {
         return -1;
     }
