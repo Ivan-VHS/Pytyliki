@@ -3,7 +3,7 @@
 | Area | Scope | Boundary |
 |---|---|---|
 | CPU | identity, topology, memory, ISA/XCR0 | read-only |
-| PTFR | periodic fault correlation and bounded recovery plans | caller-supplied evidence; no host CPU control |
+| PTFR | periodic fault correlation, CSV import, bounded recovery plans | advisory only; no host CPU control |\n| RAS provider | Windows WHEA Event Log snapshot | read-only; source metadata only; no worker attribution or severity guess |
 | Benchmarks | CPU, memory, matrices, partitioning | bounded local tests |
 | Source review | static diagnostics | no compile/run/rewrite |
 | Memory | typed views, checked slices, arenas, pools | fixed limits |
