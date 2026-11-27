@@ -666,12 +666,11 @@ pl_topology_status pl_processor_topology_validate(
         }
         if (count != node->logical_count ||
             node->evidence > PL_TOPOLOGY_EVIDENCE_OBSERVED ||
-            (node->memory_total_bytes != 0u &&
-             node->memory_available_observed > 1u ||
+            node->memory_available_observed > 1u ||
             node->memory_total_observed > 1u ||
             (node->memory_total_observed != 0u &&
              node->memory_available_observed != 0u &&
-             node->memory_available_bytes > node->memory_total_bytes)))
+             node->memory_available_bytes > node->memory_total_bytes))
             return PL_TOPOLOGY_INVALID_MASK;
         if (node->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED && count == 0u)
             return PL_TOPOLOGY_INVALID_MASK;
