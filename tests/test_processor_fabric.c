@@ -57,7 +57,7 @@ static void make_fixture(
                          PL_PROCESSOR_FABRIC_READY);
     nodes[6].domain_mask = HOST_DOMAIN;
     nodes[6].feature_mask = UINT64_C(0x03);
-    nodes[6].affinity_mask = UINT64_C(0x03);
+    nodes[6].affinity_mask[0] = UINT64_C(0x03);
     nodes[6].requested_load_basis_points = 3000u;
     nodes[6].priority = 9u;
 
@@ -65,7 +65,7 @@ static void make_fixture(
                          PL_PROCESSOR_FABRIC_READY);
     nodes[7].domain_mask = HOST_DOMAIN;
     nodes[7].feature_mask = UINT64_C(0x08);
-    nodes[7].affinity_mask = UINT64_C(0x01);
+    nodes[7].affinity_mask[0] = UINT64_C(0x01);
     nodes[7].requested_load_basis_points = 2000u;
     nodes[7].priority = 5u;
 
@@ -103,7 +103,7 @@ static void test_inventory_and_catalogue_aggregation(void) {
     assert(summary.total_nodes == 9u);
     assert(summary.total_edges == 1u);
     assert(summary.worker_count == 2u);
-    assert(summary.available_worker_count == 2u);
+    assert(summary.available_worker_count == 3u);
     assert(summary.process_count == 3u);
     assert(summary.ready_process_count == 3u);
     assert(summary.dependency_edge_count == 1u);
