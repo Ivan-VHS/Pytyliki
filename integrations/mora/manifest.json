@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/Ivan-VHS/DuckOS/blob/main/mora/app-manifest.schema.json",
+  "$schema": "https://github.com/Ivan-VHS/DAKOS/blob/main/mora/app-manifest.schema.json",
   "schema_version": "1.0.0",
   "application_id": "ivan-vhs.pytyliki-workstation",
   "project": "Ivan-VHS/Pytyliki",
