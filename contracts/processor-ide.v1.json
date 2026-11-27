@@ -38,7 +38,7 @@
       "tests": "tests/test_processor_ide.c",
       "build": "CMakeLists.txt",
       "api": "pl_ide_session_init",
-      "description": "Initial C11 target-aware session API that reuses the existing 20-workspace registry and pl_ll_target descriptor. It validates inspect/plan/static/simulate/debug/HIL/privileged modes and does not invoke devices or mutate hardware."
+      "description": "Initial C11 target-aware session API that reuses the existing 20-workspace registry and pl_ll_target descriptor. It validates inspect/plan/static/simulate/debug/HIL/privileged preflight declarations only. Session flags are not security tokens or hardware grants; every actual operation must still pass pl_ll_bus capability checks and trusted OS/board backend authorization. The API itself performs no device access or hardware mutation."
     }
   },
   "workspaces": [
@@ -1797,7 +1797,8 @@
     "Sub-nanosecond bus events may be captured by hardware instrumentation; IDE rendering latency is a separate metric and cannot be promised universally.",
     "Endianness, register names, address width, instruction length, cache geometry and privilege levels are target properties, not global constants.",
     "Required stalls, synchronization, speculation barriers and interrupt events cannot be removed for visual neatness.",
-    "Physical target writes, fault injection, power gating and debug register writes require named target capabilities and explicit operator approval."
+    "Physical target writes, fault injection, power gating and debug register writes require named target capabilities and explicit operator approval.",
+    "Session flags are declarative preflight metadata only; they never grant hardware access. Actual memory/MMIO/device operations must pass pl_ll_bus capability checks and trusted OS/board backend authorization."
   ],
   "perspectives": [
     {
