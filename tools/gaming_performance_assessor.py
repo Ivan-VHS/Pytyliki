@@ -160,8 +160,8 @@ def assess_game_session(
     }
 
 
-def to_duckos_capability_evidence(report: dict[str, Any]) -> dict[str, Any]:
-    """Translate measured Pytyliki counters into DuckOS evidence, not control claims."""
+def to_dakos_capability_evidence(report: dict[str, Any]) -> dict[str, Any]:
+    """Translate measured Pytyliki counters into DAKOS evidence, not control claims."""
     if not isinstance(report, dict) or report.get("schema") != SCHEMA:
         raise GamingAssessmentError(f"expected a {SCHEMA} report")
     if report.get("host_settings_changed") is not False or report.get("execution_performed") is not False:
@@ -200,7 +200,7 @@ def to_duckos_capability_evidence(report: dict[str, Any]) -> dict[str, Any]:
         if isinstance(frame_count, bool) or not isinstance(frame_count, int) or frame_count <= 0:
             raise GamingAssessmentError("report.frame_time must contain a positive measured sample count")
     return {
-        "schema": "duckos.gaming-provider-evidence.v1",
+        "schema": "dakos.gaming-provider-evidence.v1",
         "source_schema": SCHEMA,
         "capabilities": evidence,
         "evidence_scope": "whole_host",
