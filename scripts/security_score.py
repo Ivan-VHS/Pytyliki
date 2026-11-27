@@ -67,7 +67,7 @@ def compute(
         "federation_consistency": {
             "weight": 10,
             "score": 10 if federation == "passed" else 0,
-            "basis": "All four repositories share the same policy and assurance tooling contract",
+            "basis": "All four project identities, local security policies and CodeQL workflows pass the central source audit",
         },
     }
     total = sum(int(item["score"]) for item in categories.values())
