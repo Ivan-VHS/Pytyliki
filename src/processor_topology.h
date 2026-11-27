@@ -97,6 +97,9 @@ typedef struct {
     char interface_name[40];
     char platform_release[96];
     char captured_at[32];
+    char architecture[32];
+    char vendor[32];
+    char model[96];
     pl_topology_logical_cpu logical_cpus[PL_TOPOLOGY_MAX_LOGICAL_CPUS];
     pl_topology_cache caches[PL_TOPOLOGY_MAX_CACHES];
     pl_topology_numa_node numa_nodes[PL_TOPOLOGY_MAX_NUMA_NODES];
