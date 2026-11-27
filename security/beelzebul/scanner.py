@@ -162,7 +162,7 @@ def validate_exceptions(root,findings):
         valid.append(item)
     return valid
 def workflow_has_unscoped_write(text):
-    """Return true when write permissions are broader than a gated release job."""
+    """Allow content writes only in the isolated release and reviewed auto-merge jobs."""
     lines = text.splitlines()
 
     def requests_write(block, permission_indent):
@@ -177,37 +177,52 @@ def workflow_has_unscoped_write(text):
                 continue
             if in_permissions and indent <= permission_indent:
                 in_permissions = False
-            if in_permissions and re.match(r"^contents\s*:\s*write\b", stripped, re.I):
-                return True
-            if in_permissions and re.match(r"^permissions\s*:\s*write-all\b", stripped, re.I):
-                return True
+            if in_permissions and ":" in stripped:
+                key, value = stripped.split(":", 1)
+                if key.strip() == "contents" and value.strip().lower() == "write":
+                    return True
         return False
 
-    jobs_index = next((i for i, line in enumerate(lines) if line.strip() == "jobs:" and not line[:len(line)-len(line.lstrip())]), len(lines))
+    jobs_index = next(
+        (i for i, line in enumerate(lines) if line.strip() == "jobs:" and line == line.lstrip()),
+        len(lines),
+    )
     if requests_write(lines[:jobs_index], 0):
         return True
 
-    job_headers = [
-        (i, re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line))
-        for i, line in enumerate(lines[jobs_index + 1:], jobs_index + 1)
-    ]
-    job_headers = [(i, match.group(1)) for i, match in job_headers if match]
+    job_headers = []
+    for i, line in enumerate(lines[jobs_index + 1:], jobs_index + 1):
+        indent = len(line) - len(line.lstrip())
+        stripped = line.strip()
+        if indent == 2 and stripped.endswith(":"):
+            name = stripped[:-1]
+            if name and all(char.isalnum() or char in "_-" for char in name):
+                job_headers.append((i, name))
+
     for index, (start, job_name) in enumerate(job_headers):
         end = job_headers[index + 1][0] if index + 1 < len(job_headers) else len(lines)
         block = lines[start:end]
         if not requests_write(block, 4):
             continue
 
+        block_text = "\n".join(block)
         guarded_release = (
             job_name == "publish-release"
-            and any(re.search(r"^\\s{4}if:\\s*startsWith\\(github\\.ref,\\s*['\\"]refs/tags/['\\"]\\)", line) for line in block)
-            and any(re.match(r"^\\s{4}needs:\\s*build-windows\\s*$", line) for line in block)
+            and any(line.strip() in (
+                "if: startsWith(github.ref, 'refs/tags/')",
+                'if: startsWith(github.ref, "refs/tags/")',
+            ) for line in block)
+            and any(line.strip() == "needs: build-windows" for line in block)
         )
-        block_text = "\\n".join(block)
         guarded_auto_merge = (
             job_name == "auto-merge"
-            and any(re.match(r"^\\s{4}needs:\\s*\\[\\s*validate\\s*,\\s*sanitizer\\s*\\]\\s*$", line) for line in block)
-            and any(re.search(r"^\\s{4}if:.*github\\.event\\.pull_request\\.draft\\s*==\\s*false.*github\\.event\\.pull_request\\.head\\.repo\\.full_name\\s*==\\s*github\\.repository", line) for line in block)
+            and any(line.strip() == "needs: [validate, sanitizer]" for line in block)
+            and any(
+                line.strip().startswith("if:")
+                and "github.event.pull_request.draft == false" in line
+                and "github.event.pull_request.head.repo.full_name == github.repository" in line
+                for line in block
+            )
             and "Wait for every pull-request workflow on the validated head" in block_text
             and "Confirm validated PR head is unchanged" in block_text
             and "Require independent current-head approval and resolved review threads" in block_text
