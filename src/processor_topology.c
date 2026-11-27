@@ -60,12 +60,13 @@ static void set_timestamp(char output[32]) {
 
 static void set_isa_evidence(pl_processor_topology_snapshot *out,
                              const pl_processor_snapshot *cpu) {
-    if (strcmp(cpu->architecture, "x86-64") == 0 ||
-        strcmp(cpu->architecture, "x86") == 0) {
+    if ((strcmp(cpu->architecture, "x86-64") == 0 ||
+         strcmp(cpu->architecture, "x86") == 0) && cpu->cpuid_available) {
         out->isa_known = PL_TOPOLOGY_ISA_SSE2 | PL_TOPOLOGY_ISA_SSE42 |
             PL_TOPOLOGY_ISA_AVX | PL_TOPOLOGY_ISA_AVX2 |
             PL_TOPOLOGY_ISA_AVX512F | PL_TOPOLOGY_ISA_AES |
             PL_TOPOLOGY_ISA_FMA | PL_TOPOLOGY_ISA_VIRTUALIZE;
+        out->isa_os_known = out->isa_known & ~PL_TOPOLOGY_ISA_VIRTUALIZE;
         if (cpu->sse2) {
             out->isa_hardware_present |= PL_TOPOLOGY_ISA_SSE2;
             out->isa_os_usable |= PL_TOPOLOGY_ISA_SSE2;
@@ -86,10 +87,8 @@ static void set_isa_evidence(pl_processor_topology_snapshot *out,
         }
         if (cpu->fma_hw) out->isa_hardware_present |= PL_TOPOLOGY_ISA_FMA;
         if (cpu->fma) out->isa_os_usable |= PL_TOPOLOGY_ISA_FMA;
-        if (cpu->virtualization) {
+        if (cpu->virtualization)
             out->isa_hardware_present |= PL_TOPOLOGY_ISA_VIRTUALIZE;
-            out->isa_os_usable |= PL_TOPOLOGY_ISA_VIRTUALIZE;
-        }
     }
 }
 
@@ -740,9 +739,14 @@ pl_topology_status pl_processor_topology_write_json(
     if ((snapshot->isa_known & (flag)) == 0u) fputs("null", output); \
     else fputs((snapshot->isa_hardware_present & (flag)) ? "true" : "false", output); \
     fputs(",\"os_usable\":", output); \
-    if ((snapshot->isa_known & (flag)) == 0u) fputs("null", output); \
+    if ((snapshot->isa_os_known & (flag)) == 0u) fputs("null", output); \
     else fputs((snapshot->isa_os_usable & (flag)) ? "true" : "false", output); \
-    fputs(",\"evidence\":\"cpuid\"}", output); \
+    fputs(",\"evidence\":\"cpuid\",\"os_evidence\":", output); \
+    if ((flag) == PL_TOPOLOGY_ISA_AVX || (flag) == PL_TOPOLOGY_ISA_AVX2 || \
+        (flag) == PL_TOPOLOGY_ISA_AVX512F || (flag) == PL_TOPOLOGY_ISA_FMA) \
+        fputs("\"os-state\"}", output); \
+    else if ((flag) == PL_TOPOLOGY_ISA_VIRTUALIZE) fputs("\"unknown\"}", output); \
+    else fputs("\"cpuid\"}", output); \
 } while (0)
     {
         int first_feature = 1;
