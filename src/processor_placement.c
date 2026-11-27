@@ -26,11 +26,20 @@ static uint64_t saturating_add(uint64_t a,uint64_t b) {
     return a>UINT64_MAX-b?UINT64_MAX:a+b;
 }
 static uint32_t ratio_cost(uint64_t used,uint64_t requested,uint64_t capacity) {
-    uint64_t total=saturating_add(used,requested);
+    uint64_t remainder=saturating_add(used,requested);
+    uint32_t scaled=0u;
     if(capacity==0u) return 5000u;
-    if(total>=capacity) return 10000u;
-    if(total>UINT64_MAX/10000u) return 10000u;
-    return (uint32_t)((total*10000u)/capacity);
+    if(remainder>=capacity) return 10000u;
+    for(unsigned bit=0u;bit<14u;++bit) {
+        scaled <<= 1u;
+        if(remainder>=capacity-remainder) {
+            remainder-=capacity-remainder;
+            scaled|=1u;
+        } else {
+            remainder+=remainder;
+        }
+    }
+    return (scaled*10000u)/16384u;
 }
 static size_t find_numa(const pl_processor_topology_snapshot *topology,uint32_t id) {
     for(size_t i=0u;i<topology->numa_node_count;++i)
@@ -92,7 +101,8 @@ static void score_cpu(const pl_processor_topology_snapshot *topology,
         for(size_t i=0u;i<topology->logical_cpu_count;++i) {
             const pl_topology_logical_cpu *other=&topology->logical_cpus[i];
             if(other->logical_id!=id && other->online!=0u &&
-               other->package_id==cpu->package_id && other->core_id==cpu->core_id) {
+               other->package_id==cpu->package_id && other->die_id==cpu->die_id &&
+               other->core_id==cpu->core_id) {
                 ++sibling_count;
                 sibling_load+=pressure->cpu_load_basis_points[other->logical_id];
             }
@@ -264,9 +274,12 @@ pl_placement_status pl_processor_placement_write_json(const pl_placement_result 
         "\"generation\":%" PRIu32 ",\"summary\":{\"assigned\":%" PRIu32
         ",\"no_compatible_cpu\":%" PRIu32 ",\"capacity_exhausted\":%" PRIu32
         ",\"locality_unknown\":%" PRIu32 ",\"total_estimated_cost\":%" PRIu64
+        ",\"topology_complete\":%s,\"pressure_input_present\":%s"
         "},\"assignments\":[",result->report.generation,result->report.assigned,
         result->report.no_compatible_cpu,result->report.capacity_exhausted,
-        result->report.locality_unknown,result->report.total_estimated_cost)<0)
+        result->report.locality_unknown,result->report.total_estimated_cost,
+        result->report.topology_complete ? "true" : "false",
+        result->report.pressure_input_present ? "true" : "false")<0)
         return PL_PLACEMENT_INVALID_ARGUMENT;
     for(size_t i=0u;i<result->assignment_count;++i) {
         const pl_placement_assignment *a=&result->assignments[i];
