@@ -43,6 +43,7 @@ static void test_json_envelope_and_unknown_values(void) {
     (void)snprintf(snapshot.collector, sizeof(snapshot.collector), "fixture");
     (void)snprintf(snapshot.architecture, sizeof(snapshot.architecture), "x86-64");
     snapshot.isa_known = PL_TOPOLOGY_ISA_AVX | PL_TOPOLOGY_ISA_AVX2;
+    snapshot.isa_os_known = PL_TOPOLOGY_ISA_AVX | PL_TOPOLOGY_ISA_AVX2;
     snapshot.isa_hardware_present = PL_TOPOLOGY_ISA_AVX | PL_TOPOLOGY_ISA_AVX2;
     snapshot.isa_os_usable = 0u;
     stream = tmpfile();
