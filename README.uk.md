@@ -40,7 +40,18 @@ ctest --test-dir build -C Release --output-on-failure
 ./build/pytyliki-metrics --demo
 ```
 
-## Специфікації та інтеграція
+
+Перегляд журналу подій Windows і обмежений аналіз історії збоїв:
+
+```sh
+./build/pytyliki --thread-recovery tests/fixtures/processor_thread_recovery.csv
+./build/pytyliki --thread-recovery-demo
+# Лише Windows: читання метаданих WHEA (тільки читання)
+./build/pytyliki --ras-whea
+```
+
+PTFR формує рекомендації для потоків, якими керує сам застосунок. Записи WHEA залишаються системними свідченнями: серйозність помилки та її зв’язок із worker не виводяться автоматично.
+\n## Специфікації та інтеграція
 
 - [Індекс документації](docs/README.md) · [Релізи](docs/RELEASE.md) · [Формат звіту](docs/REPORT_ENVELOPE.md)
 - [Інтеграція з Reaper](docs/REAPER_INTEGRATION.md) — необов’язкова CI-перевірка політик, а не runtime-залежність застосунку.
