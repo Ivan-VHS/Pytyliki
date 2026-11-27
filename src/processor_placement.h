@@ -86,6 +86,13 @@ typedef enum {
     PL_PLACEMENT_INVALID_LOAD
 } pl_placement_status;
 
+pl_placement_status pl_processor_placement_workers_from_topology(
+    const pl_processor_topology_snapshot *topology,
+    pl_placement_worker *workers,
+    size_t worker_capacity,
+    size_t *worker_count
+);
+
 /* Deterministic estimate only: no OS thread creation, affinity or memory pinning. */
 pl_placement_status pl_processor_placement_plan(
     const pl_placement_input *input,
