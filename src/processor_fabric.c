@@ -423,6 +423,91 @@ static int has_pending_dependency(const pl_processor_fabric_model *model,
     return 0;
 }
 
+
+pl_processor_fabric_status pl_processor_fabric_place_v2(
+    const pl_processor_fabric_model *model,
+    const pl_processor_topology_snapshot *topology,
+    const pl_placement_task *tasks, size_t task_count,
+    pl_placement_pressure *pressure,
+    pl_placement_result *out,
+    pl_processor_fabric_workspace *workspace,
+    pl_processor_fabric_summary *summary,
+    pl_processor_fabric_error *error
+) {
+    pl_placement_task normalized[PL_PLACEMENT_MAX_TASKS];
+    pl_processor_fabric_status status;
+    pl_placement_status placement_status;
+
+    clear_error(error);
+    if (model == NULL || topology == NULL || pressure == NULL || out == NULL ||
+        workspace == NULL || summary == NULL ||
+        (task_count != 0u && tasks == NULL))
+        return fail(error, PL_PROCESSOR_FABRIC_INVALID_ARGUMENT,
+                    0u, 0u, 0u, "graph, topology, task and output buffers are required");
+    if (task_count > PL_PLACEMENT_MAX_TASKS)
+        return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED,
+                    0u, 0u, 0u, "placement task count exceeds the v2 bound");
+    if (model->generation != topology->generation ||
+        pressure->generation != topology->generation)
+        return fail(error, PL_PROCESSOR_FABRIC_INVALID_GENERATION,
+                    0u, 0u, 0u, "PPF graph, topology and pressure generations must match");
+
+    status = pl_processor_fabric_validate(model, workspace, summary, error);
+    if (status != PL_PROCESSOR_FABRIC_OK) return status;
+    if (task_count != summary->ready_process_count)
+        return fail(error, PL_PROCESSOR_FABRIC_INVALID_ARGUMENT,
+                    0u, 0u, 0u, "every READY process must have exactly one placement descriptor");
+
+    for (size_t i = 0u; i < task_count; ++i) {
+        size_t process_index = find_node_index(model, tasks[i].task_id);
+        const pl_processor_fabric_node *process;
+        if (process_index >= model->node_count)
+            return fail(error, PL_PROCESSOR_FABRIC_MISSING_REFERENCE,
+                        tasks[i].task_id, 0u, 0u, "placement task is not present in the PPF graph");
+        process = &model->nodes[process_index];
+        if (process->kind != PL_PROCESSOR_FABRIC_PROCESS ||
+            process->state != PL_PROCESSOR_FABRIC_READY)
+            return fail(error, PL_PROCESSOR_FABRIC_INVALID_ARGUMENT,
+                        tasks[i].task_id, 0u, 0u, "placement descriptor must reference a READY process");
+        if ((process->feature_mask >> 32u) != 0u)
+            return fail(error, PL_PROCESSOR_FABRIC_INVALID_DOMAIN,
+                        process->id, 0u, 0u, "placement v2 ISA mask exceeds its declared feature domain");
+
+        normalized[i] = tasks[i];
+        normalized[i].task_id = process->id;
+        normalized[i].required_isa_mask = (uint32_t)process->feature_mask;
+        normalized[i].affinity_mask[0] = process->affinity_mask;
+        for (size_t word = 1u; word < PL_TOPOLOGY_MASK_WORDS; ++word)
+            normalized[i].affinity_mask[word] = 0u;
+        normalized[i].requested_load_basis_points = process->requested_load_basis_points;
+        normalized[i].priority = process->priority;
+        normalized[i].dependencies_pending =
+            (uint8_t)has_pending_dependency(model, process->id);
+    }
+    for (size_t i = 0u; i < task_count; ++i) {
+        for (size_t j = i + 1u; j < task_count; ++j) {
+            if (normalized[i].task_id == normalized[j].task_id)
+                return fail(error, PL_PROCESSOR_FABRIC_DUPLICATE_ID,
+                            normalized[i].task_id, 0u, 0u,
+                            "process has duplicate placement descriptors");
+        }
+    }
+
+    placement_status = pl_processor_placement_plan(
+        topology, normalized, task_count, pressure, out);
+    if (placement_status != PL_PLACEMENT_OK) {
+        if (placement_status == PL_PLACEMENT_STALE_GENERATION)
+            return fail(error, PL_PROCESSOR_FABRIC_INVALID_GENERATION,
+                        0u, 0u, 0u, "placement input generation is stale");
+        if (placement_status == PL_PLACEMENT_LIMIT_EXCEEDED)
+            return fail(error, PL_PROCESSOR_FABRIC_LIMIT_EXCEEDED,
+                        0u, 0u, 0u, "placement input exceeds bounded limits");
+        return fail(error, PL_PROCESSOR_FABRIC_INVALID_ARGUMENT,
+                    0u, 0u, 0u, "placement rejected invalid topology or task fields");
+    }
+    return PL_PROCESSOR_FABRIC_OK;
+}
+
 static int worker_supports_task(const pl_processor_fabric_node *worker,
                                 const pl_processor_fabric_node *task) {
     if (!is_worker_kind(worker->kind) ||
