@@ -20,7 +20,8 @@
     "rules",
     "implementation_layers",
     "integration_workstreams",
-    "safety_adjustments"
+    "safety_adjustments",
+    "perspectives"
   ],
   "properties": {
     "schema": {
@@ -598,6 +599,65 @@
       "items": {
         "type": "string",
         "minLength": 30
+      }
+    },
+    "perspectives": {
+      "type": "array",
+      "minItems": 20,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "display_name",
+          "category",
+          "qualifier",
+          "focus",
+          "workspace",
+          "scope_kind",
+          "authority",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 10
+          },
+          "category": {
+            "type": "string",
+            "minLength": 3
+          },
+          "qualifier": {
+            "type": "string",
+            "minLength": 3
+          },
+          "focus": {
+            "type": "string",
+            "minLength": 20
+          },
+          "workspace": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "scope_kind": {
+            "const": "workspace_perspective"
+          },
+          "authority": {
+            "const": "no_privilege_elevation"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "partial",
+              "implemented"
+            ]
+          }
+        }
       }
     }
   }
