@@ -154,6 +154,18 @@
         "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md",
         "contracts/pytyliki-low-level-rules.v1.json"
       ]
+    },
+    {
+      "id": "math.bounded-research-workbench.v1",
+      "status": "partial",
+      "summary": "Defines 51 bounded C11 research kernels across 17 mathematical problem domains, including finite witnesses, exact integer checks, finite-field models and numerical diagnostics; no open conjecture is claimed proved or disproved.",
+      "evidence": [
+        "src/research_math.h",
+        "src/research_math.c",
+        "tests/test_research_math.c",
+        "docs/MATHEMATICAL_RESEARCH_WORKBENCH_V1.md",
+        "schemas/mathematical-research-kernels.v1.json"
+      ]
     }
   ],
   "interfaces": [
@@ -187,6 +199,17 @@
         "src/low_level_contract.h",
         "src/low_level_contract.c",
         "tests/test_low_level_contract.c"
+      ]
+    },
+    {
+      "id": "pytyliki.mathematical-research-kernels.v1",
+      "format": "Versioned JSON manifest mapping 51 stable mathematical function IDs to C11 API symbols",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "schemas/mathematical-research-kernels.v1.json",
+        "src/research_math.h",
+        "docs/MATHEMATICAL_RESEARCH_WORKBENCH_V1.md"
       ]
     }
   ],
@@ -230,6 +253,14 @@
       "status": "planned",
       "opt_in": true,
       "summary": "A direct VentuSample-to-Pytyliki native metric/DSP adapter remains a future opt-in path; current pack descriptor comparison is orchestrated by Reaper and does not claim native audio rendering."
+    },
+    {
+      "project": "reaper",
+      "interface": "pytyliki.mathematical-research-kernels.v1",
+      "mode": "versioned-json-contract",
+      "status": "partial",
+      "opt_in": true,
+      "summary": "Publishes a 51-symbol mathematical kernel manifest aligned with Reaper's canonical typed contracts; native math-kernel dispatch through the shared C ABI is not yet wired."
     }
   ],
   "safety_boundaries": [
