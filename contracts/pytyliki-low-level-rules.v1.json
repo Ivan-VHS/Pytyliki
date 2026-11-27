@@ -1,0 +1,815 @@
+{
+  "schema": "pytyliki.low-level-rules.v1",
+  "version": 1,
+  "title": "Pytyliki 100 low-level engineering rules",
+  "rule_count": 100,
+  "status_legend": {
+    "implemented": "The stated bounded behavior exists in source and tests.",
+    "partial": "A model or subset exists; full target semantics remain incomplete.",
+    "target-specific": "Requires a concrete ISA, OS, board or trusted hardware backend.",
+    "not-physical": "The original wording is metaphorical or physically/logically invalid; its valid engineering analogue is retained.",
+    "planned": "A concrete future requirement, not an implementation claim."
+  },
+  "rules": [
+    {
+      "id": "PLL-001",
+      "number": 1,
+      "group": "foundation-and-physics",
+      "source_concept": "begin iron )",
+      "engineering_rule": "Reset vector, early CPU and memory initialization, and explicit readiness gates.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-002",
+      "number": 2,
+      "group": "foundation-and-physics",
+      "source_concept": "() core --",
+      "engineering_rule": "Versioned target profile declares ISA, address and word widths, endian, bus width and core count.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-003",
+      "number": 3,
+      "group": "foundation-and-physics",
+      "source_concept": "[ system ]-",
+      "engineering_rule": "System calls are not voltage writes; device, GPIO, clock and power are separate capabilities.",
+      "status": "not-physical"
+    },
+    {
+      "id": "PLL-004",
+      "number": 4,
+      "group": "foundation-and-physics",
+      "source_concept": "stop option ;",
+      "engineering_rule": "Stop is a validated idle, degraded or halted lifecycle transition, not a physical circuit break.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-005",
+      "number": 5,
+      "group": "foundation-and-physics",
+      "source_concept": "] level .",
+      "engineering_rule": "Privilege comes from CPU and OS state plus trusted capabilities, never source-selected atomic depth.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-006",
+      "number": 6,
+      "group": "foundation-and-physics",
+      "source_concept": "{ selective /",
+      "engineering_rule": "Branches are deterministic typed predicates; quantum superposition is not a CPU branch primitive.",
+      "status": "not-physical"
+    },
+    {
+      "id": "PLL-007",
+      "number": 7,
+      "group": "foundation-and-physics",
+      "source_concept": "} operation P)-",
+      "engineering_rule": "Thermal settling is separate from operation completion and must use target telemetry.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-008",
+      "number": 8,
+      "group": "foundation-and-physics",
+      "source_concept": "?? massive <>",
+      "engineering_rule": "Use bounded arenas, pools, typed views and separately declared address spaces.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-009",
+      "number": 9,
+      "group": "foundation-and-physics",
+      "source_concept": "< start >?",
+      "engineering_rule": "Startup requires a declared entrypoint and CPU, memory, clock and interrupt health gates.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-010",
+      "number": 10,
+      "group": "foundation-and-physics",
+      "source_concept": "grown new-work >/",
+      "engineering_rule": "Admit code as deterministic modules with budgets; live mutation is never implicit.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-011",
+      "number": 11,
+      "group": "foundation-and-physics",
+      "source_concept": "> concrete //*",
+      "engineering_rule": "Every device address belongs to a non-overlapping region with permissions and alignment.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-012",
+      "number": 12,
+      "group": "foundation-and-physics",
+      "source_concept": "## utility _",
+      "engineering_rule": "Intrinsics and hardware utilities come from a target capability catalogue.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-013",
+      "number": 13,
+      "group": "foundation-and-physics",
+      "source_concept": "# unify TAB",
+      "engineering_rule": "Synchronization uses memory-order rules and target fences, not electron-wide synchronization.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-014",
+      "number": 14,
+      "group": "foundation-and-physics",
+      "source_concept": "setup brachpass ^^",
+      "engineering_rule": "Branch hints and predictor access are optional target features.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-015",
+      "number": 15,
+      "group": "foundation-and-physics",
+      "source_concept": "!+ hyper tournament ^",
+      "engineering_rule": "Scheduling uses bounded costs and deterministic tie-breaks; energy and latency remain separate.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-016",
+      "number": 16,
+      "group": "foundation-and-physics",
+      "source_concept": "CC based rules ^^^",
+      "engineering_rule": "Resource policy uses measured thermal/power telemetry and safe thresholds.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-017",
+      "number": 17,
+      "group": "foundation-and-physics",
+      "source_concept": "level jump to run *(",
+      "engineering_rule": "Context/privilege transitions save state and delegate to OS or target ABI.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-018",
+      "number": 18,
+      "group": "foundation-and-physics",
+      "source_concept": "TRUE connective *+",
+      "engineering_rule": "Boolean conjunction remains typed logic; cross-core visibility uses synchronization, not entanglement.",
+      "status": "not-physical"
+    },
+    {
+      "id": "PLL-019",
+      "number": 19,
+      "group": "foundation-and-physics",
+      "source_concept": "verison ///. *",
+      "engineering_rule": "Language, AST, ABI, target and artifact versions are separate identities.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-020",
+      "number": 20,
+      "group": "foundation-and-physics",
+      "source_concept": "verificated /// !!",
+      "engineering_rule": "Checksums detect corruption; authenticity requires signatures and trusted attestation.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-021",
+      "number": 21,
+      "group": "memory-and-resources",
+      "source_concept": "Memory reservation",
+      "engineering_rule": "Allocation uses explicit allocators, pools and quotas with overflow checks.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-022",
+      "number": 22,
+      "group": "memory-and-resources",
+      "source_concept": "Pointers as coordinates",
+      "engineering_rule": "Pointers carry bounded extent, type, alignment, permissions and provenance.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-023",
+      "number": 23,
+      "group": "memory-and-resources",
+      "source_concept": "No garbage collector",
+      "engineering_rule": "Low-level lifetimes use explicit release, arenas and pools.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-024",
+      "number": 24,
+      "group": "memory-and-resources",
+      "source_concept": "Stack grows down",
+      "engineering_rule": "Stack direction, bounds, guards, alignment and reserve belong to target/linker contract.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-025",
+      "number": 25,
+      "group": "memory-and-resources",
+      "source_concept": "Cache is silicon memory",
+      "engineering_rule": "Cache line and cacheability are target metadata; maintenance operations need backends.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-026",
+      "number": 26,
+      "group": "memory-and-resources",
+      "source_concept": "Registers hold state",
+      "engineering_rule": "Registers require typed width, reset, masks and side-effect policy.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-027",
+      "number": 27,
+      "group": "memory-and-resources",
+      "source_concept": "Bus is nervous system",
+      "engineering_rule": "Bus access checks width, alignment, region and capability through trusted backend.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-028",
+      "number": 28,
+      "group": "memory-and-resources",
+      "source_concept": "Interrupts are pain",
+      "engineering_rule": "Fixed IRQ dispatch requires bounded, non-blocking, no-allocation handler contracts.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-029",
+      "number": 29,
+      "group": "memory-and-resources",
+      "source_concept": "Clock is heartbeat",
+      "engineering_rule": "Clock is target metadata; jitter is measured with units and wrap bounds.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-030",
+      "number": 30,
+      "group": "memory-and-resources",
+      "source_concept": "Energy is souls",
+      "engineering_rule": "Energy uses physical units, sensor provenance and uncertainty; no soul metric exists.",
+      "status": "not-physical"
+    },
+    {
+      "id": "PLL-031",
+      "number": 31,
+      "group": "memory-and-resources",
+      "source_concept": "Heat is code sin",
+      "engineering_rule": "Temperature is sensor telemetry, not inferred from code style.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-032",
+      "number": 32,
+      "group": "memory-and-resources",
+      "source_concept": "Bits are particles",
+      "engineering_rule": "Bit operations use fixed-width types, masks and defined overflow semantics.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-033",
+      "number": 33,
+      "group": "memory-and-resources",
+      "source_concept": "Byte is molecule",
+      "engineering_rule": "Serialized bytes are octets with explicit lengths and ABI encoding.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-034",
+      "number": 34,
+      "group": "memory-and-resources",
+      "source_concept": "Word is atom",
+      "engineering_rule": "Target word width is explicit, not inferred from host compiler.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-035",
+      "number": 35,
+      "group": "memory-and-resources",
+      "source_concept": "Addresses to infinity",
+      "engineering_rule": "Address width, region ends, spans and arithmetic overflow are checked.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-036",
+      "number": 36,
+      "group": "memory-and-resources",
+      "source_concept": "No virtual memory",
+      "engineering_rule": "Virtual and physical addresses are distinct; MMU translation is target-specific.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-037",
+      "number": 37,
+      "group": "memory-and-resources",
+      "source_concept": "Magnetic write protection",
+      "engineering_rule": "Region and MPU/MMU permissions protect writes; W+X is rejected by default.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-038",
+      "number": 38,
+      "group": "memory-and-resources",
+      "source_concept": "Read faster than light",
+      "engineering_rule": "Latency is measured; caches, wait states and uncertainty are recorded.",
+      "status": "not-physical"
+    },
+    {
+      "id": "PLL-039",
+      "number": 39,
+      "group": "memory-and-resources",
+      "source_concept": "Writes change history",
+      "engineering_rule": "Bounded trace records transitions and reports overflow; no cosmic persistence is implied.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-040",
+      "number": 40,
+      "group": "memory-and-resources",
+      "source_concept": "Clear reality",
+      "engineering_rule": "Secure wipe applies only to allocator-owned memory and tracked high-water ranges.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-041",
+      "number": 41,
+      "group": "logic-and-execution",
+      "source_concept": "Conditions test fate",
+      "engineering_rule": "Conditions are typed booleans with explicit evaluation and error semantics.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-042",
+      "number": 42,
+      "group": "logic-and-execution",
+      "source_concept": "Loops reverse time",
+      "engineering_rule": "Loops use bounded iterations, deadlines, cancellation and wrap-safe timers.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-043",
+      "number": 43,
+      "group": "logic-and-execution",
+      "source_concept": "Functions are rituals",
+      "engineering_rule": "Calls specify argument/return layout, clobbers, stack alignment and ABI version.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-044",
+      "number": 44,
+      "group": "logic-and-execution",
+      "source_concept": "Recursion mirrors",
+      "engineering_rule": "Recursion requires a bounded depth and stack budget on finite-stack targets.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-045",
+      "number": 45,
+      "group": "logic-and-execution",
+      "source_concept": "Parallel worlds",
+      "engineering_rule": "Parallel tasks need bounded admission, dependencies and synchronization.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-046",
+      "number": 46,
+      "group": "logic-and-execution",
+      "source_concept": "Locks bind chaos",
+      "engineering_rule": "Lock contracts define owner, ordering and timeout; ISR paths must not block.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-047",
+      "number": 47,
+      "group": "logic-and-execution",
+      "source_concept": "Mutexes unlock doors",
+      "engineering_rule": "Mutexes define owner, acquire/release, recursion and priority-inheritance policy.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-048",
+      "number": 48,
+      "group": "logic-and-execution",
+      "source_concept": "Semaphores are signals",
+      "engineering_rule": "Counting semaphores define bounded counts, wake order and overflow behavior.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-049",
+      "number": 49,
+      "group": "logic-and-execution",
+      "source_concept": "Queues wait forever",
+      "engineering_rule": "Queues define fixed capacity, ownership, backpressure, ordering and loss policy.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-050",
+      "number": 50,
+      "group": "logic-and-execution",
+      "source_concept": "Priority weighs souls",
+      "engineering_rule": "Priority is numeric policy with fairness and starvation rules.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-051",
+      "number": 51,
+      "group": "logic-and-execution",
+      "source_concept": "Scheduler is god",
+      "engineering_rule": "Hard real-time claims require WCET, interrupt and schedulability evidence.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-052",
+      "number": 52,
+      "group": "logic-and-execution",
+      "source_concept": "Context in ether",
+      "engineering_rule": "A context snapshot names registers, flags, PC, SP and ownership.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-053",
+      "number": 53,
+      "group": "logic-and-execution",
+      "source_concept": "Task teleportation",
+      "engineering_rule": "Context switching belongs to an OS/target backend with prescribed save/restore order.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-054",
+      "number": 54,
+      "group": "logic-and-execution",
+      "source_concept": "Stream is Ariadne thread",
+      "engineering_rule": "Streams specify element type, capacity, backpressure, cancellation and errors.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-055",
+      "number": 55,
+      "group": "logic-and-execution",
+      "source_concept": "Process is universe",
+      "engineering_rule": "Isolation requires address spaces, privilege and quotas from OS/MMU/MPU.",
+      "status": "target-specific"
+    },
+    {
+      "id": "PLL-056",
+      "number": 56,
+      "group": "logic-and-execution",
+      "source_concept": "Daemon is background spirit",
+      "engineering_rule": "Background services have explicit lifecycle, health, cancellation and quotas.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-057",
+      "number": 57,
+      "group": "logic-and-execution",
+      "source_concept": "Service worship",
+      "engineering_rule": "Services expose versioned request/response, timeout, health and failure contracts.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-058",
+      "number": 58,
+      "group": "logic-and-execution",
+      "source_concept": "Driver translator",
+      "engineering_rule": "Drivers are explicit target adapters; discovery never loads drivers implicitly.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-059",
+      "number": 59,
+      "group": "logic-and-execution",
+      "source_concept": "Kernel heart",
+      "engineering_rule": "The embedded lifecycle model is a reference model, not a production kernel.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-060",
+      "number": 60,
+      "group": "logic-and-execution",
+      "source_concept": "Shell skin",
+      "engineering_rule": "CLI and imported files are untrusted; parsing is bounded and inspection never executes source.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-061",
+      "number": 61,
+      "group": "security-and-integrity",
+      "source_concept": "Encryption is noise",
+      "engineering_rule": "Use vetted AEAD with unique nonces, opaque key handles and authenticated metadata.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-062",
+      "number": 62,
+      "group": "security-and-integrity",
+      "source_concept": "Key is author DNA",
+      "engineering_rule": "Secrets are provider-owned handles, never author identity or source literals.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-063",
+      "number": 63,
+      "group": "security-and-integrity",
+      "source_concept": "Hash is fingerprint",
+      "engineering_rule": "A digest identifies bytes; it is not a publisher signature.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-064",
+      "number": 64,
+      "group": "security-and-integrity",
+      "source_concept": "Signature is oath",
+      "engineering_rule": "Artifacts require trusted signing providers, canonical bytes and trust-anchor validation.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-065",
+      "number": 65,
+      "group": "security-and-integrity",
+      "source_concept": "Certificate is indulgence",
+      "engineering_rule": "Certificate validation checks issuer, chain, use, expiry and revocation.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-066",
+      "number": 66,
+      "group": "security-and-integrity",
+      "source_concept": "Firewall wall",
+      "engineering_rule": "Network filters use default-deny rules with direction, protocol, state and audit.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-067",
+      "number": 67,
+      "group": "security-and-integrity",
+      "source_concept": "Virus is design error",
+      "engineering_rule": "Imported code and binaries remain data; static scanning never executes samples.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-068",
+      "number": 68,
+      "group": "security-and-integrity",
+      "source_concept": "Antivirus immunity",
+      "engineering_rule": "Scanning is one signal; use least privilege, sandboxing, signatures and recovery.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-069",
+      "number": 69,
+      "group": "security-and-integrity",
+      "source_concept": "Exploit cracks armor",
+      "engineering_rule": "Use W^X, bounds checks, stack guards, parser limits and least privilege.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-070",
+      "number": 70,
+      "group": "security-and-integrity",
+      "source_concept": "Vulnerability weakness",
+      "engineering_rule": "Records include affected versions, preconditions, impact, remediation and tests.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-071",
+      "number": 71,
+      "group": "security-and-integrity",
+      "source_concept": "Patch plaster",
+      "engineering_rule": "Data updates use staging, validation, generation checks, commit and rollback.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-072",
+      "number": 72,
+      "group": "security-and-integrity",
+      "source_concept": "Update evolution",
+      "engineering_rule": "Schema migrations are versioned and reversible with compatibility checks.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-073",
+      "number": 73,
+      "group": "security-and-integrity",
+      "source_concept": "Bug is design",
+      "engineering_rule": "Defects become reproducible diagnostics and regression tests.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-074",
+      "number": 74,
+      "group": "security-and-integrity",
+      "source_concept": "Feature is law",
+      "engineering_rule": "Features have stable IDs, maturity, limits and source/test evidence.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-075",
+      "number": 75,
+      "group": "security-and-integrity",
+      "source_concept": "Docs are mythology",
+      "engineering_rule": "Capabilities link authoritative code, build steps, examples and maturity.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-076",
+      "number": 76,
+      "group": "security-and-integrity",
+      "source_concept": "Comments are whispers",
+      "engineering_rule": "Comments explain intent, constraints and trade-offs, not obvious code.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-077",
+      "number": 77,
+      "group": "security-and-integrity",
+      "source_concept": "Logs are chronicles",
+      "engineering_rule": "Logs and traces are bounded, structured, report loss and exclude secrets.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-078",
+      "number": 78,
+      "group": "security-and-integrity",
+      "source_concept": "Debugging confession",
+      "engineering_rule": "Debug reads are separately authorized and read-only by default.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-079",
+      "number": 79,
+      "group": "security-and-integrity",
+      "source_concept": "Testing is judgment",
+      "engineering_rule": "CTest, native tests, malformed cases and sanitizers verify contracts; hardware needs HIL.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-080",
+      "number": 80,
+      "group": "security-and-integrity",
+      "source_concept": "Deploy new life",
+      "engineering_rule": "Releases use reproducible builds, provenance, signatures and rollback; no firmware deploy claimed.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-081",
+      "number": 81,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Sharp transitions",
+      "engineering_rule": "State transitions are explicit, validated and return typed errors.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-082",
+      "number": 82,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Immaculate mastering",
+      "engineering_rule": "Changed code follows style, warnings, tests, docs and reviewed diffs.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-083",
+      "number": 83,
+      "group": "aesthetics-and-performance",
+      "source_concept": "No intro build",
+      "engineering_rule": "Startup removes needless work but never skips initialization or readiness gates.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-084",
+      "number": 84,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Layered slices",
+      "engineering_rule": "Separate syntax, typed contract, Hardware IR, target backend, tooling and runtime.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-085",
+      "number": 85,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Thunderous syncopation",
+      "engineering_rule": "Jitter, cadence, throughput and latency are measured with units, windows and uncertainty.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-086",
+      "number": 86,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Hidden gems",
+      "engineering_rule": "Optimizations need baseline data and regression checks; no hidden self-modifying transform.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-087",
+      "number": 87,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Punchy mix",
+      "engineering_rule": "Performance is measured alongside correctness, memory, energy and thermal constraints.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-088",
+      "number": 88,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Stereo width",
+      "engineering_rule": "Channels are independent typed buffers/streams; no native stereo DSP is claimed.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-089",
+      "number": 89,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Dynamic range",
+      "engineering_rule": "Numeric paths define format, saturation, overflow, quantization and headroom.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-090",
+      "number": 90,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Frequency response",
+      "engineering_rule": "Frequency response is a DSP characteristic requiring measured audio tests.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-091",
+      "number": 91,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Distortion",
+      "engineering_rule": "Nonlinear transforms require explicit curves, limits and reference tests.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-092",
+      "number": 92,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Compression",
+      "engineering_rule": "Compression declares output capacity, expansion limit and malformed-input behavior.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-093",
+      "number": 93,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Limiting",
+      "engineering_rule": "Workers, memory, queues, recursion, samples and runtime are bounded by quotas.",
+      "status": "implemented"
+    },
+    {
+      "id": "PLL-094",
+      "number": 94,
+      "group": "aesthetics-and-performance",
+      "source_concept": "EQ",
+      "engineering_rule": "Profiles expose latency, throughput, energy, thermal and reliability trade-offs.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-095",
+      "number": 95,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Reverb",
+      "engineering_rule": "Audio reverb is separate from trace history; replay needs bounded provenance.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-096",
+      "number": 96,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Delay",
+      "engineering_rule": "Delay uses monotonic deadlines, bounded waits and cancellation.",
+      "status": "partial"
+    },
+    {
+      "id": "PLL-097",
+      "number": 97,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Chorus",
+      "engineering_rule": "Fan-out duplicates immutable events to bounded consumers with backpressure.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-098",
+      "number": 98,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Flanger",
+      "engineering_rule": "A flanger requires a bounded delay line, interpolation and modulation policy.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-099",
+      "number": 99,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Phaser",
+      "engineering_rule": "Phase operations declare numeric format, accumulator bounds and measured response.",
+      "status": "planned"
+    },
+    {
+      "id": "PLL-100",
+      "number": 100,
+      "group": "aesthetics-and-performance",
+      "source_concept": "Silence",
+      "engineering_rule": "Avoid needless I/O, allocation and synchronization; no-op elimination preserves behavior.",
+      "status": "partial"
+    }
+  ]
+}

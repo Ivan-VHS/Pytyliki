@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and a syntax-only system-array frontend.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and target-described low-level hardware contracts.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -142,6 +142,18 @@
         "tests/test_octa_pyramid.py",
         "docs/OCTA_PYRAMID_FEDERATION.md"
       ]
+    },
+    {
+      "id": "hardware.low-level-contract.v1",
+      "status": "partial",
+      "summary": "Versioned C11 target descriptor, bounded non-overlapping memory map, capability-gated RAM/MMIO backend, clock/power requests and fixed-capacity IRQ dispatch; fake-backend tested, no physical target backend shipped.",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md",
+        "contracts/pytyliki-low-level-rules.v1.json"
+      ]
     }
   ],
   "interfaces": [
@@ -164,6 +176,17 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "pytyliki.low-level-hardware-contract.v1",
+      "format": "Versioned C11 target, memory-map, bus-backend and IRQ contract",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c"
       ]
     }
   ],
@@ -214,7 +237,10 @@
     "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
     "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
-    "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations."
+    "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
+    "The low-level hardware contract has no default physical backend; device access requires explicit capabilities, a declared region and trusted target callbacks.",
+    "MMIO reads/writes require device-region permissions and backend fences; a post-write fence failure means completion may be uncertain.",
+    "Clock and power-state operations are bounded platform requests, not raw voltage or pin writes; physical target adapters need board-specific qualification."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
@@ -222,6 +248,8 @@
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
-    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration."
+    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
+    "Versioned target and memory-region descriptors plus capability-gated bus/IRQ adapter contracts for future x86-64, ARM, RISC-V and MCU backends.",
+    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements."
   ]
 }
