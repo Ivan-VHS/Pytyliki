@@ -200,10 +200,22 @@ def workflow_has_unscoped_write(text):
 
         guarded_release = (
             job_name == "publish-release"
-            and any(re.search(r"^\s{4}if:\s*startsWith\(github\.ref,\s*['\"]refs/tags/['\"]\)", line) for line in block)
-            and any(re.match(r"^\s{4}needs:\s*build-windows\s*$", line) for line in block)
+            and any(re.search(r"^\\s{4}if:\\s*startsWith\\(github\\.ref,\\s*['\\"]refs/tags/['\\"]\\)", line) for line in block)
+            and any(re.match(r"^\\s{4}needs:\\s*build-windows\\s*$", line) for line in block)
         )
-        if not guarded_release:
+        block_text = "\\n".join(block)
+        guarded_auto_merge = (
+            job_name == "auto-merge"
+            and any(re.match(r"^\\s{4}needs:\\s*\\[\\s*validate\\s*,\\s*sanitizer\\s*\\]\\s*$", line) for line in block)
+            and any(re.search(r"^\\s{4}if:.*github\\.event\\.pull_request\\.draft\\s*==\\s*false.*github\\.event\\.pull_request\\.head\\.repo\\.full_name\\s*==\\s*github\\.repository", line) for line in block)
+            and "Wait for every pull-request workflow on the validated head" in block_text
+            and "Confirm validated PR head is unchanged" in block_text
+            and "Require independent current-head approval and resolved review threads" in block_text
+            and "missing-current-head-human-approval" in block_text
+            and "reviewThreads(first: 100" in block_text
+            and "Enable squash auto-merge" in block_text
+        )
+        if not (guarded_release or guarded_auto_merge):
             return True
     return False
 
