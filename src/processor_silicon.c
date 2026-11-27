@@ -20,6 +20,13 @@
 #error "PL_SILICON_TRACE_CAPACITY must be a power of two"
 #endif
 
+#if defined(PYTYLIKI_ENABLE_CORTEX_M_DWT) || \
+    (defined(__ARM_ARCH_PROFILE) && (__ARM_ARCH_PROFILE == 'M'))
+#define PL_SILICON_CORTEX_M_DWT_BUILD 1
+#else
+#define PL_SILICON_CORTEX_M_DWT_BUILD 0
+#endif
+
 static int pl_silicon_valid_barrier(pl_silicon_barrier barrier) {
     return barrier == PL_SILICON_BARRIER_DATA ||
            barrier == PL_SILICON_BARRIER_COMPLETION ||
@@ -183,14 +190,17 @@ int pl_silicon_barrier_execute(pl_silicon_barrier barrier) {
 #endif
 }
 
+#if PL_SILICON_CORTEX_M_DWT_BUILD
 static int pl_silicon_read_dwt(void *context, uint64_t *out_value) {
     const volatile uint32_t *counter = (const volatile uint32_t *)context;
     if (counter == NULL || out_value == NULL) return PL_SILICON_INVALID_ARGUMENT;
     *out_value = (uint64_t)(*counter);
     return PL_SILICON_OK;
 }
+#endif
 
-#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+#if defined(_MSC_VER) && (defined(_M_X64) || \
+    (defined(_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2)))
 static int pl_silicon_read_native_tsc(void *context, uint64_t *out_value) {
     (void)context;
     if (out_value == NULL) return PL_SILICON_INVALID_ARGUMENT;
@@ -241,7 +251,8 @@ static int pl_silicon_read_riscv_cycle(void *context, uint64_t *out_value) {
 int pl_silicon_cycle_source_native(pl_silicon_cycle_source *out) {
     if (out == NULL) return PL_SILICON_INVALID_ARGUMENT;
     memset(out, 0, sizeof(*out));
-#if (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))) || \
+#if (defined(_MSC_VER) && (defined(_M_X64) || \
+     (defined(_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2)))) || \
     ((defined(__GNUC__) || defined(__clang__)) && \
      (defined(__x86_64__) || (defined(__i386__) && defined(__SSE2__))))
     out->read = pl_silicon_read_native_tsc;
@@ -263,6 +274,10 @@ int pl_silicon_cycle_source_dwt(pl_silicon_cycle_source *out,
                                 volatile uint32_t *cyccnt,
                                 uint64_t frequency_hz) {
     if (out == NULL || cyccnt == NULL) return PL_SILICON_INVALID_ARGUMENT;
+#if !PL_SILICON_CORTEX_M_DWT_BUILD
+    (void)frequency_hz;
+    return PL_SILICON_UNSUPPORTED;
+#else
     if (pl_silicon_architecture_current() != PL_SILICON_ARCH_ARM32)
         return PL_SILICON_UNSUPPORTED;
     memset(out, 0, sizeof(*out));
@@ -272,6 +287,7 @@ int pl_silicon_cycle_source_dwt(pl_silicon_cycle_source *out,
     out->counter_bits = 32u;
     out->kind = PL_SILICON_COUNTER_CORTEX_M_DWT;
     return PL_SILICON_OK;
+#endif
 }
 
 int pl_silicon_dwt_enable(const pl_silicon_dwt_registers *registers,
@@ -279,6 +295,10 @@ int pl_silicon_dwt_enable(const pl_silicon_dwt_registers *registers,
     if (registers == NULL || registers->demcr == NULL ||
         registers->dwt_ctrl == NULL || registers->cyccnt == NULL)
         return PL_SILICON_INVALID_ARGUMENT;
+#if !PL_SILICON_CORTEX_M_DWT_BUILD
+    (void)reset_counter;
+    return PL_SILICON_UNSUPPORTED;
+#else
     if (pl_silicon_architecture_current() != PL_SILICON_ARCH_ARM32)
         return PL_SILICON_UNSUPPORTED;
     if ((*registers->dwt_ctrl & PL_SILICON_DWT_NOCYCCNT) != 0u)
@@ -294,6 +314,7 @@ int pl_silicon_dwt_enable(const pl_silicon_dwt_registers *registers,
     if (pl_silicon_barrier_execute(PL_SILICON_BARRIER_INSTRUCTION) != PL_SILICON_OK)
         return PL_SILICON_UNSUPPORTED;
     return PL_SILICON_OK;
+#endif
 }
 
 int pl_silicon_cycle_read(const pl_silicon_cycle_source *source,
@@ -363,6 +384,7 @@ int pl_silicon_mmio_region_init(pl_silicon_mmio_region *region,
     if (region == NULL || mapped_base == NULL || size_bytes == 0u ||
         size_bytes > (size_t)UINTPTR_MAX ||
         bus_base > UINTPTR_MAX - (uintptr_t)size_bytes ||
+        (uintptr_t)mapped_base > UINTPTR_MAX - (uintptr_t)size_bytes ||
         width_mask == 0u ||
         (width_mask & ~known_widths) != 0u || permissions == 0u ||
         (permissions & ~known_permissions) != 0u ||
@@ -506,8 +528,9 @@ int pl_silicon_isa_image_validate(const pl_silicon_isa_image *image,
         return PL_SILICON_INVALID_ARGUMENT;
     if (!pl_silicon_isa_arch_matches(image->isa, &target_arch, &alignment))
         return PL_SILICON_UNSUPPORTED;
-    if (image->load_address > UINTPTR_MAX - image->byte_count ||
-        image->load_address > UINTPTR_MAX - image->entry_offset)
+    if (image->byte_count > (size_t)UINTPTR_MAX ||
+        image->load_address > UINTPTR_MAX - (uintptr_t)image->byte_count ||
+        image->load_address > UINTPTR_MAX - (uintptr_t)image->entry_offset)
         return PL_SILICON_OVERFLOW;
     entry_address = image->load_address + image->entry_offset;
     if ((image->load_address % alignment) != 0u ||
