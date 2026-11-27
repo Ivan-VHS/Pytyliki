@@ -1,0 +1,10 @@
+rule apocrypha_noise_gate priority 100 {
+    when input.kind == NOISE_GLYPH
+     and input.entropy > 0.91
+    then {
+        let normalized = fold_bits_xor(input.raw, 7);
+        set_reg(regit, normalized);
+        discard_untrusted_input(input);
+    }
+}
+
