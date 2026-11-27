@@ -26,10 +26,15 @@ typedef enum {
     PL_IDE_MODE_PRIVILEGED = 7
 } pl_ide_mode;
 
+/*
+ * These flags are session preflight declarations, not security tokens and
+ * not hardware grants. Real memory/MMIO/device operations must still pass
+ * pl_ll_bus capability checks and trusted OS/board backend authorization.
+ */
 enum {
     PL_IDE_FLAG_TARGET_PROVIDER = UINT32_C(1) << 0,
     PL_IDE_FLAG_DEBUG_PROVIDER = UINT32_C(1) << 1,
-    PL_IDE_FLAG_TARGET_CAPABILITY = UINT32_C(1) << 2,
+    PL_IDE_FLAG_TARGET_AUTHORIZATION_DECLARED = UINT32_C(1) << 2,
     PL_IDE_FLAG_OPERATOR_APPROVED = UINT32_C(1) << 3
 };
 
