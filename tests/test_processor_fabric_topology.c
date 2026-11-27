@@ -36,8 +36,8 @@ int main(void) {
 
     memset(&topology, 0, sizeof(topology));
     topology.generation = 42u;
-    topology.logical_cpu_count = 3u;
-    topology.online_logical_cpu_count = 2u;
+    topology.logical_cpu_count = 4u;
+    topology.online_logical_cpu_count = 3u;
     topology.cache_count = 1u;
     topology.numa_node_count = 1u;
     topology.completeness = PL_TOPOLOGY_PARTIAL;
