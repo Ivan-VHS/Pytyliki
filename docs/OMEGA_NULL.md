@@ -57,7 +57,7 @@ The original marker spellings are retained as a visual layer. The normalized nam
 | `} operation P)-` | `operation.apply` | Execute or simulate an admitted operation under declared effects |
 | `?? massive <>` | `data.region` | Allocate a bounded state-vector, tensor, memory or dataset region |
 | `< start >?` | `resource.query` | Read-only query of a declared model or resource provider |
-| `grown new-work >/ ` | `pipeline.expand` | Expand bounded child jobs, generated source or model steps |
+| `grown new-work >/` | `pipeline.expand` | Expand bounded child jobs, generated source or model steps |
 | `> concrete //*` | `artifact.materialize` | Emit source, IR, netlist, RTL, CAD or a manufacturing plan |
 | `## utility _` | `utility.import` | Resolve a versioned local utility module or pinned adapter |
 | `# unify TAB` | `timeline.align` | Align logical clocks, signal phases or event streams |
