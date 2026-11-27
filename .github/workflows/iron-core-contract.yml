@@ -1,0 +1,40 @@
+name: IRON CORE contract
+
+on:
+  pull_request:
+    paths:
+      - "iron/**"
+      - "schemas/iron-core.v1.schema.json"
+      - "docs/IRON_CORE.md"
+      - "docs/clusters/processor-labs.md"
+      - "tools/validate_iron_core.py"
+      - "tests/test_iron_core_contract.py"
+      - ".github/workflows/iron-core-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "iron/**"
+      - "schemas/iron-core.v1.schema.json"
+      - "docs/IRON_CORE.md"
+      - "docs/clusters/processor-labs.md"
+      - "tools/validate_iron_core.py"
+      - "tests/test_iron_core_contract.py"
+      - ".github/workflows/iron-core-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: false
+      - name: Validate machine-readable IRON contract
+        run: python tools/validate_iron_core.py
+      - name: Run IRON contract regression tests
+        run: python -m unittest discover -s tests -p "test_iron_core_contract.py" -v
