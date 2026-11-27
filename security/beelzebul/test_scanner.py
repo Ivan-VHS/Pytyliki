@@ -2,7 +2,7 @@
 from __future__ import annotations
 import json, random, unittest
 from pathlib import Path
-from scanner import correlate, inspect_file, score_findings, validate_policy
+from scanner import correlate, inspect_file, score_findings, validate_policy, workflow_has_unscoped_write
 
 class ScannerRegressionTests(unittest.TestCase):
     def test_secret_is_detected_but_never_echoed(self):
@@ -65,6 +65,35 @@ class ScannerRegressionTests(unittest.TestCase):
         ]
         correlate(findings, {}, set())
         self.assertFalse([item for item in findings if item["rule_id"] == "Q14"])
+
+    def test_release_write_permission_is_tag_gated_and_job_scoped(self):
+        safe_release = """permissions:
+  contents: read
+jobs:
+  build-windows:
+    runs-on: windows-latest
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-windows
+    permissions:
+      contents: write
+"""
+        broad_release = safe_release.replace(
+            "if: startsWith(github.ref, 'refs/tags/')",
+            "if: always()",
+        )
+        writable_build = safe_release.replace(
+            "  build-windows:\\n    runs-on: windows-latest",
+            "  build-windows:\\n    permissions:\\n      contents: write\\n    runs-on: windows-latest",
+        )
+        global_write = safe_release.replace(
+            "  contents: read",
+            "  contents: write",
+        )
+        self.assertFalse(workflow_has_unscoped_write(safe_release))
+        self.assertTrue(workflow_has_unscoped_write(broad_release))
+        self.assertTrue(workflow_has_unscoped_write(writable_build))
+        self.assertTrue(workflow_has_unscoped_write(global_write))
 
     def test_policy_contract_has_66_unique_rules(self):
         findings=[];policy=validate_policy(Path(__file__).resolve().parents[2],findings)
