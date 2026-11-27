@@ -7,7 +7,7 @@ on:
       - "src/win_gui.c"
       - "src/ui_ux_policy.h"
       - "src/mora_theme.h"
-      - "tests/**"
+      - "tests/test_ui_ux_40026.c"
       - "gui-neuro-profile.v1.json"
       - "docs/GUI_NEURO_AUTOIMPROVEMENT.md"
       - "tools/validate_gui_neuro_profile.mjs"

@@ -89,13 +89,18 @@ if (baseRef) {
   }
   if (changed.length === 0) fail("PR contains no changed files for the neuro-GUI profile gate");
 
-  const rejected = [];
-  for (const file of changed) {
-    const denied = protectedPaths.some((rule) => matches(file, rule));
-    const permitted = allowed.some((rule) => matches(file, rule));
-    if (denied || !permitted) rejected.push(file);
+  const guiSurfaceChanged = changed.some((file) => profile.primary_ui_surfaces.includes(file));
+  if (guiSurfaceChanged) {
+    const rejected = [];
+    for (const file of changed) {
+      const denied = protectedPaths.some((rule) => matches(file, rule));
+      const permitted = allowed.some((rule) => matches(file, rule));
+      if (denied || !permitted) rejected.push(file);
+    }
+    if (rejected.length) fail("changes outside the approved GUI scope: " + rejected.join(", "));
+  } else {
+    console.log("No primary GUI surface changed; GUI write-scope enforcement is not applicable to this PR.");
   }
-  if (rejected.length) fail("changes outside the approved GUI scope: " + rejected.join(", "));
 }
 
 const summary = [

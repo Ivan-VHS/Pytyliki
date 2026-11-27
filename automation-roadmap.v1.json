@@ -433,7 +433,8 @@
         "Автоматическое масштабирование"
       ],
       "priority": "P2",
-      "status": "planned",
+      "status": "not_applicable",
+      "not_applicable_reason": "Pytyliki is a local Windows desktop workstation and portable CLI; it has no hosted service or production runtime to deploy. Desktop archive distribution is not service deployment.",
       "objective": "Define environment-aware deployment and scaling only where the repository has a real deployable target.",
       "target": "Require protected environments and an explicit human approval before external deployment.",
       "trigger": [

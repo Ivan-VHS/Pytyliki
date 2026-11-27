@@ -1,4 +1,5 @@
 #include "division.h"
+#include "division_cli.h"
 
 #include "processor.h"
 
@@ -43,7 +44,7 @@ static int parse_u64(const char *text, uint64_t *out) {
 
 static int print_division(int64_t dividend, int64_t divisor) {
     pl_division_result result;
-    if (pl_division_euclidean(dividend, divisor, &result) != 0) {
+    if (pl_euclidean_divmod(dividend, divisor, &result) != 0) {
         fputs("Division rejected: zero divisor or signed 64-bit overflow.\n", stderr);
         return 2;
     }
@@ -54,37 +55,46 @@ static int print_division(int64_t dividend, int64_t divisor) {
     return 0;
 }
 
+#define PL_DIVISION_CLI_MAX_PARTITIONS 256u
+
 static int print_partition(uint64_t items, uint64_t available_workers,
                            uint64_t minimum_grain) {
-    uint64_t workers = 0u;
-    pl_partition_plan plan;
-    if (pl_division_recommend_workers(items, available_workers,
-                                      minimum_grain, &workers) != 0) {
-        fputs("Partition request rejected: invalid worker count or minimum grain.\n",
+    uint64_t workers;
+    uint64_t maximum_by_grain;
+    uint64_t offset = 0u;
+
+    if (available_workers == 0u || minimum_grain == 0u) {
+        fputs("Partition request rejected: worker count and minimum grain must be positive.\n",
               stderr);
         return 2;
     }
-    if (workers == 0u) {
+    if (items == 0u) {
         puts("No work items: no partitions required.");
         return 0;
     }
-    if (pl_partition_plan_create(items, workers, &plan) != 0) {
-        fputs("Partition plan exceeds the configured safety limit.\n", stderr);
-        return 2;
-    }
+
+    /* Keep the output bounded and avoid creating empty partitions. */
+    maximum_by_grain = items / minimum_grain;
+    if (maximum_by_grain == 0u) maximum_by_grain = 1u;
+    workers = available_workers < maximum_by_grain
+        ? available_workers : maximum_by_grain;
+    if (workers > PL_DIVISION_CLI_MAX_PARTITIONS)
+        workers = PL_DIVISION_CLI_MAX_PARTITIONS;
+
     printf("Balanced partition plan: items=%" PRIu64
            " available-workers=%" PRIu64 " minimum-grain=%" PRIu64
            " recommended-workers=%" PRIu64 "\n",
            items, available_workers, minimum_grain, workers);
     for (uint64_t i = 0u; i < workers; ++i) {
-        uint64_t offset = 0u;
-        uint64_t count = 0u;
-        if (pl_partition_plan_range(&plan, i, &offset, &count) != 0) {
-            fputs("Partition plan could not be read.\n", stderr);
-            return 1;
-        }
+        uint64_t count = items / workers;
+        if (i < items % workers) ++count;
         printf("  worker-%" PRIu64 ": offset=%" PRIu64 " count=%" PRIu64 "\n",
                i, offset, count);
+        offset += count;
+    }
+    if (offset != items) {
+        fputs("Partition plan failed its conservation check.\n", stderr);
+        return 1;
     }
     puts("Planning only: no threads are spawned and CPU affinity is unchanged.");
     return 0;

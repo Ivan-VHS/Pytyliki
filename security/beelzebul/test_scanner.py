@@ -2,7 +2,7 @@
 from __future__ import annotations
 import json, random, unittest
 from pathlib import Path
-from scanner import correlate, inspect_file, score_findings, validate_policy
+from scanner import correlate, inspect_file, score_findings, validate_policy, workflow_has_unscoped_write
 
 class ScannerRegressionTests(unittest.TestCase):
     def test_secret_is_detected_but_never_echoed(self):
@@ -34,21 +34,112 @@ class ScannerRegressionTests(unittest.TestCase):
     def test_correlations_ignore_scanner_and_policy_metadata(self):
         findings = []
         sources = {
-            "security/beelzebul/scanner.py": "password token sha1 logger.info(value)",
+            "security/beelzebul/scanner.py": (
+                "password token sha1 "
+                "logger.info(value)"
+            ),
             ".beelzebul/policy.v1.json": '{"password": "token", "sha1": "auth"}',
         }
         correlate(findings, sources, set(sources))
         self.assertFalse([item for item in findings if item["rule_id"].startswith("Q")])
 
+    def test_secret_log_correlation_requires_same_line_evidence(self):
+        unrelated = []
+        correlate(
+            unrelated,
+            {"src/module.py": "token = read_token()\nlogger.info('request complete')"},
+        )
+        self.assertFalse([item for item in unrelated if item["rule_id"] == "Q05"])
+
+        direct = []
+        source = "logger" + ".info('token=%s', token)"
+        correlate(direct, {"src/module.py": source})
+        self.assertTrue([item for item in direct if item["rule_id"] == "Q05"])
+
     def test_repository_correlation_uses_only_changed_files(self):
         findings = [
-            {"path": "legacy/a.py", "severity": "high"},
-            {"path": "legacy/b.py", "severity": "high"},
-            {"path": "legacy/c.py", "severity": "high"},
-            {"path": "legacy/d.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/a.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/b.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/c.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/d.py", "severity": "high"},
         ]
         correlate(findings, {}, set())
         self.assertFalse([item for item in findings if item["rule_id"] == "Q14"])
+
+    def test_release_write_permission_is_tag_gated_and_job_scoped(self):
+        safe_release = """permissions:
+  contents: read
+jobs:
+  build-windows:
+    runs-on: windows-latest
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-windows
+    permissions:
+      contents: write
+"""
+        broad_release = safe_release.replace(
+            "if: startsWith(github.ref, 'refs/tags/')",
+            "if: always()",
+        )
+        writable_build = safe_release.replace(
+            "  build-windows:\n    runs-on: windows-latest",
+            "  build-windows:\n    permissions:\n      contents: write\n    runs-on: windows-latest",
+        )
+        global_write = safe_release.replace(
+            "  contents: read",
+            "  contents: write",
+        )
+        global_write_all = safe_release.replace(
+            "  contents: read",
+            "  permissions: write-all",
+        )
+        job_write_all = safe_release.replace(
+            "  build-windows:\n    runs-on: windows-latest",
+            "  build-windows:\n    permissions:\n      permissions: write-all\n    runs-on: windows-latest",
+        )
+        self.assertFalse(workflow_has_unscoped_write(safe_release))
+        self.assertTrue(workflow_has_unscoped_write(broad_release))
+        self.assertTrue(workflow_has_unscoped_write(writable_build))
+        self.assertTrue(workflow_has_unscoped_write(global_write))
+        self.assertTrue(workflow_has_unscoped_write(global_write_all))
+        self.assertTrue(workflow_has_unscoped_write(job_write_all))
+
+    def test_auto_merge_write_permission_requires_independent_review(self):
+        safe_auto_merge = """permissions:
+  contents: read
+jobs:
+  validate:
+    permissions:
+      contents: read
+  sanitizer:
+    permissions:
+      contents: read
+  auto-merge:
+    if: github.event_name != 'workflow_dispatch' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [validate, sanitizer]
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Wait for every pull-request workflow on the validated head
+        env:
+          EXPECTED_HEAD_SHA: sha
+      - name: Confirm validated PR head is unchanged
+      - name: Require independent current-head approval and resolved review threads
+        env:
+          REVIEW_STATE: missing-current-head-human-approval
+        run: |
+          reviewThreads(first: 100) { nodes { isResolved } }
+      - name: Enable squash auto-merge
+"""
+        unsafe_auto_merge = safe_auto_merge.replace(
+            "Require independent current-head approval and resolved review threads",
+            "Approve without reviewer checks",
+        )
+        self.assertFalse(workflow_has_unscoped_write(safe_auto_merge))
+        self.assertTrue(workflow_has_unscoped_write(unsafe_auto_merge))
 
     def test_policy_contract_has_66_unique_rules(self):
         findings=[];policy=validate_policy(Path(__file__).resolve().parents[2],findings)

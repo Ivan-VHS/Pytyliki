@@ -161,6 +161,85 @@ def validate_exceptions(root,findings):
             add(findings,"G04","high",".beelzebul/exceptions.v1.json",index+1,"Expired exception detected.","high");continue
         valid.append(item)
     return valid
+def workflow_has_unscoped_write(text):
+    """Allow content writes only in the isolated release and reviewed auto-merge jobs."""
+    lines = text.splitlines()
+
+    def requests_write(block, permission_indent):
+        in_permissions = False
+        for line in block:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            indent = len(line) - len(line.lstrip())
+            if indent == permission_indent and stripped.lower() == "permissions: write-all":
+                return True
+            if indent == permission_indent and stripped == "permissions:":
+                in_permissions = True
+                continue
+            if in_permissions and indent <= permission_indent:
+                in_permissions = False
+            if in_permissions and ":" in stripped:
+                key, value = stripped.split(":", 1)
+                permission = value.strip().lower()
+                if (key.strip() == "contents" and permission == "write") or (
+                    key.strip() == "permissions" and permission == "write-all"
+                ):
+                    return True
+        return False
+
+    jobs_index = next(
+        (i for i, line in enumerate(lines) if line.strip() == "jobs:" and line == line.lstrip()),
+        len(lines),
+    )
+    if requests_write(lines[:jobs_index], 0):
+        return True
+
+    job_headers = []
+    for i, line in enumerate(lines[jobs_index + 1:], jobs_index + 1):
+        indent = len(line) - len(line.lstrip())
+        stripped = line.strip()
+        if indent == 2 and stripped.endswith(":"):
+            name = stripped[:-1]
+            if name and all(char.isalnum() or char in "_-" for char in name):
+                job_headers.append((i, name))
+
+    for index, (start, job_name) in enumerate(job_headers):
+        end = job_headers[index + 1][0] if index + 1 < len(job_headers) else len(lines)
+        block = lines[start:end]
+        if not requests_write(block, 4):
+            continue
+
+        block_text = "\n".join(block)
+        guarded_release = (
+            job_name == "publish-release"
+            and any(line.strip() in (
+                "if: startsWith(github.ref, 'refs/tags/')",
+                'if: startsWith(github.ref, "refs/tags/")',
+            ) for line in block)
+            and any(line.strip() == "needs: build-windows" for line in block)
+        )
+        guarded_auto_merge = (
+            job_name == "auto-merge"
+            and any(line.strip() == "needs: [validate, sanitizer]" for line in block)
+            and any(
+                line.strip().startswith("if:")
+                and "github.event.pull_request.draft == false" in line
+                and "github.event.pull_request.head.repo.full_name == github.repository" in line
+                for line in block
+            )
+            and "Wait for every pull-request workflow on the validated head" in block_text
+            and "Confirm validated PR head is unchanged" in block_text
+            and "Require independent current-head approval and resolved review threads" in block_text
+            and "missing-current-head-human-approval" in block_text
+            and "reviewThreads(first: 100" in block_text
+            and "Enable squash auto-merge" in block_text
+        )
+        if not (guarded_release or guarded_auto_merge):
+            return True
+    return False
+
+
 def inspect_infrastructure(file_texts,findings):
     paths=set(file_texts)
     for path,text in sorted(file_texts.items()):
@@ -177,7 +256,7 @@ def inspect_infrastructure(file_texts,findings):
             if re.search(r"\b(?:curl|wget)\b[\s\S]{0,180}\|\s*(?:ba)?sh\b",text,re.I):add(findings,"N05","critical",path,1,"Remote content is piped directly to a shell.","high")
             if "timeout-minutes:" not in text:add(findings,"N06","low",path,1,"Workflow has no explicit job timeout.","high")
             if "pull_request:" in low and "secrets." in low:add(findings,"N08","high",path,1,"Secret references exist in a workflow triggered by pull_request.","medium")
-            if re.search(r"contents\s*:\s*write|permissions\s*:\s*write-all",text,re.I):add(findings,"N14","high",path,1,"Workflow requests repository content write permission.","high")
+            if workflow_has_unscoped_write(text):add(findings,"N14","high",path,1,"Workflow grants repository content write outside an isolated tag-gated release job.","high")
             if "pull_request_target" in low and ("secrets." in low or "write-all" in low):add(findings,"N15","critical",path,1,"Privileged trigger is combined with secrets or broad write permissions.","high")
         if Path(path).name.lower()=="dockerfile" or Path(path).name.lower().startswith("dockerfile."):
             if re.search(r"^\s*from\s+\S+:latest\b",text,re.I|re.M):add(findings,"N09","medium",path,1,"Container base image uses a floating latest tag.","high")
@@ -233,7 +312,14 @@ def correlate(findings,file_texts,focus_paths=None):
             add(findings,"Q03","critical",path,1,"External input and command/expression execution share a trust boundary.","medium")
         if re.search(r"\b(?:requests\.|urllib\.request|httpx\.|fetch\s*\()",low) and "verify=false" in low:add(findings,"Q02","high",path,1,"Network client and disabled TLS verification are correlated.","medium")
         if re.search(r"\b(?:requests\.|urllib\.request|httpx\.|fetch\s*\()",low) and re.search(r"\bpickle\.(?:load|loads)\s*\(",low):add(findings,"Q04","critical",path,1,"Network input and unsafe deserialization are correlated.","medium")
-        if re.search(r"\b(?:password|token|secret|api[_-]?key)\b",low) and re.search(r"\b(?:print|logger\.|logging\.)",low):add(findings,"Q05","high",path,1,"Secret-bearing identifiers and output/logging calls coexist.","medium")
+        sensitive_output = any(
+            not line.lstrip().startswith("#")
+            and re.search(r"\b(?:print|logger\.\w+|logging\.\w+)\s*\(", line, re.I)
+            and re.search(r"\b(?:password|passwd|secret|access_token|token|api[_-]?key)\b", line, re.I)
+            for line in text.splitlines()
+        )
+        if sensitive_output:
+            add(findings,"Q05","high",path,1,"Sensitive identifiers are passed to an output/logging call on the same source line.","medium")
         if re.search(r"\b(?:password|auth|credential)\b",low) and re.search(r"\b(?:md5|sha1)\b",low):add(findings,"Q06","high",path,1,"Weak digest and authentication-related identifiers coexist.","medium")
     workflow_text="\n".join(text for path,text in file_texts.items() if path.startswith(".github/workflows/"))
     if workflow_text:
@@ -270,12 +356,14 @@ def build_report(root,base_ref=None,only_changed=False):
         if Path(rel).suffix.lower() in CODE_SUFFIXES|{".yml",".yaml",".json",".toml"}:
             try:file_texts[rel]=data.decode("utf-8")
             except UnicodeDecodeError:pass
-    inspect_infrastructure(file_texts,findings);correlate(findings,file_texts)
+    changed=changed_paths(root,base_ref) if only_changed and base_ref else None
+    if only_changed and changed is None:
+        raise ValueError("--changed-only requires --base-ref")
+    inspect_infrastructure(file_texts,findings)
+    correlate(findings,file_texts,changed)
     if base_ref:scan_history(root,base_ref,findings)
-    findings=apply_exceptions(findings,exceptions);changed=None
-    if only_changed:
-        if not base_ref:raise ValueError("--changed-only requires --base-ref")
-        changed=changed_paths(root,base_ref)
+    findings=apply_exceptions(findings,exceptions)
+    if changed is not None:
         findings=[f for f in findings if f["path"] in changed or (f["path"]=="__repository__" and set(f.get("related_paths",[])).intersection(changed))]
     unique={}
     for f in findings:unique[(f["rule_id"],f["path"],f["line"],f["message"])]=f

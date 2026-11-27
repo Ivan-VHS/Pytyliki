@@ -32,7 +32,7 @@ SECRET_PATTERNS = (
     ("slack-token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}\b")),
     ("stripe-live-secret", re.compile(r"\bsk_live_[A-Za-z0-9]{20,}\b")),
     ("generic-hardcoded-credential", re.compile(
-        r"""(?i)\b(?:api[_-]?key|client[_-]?secret|access[_-]?token|password|passwd)\b\s*[:=]\s*["']([^"'\\s]{16,})["']"""
+        r"""(?i)\b(?:api[_-]?key|client[_-]?secret|access[_-]?token|password|passwd)\b\s*[:=]\s*["']([^"'\s\\]{16,})["']"""
     )),
 )
 PLACEHOLDERS = (

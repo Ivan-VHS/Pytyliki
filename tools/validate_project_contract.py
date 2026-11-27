@@ -78,6 +78,118 @@ def _evidence(value: Any, label: str) -> None:
         _require(target.is_file(), f"{label} references a missing file: {item}")
 
 
+def _validate_supabase_adapter(project_id: str) -> dict[str, Any]:
+    """Validate the opt-in, offline-by-default Supabase adapter contract."""
+    schema_path = ROOT / "federation" / "schemas" / "supabase-adapter.v1.schema.json"
+    adapter_path = ROOT / "federation" / "supabase-adapter.v1.json"
+    schema = _load(schema_path)
+    adapter = _load(adapter_path)
+
+    _require(isinstance(schema, dict), "Supabase schema root must be an object")
+    _require(schema.get("$schema") == "https://json-schema.org/draft/2020-12/schema",
+             "Supabase schema must use JSON Schema 2020-12")
+    _require(schema.get("$id") == "https://schemas.ivan-vhs.dev/supabase-adapter.v1.schema.json",
+             "unexpected Supabase schema identifier")
+    _require(schema.get("title") == "Ivan-VHS Supabase Adapter Contract v1",
+             "unexpected Supabase schema title")
+    _require(schema.get("type") == "object" and schema.get("additionalProperties") is False,
+             "Supabase schema must reject unknown root properties")
+
+    fields = {
+        "schema", "project", "repository", "role", "status", "default_mode",
+        "supabase", "network_policy", "local_first", "contracts",
+        "data_domains", "excluded_data", "security",
+    }
+    _require(set(schema.get("required", [])) == fields,
+             "Supabase schema required fields do not match adapter v1")
+    _require(isinstance(adapter, dict), "Supabase adapter root must be an object")
+    _require(set(adapter) == fields, "Supabase adapter contains missing or unknown fields")
+    _require(adapter["schema"] == "ivan-vhs.supabase-adapter.v1",
+             "unsupported Supabase adapter schema")
+    _require(project_id in REPOSITORIES, f"unknown project id for Supabase adapter: {project_id}")
+    _require(adapter["project"] == project_id, "Supabase adapter project identity does not match")
+    _require(adapter["repository"] == REPOSITORIES[project_id],
+             "Supabase adapter repository does not match project identity")
+    _require(adapter["role"] in {"control-plane", "producer", "consumer", "producer-consumer"},
+             "Supabase adapter role is invalid")
+    _require(adapter["status"] == "contract-only",
+             "Supabase adapter must remain contract-only until hosted integration is verified")
+    _require(adapter["default_mode"] == "offline-only",
+             "Supabase adapter must remain offline-only by default")
+
+    sections = {
+        "supabase": {
+            "deployment", "url_env", "publishable_key_env", "service_role_key_in_client",
+        },
+        "network_policy": {
+            "enabled_by_default", "background_sync", "requires_user_action",
+        },
+        "local_first": {
+            "local_data_authoritative", "sync_model", "conflict_resolution",
+        },
+        "contracts": {"event_envelope", "artifact_manifest"},
+        "security": {
+            "rls_required", "service_role_key_never_in_client",
+            "explicit_upload_consent", "telemetry_default",
+        },
+    }
+    for name, expected_keys in sections.items():
+        _require(isinstance(adapter[name], dict), f"Supabase {name} must be an object")
+        _require(set(adapter[name]) == expected_keys,
+                 f"Supabase {name} has missing or unknown fields")
+
+    supabase = adapter["supabase"]
+    _require(supabase["deployment"] == "not-configured",
+             "Supabase hosted deployment is not configured")
+    _require(supabase["url_env"] == "SUPABASE_URL",
+             "Supabase URL must be supplied through SUPABASE_URL")
+    _require(supabase["publishable_key_env"] == "SUPABASE_PUBLISHABLE_KEY",
+             "Supabase publishable key must use SUPABASE_PUBLISHABLE_KEY")
+    _require(supabase["service_role_key_in_client"] is False,
+             "service-role keys must never be placed in a client")
+
+    network = adapter["network_policy"]
+    _require(network["enabled_by_default"] is False,
+             "Supabase network access must remain disabled by default")
+    _require(network["background_sync"] is False,
+             "Supabase background synchronization must remain disabled")
+    _require(network["requires_user_action"] is True,
+             "Supabase synchronization must require explicit user action")
+
+    local = adapter["local_first"]
+    _require(local["local_data_authoritative"] is True,
+             "local data must remain authoritative")
+    _require(local["sync_model"] == "append-only-event-log",
+             "Supabase synchronization must use the versioned append-only event log")
+    _require(local["conflict_resolution"] == "domain-specific-versioned",
+             "Supabase conflicts must use domain-specific versioned resolution")
+
+    contracts = adapter["contracts"]
+    _require(contracts["event_envelope"] == "ivan-vhs.ecosystem-event.v1",
+             "unexpected ecosystem event envelope")
+    _require(contracts["artifact_manifest"] == "ivan-vhs.ecosystem-artifact.v1",
+             "unexpected ecosystem artifact manifest")
+
+    _strings(adapter["data_domains"], "supabase.data_domains", minimum=1)
+    _strings(adapter["excluded_data"], "supabase.excluded_data", minimum=1)
+
+    security = adapter["security"]
+    _require(security["rls_required"] is True, "Supabase Row Level Security is mandatory")
+    _require(security["service_role_key_never_in_client"] is True,
+             "service-role keys must never be exposed to clients")
+    _require(security["explicit_upload_consent"] is True,
+             "remote upload requires explicit user consent")
+    _require(security["telemetry_default"] == "disabled",
+             "remote telemetry must remain disabled by default")
+
+    return {
+        "valid": True,
+        "status": adapter["status"],
+        "default_mode": adapter["default_mode"],
+        "network_enabled_by_default": network["enabled_by_default"],
+    }
+
+
 def validate() -> dict[str, Any]:
     schema = _load(SCHEMA_PATH)
     _require(isinstance(schema, dict), "schema root must be an object")
@@ -175,6 +287,8 @@ def validate() -> dict[str, Any]:
 
     _strings(manifest["safety_boundaries"], "safety_boundaries", minimum=1)
     _strings(manifest["extension_points"], "extension_points", minimum=1)
+
+    _validate_supabase_adapter(project_id)
 
     return {
         "valid": True,

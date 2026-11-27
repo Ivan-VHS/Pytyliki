@@ -168,7 +168,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: security-assurance-${{ github.repository }}-${{ github.run_id }}
+          name: security-assurance-${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}
           path: |
             security-audit-report.json
             dependency-audit-report.json
