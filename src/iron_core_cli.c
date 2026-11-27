@@ -2,8 +2,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+static FILE *open_source_file(const char *path) {
+    FILE *file = NULL;
+#if defined(_MSC_VER)
+    if (fopen_s(&file, path, "rb") != 0) {
+        return NULL;
+    }
+#else
+    file = fopen(path, "rb");
+#endif
+    return file;
+}
+
 static char*read_file(const char*path){
- FILE*f=fopen(path,"rb");long n;size_t got;char*s;if(!f)return NULL;
+ FILE*f=open_source_file(path);long n;size_t got;char*s;if(!f)return NULL;
  if(fseek(f,0,SEEK_END)){fclose(f);return NULL;}n=ftell(f);
  if(n<0||(unsigned long)n>PL_IRON_MAX_SOURCE_BYTES||fseek(f,0,SEEK_SET)){fclose(f);return NULL;}
  s=(char*)malloc((size_t)n+1);if(!s){fclose(f);return NULL;}got=fread(s,1,(size_t)n,f);
