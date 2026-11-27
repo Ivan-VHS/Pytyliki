@@ -23,14 +23,14 @@ int main(void) {
         }
     }
     {
-        FILE *stream=tmpfile();
+        FILE *stream=fopen("processor-topology-test-output.json","w+");
         assert(stream!=NULL);
         assert(pl_processor_topology_write_json(&snapshot,stream)==PL_TOPOLOGY_OK);
         assert(fseek(stream,0L,SEEK_SET)==0);
         char prefix[64]={0};
         assert(fread(prefix,1u,strlen("{\"schema\":\"pytyliki.processor-topology-evidence.v2\"}"),stream)>0u);
         assert(strstr(prefix,"pytyliki.processor-topology-evidence.v2")!=NULL);
-        fclose(stream);
+        fclose(stream);\n        remove("processor-topology-test-output.json");
     }
     puts("processor topology collector tests passed");
     return 0;
