@@ -81,6 +81,16 @@ class ProcessorIDEContractTests(unittest.TestCase):
         self.assertIn("instruction width", adjustments)
         self.assertIn("privilege", adjustments)
 
+    def test_signal_palette_preserves_electrical_states(self) -> None:
+        palette = self.data["signal_palette"]
+        states = {item["id"]: item for item in palette["states"]}
+        self.assertEqual(set(states), {"high", "low", "floating", "contended", "unknown"})
+        self.assertEqual(states["high"]["default_color"], "#E53935")
+        self.assertEqual(states["low"]["default_color"], "#070707")
+        self.assertEqual(states["floating"]["default_color"], "#2878D0")
+        self.assertEqual(palette["theme_independent"], True)
+        self.assertTrue(palette["accessibility"])
+
     def test_exact_cycles_require_a_declared_model(self) -> None:
         rule = next(item for item in self.data["rules"] if item["id"] == "PIDE-090")
         self.assertEqual(rule["status"], "research")
