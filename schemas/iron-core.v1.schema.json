@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/schemas/iron-core.v1.schema.json",
+  "title": "Pytyliki IRON CORE v1",
+  "description": "Versioned architecture, capability and evidence contract for the Pytyliki hardware-engineering platform.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "project",
+    "baseline",
+    "ownership",
+    "access_model",
+    "maturity_levels",
+    "modules",
+    "rules",
+    "open_work",
+    "evidence_modes",
+    "safety_invariants"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.iron-core.v1"
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "repository",
+        "version",
+        "created",
+        "purpose"
+      ],
+      "properties": {
+        "id": {
+          "const": "pytyliki"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "const": "Ivan-VHS/Pytyliki"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "created": {
+          "type": "string",
+          "format": "date"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 40
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch",
+        "commit",
+        "reviewed_at",
+        "current_product_boundary",
+        "rule_count",
+        "default_status"
+      ],
+      "properties": {
+        "branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "current_product_boundary": {
+          "type": "string",
+          "minLength": 80
+        },
+        "rule_count": {
+          "const": 100
+        },
+        "default_status": {
+          "const": "planned"
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pytyliki",
+        "reaper",
+        "duck_os",
+        "board_backend",
+        "joint"
+      ],
+      "properties": {
+        "pytyliki": {
+          "type": "string",
+          "minLength": 20
+        },
+        "reaper": {
+          "type": "string",
+          "minLength": 20
+        },
+        "duck_os": {
+          "type": "string",
+          "minLength": 20
+        },
+        "board_backend": {
+          "type": "string",
+          "minLength": 20
+        },
+        "joint": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "access_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_mode",
+        "modes",
+        "deny_by_default",
+        "physical_writes_default_allowed",
+        "hidden_network_allowed",
+        "automatic_driver_or_firmware_install"
+      ],
+      "properties": {
+        "default_mode": {
+          "const": "inspect"
+        },
+        "modes": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "effect",
+              "requires_capability"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "inspect",
+                  "plan",
+                  "simulate",
+                  "verify",
+                  "target",
+                  "privileged",
+                  "physical_design"
+                ]
+              },
+              "effect": {
+                "type": "string",
+                "minLength": 10
+              },
+              "requires_capability": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "deny_by_default": {
+          "const": true
+        },
+        "physical_writes_default_allowed": {
+          "const": false
+        },
+        "hidden_network_allowed": {
+          "const": false
+        },
+        "automatic_driver_or_firmware_install": {
+          "const": false
+        }
+      }
+    },
+    "maturity_levels": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "acceptance_gate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^IRON-[0-9]$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 10
+          },
+          "acceptance_gate": {
+            "type": "string",
+            "minLength": 10
+          }
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "responsibility",
+          "owner",
+          "status",
+          "evidence",
+          "tracking_prs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^pyty\\.[a-z][a-z0-9.-]*$"
+          },
+          "responsibility": {
+            "type": "string",
+            "minLength": 10
+          },
+          "owner": {
+            "enum": [
+              "pytyliki",
+              "reaper",
+              "duck-os",
+              "board-backend",
+              "joint"
+            ]
+          },
+          "status": {
+            "enum": [
+              "implemented",
+              "partial",
+              "planned",
+              "open_pr",
+              "research"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "tracking_prs": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 100,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "domain",
+          "title",
+          "requirement",
+          "acceptance",
+          "module",
+          "owner",
+          "status",
+          "evidence",
+          "tracking_prs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^IRON-(0[0-9][0-9]|100)$"
+          },
+          "domain": {
+            "type": "string",
+            "minLength": 3
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "requirement": {
+            "type": "string",
+            "minLength": 20
+          },
+          "acceptance": {
+            "type": "string",
+            "minLength": 20
+          },
+          "module": {
+            "type": "string",
+            "pattern": "^pyty\\.[a-z][a-z0-9.-]*$"
+          },
+          "owner": {
+            "enum": [
+              "pytyliki",
+              "reaper",
+              "duck-os",
+              "board-backend",
+              "joint"
+            ]
+          },
+          "status": {
+            "enum": [
+              "implemented",
+              "partial",
+              "planned",
+              "open_pr",
+              "research"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "tracking_prs": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "open_work": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pr",
+          "title",
+          "url",
+          "branch",
+          "base",
+          "state",
+          "scope"
+        ],
+        "properties": {
+          "pr": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https://github\\.com/Ivan-VHS/Pytyliki/pull/[0-9]+$"
+          },
+          "branch": {
+            "type": "string",
+            "minLength": 1
+          },
+          "base": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "enum": [
+              "open",
+              "open-draft"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 10
+          }
+        }
+      }
+    },
+    "evidence_modes": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "live_os_observation",
+          "bounded_host_measurement",
+          "static_analysis",
+          "reference_fixture",
+          "deterministic_simulation",
+          "hardware_in_loop",
+          "physical_signoff"
+        ]
+      }
+    },
+    "safety_invariants": {
+      "type": "array",
+      "minItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 20
+      }
+    }
+  }
+}
