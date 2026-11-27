@@ -57,9 +57,6 @@ static int mode_valid(pl_ide_mode mode) {
 }
 
 pl_ide_status pl_ide_session_validate(const pl_ide_session *session) {
-    const uint32_t target_modes = PL_IDE_MODE_DEBUG |
-                                  PL_IDE_MODE_HARDWARE_IN_LOOP |
-                                  PL_IDE_MODE_PRIVILEGED;
     if (session == NULL) return PL_IDE_INVALID_ARGUMENT;
     if (session->abi_version != PL_IDE_ABI_VERSION) return PL_IDE_ABI_MISMATCH;
     if (session->project_id[0] == '\0' || session->session_id[0] == '\0')
@@ -81,8 +78,6 @@ pl_ide_status pl_ide_session_validate(const pl_ide_session *session) {
         if (session->mode == PL_IDE_MODE_DEBUG &&
             (session->flags & PL_IDE_FLAG_DEBUG_PROVIDER) == 0u)
             return PL_IDE_PROVIDER_REQUIRED;
-    } else if ((target_modes & (uint32_t)session->mode) != 0u) {
-        return PL_IDE_INVALID_MODE;
     }
 
     return PL_IDE_OK;
