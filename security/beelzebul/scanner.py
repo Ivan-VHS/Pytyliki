@@ -277,12 +277,14 @@ def build_report(root,base_ref=None,only_changed=False):
         if Path(rel).suffix.lower() in CODE_SUFFIXES|{".yml",".yaml",".json",".toml"}:
             try:file_texts[rel]=data.decode("utf-8")
             except UnicodeDecodeError:pass
-    inspect_infrastructure(file_texts,findings);correlate(findings,file_texts)
+    changed=changed_paths(root,base_ref) if only_changed and base_ref else None
+    if only_changed and changed is None:
+        raise ValueError("--changed-only requires --base-ref")
+    inspect_infrastructure(file_texts,findings)
+    correlate(findings,file_texts,changed)
     if base_ref:scan_history(root,base_ref,findings)
-    findings=apply_exceptions(findings,exceptions);changed=None
-    if only_changed:
-        if not base_ref:raise ValueError("--changed-only requires --base-ref")
-        changed=changed_paths(root,base_ref)
+    findings=apply_exceptions(findings,exceptions)
+    if changed is not None:
         findings=[f for f in findings if f["path"] in changed or (f["path"]=="__repository__" and set(f.get("related_paths",[])).intersection(changed))]
     unique={}
     for f in findings:unique[(f["rule_id"],f["path"],f["line"],f["message"])]=f
