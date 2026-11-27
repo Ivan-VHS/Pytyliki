@@ -1,0 +1,14 @@
+schedule quantum_wheel every 250_cycles {
+    core[0]: slice(40_cycles) -> run_ingest()
+        budget(memory: 4_KiB, effects: [memory.read]);
+
+    core[1]: slice(60_cycles) -> run_bounded_stress()
+        budget(iterations: 256, effects: [cpu.compute]);
+
+    core[2]: slice(50_cycles) -> verify_snapshot()
+        budget(memory: 2_KiB, effects: [memory.read]);
+
+    core[3]: slice(100_cycles) -> tray_housekeeping()
+        budget(memory: 1_KiB, effects: [telemetry.write]);
+}
+
