@@ -50,6 +50,10 @@ static void test_safe_session_modes(void) {
     assert(session.mode == PL_IDE_MODE_INSPECT);
     assert(strcmp(session.project_id, "pytyliki") == 0);
 
+    assert(pl_ide_session_init(&session, "pytyliki", "session-default", 5u,
+                               PL_IDE_MODE_DEFAULT, &target, 0u) == PL_IDE_OK);
+    assert(session.mode == PL_IDE_MODE_INSPECT);
+
     assert(pl_ide_session_init(&session, "pytyliki", "session-sim", 19u,
                                PL_IDE_MODE_SIMULATE, &target, 0u) == PL_IDE_OK);
     assert(pl_ide_session_validate(&session) == PL_IDE_OK);
