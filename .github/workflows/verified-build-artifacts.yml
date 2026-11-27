@@ -1,0 +1,47 @@
+name: Verified native build artifacts
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ["automation/verified-build-artifacts-2026-11-28"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pytyliki-artifacts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native:
+    name: C11 build and CTest (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Configure
+        run: cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
+      - name: Build native targets
+        run: cmake --build build --config Release --parallel
+      - name: Run CTest
+        run: ctest --test-dir build -C Release --output-on-failure --output-junit build/ctest-results.xml
+      - name: Publish tested native binaries and test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytyliki-${{ runner.os }}-native-build
+          if-no-files-found: warn
+          path: |
+            build/ctest-results.xml
+            build/pytyliki*
+            build/Release/pytyliki*
+            build/*pytyliki*
+            build/Release/*pytyliki*
