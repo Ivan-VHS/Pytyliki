@@ -1,0 +1,5 @@
+# cmos-inverter.switch.v1
+# Illustrative topology; node indices are defined in PHYSICAL_SWITCH_MODEL_V1.md.
+# VDD=0, VSS=1, INPUT=2, OUTPUT=3
+PMOS gate=2 terminal_a=0 terminal_b=3
+NMOS gate=2 terminal_a=3 terminal_b=1

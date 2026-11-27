@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, static diagnostics, versioned native interoperability, and structural SystemArray and hardware-language frontends.",
+    "summary": "C11 processor-systems workstation with bounded processor discovery, measurements, source diagnostics, versioned native interoperability, structural hardware-language frontends, and deterministic MOS switch-level modeling.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -168,6 +168,19 @@
         "tests/test_system_sigil.c",
         "docs/SYSTEM_SIGIL_OPERATORS.md"
       ]
+    },
+    {
+      "id": "processor.mos-switch-model",
+      "status": "implemented",
+      "summary": "Bounded deterministic N/P MOS ideal-switch topology evaluation with VDD/VSS reachability and explicit high, low, floating, contended and indeterminate node states; not analog or SPICE simulation.",
+      "evidence": [
+        "src/mos_switch.h",
+        "src/mos_switch.c",
+        "src/mos_switch_cli.c",
+        "tests/test_mos_switch.c",
+        "docs/PHYSICAL_SWITCH_MODEL_V1.md",
+        "schemas/pytyliki.mos-switch-model.v1.schema.json"
+      ]
     }
   ],
   "interfaces": [
@@ -190,6 +203,17 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "pytyliki.mos-switch-model.v1",
+      "format": "Native C11 caller-owned MOS switch topology and state-resolution API",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "src/mos_switch.h",
+        "src/mos_switch.c",
+        "tests/test_mos_switch.c"
       ]
     }
   ],
@@ -242,7 +266,8 @@
     "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
     "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
     "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware.",
-    "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities."
+    "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities.",
+    "The MOS switch-level model is a deterministic ideal-switch simulation only; it does not model analog current/voltage dynamics or access physical hardware."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
@@ -253,6 +278,7 @@
     "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
     "Twenty versioned hardware construct families with structural AST nodes, ready for future grammar, type/effect checking, Hardware IR and Reaper adapter work.",
     "Reference-only compound Hyper-Switch audio/system and Epoch 4M vacuum-lattice profile specimens; future token grammar, type/effect checks and target contracts remain unimplemented.",
-    "Versioned metadata registry for reserved SystemArray sigils; future semantic resolution must preserve source spans and lower to Reaper canonical typed IR."
+    "Versioned metadata registry for reserved SystemArray sigils; future semantic resolution must preserve source spans and lower to Reaper canonical typed IR.",
+    "Versioned MOS switch-level topology model with bounded reachability, ready for separately validated logic, sequential, timing and electrical-model layers."
   ]
 }

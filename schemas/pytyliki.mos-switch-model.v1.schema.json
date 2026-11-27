@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ivan-vhs:pytyliki:mos-switch-model:v1",
+  "title": "Pytyliki MOS Switch Model v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "node_count",
+    "vdd_node",
+    "vss_node",
+    "gate_levels",
+    "devices"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.mos-switch-model.v1"
+    },
+    "node_count": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 128
+    },
+    "vdd_node": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 127
+    },
+    "vss_node": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 127
+    },
+    "gate_levels": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 128,
+      "items": {
+        "enum": ["low", "high", "unknown"]
+      }
+    },
+    "devices": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["channel", "gate", "terminal_a", "terminal_b"],
+        "properties": {
+          "channel": {
+            "enum": ["nmos", "pmos"]
+          },
+          "gate": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          },
+          "terminal_a": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          },
+          "terminal_b": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          }
+        }
+      }
+    }
+  }
+}
