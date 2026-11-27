@@ -19,6 +19,11 @@ int main(void) {
     assert(pl_ui_contrast_ratio_rgb(255,215,0,5,5,5) >= 4.5);
     assert(pl_ui_contrast_ratio_rgb(255,107,114,5,5,5) >= 4.5);
     assert(pl_ui_contrast_ratio_rgb(108,168,255,5,5,5) >= 4.5);
+    assert(pl_ui_scale_logical_px(16, 96u) == 16);
+    assert(pl_ui_scale_logical_px(16, 144u) == 24);
+    assert(pl_ui_scale_logical_px(12, 192u) == 24);
+    assert(pl_ui_scale_logical_px(16, 0u) == 0);
+    assert(pl_ui_scale_logical_px(0, 144u) == 0);
     assert(pl_ui_preferred_target_px() == 44u);
     assert(pl_ui_clamp_font_size(14) == 14);
     assert(pl_ui_clamp_font_size(5) == 10);
