@@ -11,6 +11,11 @@ static const pl_hw_memory_region *find_region(const pl_hw_resource_model *m, uin
     for (size_t i=0u;i<m->region_count;++i) if (m->regions[i].id==id) return &m->regions[i];
     return NULL;
 }
+static const pl_hw_device *find_device(const pl_hw_resource_model *m, uint32_t id) {
+    for (size_t i=0u;i<m->device_count;++i)
+        if (m->devices[i].id==id) return &m->devices[i];
+    return NULL;
+}
 static const pl_hw_register_bank *find_bank(const pl_hw_resource_model *m, uint32_t id) {
     for (size_t i=0u;i<m->bank_count;++i) if (m->banks[i].id==id) return &m->banks[i];
     return NULL;
@@ -33,20 +38,33 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
        (m->region_count!=0u && m->regions==NULL) ||
        (m->bank_count!=0u && m->banks==NULL) ||
        (m->register_count!=0u && m->registers==NULL) ||
-       (m->dma_buffer_count!=0u && m->dma_buffers==NULL))
+       (m->dma_buffer_count!=0u && m->dma_buffers==NULL) ||
+       (m->device_count!=0u && m->devices==NULL))
         return PL_HW_RESOURCE_INVALID_ARGUMENT;
     if(m->space_count>PL_HW_RESOURCE_MAX_SPACES ||
        m->region_count>PL_HW_RESOURCE_MAX_REGIONS ||
        m->bank_count>PL_HW_RESOURCE_MAX_BANKS ||
        m->register_count>PL_HW_RESOURCE_MAX_REGISTERS ||
-       m->dma_buffer_count>PL_HW_RESOURCE_MAX_DMA_BUFFERS)
+       m->dma_buffer_count>PL_HW_RESOURCE_MAX_DMA_BUFFERS ||
+       m->device_count>PL_HW_RESOURCE_MAX_DEVICES)
         return PL_HW_RESOURCE_LIMIT_EXCEEDED;
+    for(size_t i=0u;i<m->device_count;++i) {
+        const pl_hw_device *d=&m->devices[i];
+        if(d->id==0u || d->generation!=m->generation)
+            return PL_HW_RESOURCE_STALE_GENERATION;
+        for(size_t j=i+1u;j<m->device_count;++j)
+            if(d->id==m->devices[j].id) return PL_HW_RESOURCE_DUPLICATE_ID;
+    }
     for(size_t i=0u;i<m->space_count;++i) {
         const pl_hw_address_space *s=&m->spaces[i];
         if(s->id==0u || s->address_bits==0u || s->address_bits>64u ||
            (unsigned)s->kind>(unsigned)PL_HW_SPACE_DMA_IOVA ||
            (unsigned)s->owner>(unsigned)PL_HW_OWNER_UNOWNED)
             return PL_HW_RESOURCE_INVALID_ARGUMENT;
+        if(s->device_id!=0u && find_device(m,s->device_id)==NULL)
+            return PL_HW_RESOURCE_MISSING_REFERENCE;
+        if(s->owner==PL_HW_OWNER_DEVICE && s->device_id==0u)
+            return PL_HW_RESOURCE_MISSING_REFERENCE;
         for(size_t j=i+1u;j<m->space_count;++j)
             if(s->id==m->spaces[j].id) return PL_HW_RESOURCE_DUPLICATE_ID;
     }
@@ -62,13 +80,17 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
            (unsigned)r->owner>(unsigned)PL_HW_OWNER_UNOWNED ||
            (unsigned)r->cache_policy>(unsigned)PL_HW_CACHE_DEVICE)
             return PL_HW_RESOURCE_PERMISSION;
+        if(r->device_id!=0u && find_device(m,r->device_id)==NULL)
+            return PL_HW_RESOURCE_MISSING_REFERENCE;
+        if(r->owner==PL_HW_OWNER_DEVICE && r->device_id==0u)
+            return PL_HW_RESOURCE_MISSING_REFERENCE;
         for(size_t j=i+1u;j<m->region_count;++j) {
             const pl_hw_memory_region *other=&m->regions[j];
             if(r->id==other->id) return PL_HW_RESOURCE_DUPLICATE_ID;
             if(r->space_id==other->space_id) {
-                uint64_t r_end=r->base+r->length;
-                uint64_t o_end=other->base+other->length;
-                if(r->base<o_end && other->base<r_end &&
+                uint64_t r_end=r->base+r->length-1u;
+                uint64_t o_end=other->base+other->length-1u;
+                if(r->base<=o_end && other->base<=r_end &&
                    (r->alias_group==0u || r->alias_group!=other->alias_group ||
                     r->owner!=other->owner))
                     return PL_HW_RESOURCE_OVERLAP;
@@ -100,13 +122,35 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
            (unsigned)r->side_effect>(unsigned)PL_HW_SIDE_EFFECT_RESET ||
            (unsigned)r->owner>(unsigned)PL_HW_OWNER_UNOWNED)
             return PL_HW_RESOURCE_PERMISSION;
-        for(size_t j=i+1u;j<m->register_count;++j)
-            if(r->id==m->registers[j].id) return PL_HW_RESOURCE_DUPLICATE_ID;
+        if(r->access==PL_HW_ACCESS_READ_ONLY || r->access==PL_HW_ACCESS_READ_CLEAR) {
+            if((region->permissions&1u)==0u) return PL_HW_RESOURCE_PERMISSION;
+        } else if(r->access==PL_HW_ACCESS_WRITE_ONLY ||
+                  r->access==PL_HW_ACCESS_WRITE_ONE_CLEAR ||
+                  r->access==PL_HW_ACCESS_WRITE_ONE_SET) {
+            if((region->permissions&2u)==0u) return PL_HW_RESOURCE_PERMISSION;
+        } else if((region->permissions&3u)!=3u) {
+            return PL_HW_RESOURCE_PERMISSION;
+        }
+        if(r->owner==PL_HW_OWNER_DEVICE && region->device_id==0u)
+            return PL_HW_RESOURCE_MISSING_REFERENCE;
+        for(size_t j=i+1u;j<m->register_count;++j) {
+            const pl_hw_register *other=&m->registers[j];
+            if(r->id==other->id) return PL_HW_RESOURCE_DUPLICATE_ID;
+            if(r->bank_id==other->bank_id &&
+               (other->width_bits==8u || other->width_bits==16u ||
+                other->width_bits==32u || other->width_bits==64u)) {
+                uint64_t r_end=r->offset+width_bytes-1u;
+                uint64_t o_end=other->offset+(uint64_t)other->width_bits/8u-1u;
+                if(r->offset<=o_end && other->offset<=r_end)
+                    return PL_HW_RESOURCE_OVERLAP;
+            }
+        }
     }
     for(size_t i=0u;i<m->dma_buffer_count;++i) {
         const pl_hw_dma_buffer *b=&m->dma_buffers[i];
         const pl_hw_address_space *s=find_space(m,b->space_id);
-        if(b->id==0u || b->device_id==0u || s==NULL)
+        if(b->id==0u || b->device_id==0u || s==NULL ||
+           find_device(m,b->device_id)==NULL)
             return PL_HW_RESOURCE_MISSING_REFERENCE;
         if(!power_of_two(b->alignment) || b->base%b->alignment!=0u ||
            b->length%b->alignment!=0u) return PL_HW_RESOURCE_ALIGNMENT;
@@ -119,6 +163,8 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
            b->generation!=m->generation) return PL_HW_RESOURCE_STALE_GENERATION;
         if((b->state==PL_HW_DMA_DEVICE_OWNED && b->owner!=PL_HW_OWNER_DEVICE) ||
            (b->state==PL_HW_DMA_CPU_OWNED && b->owner!=PL_HW_OWNER_CPU) ||
+           ((b->state==PL_HW_DMA_PREPARED_FOR_DEVICE ||
+             b->state==PL_HW_DMA_COMPLETED_FOR_CPU) && b->owner!=PL_HW_OWNER_SHARED) ||
            (b->state==PL_HW_DMA_RELEASED && b->owner!=PL_HW_OWNER_UNOWNED))
             return PL_HW_RESOURCE_OWNERSHIP;
         for(size_t j=i+1u;j<m->dma_buffer_count;++j)
