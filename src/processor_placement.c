@@ -1,5 +1,6 @@
 #include "processor_placement.h"
 
+#include <inttypes.h>
 #include <string.h>
 
 typedef struct {
@@ -9,6 +10,7 @@ typedef struct {
     uint32_t numa_node_id;
     uint64_t bandwidth;
     uint64_t working_set;
+    uint32_t load_basis_points;
 } assigned_task;
 
 static uint64_t add_saturating(uint64_t left, uint64_t right) {
@@ -66,8 +68,8 @@ static uint64_t ratio_basis_points(uint64_t value, uint64_t capacity) {
     if (capacity == 0u) return value == 0u ? 0u : 10000u;
     if (value >= capacity) return 10000u;
     /* Avoid overflow by scaling the smaller operand in bounded chunks. */
-    return (value / capacity) * 10000u +
-           ((value % capacity) * 10000u) / capacity;
+    return (uint64_t)(((long double)value * 10000.0L) /
+                      (long double)capacity);
 }
 
 static int better(const pl_placement_result *candidate,
@@ -168,7 +170,7 @@ pl_placement_status pl_processor_placement_plan(
                 if (assigned[previous].logical_id == worker->logical_id)
                     load = add_saturating(load, task->requested_load_basis_points);
             }
-            candidate.load_cost = load;
+            candidate.load_cost = add_saturating(load, task->requested_load_basis_points);
             if (worker->capacity_basis_points == 0u ||
                 load + task->requested_load_basis_points >
                     worker->capacity_basis_points) {
@@ -178,10 +180,12 @@ pl_placement_status pl_processor_placement_plan(
             if (task->preferred_numa_node_id != PL_TOPOLOGY_UNKNOWN_ID) {
                 if (worker->numa_node_id == PL_TOPOLOGY_UNKNOWN_ID) {
                     reasons |= PL_PLACEMENT_REASON_NUMA_UNKNOWN;
-                    candidate.numa_cost = task->locality_required ? 100000u : 2500u;
+                    if (task->locality_required) continue;
+                    candidate.numa_cost = 2500u;
                 } else if (worker->numa_node_id != task->preferred_numa_node_id) {
                     reasons |= PL_PLACEMENT_REASON_NUMA_REMOTE;
-                    candidate.numa_cost = task->locality_required ? 100000u : 3000u;
+                    if (task->locality_required) continue;
+                    candidate.numa_cost = 3000u;
                 }
             }
             for (previous = 0u; previous < assigned_count; ++previous) {
@@ -190,6 +194,10 @@ pl_placement_status pl_processor_placement_plan(
                     reasons |= PL_PLACEMENT_REASON_SHARED_CORE;
                     candidate.smt_cost = add_saturating(candidate.smt_cost, 1800u);
                 }
+            }
+            if (task->working_set_bytes != 0u && input->cache_count == 0u) {
+                reasons |= PL_PLACEMENT_REASON_SHARED_CACHE;
+                candidate.cache_cost = 700u;
             }
             for (previous = 0u; previous < input->cache_count; ++previous) {
                 const pl_topology_cache *cache = &input->caches[previous];
@@ -236,6 +244,7 @@ pl_placement_status pl_processor_placement_plan(
             assigned[assigned_count].numa_node_id = PL_TOPOLOGY_UNKNOWN_ID;
             assigned[assigned_count].bandwidth = task->bandwidth_demand_bytes_per_sec;
             assigned[assigned_count].working_set = task->working_set_bytes;
+            assigned[assigned_count].load_basis_points = task->requested_load_basis_points;
             for (worker_index = 0u; worker_index < input->worker_count; ++worker_index)
                 if (input->workers[worker_index].logical_id == best.logical_id) {
                     assigned[assigned_count].core_id = input->workers[worker_index].core_id;
