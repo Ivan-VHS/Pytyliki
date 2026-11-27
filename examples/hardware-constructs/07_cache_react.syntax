@@ -1,0 +1,9 @@
+react on cache.L2.evict(line_address, way_index, tag) {
+    require capability(cache.events);
+
+    if way_index >= 2 {
+        let event = telemetry::cache_event(line_address, way_index, tag);
+        telemetry.ring_push_bounded(TRACE_BUF, event)?;
+    }
+}
+
