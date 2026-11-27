@@ -63,6 +63,8 @@ int main(void) {
     topology.numa_nodes[0].logical_count = 2u;
     topology.numa_nodes[0].memory_total_bytes = UINT64_C(8) * 1024u * 1024u * 1024u;
     topology.numa_nodes[0].memory_available_bytes = UINT64_C(4) * 1024u * 1024u * 1024u;
+    topology.numa_nodes[0].memory_total_observed = 1u;
+    topology.numa_nodes[0].memory_available_observed = 1u;
     topology.numa_nodes[0].evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
     topology.isa[PL_TOPOLOGY_ISA_SSE2].hardware_present = 1;
     topology.isa[PL_TOPOLOGY_ISA_SSE2].os_usable = 1;
