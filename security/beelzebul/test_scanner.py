@@ -42,10 +42,10 @@ class ScannerRegressionTests(unittest.TestCase):
 
     def test_repository_correlation_uses_only_changed_files(self):
         findings = [
-            {"path": "legacy/a.py", "severity": "high"},
-            {"path": "legacy/b.py", "severity": "high"},
-            {"path": "legacy/c.py", "severity": "high"},
-            {"path": "legacy/d.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/a.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/b.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/c.py", "severity": "high"},
+            {"rule_id": "M01", "path": "legacy/d.py", "severity": "high"},
         ]
         correlate(findings, {}, set())
         self.assertFalse([item for item in findings if item["rule_id"] == "Q14"])
