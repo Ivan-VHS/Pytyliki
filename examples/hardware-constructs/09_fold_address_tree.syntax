@@ -1,0 +1,20 @@
+fn fold_address_tree(
+    region: ReadRegion<u64>,
+    start: usize,
+    count: usize,
+    seed: u64
+) -> Result<u64, MemoryError> {
+    require count <= region.length - start;
+
+    let mut accumulator = seed;
+    let mut index = 0;
+
+    while index < count {
+        let value = region.read(start + index)?;
+        accumulator = mix64(accumulator ^ value);
+        index += 1;
+    }
+
+    return Ok(accumulator);
+}
+
