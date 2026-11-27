@@ -77,7 +77,8 @@ static void test_invalid_and_full(void) {
     assert(pl_tr_evidence_verify(&ledger)==PL_TR_EVIDENCE_OK);
 }
 static void test_affinity_rejects_invalid_requests(void) {
-    pl_tr_affinity_lease lease={0};
+    pl_tr_affinity_lease lease;
+    pl_tr_affinity_lease_init(&lease);
     assert(pl_tr_affinity_preview(UINT32_MAX,UINT32_MAX)<0);
     assert(pl_tr_affinity_apply_current(UINT32_MAX,UINT32_MAX,&lease)<0);
     assert(pl_tr_affinity_restore_current(&lease)<0);

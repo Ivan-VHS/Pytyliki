@@ -65,7 +65,7 @@ Callers must serialize mutations to the evidence ledger, link ledger and PTFR mo
 
 Source: \`src/processor_affinity.c\`.
 
-The affinity API applies only to the calling Pytyliki worker thread. It first checks that the requested logical processor is already in that thread's allowed set. It saves the prior mask in a caller-owned lease; \`pl_tr_affinity_restore_current\` restores it and must be called from the same thread.
+The affinity API applies only to the calling Pytyliki worker thread. Initialize the lease with `pl_tr_affinity_lease_init` before first use. It first checks that the requested logical processor is already in that thread's allowed set. It saves the prior mask in a caller-owned lease; \`pl_tr_affinity_restore_current\` restores it and must be called from the same thread.
 
 - Windows: \`GetThreadGroupAffinity\` and \`SetThreadGroupAffinity\`, restricted to the current processor group and its existing mask.
 - Linux: \`pthread_getaffinity_np\` and \`pthread_setaffinity_np\`, restricted to the current thread's existing cpuset.

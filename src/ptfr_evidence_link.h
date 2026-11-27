@@ -31,15 +31,13 @@ typedef struct {
     pl_tr_worker_evidence_link entries[PL_TR_LINK_CAPACITY];
 } pl_tr_worker_link_ledger;
 
-enum {
-    PL_TR_LINK_OK = 0,
-    PL_TR_LINK_INVALID = -1,
-    PL_TR_LINK_UNATTRIBUTED = -2,
-    PL_TR_LINK_TIME_MISMATCH = -3,
-    PL_TR_LINK_CAPACITY = -4,
-    PL_TR_LINK_INTEGRITY = -5,
-    PL_TR_LINK_MONITOR_ERROR = -6
-};
+#define PL_TR_LINK_OK 0
+#define PL_TR_LINK_INVALID (-1)
+#define PL_TR_LINK_UNATTRIBUTED (-2)
+#define PL_TR_LINK_TIME_MISMATCH (-3)
+#define PL_TR_LINK_CAPACITY (-4)
+#define PL_TR_LINK_INTEGRITY (-5)
+#define PL_TR_LINK_MONITOR_ERROR (-6)
 
 void pl_tr_worker_links_init(pl_tr_worker_link_ledger *ledger);
 int pl_tr_worker_links_verify(const pl_tr_worker_link_ledger *ledger);

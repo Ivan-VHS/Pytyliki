@@ -2,7 +2,7 @@ import XCTest
 @testable import PlatformEvidence
 
 final class PlatformEvidenceTests: XCTestCase {
-    private func fixture() throws -> String {
+    private func fixture(sourceIdentity: String = "mc/mc0/ce_count") throws -> String {
         let payload = String(repeating: "a", count: 64)
         let event = String(repeating: "b", count: 64)
         let chain = String(repeating: "c", count: 64)
@@ -17,7 +17,7 @@ final class PlatformEvidenceTests: XCTestCase {
             "cpu_id": NSNull(),
             "source_record_id": "0",
             "counter_total": "7",
-            "source_identity": "mc/mc0/ce_count",
+            "source_identity": sourceIdentity,
             "payload_sha256": payload,
             "event_sha256": event,
             "chain_sha256": chain
@@ -43,10 +43,7 @@ final class PlatformEvidenceTests: XCTestCase {
     }
 
     func testRejectsPathTraversalIdentity() throws {
-        let source = try fixture().replacingOccurrences(
-            of: "mc/mc0/ce_count",
-            with: "../../etc/passwd"
-        )
+        let source = try fixture(sourceIdentity: "../../etc/passwd")
         XCTAssertThrowsError(try EvidenceReader.decodeJSONL(source))
     }
 }

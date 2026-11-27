@@ -7,6 +7,10 @@
 #define PL_TR_AFFINITY_WINDOWS 1u
 #define PL_TR_AFFINITY_LINUX 2u
 
+void pl_tr_affinity_lease_init(pl_tr_affinity_lease *lease) {
+    if (lease != NULL) memset(lease, 0, sizeof(*lease));
+}
+
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

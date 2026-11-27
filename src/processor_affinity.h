@@ -22,6 +22,9 @@ typedef struct {
     pl_tr_affinity_storage storage;
 } pl_tr_affinity_lease;
 
+/* Initialize before the first apply; restore is performed by the same thread. */
+void pl_tr_affinity_lease_init(pl_tr_affinity_lease *lease);
+
 /* These APIs affect only the calling thread, never the system-wide CPU set. */
 int pl_tr_affinity_preview(uint32_t processor_group,
                            uint32_t logical_processor);
