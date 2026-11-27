@@ -1,0 +1,161 @@
+{
+  "contract": "reaper.robotics.compiler.v1",
+  "version": 1,
+  "status": "typed-contract-defined; native aggregate AOT support remains incomplete",
+  "source_module": "robotics/robotics_core.rpr",
+  "typed_surface": {
+    "scalars": [
+      "i8",
+      "u8",
+      "i16",
+      "u16",
+      "i32",
+      "u32",
+      "i64",
+      "u64",
+      "f32",
+      "f64",
+      "bool"
+    ],
+    "units": [
+      "mm",
+      "ms",
+      "s",
+      "rad",
+      "rpm",
+      "celsius"
+    ],
+    "aggregates": [
+      "Point2",
+      "JointAngles",
+      "RobotState",
+      "Calibration",
+      "Packet",
+      "SafetyReport",
+      "Diagnostic"
+    ],
+    "containers": [
+      "Slice<T>",
+      "Array<T,N>",
+      "Result<T,E>"
+    ],
+    "effects": [
+      "pure",
+      "state",
+      "simulator",
+      "mmio",
+      "irq",
+      "dma",
+      "clock",
+      "unsafe"
+    ]
+  },
+  "lowering": [
+    {
+      "source": "sensor_sample",
+      "hir": "ROBOT_SENSOR_SAMPLE",
+      "mir": "CHECK_RANGE -> CALIBRATE -> RETURN_RESULT"
+    },
+    {
+      "source": "sensor_calibrate",
+      "hir": "ROBOT_SENSOR_CALIBRATE",
+      "mir": "CHECK_DENOMINATOR -> SCALE_OFFSET -> RETURN_RESULT"
+    },
+    {
+      "source": "sensor_filter",
+      "hir": "ROBOT_SENSOR_FILTER",
+      "mir": "BOUNDS_CHECK -> REDUCE_WINDOW -> RETURN_RESULT"
+    },
+    {
+      "source": "coordinate_transform_q15",
+      "hir": "ROBOT_TRANSFORM_2D",
+      "mir": "CHECK_ORTHONORMAL -> TRANSFORM -> RETURN_RESULT"
+    },
+    {
+      "source": "forward_kinematics_q15",
+      "hir": "ROBOT_FORWARD_KINEMATICS",
+      "mir": "CHECK_LINKS -> EVALUATE_CHAIN -> RETURN_RESULT"
+    },
+    {
+      "source": "inverse_kinematics_q15",
+      "hir": "ROBOT_INVERSE_KINEMATICS",
+      "mir": "CHECK_REACH -> SOLVE_BRANCH -> RETURN_RESULT"
+    },
+    {
+      "source": "trajectory_interpolate",
+      "hir": "ROBOT_TRAJECTORY",
+      "mir": "CHECK_DURATION -> CLAMP_TIME -> INTERPOLATE"
+    },
+    {
+      "source": "actuator_command",
+      "hir": "ROBOT_ACTUATOR_COMMAND",
+      "mir": "CHECK_LIMITS -> CLAMP_POSITION -> LIMIT_SLEW"
+    },
+    {
+      "source": "pid_step",
+      "hir": "ROBOT_PID_STEP",
+      "mir": "CHECK_DT -> UPDATE_INTEGRAL -> DERIVATIVE -> CLAMP_OUTPUT"
+    },
+    {
+      "source": "axis_synchronize",
+      "hir": "ROBOT_AXIS_SYNCHRONIZE",
+      "mir": "CHECK_ARITY -> BOUNDED_VECTOR_MAP"
+    },
+    {
+      "source": "safety_supervise",
+      "hir": "ROBOT_SAFETY_SUPERVISE",
+      "mir": "CHECK_WATCHDOG -> CHECK_THERMAL -> CHECK_AXIS_LIMITS"
+    },
+    {
+      "source": "protocol_frame",
+      "hir": "ROBOT_PROTOCOL_FRAME",
+      "mir": "CHECK_LENGTH -> ENCODE_LE -> CRC16 -> VERIFY_BEFORE_PUBLISH"
+    },
+    {
+      "source": "simulator_step",
+      "hir": "ROBOT_SIMULATOR_STEP",
+      "mir": "CHECK_DELTA -> INTEGRATE -> SATURATE -> COMMIT_STATE"
+    }
+  ],
+  "ir_invariants": [
+    "every node carries source span and typed operands",
+    "vector lengths and axis indices are proven before memory access",
+    "overflow is checked unless explicitly declared wrapping",
+    "unit conversions are explicit; mixed physical units are rejected",
+    "effects are explicit and pure functions cannot issue device operations",
+    "MMIO carries address-space, width, alignment, endian, and memory-order metadata",
+    "DMA buffers carry linear ownership and cannot be reused before completion/reclaim",
+    "safety-supervision failure prevents actuator-command publication"
+  ],
+  "mir_invariants": [
+    "CFG basic blocks have explicit terminators",
+    "borrows and ownership transfers are explicit",
+    "bounds, divide-by-zero, reachability, and watchdog checks dominate dependent operations",
+    "state publication occurs only after validation",
+    "rollback/drop paths are explicit for transactions and DMA resources"
+  ],
+  "aot_target_policy": {
+    "current_native_compiler": "scalar C17 subset; robotics arrays, aggregate results, loops, and hardware effects are not all supported by --native",
+    "required_backends": [
+      "host-c17",
+      "dabi64-host",
+      "duckos",
+      "cortex-m4",
+      "riscv32"
+    ],
+    "current_gate": "the robotics .rpr module is checked and executed by the Reaper reference runtime in CI; full native AOT compilation is not claimed",
+    "acceptance": [
+      "HIR/MIR lowering implemented",
+      "native object emission",
+      "differential tests against reference runtime",
+      "stack and section bounds verified",
+      "target emulator and hardware-in-loop evidence before board support"
+    ]
+  },
+  "capability_boundary": {
+    "default": "no hardware capability granted",
+    "simulator": "deterministic in-process simulator",
+    "mmio": "descriptor-only until reviewed host bus adapter is supplied",
+    "irq_dma": "contract-only"
+  }
+}

@@ -1,0 +1,258 @@
+# Reaper Robotics Core v1
+# Deterministic fixed-point contracts shared with Pytyliki.
+# Coordinates and lengths use Q15 millimetres; angles use Q15 sine/cosine pairs.
+# Time arguments use milliseconds. This module never touches physical hardware.
+
+craft robotics_clamp(value, minimum, maximum) {
+    when value < minimum { yield minimum }
+    when value > maximum { yield maximum }
+    yield value
+}
+
+craft robotics_isqrt(value) {
+    when value < 0 { yield -1 }
+    vary low := 0
+    vary high := value + 1
+    loop while high - low > 1 {
+        make middle := (low + high) // 2
+        when middle * middle <= value {
+            change low := middle
+        } otherwise {
+            change high := middle
+        }
+    }
+    yield low
+}
+
+craft robotics_xor16(left, right) {
+    vary left_bits := left
+    vary right_bits := right
+    vary result := 0
+    vary place := 1
+    loop while place < 65536 {
+        when left_bits % 2 != right_bits % 2 {
+            change result := result + place
+        }
+        change left_bits := left_bits // 2
+        change right_bits := right_bits // 2
+        change place := place * 2
+    }
+    yield result
+}
+
+craft sensor_sample(raw, scale_q15, offset_q15, minimum_q15, maximum_q15) {
+    make value := ((raw * scale_q15) // 32768) + offset_q15
+    when value < minimum_q15 or value > maximum_q15 {
+        yield [1, 0]
+    }
+    yield [0, value]
+}
+
+craft sensor_calibrate(raw_zero_q15, raw_reference_q15, reference_value_q15) {
+    when raw_reference_q15 == raw_zero_q15 { yield [1, 0, 0] }
+    make scale_q15 := (reference_value_q15 * 32768) // (raw_reference_q15 - raw_zero_q15)
+    make offset_q15 := -((raw_zero_q15 * scale_q15) // 32768)
+    yield [0, scale_q15, offset_q15]
+}
+
+craft sensor_filter(samples_q15, window) {
+    when window < 1 or window > size(samples_q15) { yield [1, 0] }
+    vary index := size(samples_q15) - window
+    vary total := 0
+    loop while index < size(samples_q15) {
+        change total := total + samples_q15[index]
+        change index := index + 1
+    }
+    yield [0, total // window]
+}
+
+craft coordinate_transform_q15(x_q15, y_q15, translate_x_q15, translate_y_q15, cosine_q15, sine_q15) {
+    make norm_squared := cosine_q15 * cosine_q15 + sine_q15 * sine_q15
+    when norm_squared < 1073676288 or norm_squared > 1073807360 {
+        yield [1, 0, 0]
+    }
+    make out_x := translate_x_q15 + ((x_q15 * cosine_q15 - y_q15 * sine_q15) // 32768)
+    make out_y := translate_y_q15 + ((x_q15 * sine_q15 + y_q15 * cosine_q15) // 32768)
+    yield [0, out_x, out_y]
+}
+
+craft forward_kinematics_q15(link_a_q15, link_b_q15, cosine_a_q15, sine_a_q15, cosine_ab_q15, sine_ab_q15) {
+    when link_a_q15 <= 0 or link_b_q15 <= 0 { yield [1, 0, 0] }
+    make x_q15 := (link_a_q15 * cosine_a_q15 + link_b_q15 * cosine_ab_q15) // 32768
+    make y_q15 := (link_a_q15 * sine_a_q15 + link_b_q15 * sine_ab_q15) // 32768
+    yield [0, x_q15, y_q15]
+}
+
+craft inverse_kinematics_q15(x_q15, y_q15, link_a_q15, link_b_q15, elbow_sign) {
+    when link_a_q15 <= 0 or link_b_q15 <= 0 or (elbow_sign != -1 and elbow_sign != 1) {
+        yield [1, 0, 0, 0, 0]
+    }
+    make radius_squared := x_q15 * x_q15 + y_q15 * y_q15
+    make radius := robotics_isqrt(radius_squared)
+    vary link_difference := link_a_q15 - link_b_q15
+    when link_difference < 0 { change link_difference := -link_difference }
+    when radius <= 0 or radius > link_a_q15 + link_b_q15 or radius < link_difference {
+        yield [1, 0, 0, 0, 0]
+    }
+    vary cosine_b_q15 := ((radius_squared - link_a_q15 * link_a_q15 - link_b_q15 * link_b_q15) * 32768) // (2 * link_a_q15 * link_b_q15)
+    change cosine_b_q15 := robotics_clamp(cosine_b_q15, -32768, 32768)
+    make sine_squared := 32768 * 32768 - cosine_b_q15 * cosine_b_q15
+    make sine_b_q15 := robotics_isqrt(sine_squared) * elbow_sign
+    make along_q15 := link_a_q15 + ((link_b_q15 * cosine_b_q15) // 32768)
+    make across_q15 := (link_b_q15 * sine_b_q15) // 32768
+    make local_radius := robotics_isqrt(along_q15 * along_q15 + across_q15 * across_q15)
+    when local_radius == 0 { yield [1, 0, 0, 0, 0] }
+    make direction_cosine := (x_q15 * 32768) // radius
+    make direction_sine := (y_q15 * 32768) // radius
+    make local_cosine := (along_q15 * 32768) // local_radius
+    make local_sine := (across_q15 * 32768) // local_radius
+    make cosine_a_q15 := ((direction_cosine * local_cosine + direction_sine * local_sine) // 32768)
+    make sine_a_q15 := ((direction_sine * local_cosine - direction_cosine * local_sine) // 32768)
+    yield [0, cosine_a_q15, sine_a_q15, cosine_b_q15, sine_b_q15]
+}
+
+craft trajectory_interpolate(start_q15, finish_q15, elapsed_ms, duration_ms) {
+    when duration_ms <= 0 { yield [1, 0] }
+    make bounded_elapsed := robotics_clamp(elapsed_ms, 0, duration_ms)
+    make value_q15 := start_q15 + ((finish_q15 - start_q15) * bounded_elapsed // duration_ms)
+    yield [0, value_q15]
+}
+
+craft actuator_command(requested_q15, current_q15, minimum_q15, maximum_q15, maximum_step_q15) {
+    when minimum_q15 > maximum_q15 or maximum_step_q15 < 0 { yield [1, 0] }
+    make target_q15 := robotics_clamp(requested_q15, minimum_q15, maximum_q15)
+    make stepped_q15 := robotics_clamp(target_q15, current_q15 - maximum_step_q15, current_q15 + maximum_step_q15)
+    yield [0, robotics_clamp(stepped_q15, minimum_q15, maximum_q15)]
+}
+
+craft pid_step(setpoint_q15, measurement_q15, delta_ms, kp_q15, ki_q15, kd_q15, integral_q15, previous_error_q15, integral_limit_q15, output_minimum_q15, output_maximum_q15) {
+    when delta_ms <= 0 or integral_limit_q15 < 0 or output_minimum_q15 > output_maximum_q15 {
+        yield [1, integral_q15, previous_error_q15, 0]
+    }
+    make error_q15 := setpoint_q15 - measurement_q15
+    make next_integral := robotics_clamp(integral_q15 + ((error_q15 * delta_ms) // 1000), -integral_limit_q15, integral_limit_q15)
+    make derivative_q15 := ((error_q15 - previous_error_q15) * 1000) // delta_ms
+    make raw_output_q15 := ((kp_q15 * error_q15 + ki_q15 * next_integral + kd_q15 * derivative_q15) // 32768)
+    make output_q15 := robotics_clamp(raw_output_q15, output_minimum_q15, output_maximum_q15)
+    yield [0, next_integral, error_q15, output_q15]
+}
+
+craft axis_synchronize(current_q15, target_q15, maximum_step_q15) {
+    when size(current_q15) == 0 or size(current_q15) != size(target_q15) or maximum_step_q15 < 0 {
+        yield [1, []]
+    }
+    vary result := []
+    vary index := 0
+    loop while index < size(current_q15) {
+        make delta := target_q15[index] - current_q15[index]
+        change result := push(result, current_q15[index] + robotics_clamp(delta, -maximum_step_q15, maximum_step_q15))
+        change index := index + 1
+    }
+    yield [0, result]
+}
+
+craft safety_supervise(positions_q15, minimum_q15, maximum_q15, temperature_c, temperature_limit_c, now_ms, heartbeat_ms, watchdog_ms) {
+    when size(positions_q15) == 0 or size(positions_q15) != size(minimum_q15) or size(positions_q15) != size(maximum_q15) {
+        yield [1, 1008, 0]
+    }
+    when watchdog_ms <= 0 or heartbeat_ms > now_ms or now_ms - heartbeat_ms > watchdog_ms {
+        yield [1, 1009, now_ms - heartbeat_ms]
+    }
+    when temperature_c > temperature_limit_c {
+        yield [1, 1012, temperature_c]
+    }
+    vary index := 0
+    loop while index < size(positions_q15) {
+        when positions_q15[index] < minimum_q15[index] or positions_q15[index] > maximum_q15[index] {
+            yield [1, 1008, index]
+        }
+        change index := index + 1
+    }
+    yield [0, 0, size(positions_q15)]
+}
+
+craft protocol_crc16(bytes) {
+    vary crc := 65535
+    vary index := 0
+    loop while index < size(bytes) {
+        change crc := robotics_xor16(crc, bytes[index] * 256)
+        vary bit_index := 0
+        loop while bit_index < 8 {
+            make high_bit := crc >= 32768
+            change crc := (crc * 2) % 65536
+            when high_bit { change crc := robotics_xor16(crc, 4129) }
+            change bit_index := bit_index + 1
+        }
+        change index := index + 1
+    }
+    yield crc
+}
+
+craft protocol_frame(sequence, payload) {
+    when sequence < 0 or sequence > 65535 or size(payload) > 48 {
+        yield [1, []]
+    }
+    vary frame := [82, 66, 1, sequence % 256, sequence // 256, size(payload) % 256, size(payload) // 256]
+    vary index := 0
+    loop while index < size(payload) {
+        change frame := push(frame, payload[index])
+        change index := index + 1
+    }
+    make checksum := protocol_crc16(frame)
+    change frame := push(frame, checksum % 256)
+    change frame := push(frame, checksum // 256)
+    yield [0, frame]
+}
+
+craft simulator_step(state, delta_ms, stiffness, maximum_velocity) {
+    when size(state) != 4 or delta_ms <= 0 or delta_ms > 1000 or maximum_velocity < 0 {
+        yield [1, state]
+    }
+    vary position := state[0]
+    vary velocity := state[1]
+    make command := state[2]
+    vary tick := state[3]
+    make acceleration := (command - position) * stiffness
+    change velocity := robotics_clamp(velocity + (acceleration * delta_ms // 1000), -maximum_velocity, maximum_velocity)
+    change position := position + (velocity * delta_ms // 1000)
+    change tick := tick + delta_ms
+    yield [0, [position, velocity, command, tick]]
+}
+
+# Executable conformance vectors for the shared robotics contracts.
+make sample_ok := sensor_sample(163840, 65536, -32768, 0, 327680)
+make sample_rejected := sensor_sample(196608, 65536, 0, 0, 327680)
+make calibration := sensor_calibrate(3276800, 6553600, 65536)
+make filtered := sensor_filter([65536, 131072, 196608, 262144], 2)
+make transformed := coordinate_transform_q15(32768, 0, 98304, 131072, 0, 32768)
+make forward := forward_kinematics_q15(3276800, 1638400, 0, 32768, -32768, 0)
+make inverse := inverse_kinematics_q15(3276800, 0, 3276800, 3276800, 1)
+make unreachable := inverse_kinematics_q15(9830400, 0, 3276800, 3276800, 1)
+make trajectory := trajectory_interpolate(0, 1000, 500, 1000)
+make actuator := actuator_command(1000, 0, -100, 100, 20)
+make pid := pid_step(1000, 0, 100, 32768, 0, 0, 0, 0, 5000, -2000, 2000)
+make axes := axis_synchronize([0, 100, -100], [100, 0, 100], 20)
+make safety := safety_supervise([0, 50], [-100, 0], [100, 100], 35, 80, 100, 99, 5)
+make safety_rejected := safety_supervise([0, 150], [-100, 0], [100, 100], 35, 80, 100, 99, 5)
+make known_crc := protocol_crc16([49, 50, 51, 52, 53, 54, 55, 56, 57])
+make frame := protocol_frame(4660, [16, 32, 48])
+make simulated := simulator_step([0, 0, 1000, 0], 100, 6, 360)
+
+assert(sample_ok == [0, 294912], "sensor fixed-point vector failed")
+assert(sample_rejected[0] == 1, "sensor range violation was accepted")
+assert(calibration == [0, 655, -65500], "Q15 calibration vector failed")
+assert(filtered == [0, 229376], "moving average vector failed")
+assert(transformed == [0, 98304, 163840], "Q15 coordinate transform failed")
+assert(forward == [0, -1638400, 3276800], "forward kinematics vector failed")
+assert(inverse[0] == 0 and inverse[3] < 0 and inverse[4] > 0, "inverse kinematics vector failed")
+assert(unreachable[0] == 1, "unreachable inverse kinematics target was accepted")
+assert(trajectory == [0, 500], "trajectory interpolation failed")
+assert(actuator == [0, 20], "actuator slew limit failed")
+assert(pid == [0, 100, 1000, 1000], "PID fixed-point vector failed")
+assert(axes == [0, [20, 80, -80]], "axis synchronization failed")
+assert(safety[0] == 0 and safety_rejected[0] == 1, "safety supervision failed")
+assert(known_crc == 10673, "CRC16-CCITT known vector failed")
+assert(frame[0] == 0 and size(frame[1]) == 12, "robotics protocol framing failed")
+assert(simulated == [0, [36, 360, 1000, 100]], "deterministic simulator vector failed")
+
+emit "PYTYLIKI_REAPER_ROBOTICS:PASS"

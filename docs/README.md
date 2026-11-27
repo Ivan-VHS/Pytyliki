@@ -14,6 +14,7 @@ Start with the [project README](../README.md) for product scope, build steps, fi
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
+- [Reaper Robotics Core](REAPER_ROBOTICS.md) — thirteen operations, deterministic C11 runtime, Reaper reference contracts and compiler limits.
 
 ## Browse by topic
 
