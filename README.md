@@ -68,6 +68,7 @@ Integrations do not grant hardware privileges or broaden the workstation's read-
 
 - [Feature overview](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md)
 - [Benchmark statistics](docs/BENCHMARK_STATISTICS.md) · [Embedded C reference workbench](docs/EMBEDDED_C.md)
+- [Processor language workbench](docs/PROCESSOR_LANGUAGE_WORKBENCH.md) — 66 unique processor-facing profiles, static inspection and inert build plans.
 - [QCS native inspection](docs/QCS_NATIVE.md) · [Documentation index](docs/README.md)
 - [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
 - [Reaper integration](docs/REAPER_INTEGRATION.md) · [Shared ecosystem standards](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
