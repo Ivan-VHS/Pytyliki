@@ -1,0 +1,636 @@
+{
+  "schema": "pytyliki.omega-null.v0",
+  "profile": {
+    "id": "omega-null",
+    "display_name": "Omega-Null",
+    "parent": "pytyliki.iron-core",
+    "version": "0.0.1-research",
+    "maturity": "research_profile",
+    "grammar_status": "illustrative_not_implemented",
+    "compiler_owner": "reaper",
+    "domain_owner": "pytyliki",
+    "purpose": "An experimental, physics-inspired hardware research profile for expressing quantum-device models, field simulations, reproducible experiments, material models, fabrication plans and consent-based BCI input through typed, inspectable operations.",
+    "non_goals": [
+      "No claim of control below the physical laws of a device.",
+      "No direct manipulation of quantum vacuum, probability, spacetime, causality or past events.",
+      "No generation of matter from thought or from electrical energy without a physically specified process and feedstock.",
+      "No implicit access to privileged CPU registers, MMIO, DMA, firmware, sensors or neural interfaces."
+    ]
+  },
+  "ownership": {
+    "reaper": "Owns the canonical parser, syntax/grammar, typing, effects, diagnostics, Span/SourceMap and typed IR. Omega-Null must lower through canonical Reaper contracts, not fork the compiler.",
+    "pytyliki": "Owns the research profile, hardware/physics model descriptors, simulation orchestration, evidence and target adapter registry.",
+    "duck_os": "Mediates process isolation, device permissions, sensor/BCI access, driver lifecycle and privileged hardware services.",
+    "board_and_lab_backends": "Provide exact board, quantum-device, materials, fabrication and laboratory tool adapters; each adapter declares identity, revision, calibration and safety limits."
+  },
+  "semantic_layers": [
+    {
+      "id": "O0",
+      "name": "Marker surface",
+      "scope": "The user-facing resonant markers, aliases and block delimiters.",
+      "execution": "Normalize only; symbols do not independently cause physical effects."
+    },
+    {
+      "id": "O1",
+      "name": "Typed research operations",
+      "scope": "Quantum, field, experiment, time-model, material and BCI domain calls.",
+      "execution": "Type/effect checked by Reaper; target and evidence mode required."
+    },
+    {
+      "id": "O2",
+      "name": "Model and simulator",
+      "scope": "Deterministic or seeded probabilistic simulation of declared models.",
+      "execution": "Runs against named models with explicit bounds and model provenance."
+    },
+    {
+      "id": "O3",
+      "name": "Artifact and tool adapters",
+      "scope": "Circuit descriptions, RTL, netlists, CAD, manufacturing plans and external EDA tools.",
+      "execution": "Produces files/plans; execution is opt-in and toolchain-versioned."
+    },
+    {
+      "id": "O4",
+      "name": "Physical target",
+      "scope": "Named quantum devices, sensors, fabrication equipment or embedded boards.",
+      "execution": "Requires trusted device adapter, capabilities, calibration, operator consent and separate hardware qualification."
+    }
+  ],
+  "marker_semantics": [
+    {
+      "marker": "begin iron )",
+      "normalized": "iron.begin",
+      "category": "entry",
+      "intent": "Start a bounded IRON/Omega-Null session.",
+      "semantics": "Create a typed session context with target, execution mode, effect budget and provenance.",
+      "forbidden_interpretation": "Big Bang or creation of a physical universe."
+    },
+    {
+      "marker": "() core --",
+      "normalized": "core.scope",
+      "category": "scope",
+      "intent": "Declare the root computational/model scope.",
+      "semantics": "Open a root scope with versioned state and explicit initial conditions.",
+      "forbidden_interpretation": "A singularity or break in causality."
+    },
+    {
+      "marker": "[ system ]-",
+      "normalized": "system.bind",
+      "category": "target",
+      "intent": "Bind the system boundary.",
+      "semantics": "Select an explicit CPU, simulator, device, board, model or lab target.",
+      "forbidden_interpretation": "A global physical field or unrestricted system access."
+    },
+    {
+      "marker": "stop option ;",
+      "normalized": "stop.policy",
+      "category": "termination",
+      "intent": "Declare bounded stop behavior.",
+      "semantics": "Set timeout, cancellation, safe-stop and cleanup policies.",
+      "forbidden_interpretation": "An irreversible event horizon or point of no return."
+    },
+    {
+      "marker": "] level .",
+      "normalized": "model.level",
+      "category": "model",
+      "intent": "Select a model resolution.",
+      "semantics": "Choose transistor, gate, circuit, ISA, microarchitecture, device or system abstraction level.",
+      "forbidden_interpretation": "A quantum energy transition in hardware."
+    },
+    {
+      "marker": "{ selective /",
+      "normalized": "select.filter",
+      "category": "selection",
+      "intent": "Filter candidate states or experiment branches.",
+      "semantics": "Apply a typed predicate, constraint or probability threshold to model results.",
+      "forbidden_interpretation": "Forcing nature to select a desired quantum outcome."
+    },
+    {
+      "marker": "} operation P)-",
+      "normalized": "operation.apply",
+      "category": "operation",
+      "intent": "Apply an explicit operation.",
+      "semantics": "Execute or simulate a declared operation only after target/effect/capability admission.",
+      "forbidden_interpretation": "A vector of force applied directly to matter."
+    },
+    {
+      "marker": "?? massive <>",
+      "normalized": "data.region",
+      "category": "storage",
+      "intent": "Declare a large bounded data/model region.",
+      "semantics": "Create a typed storage, tensor, state-vector or dataset region with capacity limits.",
+      "forbidden_interpretation": "Storing arbitrary information in spacetime curvature."
+    },
+    {
+      "marker": "< start >?",
+      "normalized": "resource.query",
+      "category": "query",
+      "intent": "Query available resources or model state.",
+      "semantics": "Perform a read-only query against a declared provider or simulator.",
+      "forbidden_interpretation": "Querying a quantum vacuum for arbitrary resources."
+    },
+    {
+      "marker": "grown new-work >/ ",
+      "normalized": "pipeline.expand",
+      "category": "pipeline",
+      "intent": "Expand a model or engineering workflow.",
+      "semantics": "Create bounded child tasks, generated source or simulation jobs with lineage.",
+      "forbidden_interpretation": "Organic creation of physical matter."
+    },
+    {
+      "marker": "> concrete //*",
+      "normalized": "artifact.materialize",
+      "category": "artifact",
+      "intent": "Materialize an abstract design as a concrete engineering artifact.",
+      "semantics": "Emit a source file, IR, netlist, RTL, CAD model, build plan or manufacturing job file.",
+      "forbidden_interpretation": "Converting thought directly into atoms or a physical object."
+    },
+    {
+      "marker": "## utility _",
+      "normalized": "utility.import",
+      "category": "module",
+      "intent": "Bring in a declared utility module.",
+      "semantics": "Resolve a versioned local module or pinned adapter dependency.",
+      "forbidden_interpretation": "An unrestricted foundation that bypasses capabilities."
+    },
+    {
+      "marker": "# unify TAB",
+      "normalized": "timeline.align",
+      "category": "synchronization",
+      "intent": "Align phases or event streams.",
+      "semantics": "Synchronize logical clocks, signal phases or datasets under a declared clock model.",
+      "forbidden_interpretation": "Instantaneous synchronization across spacetime or faster-than-light signaling."
+    },
+    {
+      "marker": "setup brachpass ^^",
+      "normalized": "experiment.branch_plan",
+      "category": "optimization",
+      "intent": "Prepare candidate branches and search paths.",
+      "semantics": "Build a bounded branch-and-bound, search or parameter-sweep plan.",
+      "forbidden_interpretation": "Prediction or traversal of actual alternate timelines."
+    },
+    {
+      "marker": "!+ hyper tournament ^",
+      "normalized": "experiment.tournament",
+      "category": "optimization",
+      "intent": "Evaluate candidate algorithms/models in parallel.",
+      "semantics": "Run bounded jobs on actual compute resources or named simulators and compare reproducible outputs.",
+      "forbidden_interpretation": "Creating or collapsing parallel physical universes."
+    },
+    {
+      "marker": "CC based rules ^^^",
+      "normalized": "physics.constraints",
+      "category": "constraints",
+      "intent": "Apply domain laws and model constraints.",
+      "semantics": "Enforce dimensioned equations, conservation laws, boundary conditions, unitarity or causality where applicable.",
+      "forbidden_interpretation": "A command that changes universal physical constants."
+    },
+    {
+      "marker": "level jump to run *(",
+      "normalized": "workflow.transition",
+      "category": "control_flow",
+      "intent": "Move between declared workflow states.",
+      "semantics": "Perform a validated state-machine transition or dispatch to an explicitly defined execution stage.",
+      "forbidden_interpretation": "Quantum tunneling or skipping physical time."
+    },
+    {
+      "marker": "TRUE connective *+",
+      "normalized": "state.entangle_model",
+      "category": "quantum_model",
+      "intent": "Represent correlated quantum subsystems.",
+      "semantics": "Create or inspect an entangled state in a declared simulator/device model and validate no-signaling constraints.",
+      "forbidden_interpretation": "Communication without a physical channel or faster-than-light signaling."
+    },
+    {
+      "marker": "verison ///. *",
+      "normalized": "artifact.version",
+      "category": "provenance",
+      "intent": "Identify a versioned state/artifact.",
+      "semantics": "Attach version, source digest, model/device identity and reproducibility metadata.",
+      "forbidden_interpretation": "Manipulating the timeline or history of the universe."
+    },
+    {
+      "marker": "verificated /// !!",
+      "normalized": "verify.seal",
+      "category": "verification",
+      "intent": "Verify and seal a result.",
+      "semantics": "Run declared checks and emit a typed verification report with scope and evidence level.",
+      "forbidden_interpretation": "Proof that an unobservable metaphysical event occurred."
+    }
+  ],
+  "operation_catalog": [
+    {
+      "id": "quantum.state.prepare",
+      "target": "simulator_or_qualified_device",
+      "mode": [
+        "simulate",
+        "verify",
+        "target"
+      ],
+      "effect": [
+        "model.state_write"
+      ],
+      "semantics": "Prepare a quantum state using a declared circuit/state-preparation sequence; report model and device constraints.",
+      "result": "QuantumStateHandle",
+      "status": "research",
+      "constraints": [
+        "No arbitrary selection of a desired measurement result.",
+        "Hardware execution requires a named device, calibration and explicit capability."
+      ]
+    },
+    {
+      "id": "quantum.gate.apply",
+      "target": "simulator_or_qualified_device",
+      "mode": [
+        "simulate",
+        "verify",
+        "target"
+      ],
+      "effect": [
+        "model.state_write"
+      ],
+      "semantics": "Apply a supported unitary gate or calibrated device operation to the selected qubit/register set.",
+      "result": "QuantumStateHandle",
+      "status": "research",
+      "constraints": [
+        "Gate set, connectivity, noise and compilation constraints are target-specific."
+      ]
+    },
+    {
+      "id": "quantum.measure",
+      "target": "simulator_or_qualified_device",
+      "mode": [
+        "simulate",
+        "verify",
+        "target"
+      ],
+      "effect": [
+        "measurement",
+        "nondeterminism"
+      ],
+      "semantics": "Measure in a declared basis and return an observation/sample distribution with seed or device provenance.",
+      "result": "QuantumMeasurement",
+      "status": "research",
+      "constraints": [
+        "Outcome is governed by the declared model or device behavior.",
+        "The operation cannot force a chosen outcome or recover arbitrary classical secrets from superposition."
+      ]
+    },
+    {
+      "id": "field.solve",
+      "target": "numerical_model",
+      "mode": [
+        "simulate",
+        "verify"
+      ],
+      "effect": [
+        "model.state_write",
+        "bounded_compute"
+      ],
+      "semantics": "Solve a declared field/evolution equation on a bounded domain with units, discretization, boundary conditions and solver tolerances.",
+      "result": "FieldSolution",
+      "status": "research",
+      "constraints": [
+        "Does not alter physical spacetime or slow real-world time."
+      ]
+    },
+    {
+      "id": "experiment.tournament",
+      "target": "host_or_simulator",
+      "mode": [
+        "plan",
+        "simulate",
+        "verify"
+      ],
+      "effect": [
+        "bounded_compute",
+        "nondeterminism"
+      ],
+      "semantics": "Run resource-bounded candidate evaluation with pinned inputs, seeds, budgets and an explicit objective function.",
+      "result": "ExperimentWinner",
+      "status": "planned",
+      "constraints": [
+        "Only actual compute resources and explicitly named simulations are used.",
+        "Candidate score and confidence are reported; no future or alternate reality is accessed."
+      ]
+    },
+    {
+      "id": "sandbox.create",
+      "target": "process_or_model",
+      "mode": [
+        "plan",
+        "simulate",
+        "verify",
+        "target"
+      ],
+      "effect": [
+        "isolation",
+        "resource_quota"
+      ],
+      "semantics": "Create a restricted process, VM, simulator or model sandbox with memory, CPU, I/O and time budgets.",
+      "result": "SandboxHandle",
+      "status": "planned",
+      "constraints": [
+        "Isolation strength must name the actual platform mechanism.",
+        "A simulator sandbox is not a physically separate universe."
+      ]
+    },
+    {
+      "id": "chrono.checkpoint",
+      "target": "logical_state_or_simulator",
+      "mode": [
+        "simulate",
+        "verify",
+        "target"
+      ],
+      "effect": [
+        "state_snapshot"
+      ],
+      "semantics": "Capture a versioned logical state with event index, input digest and model identity.",
+      "result": "CheckpointHandle",
+      "status": "planned",
+      "constraints": [
+        "Checkpoint is not a backup of the physical world."
+      ]
+    },
+    {
+      "id": "chrono.replay",
+      "target": "logical_state_or_simulator",
+      "mode": [
+        "simulate",
+        "verify"
+      ],
+      "effect": [
+        "deterministic_replay"
+      ],
+      "semantics": "Replay a recorded model execution or event log and report the first divergence.",
+      "result": "ReplayReport",
+      "status": "planned",
+      "constraints": [
+        "Replay does not reverse external physical events or restore an earlier real time."
+      ]
+    },
+    {
+      "id": "material.structure.build",
+      "target": "material_model",
+      "mode": [
+        "simulate",
+        "verify"
+      ],
+      "effect": [
+        "model.state_write",
+        "bounded_compute"
+      ],
+      "semantics": "Construct a typed atomic, molecular, crystal or material structure from validated species, bonds, geometry and model assumptions.",
+      "result": "MaterialStructure",
+      "status": "research",
+      "constraints": [
+        "The result is a model/design artifact unless separately fabricated and measured."
+      ]
+    },
+    {
+      "id": "fabrication.plan",
+      "target": "cad_eda_or_manufacturing_backend",
+      "mode": [
+        "plan",
+        "verify",
+        "target"
+      ],
+      "effect": [
+        "artifact.write"
+      ],
+      "semantics": "Generate or validate CAD/EDA/3D-printing/manufacturing job data against material, machine, feedstock and process constraints.",
+      "result": "FabricationPlan",
+      "status": "research",
+      "constraints": [
+        "Physical fabrication requires suitable equipment, feedstock, safety controls and operator approval.",
+        "No claim of creating matter from vacuum or thought."
+      ]
+    },
+    {
+      "id": "bci.capture",
+      "target": "consented_bci_device",
+      "mode": [
+        "inspect",
+        "target"
+      ],
+      "effect": [
+        "device.read",
+        "sensitive_signal"
+      ],
+      "semantics": "Acquire a bounded sensor stream from a user-selected brain-computer interface using an OS-mediated device adapter.",
+      "result": "BciSignalFrame",
+      "status": "research",
+      "constraints": [
+        "Requires informed consent, visible activation, data minimization and local-first handling.",
+        "No emotion inference or direct thought-to-code guarantee."
+      ]
+    },
+    {
+      "id": "bci.intent.decode",
+      "target": "local_signal_model",
+      "mode": [
+        "simulate",
+        "verify"
+      ],
+      "effect": [
+        "model.compute",
+        "sensitive_signal"
+      ],
+      "semantics": "Map supplied signal features to a declared, user-calibrated intent vocabulary with confidence and abstention.",
+      "result": "IntentHypothesis",
+      "status": "research",
+      "constraints": [
+        "Output is a probabilistic hypothesis, not direct access to thoughts or mental state."
+      ]
+    }
+  ],
+  "frameworks": [
+    {
+      "id": "aegis-shield",
+      "role": "Safe execution and model containment.",
+      "components": [
+        {
+          "name": "Reality Sandbox",
+          "mapping": "Process/VM isolation or deterministic simulator sandbox; call it Model Sandbox in technical APIs."
+        },
+        {
+          "name": "Entropy Monitor",
+          "mapping": "Monitor declared stability metrics, queue pressure, numerical error or model entropy; thresholds are model-specific."
+        },
+        {
+          "name": "Causality Lock",
+          "mapping": "Reject non-causal event ordering, invalid time travel requests and inconsistent replay mutations."
+        },
+        {
+          "name": "Stop Policy",
+          "mapping": "Bounded timeout, cancellation, cleanup and safe-stop with an auditable event ledger."
+        }
+      ]
+    },
+    {
+      "id": "chrono-weave",
+      "role": "Logical time, snapshots and reproducible simulation.",
+      "components": [
+        {
+          "name": "Time Bookmark",
+          "mapping": "Versioned checkpoint of a model, simulation or application state."
+        },
+        {
+          "name": "Future Preview",
+          "mapping": "Scenario forecast or Monte Carlo projection with assumptions, uncertainty and no guarantee."
+        },
+        {
+          "name": "Parallel Thread Manager",
+          "mapping": "Resource-bounded worker pool and deterministic branch scheduler."
+        },
+        {
+          "name": "Rollback",
+          "mapping": "Restore an isolated logical snapshot only; external physical events cannot be undone."
+        }
+      ]
+    },
+    {
+      "id": "matter-forge",
+      "role": "Material modeling and engineering artifact pipeline.",
+      "components": [
+        {
+          "name": "Atom Library",
+          "mapping": "Versioned element/isotope/species/property database with source and model provenance."
+        },
+        {
+          "name": "Structure Blueprint",
+          "mapping": "Validated atomic/molecular geometry, crystal lattice, CAD or device design."
+        },
+        {
+          "name": "Energy Model",
+          "mapping": "Dimensioned energy budget and physical process model; E=mc² is not a practical material-synthesis primitive."
+        },
+        {
+          "name": "Fabrication Adapter",
+          "mapping": "Explicit, machine-specific plan for a supported printer, deposition, lithography or laboratory process."
+        }
+      ]
+    },
+    {
+      "id": "mind-link",
+      "role": "Consent-based neural input adapter.",
+      "components": [
+        {
+          "name": "Thought Parser",
+          "mapping": "Signal-processing and user-calibrated intent classifier with confidence and reject/abstain path."
+        },
+        {
+          "name": "Emotion Stabilizer",
+          "mapping": "Do not infer or suppress emotions. Replace with signal-quality, fatigue-neutral calibration and operator pause controls."
+        },
+        {
+          "name": "Focus Amplifier",
+          "mapping": "Optional user-controlled interaction aid; never claims to amplify cognition or alter the brain."
+        },
+        {
+          "name": "Privacy Gate",
+          "mapping": "Local-only by default, explicit consent, short retention, encryption and data deletion controls."
+        }
+      ]
+    }
+  ],
+  "claim_translation": [
+    {
+      "claim": "Control the probability that an electron/charge exists.",
+      "classification": "not_a_supported_software_capability",
+      "translation": "Model quantum states and measurement probabilities; use a qualified quantum device for physical experiments. Software does not control the quantum vacuum."
+    },
+    {
+      "claim": "Collapse a wavefunction into a desired result.",
+      "classification": "physically_misrepresented",
+      "translation": "Perform a declared measurement and return a probabilistic outcome; state preparation and gate operations are distinct from measurement."
+    },
+    {
+      "claim": "Bend spacetime to store more data or slow code.",
+      "classification": "fictional_as_a_computer_api",
+      "translation": "Run a numerical spacetime/field simulation or optimize memory layout. The simulator cannot bend real spacetime."
+    },
+    {
+      "claim": "Create thousands of alternate realities for algorithm selection.",
+      "classification": "metaphorical",
+      "translation": "Run parallel candidate jobs, simulations or parameter sweeps on finite compute resources."
+    },
+    {
+      "claim": "Materialize thoughts or atoms from ambient air.",
+      "classification": "not_implemented_and_not_a_realistic_api",
+      "translation": "Generate CAD, molecular/material models and a manufacturing plan; physical production requires feedstock, energy, equipment and process validation."
+    },
+    {
+      "claim": "Travel backward in time or preview a guaranteed future.",
+      "classification": "not_a_supported_physical_capability",
+      "translation": "Restore a logical checkpoint or run an uncertainty-bearing scenario forecast."
+    },
+    {
+      "claim": "Communicate through entanglement without a signal.",
+      "classification": "physically_misrepresented",
+      "translation": "Model entangled correlations and test no-signaling constraints; classical communication still requires a physical channel."
+    },
+    {
+      "claim": "Compile thought directly from a brain.",
+      "classification": "research_interface_only",
+      "translation": "Acquire consented signals from a named BCI and classify calibrated intent with uncertainty and abstention."
+    },
+    {
+      "claim": "Run below electricity or the laws of physics.",
+      "classification": "metaphor_only",
+      "translation": "The deepest modeled level is an explicit physical/electrical device model; software remains constrained by the hardware and physical laws it models."
+    }
+  ],
+  "evidence_policy": {
+    "modes": [
+      "static_analysis",
+      "reference_fixture",
+      "deterministic_simulation",
+      "probabilistic_simulation",
+      "live_os_observation",
+      "qualified_device_measurement",
+      "hardware_in_loop",
+      "physical_signoff"
+    ],
+    "required_fields": [
+      "evidence_mode",
+      "source_revision",
+      "target_or_model_id",
+      "model_or_device_version",
+      "toolchain_version",
+      "inputs_digest",
+      "seed_or_device_run_id",
+      "timestamp",
+      "units",
+      "uncertainty",
+      "result",
+      "limitations"
+    ],
+    "invariants": [
+      "Simulation output must never be labeled as a live device measurement.",
+      "Quantum simulator results must identify the state representation, noise model, measurement basis and random seed.",
+      "Field simulations must identify equations, units, discretization, boundary conditions and solver tolerance.",
+      "Material simulations must identify species, potential/model, temperature/pressure assumptions and source database.",
+      "Fabrication plans must identify feedstock, machine/process profile and required operator approval.",
+      "BCI signals are sensitive user data and require explicit consent and local-first handling.",
+      "Physical target operations are capability-gated and must have a named device/board revision."
+    ]
+  },
+  "access_model": {
+    "default_mode": "inspect",
+    "allowed_modes": [
+      "inspect",
+      "plan",
+      "simulate",
+      "verify",
+      "target",
+      "privileged",
+      "physical_design"
+    ],
+    "deny_by_default": true,
+    "no_implicit_hardware_access": true,
+    "no_hidden_network": true,
+    "no_automatic_firmware_or_driver_install": true,
+    "no_reality_mutation_api": true
+  }
+}
