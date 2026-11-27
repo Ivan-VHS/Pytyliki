@@ -166,6 +166,17 @@ pl_placement_status pl_processor_placement_plan(
     if(pl_processor_topology_validate(topology)!=PL_TOPOLOGY_OK) return PL_PLACEMENT_INVALID_TOPOLOGY;
     memset(out,0,sizeof(*out));
     out->report.generation=topology->generation;
+    out->report.topology_complete =
+        topology->completeness == PL_TOPOLOGY_COMPLETE ? 1u : 0u;
+    for (size_t i=0u;i<topology->logical_cpu_count;++i)
+        if (pressure->cpu_load_basis_points[topology->logical_cpus[i].logical_id] != 0u)
+            out->report.pressure_input_present=1u;
+    for (size_t i=0u;i<topology->cache_count;++i)
+        if (pressure->cache_working_set_bytes[i] != 0u)
+            out->report.pressure_input_present=1u;
+    for (size_t i=0u;i<topology->numa_node_count;++i)
+        if (pressure->numa_bandwidth_used_bytes_per_second[i] != 0u)
+            out->report.pressure_input_present=1u;
     for(size_t i=0u;i<task_count;++i) {
         if(tasks[i].task_id==0u || tasks[i].requested_load_basis_points>10000u ||
            tasks[i].require_local_numa>1u ||
