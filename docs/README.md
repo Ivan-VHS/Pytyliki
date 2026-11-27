@@ -14,6 +14,7 @@ Start with the [project README](../README.md) for product scope, build steps, fi
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and ABI boundaries.
+- [Reaper Processor Intelligence](REAPER_LANGUAGE_INTEGRATION.md) — executable `.rpr` orchestration, state traces, report provenance and hardware safety boundaries.
 
 ## Browse by topic
 
