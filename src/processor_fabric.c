@@ -396,7 +396,9 @@ pl_processor_fabric_status pl_processor_fabric_validate(
 
         if (edge->kind == PL_PROCESSOR_FABRIC_DEPENDS_ON)
             ++summary->dependency_edge_count;
-        else if (edge->kind == PL_PROCESSOR_FABRIC_USES)
+        else if (edge->kind == PL_PROCESSOR_FABRIC_USES ||
+                 edge->kind == PL_PROCESSOR_FABRIC_MAPS_TO ||
+                 edge->kind == PL_PROCESSOR_FABRIC_SHARES_CACHE)
             ++summary->resource_edge_count;
         else if (edge->kind == PL_PROCESSOR_FABRIC_PRODUCES)
             ++summary->produced_edge_count;
@@ -696,13 +698,17 @@ pl_processor_fabric_status pl_processor_fabric_report_json(
 
 typedef struct {
     uint32_t key;
+    uint32_t key2;
+    uint32_t key3;
     uint32_t node_id;
 } topology_node_map_entry;
 
 static uint32_t find_topology_node(const topology_node_map_entry *entries,
-                                   size_t count, uint32_t key) {
+                                   size_t count, uint32_t key,
+                                   uint32_t key2, uint32_t key3) {
     for (size_t i = 0u; i < count; ++i)
-        if (entries[i].key == key) return entries[i].node_id;
+        if (entries[i].key == key && entries[i].key2 == key2 &&
+            entries[i].key3 == key3) return entries[i].node_id;
     return 0u;
 }
 
@@ -808,7 +814,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 feature_mask |= UINT64_C(1) << feature;
 
         if (cpu->package_id != PL_TOPOLOGY_UNKNOWN) {
-            package_id = find_topology_node(packages, package_count, cpu->package_id);
+            package_id = find_topology_node(packages, package_count, cpu->package_id, 0u, 0u);
             if (package_id == 0u) {
                 package_id = add_topology_node(nodes, node_capacity, &used_nodes,
                     &next_id, topology->generation, PL_PROCESSOR_FABRIC_PACKAGE,
@@ -816,11 +822,11 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 if (package_id == 0u)
                     return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                                 cpu->logical_id, 0u, 0u, "node buffer exhausted at package");
-                packages[package_count++] = (topology_node_map_entry){cpu->package_id, package_id};
+                packages[package_count++] = (topology_node_map_entry){cpu->package_id, 0u, 0u, package_id};
             }
         }
         if (cpu->die_id != PL_TOPOLOGY_UNKNOWN) {
-            die_id = find_topology_node(dies, die_count, cpu->die_id);
+            die_id = find_topology_node(dies, die_count, cpu->package_id, cpu->die_id, 0u);
             if (die_id == 0u) {
                 die_id = add_topology_node(nodes, node_capacity, &used_nodes,
                     &next_id, topology->generation, PL_PROCESSOR_FABRIC_DIE,
@@ -828,14 +834,14 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 if (die_id == 0u)
                     return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                                 cpu->logical_id, 0u, 0u, "node buffer exhausted at die");
-                dies[die_count++] = (topology_node_map_entry){cpu->die_id, die_id};
+                dies[die_count++] = (topology_node_map_entry){cpu->package_id, cpu->die_id, 0u, die_id};
             }
         }
         if (cpu->core_id != PL_TOPOLOGY_UNKNOWN) {
-            /* Linux core IDs are scoped to package/die: key the map by source tuple. */
-            uint32_t key = cpu->core_id ^ (cpu->package_id * UINT32_C(2654435761)) ^
-                           (cpu->die_id * UINT32_C(2246822519));
-            core_id = find_topology_node(cores, core_count, key);
+            /* Core IDs are scoped by their observed package and die identifiers. */
+            uint32_t key = cpu->core_id;
+            core_id = find_topology_node(cores, core_count,
+                                         cpu->package_id, cpu->die_id, key);
             if (core_id == 0u) {
                 uint32_t parent = die_id != 0u ? die_id : package_id;
                 core_id = add_topology_node(nodes, node_capacity, &used_nodes,
@@ -844,7 +850,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 if (core_id == 0u)
                     return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                                 cpu->logical_id, 0u, 0u, "node buffer exhausted at core");
-                cores[core_count++] = (topology_node_map_entry){key, core_id};
+                cores[core_count++] = (topology_node_map_entry){cpu->package_id, cpu->die_id, key, core_id};
             }
         }
 
@@ -858,7 +864,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
         nodes[used_nodes - 1u].affinity_mask = UINT64_C(1) << cpu->logical_id;
 
         if (cpu->group_id != PL_TOPOLOGY_UNKNOWN) {
-            group_id = find_topology_node(groups, group_count, cpu->group_id);
+            group_id = find_topology_node(groups, group_count, cpu->group_id, 0u, 0u);
             if (group_id == 0u) {
                 group_id = add_topology_node(nodes, node_capacity, &used_nodes,
                     &next_id, topology->generation, PL_PROCESSOR_FABRIC_PROCESSOR_GROUP,
@@ -866,7 +872,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 if (group_id == 0u)
                     return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                                 cpu->logical_id, 0u, 0u, "node buffer exhausted at processor group");
-                groups[group_count++] = (topology_node_map_entry){cpu->group_id, group_id};
+                groups[group_count++] = (topology_node_map_entry){cpu->group_id, 0u, 0u, group_id};
             }
             if (!add_topology_edge(edges, edge_capacity, &used_edges,
                                    cpu_node_id, group_id, PL_PROCESSOR_FABRIC_MAPS_TO))
@@ -874,7 +880,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                             cpu_node_id, cpu_node_id, group_id, "edge buffer exhausted at processor group");
         }
         if (cpu->numa_node_id != PL_TOPOLOGY_UNKNOWN) {
-            numa_id = find_topology_node(numa, numa_count, cpu->numa_node_id);
+            numa_id = find_topology_node(numa, numa_count, cpu->numa_node_id, 0u, 0u);
             if (numa_id == 0u) {
                 numa_id = add_topology_node(nodes, node_capacity, &used_nodes,
                     &next_id, topology->generation, PL_PROCESSOR_FABRIC_NUMA_NODE,
@@ -882,7 +888,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 if (numa_id == 0u)
                     return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                                 cpu->logical_id, 0u, 0u, "node buffer exhausted at NUMA node");
-                numa[numa_count++] = (topology_node_map_entry){cpu->numa_node_id, numa_id};
+                numa[numa_count++] = (topology_node_map_entry){cpu->numa_node_id, 0u, 0u, numa_id};
             }
             if (!add_topology_edge(edges, edge_capacity, &used_edges,
                                    cpu_node_id, numa_id, PL_PROCESSOR_FABRIC_MAPS_TO))
@@ -899,7 +905,7 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
         if (cache_node == 0u)
             return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                         cache->cache_id, 0u, 0u, "node buffer exhausted at cache");
-        caches[cache_count++] = (topology_node_map_entry){cache->cache_id, cache_node};
+        caches[cache_count++] = (topology_node_map_entry){cache->cache_id, 0u, 0u, cache_node};
         for (uint32_t cpu = 0u; cpu < PL_TOPOLOGY_MAX_LOGICAL_CPUS; ++cpu) {
             if ((cache->sharing_mask[cpu / 64u] & (UINT64_C(1) << (cpu % 64u))) != 0u) {
                 for (size_t n = 0u; n < used_nodes; ++n) {
