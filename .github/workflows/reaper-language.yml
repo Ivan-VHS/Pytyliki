@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: Ivan-VHS/Reaper
-          ref: 0903c60e8831477d98583ab1d2927c5f318f8038
+          ref: f484b49161c744ace4e41bcf323b051f0ef88b1d
           path: _deps/Reaper
       - uses: actions/setup-python@v5
         with:
@@ -45,6 +45,15 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
         run: python -m reaper --engine vm --allow-native-ffi automation/reaper/processor_metrics.rpr
-      - name: Verify the versioned Reaper report
+      - name: Check Reaper Processor Intelligence source
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/processor_intelligence.rpr
+      - name: Execute Reaper Processor Intelligence integration
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --engine vm automation/reaper/processor_intelligence.rpr
+      - name: Verify the versioned Reaper reports
         run: |
           python -c "import json,pathlib; p=json.loads(pathlib.Path('build/reaper-metrics-report.json').read_text()); assert p['schema']=='pytyliki.reaper-metrics.v1'; assert p['vector_norm']==5.0; assert p['dot_product']==11.0; assert p['euclidean_distance']==5.0; assert p['orthogonal'] is True; assert p['plugin_count']==18; assert p['primary_plugin']=='operandu'; assert p['primary_plugin_service']=='inspect_value'"
+          python -c "import json,pathlib; p=json.loads(pathlib.Path('build/processor-intelligence-report.json').read_text()); assert p['schema']=='pytyliki.reaper-processor-intelligence.v1'; assert p['native_abi_schema']=='pytyliki.reaper-metrics.v1'; assert p['native_abi_vector_norm']==5.0; assert p['processor_actions']==2; assert p['action_counter']==[2,0,2,100]; assert p['processor_package_fixture'][-1]=='simulated'; assert p['hardware_policy']=='observation-only'"
