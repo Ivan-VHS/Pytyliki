@@ -101,7 +101,7 @@ typedef struct {
     pl_processor_fabric_node_state state;
     uint32_t domain_mask;
     uint64_t feature_mask;
-    uint64_t affinity_mask;
+    uint64_t affinity_mask[PL_TOPOLOGY_MASK_WORDS];
     uint32_t logical_id;
     uint32_t capacity_basis_points;
     uint32_t reserved_basis_points;
