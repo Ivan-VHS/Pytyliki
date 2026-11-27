@@ -1,0 +1,11 @@
+dag pipeline_graph {
+    node load_stage   : load_region(INPUT_REGION);
+    node mask_stage   : validate_capabilities();
+    node stress_stage : execute_bounded_kernel(iterations: 128);
+    node save_stage   : commit_snapshot(OUTPUT_REGION);
+
+    load_stage -> mask_stage;
+    mask_stage -> stress_stage;
+    stress_stage -> save_stage;
+}
+
