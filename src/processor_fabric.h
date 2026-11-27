@@ -103,6 +103,7 @@ typedef struct {
     uint64_t feature_mask;
     uint64_t affinity_mask[PL_TOPOLOGY_MASK_WORDS];
     uint32_t logical_id;
+    uint32_t hardware_local_id;
     uint32_t capacity_basis_points;
     uint32_t reserved_basis_points;
     uint32_t requested_load_basis_points;
