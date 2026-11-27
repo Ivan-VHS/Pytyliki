@@ -17,7 +17,7 @@ This module does not install drivers, change firmware, clocks, voltage, frequenc
 | Barriers | pl_silicon_barrier_execute | Reports unsupported semantics instead of silently substituting a weaker fence |
 | Cycle sources | pl_silicon_cycle_source_native, pl_silicon_cycle_source_dwt, pl_silicon_dwt_enable, pl_silicon_cycle_read | Explicit counter selection; DWT register writes require a direct call |
 | Cycle accounting | pl_silicon_cycle_accumulator_init, pl_silicon_cycle_accumulator_sample | Handles 32-bit counter rollover and saturates long-running totals |
-| MMIO | pl_silicon_mmio_region_init, pl_silicon_mmio_read, pl_silicon_mmio_write | Requires a mapped base, allowlisted bus range, width mask and explicit permissions |
+| MMIO | pl_silicon_mmio_region_init, pl_silicon_mmio_read, pl_silicon_mmio_write | Requires a mapped base, bounded bus range, width mask and explicit permissions |
 | Code layout | pl_silicon_isa_image_validate | Validates target ISA alignment and bounds only; does not decode or execute instructions |
 | Fault evidence | pl_silicon_fault_snapshot_validate | Validates a caller-supplied read-only exception snapshot |
 | Trace | pl_silicon_trace_ring_init, pl_silicon_trace_ring_is_lock_free, pl_silicon_trace_ring_push, pl_silicon_trace_ring_pop, pl_silicon_trace_ring_dropped | Bounded single-producer/single-consumer ring using C11 atomics |
@@ -40,7 +40,7 @@ This module does not install drivers, change firmware, clocks, voltage, frequenc
 
 ### MMIO
 
-A region must be initialized with the hardware bus base, a pointer already mapped by the platform, byte size, permitted widths, permissions, and barrier policy. Every access validates width, alignment, address overflow and region bounds before touching memory. volatile ensures the access is emitted; it does not provide inter-thread synchronization or make an unmapped address safe.
+A region must be initialized with the hardware bus base, a pointer already mapped by the platform, byte size, permitted widths, permissions, and barrier policy. This is a bounded capability descriptor, not a global policy store: only trusted board/platform code should construct it, and untrusted code must not be allowed to invent or replace mappings. Every access validates width, alignment, address overflow and region bounds before touching memory. volatile ensures the access is emitted; it does not provide inter-thread synchronization or make an unmapped address safe.
 
 The caller owns mapping lifetime, MPU/PMA attributes, privilege, cacheability, bus faults, endian policy, and register-specific side effects. Do not pass guessed peripheral addresses. Derive addresses and access widths from the exact SoC reference manual, CMSIS/SVD or vendor header. Respect write-one-to-clear, read-to-clear, reserved-bit and side-effect semantics in the device-specific layer. This generic API cannot infer those semantics.
 
