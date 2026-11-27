@@ -114,6 +114,7 @@ static void test_build_plan_is_explicit_and_inert(void) {
         "src/module.d", "build/module.o", &plan) == 0);
     assert(strcmp(plan.executable, "ldc2") == 0);
     assert(strcmp(plan.arguments[0], "-betterC") == 0);
+    assert(strcmp(plan.arguments[2], "-mtriple=x86_64-unknown-linux-gnu") == 0);
 
     assert(pl_language_build_plan_create("ir-qbe", "x86_64",
         "src/module.ssa", "build/module.o", &plan) == 0);
