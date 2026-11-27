@@ -16,6 +16,8 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
+- [Processor engineering report v1](PROCESSOR_ENGINEERING_REPORT.md) — machine-readable read-only CPU/ISA profile and bounded benchmark evidence for Reaper and other consumers.
+- [Processor engineering report v1](PROCESSOR_ENGINEERING_REPORT.md) — machine-readable read-only CPU/ISA profile and bounded benchmark evidence for Reaper and other consumers.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and C ABI boundaries.
 
 ## Browse by topic

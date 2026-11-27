@@ -1,0 +1,36 @@
+name: Processor engineering report contract
+
+on:
+  pull_request:
+    paths:
+      - "src/cli.c"
+      - "src/processor.c"
+      - "src/processor.h"
+      - "src/cpu_suite.c"
+      - "src/cpu_suite.h"
+      - "schemas/pytyliki.report.v1.schema.json"
+      - "tools/validate_processor_report.mjs"
+      - "docs/PROCESSOR_ENGINEERING_REPORT.md"
+      - ".github/workflows/processor-report-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  processor-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build the local processor workstation
+        run: |
+          cmake -S . -B build -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel --target pytyliki
+      - name: Produce real local CPU profile and bounded benchmark evidence
+        run: ./build/pytyliki --profile --suite --json > build/processor-report.json
+      - name: Validate report contract and ISA usability invariants
+        run: node tools/validate_processor_report.mjs build/processor-report.json
