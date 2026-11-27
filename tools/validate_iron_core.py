@@ -124,8 +124,47 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
         expected_url = f"https://github.com/Ivan-VHS/Pytyliki/pull/{pr_id}"
         if pr.get("url") != expected_url:
             errors.append(f"PR #{pr_id}: URL does not match repository and PR number")
-        if pr.get("state") not in {"open", "open-draft"}:
-            errors.append(f"PR #{pr_id}: state must preserve open/draft distinction")
+        if pr.get("state") not in {"open", "open-draft", "merged-to-open-branch"}:
+            errors.append(f"PR #{pr_id}: state must preserve open/draft/stacked-merge distinction")
+        for dependency in pr.get("depends_on", []):
+            if dependency not in pr_by_id:
+                errors.append(f"PR #{pr_id}: references unknown dependency PR #{dependency}")
+
+    related = data.get("related_contracts", {})
+    low_level = related.get("low_level_contract", {})
+    if low_level.get("schema") != "pytyliki.low-level-rules.v1":
+        errors.append("related_contracts must reference pytyliki.low-level-rules.v1")
+    if low_level.get("status") != "merged_in_main" or low_level.get("rule_count") != 100:
+        errors.append("low-level contract must be recorded as the 100-rule mainline contract")
+    low_level_ids: set[str] = set()
+    contract_path = low_level.get("path")
+    if not isinstance(contract_path, str) or not (root / contract_path).is_file():
+        errors.append("low-level contract source path is missing")
+    else:
+        try:
+            low_level_data = json.loads((root / contract_path).read_text(encoding="utf-8"))
+            low_level_ids = {item.get("id") for item in low_level_data.get("rules", [])}
+            if low_level_data.get("schema") != "pytyliki.low-level-rules.v1" or len(low_level_ids) != 100:
+                errors.append("low-level source contract must contain 100 unique PLL rules")
+        except (OSError, json.JSONDecodeError):
+            errors.append("low-level source contract is not valid JSON")
+
+    schema_path = low_level.get("schema_path")
+    if not isinstance(schema_path, str) or not (root / schema_path).is_file():
+        errors.append("low-level contract schema path is missing")
+
+    for evidence_path in low_level.get("implementation", []):
+        if not (root / evidence_path).is_file():
+            errors.append(f"low-level implementation evidence path does not exist: {evidence_path}")
+
+    iron_ids = set(rule_ids)
+    for mapping in related.get("coverage_crosswalk", []):
+        iron_rule = mapping.get("iron_rule")
+        if iron_rule not in iron_ids:
+            errors.append(f"coverage crosswalk references unknown IRON rule {iron_rule}")
+        for pll_rule in mapping.get("low_level_rules", []):
+            if pll_rule not in low_level_ids:
+                errors.append(f"coverage crosswalk references unknown PLL rule {pll_rule}")
 
     evidence_modes = data.get("evidence_modes", [])
     required_evidence_modes = {

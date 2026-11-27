@@ -306,7 +306,28 @@ Every Omega-Null run follows three separate gates:
 
 Every experiment also declares wall-clock, compute, memory, output and recursion/branch limits plus cancellation/watchdog behavior. Checkpoints apply only to logical application or model state. Forecasts remain uncertainty-bearing scenarios, not guaranteed future knowledge.
 
-## 12. Source of truth
+## 12. Integration with the existing Pytyliki hardware stack
+
+Omega-Null is not allowed to establish a parallel hardware-access ABI. The merged [low-level contract](PYTYLIKI_LOW_LEVEL_100_RULES.md) and `src/low_level_contract.h` are the mainline boundary for target descriptors, memory maps, RAM/MMIO callbacks, fences, capability checks, clock/power requests and bounded IRQ registration. The current implementation uses a fake backend in tests; it is not a production physical-device backend.
+
+The current parser and model workstreams are staged as follows:
+
+| Workstream | Relationship to Omega-Null | What it does not prove |
+|---|---|---|
+| [PR #299](https://github.com/Ivan-VHS/Pytyliki/pull/299) | Hardware construct and Iron marker structural frontend; likely syntax entry point | No full type/effect checking, Reaper IR lowering or hardware execution |
+| [PR #300](https://github.com/Ivan-VHS/Pytyliki/pull/300) | Separate bounded parser for Iron markers; must be reconciled with #299 | No competing second marker catalogue should be retained |
+| [PR #302](https://github.com/Ivan-VHS/Pytyliki/pull/302) | Ideal MOS switch-topology model, merged into the still-open #299 branch | Not SPICE, continuous-voltage analog simulation or real silicon access |
+| [PR #304](https://github.com/Ivan-VHS/Pytyliki/pull/304) | Processor and `physical_model` source-domain specimens, stacked on #299 | Structural parsing only; not typed physical simulation or code generation |
+| [PR #295](https://github.com/Ivan-VHS/Pytyliki/pull/295) | CPU-only neural computation frameworks relevant to model experiments | Not a brain-computer interface, neural sensor driver or thought decoder |
+| [PR #281](https://github.com/Ivan-VHS/Pytyliki/pull/281) | Reaper Processor Intelligence policy integration | Deterministic fixture output is not live hardware telemetry |
+
+Implementation order: reconcile the Iron marker/parser frontends in #299/#300; consume the merged low-level target contract; integrate the processor-domain and MOS model only after their parent branch is reviewed; then add Omega-specific semantic/effect nodes through Reaper's canonical typed IR. The BCI and materials/fabrication adapters remain separate research workstreams requiring named hardware and external process qualification.
+
+## 13. Compatibility and evidence policy
+
+The Omega-Null profile must not reinterpret existing C11 low-level APIs or claim that a marker parser is an executable language. A profile operation may be structurally recognized, type-checked, simulated, planned or executed on a named target; these are separate maturity states. Every report identifies its source contract and evidence mode.
+
+## 14. Source of truth
 
 - [Machine-readable profile](../omega-null/omega-null.v0.json)
 - [JSON Schema](../schemas/omega-null.v0.schema.json)

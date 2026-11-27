@@ -76,6 +76,33 @@ class IronCoreContractTests(unittest.TestCase):
         ids = [item["id"] for item in self.data["maturity_levels"]]
         self.assertEqual(ids, [f"IRON-{number}" for number in range(10)])
 
+    def test_low_level_contract_is_reused_as_the_target_boundary(self) -> None:
+        related = self.data["related_contracts"]["low_level_contract"]
+        self.assertEqual(related["schema"], "pytyliki.low-level-rules.v1")
+        self.assertEqual(related["status"], "merged_in_main")
+        self.assertEqual(related["rule_count"], 100)
+        self.assertTrue((ROOT / related["path"]).is_file())
+        self.assertTrue((ROOT / related["schema_path"]).is_file())
+        self.assertTrue(all((ROOT / path).is_file() for path in related["implementation"]))
+
+    def test_stacked_pull_requests_keep_explicit_dependencies(self) -> None:
+        work = {item["pr"]: item for item in self.data["open_work"]}
+        self.assertIn(299, work[302]["depends_on"])
+        self.assertIn(299, work[304]["depends_on"])
+        self.assertIn(286, work[290]["depends_on"])
+        self.assertIn(286, work[297]["depends_on"])
+        self.assertEqual(work[302]["state"], "merged-to-open-branch")
+
+    def test_crosswalk_references_existing_iron_and_pll_rules(self) -> None:
+        related = self.data["related_contracts"]
+        iron_ids = {rule["id"] for rule in self.data["rules"]}
+        low_level = json.loads((ROOT / related["low_level_contract"]["path"]).read_text(encoding="utf-8"))
+        pll_ids = {rule["id"] for rule in low_level["rules"]}
+        self.assertGreaterEqual(len(related["coverage_crosswalk"]), 20)
+        for mapping in related["coverage_crosswalk"]:
+            self.assertIn(mapping["iron_rule"], iron_ids)
+            self.assertTrue(set(mapping["low_level_rules"]).issubset(pll_ids))
+
 
 if __name__ == "__main__":
     unittest.main()

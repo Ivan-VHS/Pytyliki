@@ -1,6 +1,6 @@
 # Pytyliki IRON CORE v1
 
-> **Architecture contract · 100 engineering rules · reviewed 2026-11-27**
+> **Architecture contract · 100 engineering rules · reviewed 2026-11-28**
 >
 > This document defines the target architecture and evidence gates for evolving Pytyliki into a processor-programming and hardware-engineering platform. It is a specification and integration map, not a claim that all listed features are already implemented.
 
@@ -21,21 +21,23 @@ A capability in one category does not imply a capability in another. A model of 
 
 ## 2. Repository baseline
 
-The audit was performed against `main` at `43dd56fa39b960de129aa98bcca87aec53f7e1cb` on 2026-11-27.
+The audit was performed against `main` at `41edd2bd33fbf554c8a8cbdc1ddd97847e1f9a53` on 2026-11-28.
 
-The inspected main branch is a C11 processor-systems workstation with read-only host discovery, bounded local measurements, source diagnostics, memory utilities, numerical metrics and reference/simulated embedded models. It is not yet a complete general-purpose hardware programming language or a physical hardware-control environment.
+The audited main branch is a C11 processor-systems workstation with read-only host discovery, bounded measurements, source diagnostics, memory utilities, numerical metrics, reference/simulated embedded models, and a merged capability-gated low-level C11 target contract. That target contract provides target descriptors, bounded non-overlapping memory maps, RAM/MMIO backend callbacks, capability checks, clock/power requests and a bounded IRQ registry tested with a fake backend. It does not ship a physical target backend, production kernel driver, complete typed hardware-language frontend, MMU, DMA engine or universal device map.
 
-The status of the 100 rules is deliberately conservative:
+The status of the 100 IRON cross-stack requirements is deliberately conservative:
 
 | Status | Rules | Meaning |
 |---|---:|---|
-| Implemented | 0 | Complete in the audited `main` with direct evidence |
-| Partial | 17 | A narrower, related capability exists in `main`; the full rule is not complete |
-| Open PR only | 10 | Work is proposed in an open PR and is **not** part of `main` |
-| Planned | 73 | Defined target with acceptance criteria; implementation is not present |
+| Implemented | 0 | Complete in audited `main` with direct evidence |
+| Partial | 21 | A narrower, related capability exists in `main`; the full rule is not complete |
+| Open PR only | 8 | Work is proposed in an open or stacked PR and is **not** part of `main` |
+| Planned | 71 | Defined target with acceptance criteria; implementation is not present |
 | Research | 0 | Requires validated models, external libraries or a research/EDA integration |
 
-These are rule counts, not a percentage of code completion. A rule is promoted only after its acceptance evidence exists on the integration branch. An open PR must pass review and CI before changing the baseline.
+These counts are not a percentage of code completion. A rule is promoted only after its acceptance evidence exists in `main`. A PR merged into another still-open feature branch is not mainline evidence.
+
+**Important distinction:** Pytyliki already has a separate [100 low-level engineering rules contract](PYTYLIKI_LOW_LEVEL_100_RULES.md), `pytyliki.low-level-rules.v1`. That contract defines the source-concept/target C11 capability boundary. IRON CORE's 100 rules are the broader cross-stack acceptance map for language semantics, compiler, CPU/memory/device models, simulation, EDA and evidence. The two contracts are cross-referenced, not competing implementations.
 
 ## 3. Ownership: Pytyliki, Reaper, Duck OS and board backends
 
@@ -80,15 +82,15 @@ The following names are stable design identifiers for the workstream, not claims
 | `pyty.mmu` | Page-table formats, translation and TLB model/adapters. | Planned | joint |
 | `pyty.cache` | Cache hierarchy, maintenance and coherence contracts. | Open PR only | joint |
 | `pyty.atomic` | Atomics, fences and memory-ordering litmus tests. | Open PR only | joint |
-| `pyty.mmio` | Typed MMIO maps and capability-bounded device register access. | Open PR only | duck-os |
+| `pyty.mmio` | Typed MMIO maps and capability-bounded device register access. | Partial | duck-os |
 | `pyty.bus` | Bus inventory, protocol adapters and transaction models. | Planned | duck-os |
-| `pyty.irq` | Interrupt routing, vector and execution-context contracts. | Planned | duck-os |
+| `pyty.irq` | Interrupt routing, vector and execution-context contracts. | Partial | duck-os |
 | `pyty.timer` | Clock sources, cycle counters, watchdog and timer adapters. | Open PR only | joint |
 | `pyty.device` | Device discovery, lifecycle, binding and failure management. | Planned | duck-os |
 | `pyty.dma` | DMA descriptor and IOMMU ownership/synchronization model. | Planned | duck-os |
 | `pyty.exec` | Execution contexts, scheduling models, affinity and recovery policies. | Open PR only | joint |
 | `pyty.time` | Clock calibration, latency, jitter and cycle-model interfaces. | Partial | pytyliki |
-| `pyty.power` | Power/thermal observation and vendor-specific control adapters. | Planned | duck-os |
+| `pyty.power` | Power/thermal observation and vendor-specific control adapters. | Partial | duck-os |
 | `pyty.logic` | Gate-level and sequential logic simulation. | Research | board-backend |
 | `pyty.rtl` | RTL import/export, synthesis adapters and constraints. | Research | board-backend |
 | `pyty.transistor` | Transistor and electrical device models. | Research | board-backend |
@@ -109,6 +111,11 @@ The following names are stable design identifiers for the workstream, not claims
 | `pyty.material` | Atomic/molecular/material models, structure validation and material-property simulation. | Research | pytyliki |
 | `pyty.fabrication` | CAD/RTL/manufacturing job planning and external tool adapters with declared feedstock, process and machine constraints. | Research | board-backend |
 | `pyty.bci` | Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input. | Research | duck-os |
+| `pyty.target` | Capability-gated target descriptor, bounded memory map, RAM/MMIO backend, clock/power request and IRQ registry contract. | Partial | pytyliki |
+| `pyty.hardware-syntax` | Bounded structural hardware construct and Iron marker frontend, stable source spans and AST interchange; no type/effect lowering is implied. | Open PR only | joint |
+| `pyty.mos-switch` | Ideal MOS switch-topology model for rail reachability, floating/contended/indeterminate nodes and digital switch behavior. | Open PR only | board-backend |
+| `pyty.processor-domain` | Processor and physical-model source forms covering target profiles, pipelines, address spaces, DMA ownership and scientific model specimens. | Open PR only | pytyliki |
+| `pyty.neuro` | Bounded neural-network model/inference/training framework registry, distinct from physical BCI sensor acquisition. | Open PR only | pytyliki |
 
 ## 6. Proposed language surface
 
@@ -275,29 +282,44 @@ Digital logic, transistor modeling and physical design are different disciplines
 
 ## 9. Existing work that must be integrated, not duplicated
 
-The repository audit found these open workstreams. Their state was checked on 2026-11-27; **none is counted as merged into `main` here**.
+The following PRs were inspected on 2026-11-28. Open PRs and work merged only into another open feature branch are not counted as mainline implementation.
 
 | PR | Work | Branch relationship | State | Integration boundary |
 |---|---|---|---|---|
 | [#280](https://github.com/Ivan-VHS/Pytyliki/pull/280) | Deterministic Reaper processor control plane | `feat/processor-state-kernel` → `main` | open | Reaper-owned processor state model, logical scheduling, replay order and report contracts. |
+| [#281](https://github.com/Ivan-VHS/Pytyliki/pull/281) | Integrate Reaper Processor Intelligence | `feat/reaper-processor-intelligence-2026-11-27` → `main` | open | Pinned Reaper-owned processor intelligence policy fixture; data in this report is deterministic fixture evidence, not live hardware telemetry. |
 | [#282](https://github.com/Ivan-VHS/Pytyliki/pull/282) | Processor policy and native C11 engine | `feat/processor-control-plane-v1` → `main` | open | Read-only topology/evidence, worker selection, partitioning and deny-by-default operation admission. |
 | [#285](https://github.com/Ivan-VHS/Pytyliki/pull/285) | Explicit silicon runtime primitives | `feat/processor-silicon-runtime-2026-11-27` → `main` | open | Architecture barriers, cycle sources, bounded MMIO region capability, image-layout validation and trace ring. |
 | [#286](https://github.com/Ivan-VHS/Pytyliki/pull/286) | Bounded thread fault recovery | `feat/processor-thread-fault-recovery-v1` → `main` | open | Bounded worker-fault correlation and recovery planning; all actions remain plans. |
 | [#287](https://github.com/Ivan-VHS/Pytyliki/pull/287) | Embedded silicon runtime | `feat/embedded-silicon-runtime-v1` → `main` | open | Versioned board HAL callbacks, cycle sources, MMIO allowlists and deterministic embedded runtime model. |
 | [#290](https://github.com/Ivan-VHS/Pytyliki/pull/290) | Processor platform evidence adapters | `feat/processor-platform-adapters-v1` → `feat/processor-thread-fault-recovery-v1` | open | Read-only WHEA/EDAC evidence, evidence chain and reversible calling-thread affinity lease; stacked on PR 286. |
 | [#294](https://github.com/Ivan-VHS/Pytyliki/pull/294) | Processor engineering report v1 | `feat/processor-engineering-report-v1` → `main` | open | Versioned JSON Schema and semantic validation for processor profile/benchmark evidence. |
+| [#295](https://github.com/Ivan-VHS/Pytyliki/pull/295) | Six bounded neural C11 frameworks | `feat/pytyliki-neuro-framework-suite` → `main` | open-draft | CPU-only neural model/inference frameworks; not a BCI sensor adapter or direct brain interface. |
 | [#297](https://github.com/Ivan-VHS/Pytyliki/pull/297) | PTFR polyglot platform adapters | `feat/ptfr-platform-adapters-polyglot-v1` → `feat/processor-thread-fault-recovery-v1` | open-draft | Stacked Rust/Swift/TypeScript adapters for fault-evidence contracts; draft and not part of main. |
 | [#298](https://github.com/Ivan-VHS/Pytyliki/pull/298) | Processor language workbench with 66 profiles | `feat/processor-language-workbench-66` → `main` | open-draft | 66-profile registry, structural inspection, target validation and inert build planning; not 66 bundled compilers. |
+| [#299](https://github.com/Ivan-VHS/Pytyliki/pull/299) | Hardware constructs, SystemArray sigils and Iron Core frontend | `feat/hardware-construct-syntax-v1` → `main` | open | Twenty hardware construct forms, structural parser, exact Iron marker framing and speculative-profile specimens; no type/effect checking or execution. |
+| [#300](https://github.com/Ivan-VHS/Pytyliki/pull/300) | Standalone Iron syntax frontend | `feat/iron-syntax-v1` → `main` | open | Separate bounded parser for the 20 Iron markers; reconcile overlap with the Iron marker parser in PR #299 before both are merged. |
+| [#302](https://github.com/Ivan-VHS/Pytyliki/pull/302) | MOS switch-level model v1 | `feat/mos-switch-model-v1` → `feat/hardware-construct-syntax-v1` | merged-to-open-branch | Ideal MOS switch connectivity model; merged into the still-open PR #299 branch, not main. It is not a continuous analog/SPICE transistor simulator. |
+| [#304](https://github.com/Ivan-VHS/Pytyliki/pull/304) | Processor and physical-model domain | `feat/processor-domain-core` → `feat/hardware-construct-syntax-v1` | open-draft | Structural physical_model and processor-domain specimens; no full nested type checking, Reaper IR lowering, CPU execution or physical simulation. |
 
-Integration notes:
+### Mainline contract already merged
 
-- PRs #285 and #287 both touch the silicon/runtime boundary and require an explicit overlap review before any consolidation.
-- PR #282 is a processor-policy/evidence engine, not a global scheduler or privileged CPU-control service.
-- PR #280 models deterministic state and logical scheduling; do not describe it as kernel scheduler control.
-- PR #290 is stacked on #286. Its WHEA/EDAC data is platform evidence, not automatic attribution to a specific worker or core.
-- PR #297 is also stacked on #286 and is a draft; it is not an independent mainline capability.
-- PR #298 is a 66-profile workbench, not 66 bundled compilers or 66 complete language frontends.
-- PR #294 formalizes an evidence/report envelope; a valid JSON report is not proof of physical hardware behavior.
+**PR #303** is merged into `main`. It provides the existing `pytyliki.low-level-rules.v1` contract and C11 target API: target descriptors, bounded memory maps, capability-separated RAM/MMIO callbacks, fences/audit, bounded clock/power requests and an IRQ registry. Tests use a fake backend; no physical target backend is shipped.
+
+IRON and Omega-Null must reuse this API rather than create another target descriptor, MMIO permission system, memory map or IRQ registry. The machine-readable crosswalk in `iron/iron-core.v1.json` maps 29 IRON requirements to the existing `PLL-001..PLL-100` rules.
+
+### Integration notes
+
+- PR #285 and #287 overlap at the silicon/runtime boundary; reconcile their APIs before adding more hardware backends.
+- PR #299 owns the current hardware-construct and Iron marker structural frontend proposal. It does not yet type-check nested statements or lower to canonical Reaper IR.
+- PR #300 is a separate Iron marker parser. Reconcile it with the Iron parser in #299 before merging both; do not maintain two competing marker catalogues.
+- PR #302 is merged into the still-open #299 feature branch, **not** into `main`. It is an ideal MOS switch-connectivity model, not an analog SPICE or continuous-voltage transistor simulator.
+- PR #304 is stacked on #299 and adds the processor/physical-model domain source form. Its parser is structural; it does not yet type-check or execute the physical models.
+- PR #295 supplies CPU-only neural model frameworks. It is not a BCI sensor driver or direct brain interface.
+- PR #281 is a pinned Reaper processor-intelligence policy specimen with deterministic fixtures, not live hardware telemetry.
+- PR #290 and #297 depend on #286. Their branches must not be treated as independent mainline features.
+- PR #298 describes 66 language/toolchain profiles; it does not bundle 66 compilers.
+- PR #294 validates a processor report envelope; a valid JSON report is not proof of physical hardware behavior.
 
 Before implementing a new subsystem, compare it with these workstreams and reuse the reviewed contract/API rather than creating duplicate registries, counters, evidence formats or control planes.
 
