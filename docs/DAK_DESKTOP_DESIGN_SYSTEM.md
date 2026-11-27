@@ -1,10 +1,10 @@
-# Anatidae Desktop Design System — Pytyliki
+# Dak Desktop Design System — Pytyliki
 
 **Status:** implemented baseline for the native Win32 workstation; physical-monitor validation remains a release task. This specification is the authoritative white-blue-red UI contract for Pytyliki.
 
 ## 1. Design intent
 
-The interface is calm, tactile and technical: large clear work areas, rounded controls, predictable focus, and concise feedback. The six Anatidae principles are containment, calm feedback, stable orientation, adaptive layout, precise input and explicit module boundaries. Visual styling must never weaken the existing read-only hardware posture, bounded benchmarks, source-review isolation or local-buffer DSP behavior.
+The interface is calm, tactile and technical: large clear work areas, rounded controls, predictable focus, and concise feedback. The six Dak principles are containment, calm feedback, stable orientation, adaptive layout, precise input and explicit module boundaries. Visual styling must never weaken the existing read-only hardware posture, bounded benchmarks, source-review isolation or local-buffer DSP behavior.
 
 ## 2. White-blue-red tokens
 
@@ -42,7 +42,7 @@ The app requests Per-Monitor V2 DPI awareness when the OS exposes it, falls back
 
 ## 5. Depth, motion and accessibility
 
-The header uses deep blue, the work surface uses pearl white or pond blue, and red is reserved for action emphasis. Surfaces remain opaque and readable; Mica/Acrylic is not emulated. The current UI uses state feedback rather than decorative motion. Keep reduced-motion behavior as the default: no auto-playing or perpetual animation.
+The header uses deep blue, the work surface uses pearl white or shared motion blue, and red is reserved for action emphasis. Surfaces remain opaque and readable; Mica/Acrylic is not emulated. The current UI uses state feedback rather than decorative motion. Keep reduced-motion behavior as the default: no auto-playing or perpetual animation.
 
 Keyboard tab order, focus visibility, label-to-field association and readable status text are mandatory. Numeric inputs reject non-finite or malformed values before calling the C core. A color change must repaint controls, fields, header and log atomically. Do not make the log the only place where the result of an action is visible in future workbench-specific panels.
 
@@ -74,10 +74,10 @@ The release review should capture: primary/secondary/danger button states; the f
 - [ ] DSP remains local-buffer processing; numerical kernels remain in the C11 core.
 - [ ] Real-device 8K screenshots are captured before claiming certification.
 
-## 9. Anatidae naming and companion layer
+## 9. Dak naming and companion layer
 
-The shared vocabulary and guardrails are defined in [the federation naming canon](../federation/ANATIDAE_NAMING_CANON.md). For Pytyliki, **Утёнок** is reserved for optional first-run help, **Прудовая** may be used as a secondary metaphor for an existing overview/workspace, and **Пёрышко** may mark a compact provenance summary only while the full TRACE record remains directly accessible. These are labels for presentation, not new workbenches or measurement types.
+The shared vocabulary and guardrails are defined in [the federation naming canon](../federation/DAK_NAMING_CANON.md). For Pytyliki, **Утёнок** is reserved for optional first-run help, **Прудовая** may be used as a secondary metaphor for an existing overview/workspace, and **Пёрышко** may mark a compact provenance summary only while the full TRACE record remains directly accessible. These are labels for presentation, not new workbenches or measurement types.
 
 Do not rename Processor Inventory, Benchmark Suite, Static Source Review, TRACE, Metric Engine, Embedded C or QCS. CPU discovery remains read-only, benchmark workloads remain bounded, source review remains non-executing, and DSP remains local-buffer processing. Never use playful copy in safety notices, benchmark results or exported reports.
 
-A small feather/wing outline may be used as a quiet visual accent with the existing white-blue-red tokens. It must not introduce a new status color, reduce focus visibility or compete with primary actions. Optional Anatidae decoration must not be required to understand or operate the workstation.
+A small feather/wing outline may be used as a quiet visual accent with the existing white-blue-red tokens. It must not introduce a new status color, reduce focus visibility or compete with primary actions. Optional Dak decoration must not be required to understand or operate the workstation.

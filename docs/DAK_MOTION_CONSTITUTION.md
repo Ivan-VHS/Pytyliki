@@ -1,6 +1,6 @@
-# Anatidae Motion Constitution — shared desktop profile
+# Dak Motion Constitution — shared desktop profile
 
-This profile translates the supplied Pond / Duck Constitution visual language into four native workstations. It is a design-system integration, not a product rename: each application keeps its own information architecture, product vocabulary and toolkit.
+This profile translates the supplied shared motion / Dak Constitution visual language into four native workstations. It is a design-system integration, not a product rename: each application keeps its own information architecture, product vocabulary and toolkit.
 
 ## Visual tokens
 
@@ -27,9 +27,9 @@ Use native application fonts for controls and body text. Serif display type belo
 - Direct acknowledgement: 0–40 ms; hover/focus: 80–140 ms; pane transitions: 160–240 ms; optional hero transitions: 260–380 ms.
 - Reduced Motion retains no more than 80 ms and removes spatial movement.
 
-## Pond motifs
+## shared motion motifs
 
-Duck bob, tail waggle, waves, ripples, voice particles, floating feathers and parallax are reusable brand-motion vocabulary, not mandatory product chrome. Keep mascot movement small (about 6 px and 2 degrees). Ripples may acknowledge one deliberate action but must not cover values, focus or hit targets. Particles require a pause/disable path. Parallax is limited to low-contrast hero/showcase surfaces; never place it behind editors, tables, plots, device inventory, logs, hashes, package evidence or precision controls. Do not force duck terminology into product features.
+Dak bob, tail waggle, waves, ripples, voice particles, floating feathers and parallax are reusable brand-motion vocabulary, not mandatory product chrome. Keep mascot movement small (about 6 px and 2 degrees). Ripples may acknowledge one deliberate action but must not cover values, focus or hit targets. Particles require a pause/disable path. Parallax is limited to low-contrast hero/showcase surfaces; never place it behind editors, tables, plots, device inventory, logs, hashes, package evidence or precision controls. Do not force dak terminology into product features.
 
 ## Accessibility and performance
 

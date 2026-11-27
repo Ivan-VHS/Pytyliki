@@ -35,7 +35,7 @@ The catalog gives each Markdown document a direct inbound path in addition to it
 
 ### Architecture and system contracts
 
-- [ANATIDAE MOTION CONSTITUTION](ANATIDAE_MOTION_CONSTITUTION.md)
+- [DAK MOTION CONSTITUTION](DAK_MOTION_CONSTITUTION.md)
 - [ARCHITECTURE 66](ARCHITECTURE_66.md)
 - [ARCHITECTURE](ARCHITECTURE.md)
 - [Clinical Safety Architecture](clinical-safety-architecture.md)
@@ -106,7 +106,7 @@ The catalog gives each Markdown document a direct inbound path in addition to it
 
 - [CONTRIBUTING](../CONTRIBUTING.md)
 - [ATOMIC QUANTUM 133](ATOMIC_QUANTUM_133.md)
-- [DUCKSTORY](DUCKSTORY.md)
+- [DAKSTORY](DAKSTORY.md)
 - [FEATURES](FEATURES.md)
 - [HUMAN FIRST GOVERNANCE](HUMAN_FIRST_GOVERNANCE.md)
 - [MARKET DEVELOPMENT STANDARD](MARKET_DEVELOPMENT_STANDARD.md)

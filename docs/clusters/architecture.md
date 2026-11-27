@@ -8,7 +8,7 @@ This hub is the topic-level entry point for the pages below. Use the linked spec
 
 ## Documents
 
-- [ANATIDAE MOTION CONSTITUTION](../ANATIDAE_MOTION_CONSTITUTION.md)
+- [DAK MOTION CONSTITUTION](../DAK_MOTION_CONSTITUTION.md)
 - [ARCHITECTURE 66](../ARCHITECTURE_66.md)
 - [ARCHITECTURE](../ARCHITECTURE.md)
 - [Clinical Safety Architecture](../clinical-safety-architecture.md)
