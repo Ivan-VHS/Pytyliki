@@ -24,7 +24,7 @@ static const char valid[]=
 "# unify TAB\npitch = 4;\nstop option ;\nsetup brachpass ^^\nhints = offline;\nstop option ;\n"
 "!+ hyper tournament ^\nrounds = 2;\nstop option ;\nlevel jump to run *(\ntarget = local;\nstop option ;\n"
 "TRUE connective *+\npredicate = all;\nstop option ;\n"
-"verificated /// !! SOURCE_CLAIM_ONLY\nverison ///. * PYTYLIKI_IRON_CORE_COMPLETE\n";
+"verison ///. * PYTYLIKI_IRON_CORE_COMPLETE\nverificated /// !! SOURCE_CLAIM_ONLY\n";
 static void test_catalog(void){const pl_iron_marker_info*a;assert(pl_iron_catalog(&a)==20);assert(!strcmp(a[PL_IRON_BRACHPASS].token,"setup brachpass ^^"));assert(pl_iron_marker_for_kind((pl_iron_marker_kind)99)==NULL);}
 static void test_valid(void){pl_iron_program p;pl_iron_error e;assert(pl_iron_parse(valid,&p,&e));assert(p.block_count==15);assert(p.version_count==2);assert(p.policy_count==1);assert(p.verification_after_root_count==1);assert(p.source_seal_asserted&&!p.source_seal_is_ci_evidence);assert(!p.semantic_validation_performed&&!p.execution_performed&&!p.hardware_access_performed);assert(!strcmp(p.version,"PYTYLIKI_IRON_CORE_COMPLETE"));assert(p.blocks[14].kind==PL_IRON_TRUE_CONNECTIVE&&p.blocks[14].closed);}
 static void test_bad_frames(void){pl_iron_program p;pl_iron_error e;
