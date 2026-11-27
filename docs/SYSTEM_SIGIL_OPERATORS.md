@@ -28,7 +28,7 @@ The C11 registry in `system_sigil.c` assigns stable semantic IDs, type signature
 | 10 | `>^=` | `bits.rotate_right_assign` | `mut Bit<N>, u32 -> Unit` | StagedMutation |
 | 11 | `^>>` | `bits.arithmetic_shift_right` | `SBit<N>, u32 -> SBit<N>`; `LogicSigned<N>, Logic<S> -> LogicSigned<N>` | Pure |
 | 12 | `>>^` | `bits.logical_shift_right` | `Bit<N>, u32 -> Bit<N>`; `Logic<N>, Logic<S> -> Logic<N>` | Pure |
-| 13 | `^>==!` | `logic.equal_with_validity` | `Logic<N>, Logic<N> -> LogicBit` | LogicRead |
+| 13 | `^>==!` | `logic.equal_with_validity` | `Logic<N>, Logic<N> -> LogicBit` | Pure |
 
 ### Normative behavior
 
