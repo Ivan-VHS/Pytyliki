@@ -40,7 +40,10 @@ static void test_json_envelope_and_unknown_values(void) {
     (void)snprintf(snapshot.captured_at, sizeof(snapshot.captured_at),
                    "2026-01-01T00:00:00Z");
     (void)snprintf(snapshot.collector, sizeof(snapshot.collector), "fixture");
-    (void)snprintf(snapshot.architecture, sizeof(snapshot.architecture), "unknown");
+    (void)snprintf(snapshot.architecture, sizeof(snapshot.architecture), "x86-64");
+    snapshot.isa_known = PL_TOPOLOGY_ISA_AVX | PL_TOPOLOGY_ISA_AVX2;
+    snapshot.isa_hardware_present = PL_TOPOLOGY_ISA_AVX | PL_TOPOLOGY_ISA_AVX2;
+    snapshot.isa_os_usable = 0u;
     stream = tmpfile();
     assert(stream != NULL);
     status = pl_processor_topology_write_json(&snapshot, stream);
@@ -50,7 +53,9 @@ static void test_json_envelope_and_unknown_values(void) {
     buffer[count] = '\0';
     assert(strstr(buffer, "pytyliki.processor-topology-evidence.v2") != NULL);
     assert(strstr(buffer, "\"package_id\":null") != NULL);
-    assert(strstr(buffer, "\"os_usable\":null") != NULL);
+    assert(strstr(buffer, "\"os_usable\":null") == NULL);
+    assert(strstr(buffer, "\"avx\":{\"hardware_present\":true,\"os_usable\":false") != NULL);
+    assert(strstr(buffer, "\"avx2\":{\"hardware_present\":true,\"os_usable\":false") != NULL);
     assert(strstr(buffer, "\"hardware_access_performed\":false") != NULL);
     fclose(stream);
 }
