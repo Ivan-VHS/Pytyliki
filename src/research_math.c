@@ -112,7 +112,8 @@ int pl_math_riemann_critical_residual(double t, size_t terms, double *out_abs_va
 
 int pl_math_cnf_validate(size_t variables, const int32_t *literals, size_t literal_count,
                          const size_t *offsets, size_t clause_count) {
-    if (variables == 0u || variables > PL_MATH_MAX_CNF_VARIABLES || offsets == NULL ||
+    if (variables == 0u || variables > PL_MATH_MAX_CNF_VARIABLES ||
+        clause_count > PL_MATH_MAX_TERMS || offsets == NULL ||
         (literal_count != 0u && literals == NULL) || offsets[0] != 0u ||
         offsets[clause_count] != literal_count) return PL_MATH_INVALID;
     for (size_t c = 0u; c < clause_count; ++c) {
@@ -841,17 +842,17 @@ int pl_math_legendre_witness_verify(uint64_t n,uint64_t candidate,int *valid) {
 }
 
 int pl_math_legendre_find_prime_bounded(uint64_t n,uint64_t budget,uint64_t *found,uint64_t *checked) {
-    uint64_t lower,upper;
+    uint64_t lower,upper,candidate;
     int status;
     if(found==NULL || checked==NULL || budget==0u) return PL_MATH_INVALID;
     status=pl_math_legendre_interval(n,&lower,&upper);
     if(status!=PL_MATH_OK) return status;
     *checked=0u;
-    for(uint64_t candidate=lower+1u;candidate<upper && *checked<budget;++candidate) {
+    for(candidate=lower+1u;candidate<upper && *checked<budget;++candidate) {
         ++(*checked);
         if(is_prime_internal(candidate)) { *found=candidate; return PL_MATH_OK; }
     }
-    return *checked>=budget && lower+1u<upper ? PL_MATH_LIMIT : PL_MATH_NOT_FOUND;
+    return candidate<upper ? PL_MATH_LIMIT : PL_MATH_NOT_FOUND;
 }
 
 static int checked_power_u64(uint64_t base,uint32_t exponent,uint64_t *out) {
@@ -890,9 +891,10 @@ int pl_math_beal_common_prime_divisor(uint64_t a,uint64_t b,uint64_t c,uint64_t 
     *factor=0u;
     if(common<=1u) return PL_MATH_OK;
     if((common&1u)==0u) { *factor=2u; return PL_MATH_OK; }
-    for(uint64_t p=3u;p<=common/p;p+=2u) if(common%p==0u) { *factor=p; return PL_MATH_OK; }
-    *factor=common;
-    return PL_MATH_OK;
+    for(uint64_t p=3u;p<=common/p && p<=1000000u;p+=2u)
+        if(common%p==0u) { *factor=p; return PL_MATH_OK; }
+    if(is_prime_internal(common)) { *factor=common; return PL_MATH_OK; }
+    return PL_MATH_LIMIT;
 }
 
 int pl_math_beal_counterexample_screen(uint64_t a,uint32_t x,uint64_t b,uint32_t y,
@@ -957,6 +959,8 @@ int pl_math_perfect_cuboid_search_bounded(uint64_t max_edge,uint64_t budget,uint
     *nodes=0u;
     for(uint64_t a=1u;a<=max_edge;++a) for(uint64_t b=a;b<=max_edge;++b) {
         uint64_t ab;
+        if(*nodes>=budget) return PL_MATH_LIMIT;
+        ++(*nodes);
         if(!sum_squares(a,b,&ab)) continue;
         if(!square_u64(ab,NULL)) continue;
         for(uint64_t c=b;c<=max_edge;++c) {
