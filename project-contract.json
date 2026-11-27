@@ -201,6 +201,17 @@
         "tests/test_interop.c",
         "docs/REAPER_RUNTIME_INTEGRATION.md"
       ]
+    },
+    {
+      "id": "pytyre.reciprocal-development.v1",
+      "format": "Shared versioned JSON architecture, ownership, integration and compatibility contract",
+      "direction": "both",
+      "status": "implemented",
+      "evidence": [
+        "contracts/pytyre.reciprocal.v1.json",
+        "docs/PYTYRE_UNIFIED_ARCHITECTURE.md",
+        "tests/test_pytyre_contract.py"
+      ]
     }
   ],
   "integrations": [
