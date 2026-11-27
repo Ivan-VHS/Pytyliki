@@ -31,6 +31,14 @@
       "tests": "tests/test_ironclad_systems.c",
       "existing_count": 20,
       "reuse_policy": "Reuse the existing twenty named enhancement domains as the Processor IDE's top-level workspace taxonomy. They are workspace groups in one IDE, not twenty separate applications, hardware privilege levels or independent control planes."
+    },
+    "native_session_foundation": {
+      "header": "src/processor_ide.h",
+      "source": "src/processor_ide.c",
+      "tests": "tests/test_processor_ide.c",
+      "build": "CMakeLists.txt",
+      "api": "pl_ide_session_init",
+      "description": "Initial C11 target-aware session API that reuses the existing 20-workspace registry and pl_ll_target descriptor. It validates inspect/plan/static/simulate/debug/HIL/privileged modes and does not invoke devices or mutate hardware."
     }
   },
   "workspaces": [
