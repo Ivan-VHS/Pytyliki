@@ -55,8 +55,9 @@ int pl_tr_worker_links_verify(const pl_tr_worker_link_ledger *ledger) {
            entry->allowed_delta_ns==0u ||
            entry->cpu_id==PL_TR_UNKNOWN_CPU ||
            entry->fault_code==0u ||
-           entry->fault_kind<PL_TR_FAULT_CORRECTED_HARDWARE ||
-           entry->fault_kind>PL_TR_FAULT_FATAL ||
+           (entry->fault_kind!=PL_TR_FAULT_CORRECTED_HARDWARE &&
+            entry->fault_kind!=PL_TR_FAULT_UNCORRECTED_HARDWARE &&
+            entry->fault_kind!=PL_TR_FAULT_FATAL) ||
            hash_link(entry,link_hash)!=0 ||
            strcmp(link_hash,entry->link_sha256)!=0 ||
            hash_chain(entry,previous,chain_hash)!=0 ||
