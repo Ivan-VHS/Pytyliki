@@ -920,7 +920,8 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 packages[package_count++] = (topology_node_map_entry){cpu->package_id, 0u, 0u, package_id};
             }
         }
-        if (cpu->die_id != PL_TOPOLOGY_UNKNOWN) {
+        if (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
+            cpu->die_id != PL_TOPOLOGY_UNKNOWN) {
             die_id = find_topology_node(dies, die_count, cpu->package_id, cpu->die_id, 0u);
             if (die_id == 0u) {
                 die_id = add_topology_node(nodes, node_capacity, &used_nodes,
@@ -932,13 +933,15 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
                 dies[die_count++] = (topology_node_map_entry){cpu->package_id, cpu->die_id, 0u, die_id};
             }
         }
-        if (cpu->core_id != PL_TOPOLOGY_UNKNOWN) {
+        if (cpu->package_id != PL_TOPOLOGY_UNKNOWN &&
+            cpu->die_id != PL_TOPOLOGY_UNKNOWN &&
+            cpu->core_id != PL_TOPOLOGY_UNKNOWN) {
             /* Core IDs are scoped by their observed package and die identifiers. */
             uint32_t key = cpu->core_id;
             core_id = find_topology_node(cores, core_count,
                                          cpu->package_id, cpu->die_id, key);
             if (core_id == 0u) {
-                uint32_t parent = die_id != 0u ? die_id : package_id;
+                uint32_t parent = die_id;
                 core_id = add_topology_node(nodes, node_capacity, &used_nodes,
                     &next_id, topology->generation, PL_PROCESSOR_FABRIC_CORE,
                     PL_PROCESSOR_FABRIC_VERIFIED, parent, cpu->core_id, 0u, 0u);
