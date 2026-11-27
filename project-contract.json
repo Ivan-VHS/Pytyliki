@@ -164,7 +164,8 @@
         "src/research_math.c",
         "tests/test_research_math.c",
         "docs/MATHEMATICAL_RESEARCH_WORKBENCH_V1.md",
-        "schemas/mathematical-research-kernels.v1.json"
+        "schemas/mathematical-research-kernels.v1.json",
+        "schemas/mathematical-research-kernels.v1.schema.json"
       ]
     }
   ],
