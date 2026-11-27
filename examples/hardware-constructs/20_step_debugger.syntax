@@ -1,0 +1,12 @@
+trace_script step_debugger target core[0] {
+    mode: read_only;
+
+    attach_debug_session()?;
+    set_breakpoint(0x8000_0120)?;
+    continue_until_breakpoint()?;
+
+    print_registers(R0, R1, R2, regit);
+    step_instructions(8)?;
+    dump_memory(authorized_region, words: 4) -> CONSOLE_LOG;
+}
+
