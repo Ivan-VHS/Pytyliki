@@ -87,7 +87,7 @@
       "id": "PLL-010",
       "number": 10,
       "group": "foundation-and-physics",
-      "source_concept": "grown new-work >",
+      "source_concept": "grown new-work >/",
       "engineering_rule": "Admit code as deterministic modules with budgets; live mutation is never implicit.",
       "status": "planned"
     },

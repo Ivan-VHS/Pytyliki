@@ -56,7 +56,7 @@ Existing code is evidence only for its actual behavior. It does not prove a phys
 | 7 | } operation P)- | Thermal settling is separate from operation completion and must use target telemetry. | `partial` |
 | 8 | ?? massive <> | Use bounded arenas, pools, typed views and separately declared address spaces. | `implemented` |
 | 9 | < start >? | Startup requires a declared entrypoint and CPU, memory, clock and interrupt health gates. | `implemented` |
-| 10 | grown new-work > | Admit code as deterministic modules with budgets; live mutation is never implicit. | `planned` |
+| 10 | grown new-work >/ | Admit code as deterministic modules with budgets; live mutation is never implicit. | `planned` |
 | 11 | > concrete //* | Every device address belongs to a non-overlapping region with permissions and alignment. | `implemented` |
 | 12 | ## utility _ | Intrinsics and hardware utilities come from a target capability catalogue. | `partial` |
 | 13 | # unify TAB | Synchronization uses memory-order rules and target fences, not electron-wide synchronization. | `implemented` |
