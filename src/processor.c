@@ -1,7 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "processor.h"
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -14,14 +13,6 @@
 #elif defined(__x86_64__) || defined(__i386__)
 #include <cpuid.h>
 #endif
-static uint64_t pages_to_mib(long pages,long page_size){
- if(pages<=0||page_size<=0)return 0u;
- const uint64_t page_count=(uint64_t)pages;
- const uint64_t bytes_per_page=(uint64_t)page_size;
- if(page_count>UINT64_MAX/bytes_per_page)
-  return UINT64_MAX/(UINT64_C(1024)*UINT64_C(1024));
- return (page_count*bytes_per_page)/(UINT64_C(1024)*UINT64_C(1024));
-}
 static double processor_now_ms(void){
 #if defined(_WIN32)
  LARGE_INTEGER f,t;if(!QueryPerformanceFrequency(&f)||!QueryPerformanceCounter(&t))return 0.0;return 1000.0*(double)t.QuadPart/(double)f.QuadPart;
@@ -33,23 +24,12 @@ int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,
 #if defined(_WIN32)
  MEMORYSTATUSEX m;memset(&m,0,sizeof(m));m.dwLength=sizeof(m);if(GlobalMemoryStatusEx(&m)){out->physical_memory_mib=(uint64_t)(m.ullTotalPhys/(1024u*1024u));out->available_memory_mib=(uint64_t)(m.ullAvailPhys/(1024u*1024u));}
 #elif defined(_SC_PHYS_PAGES)&&defined(_SC_PAGESIZE)
- long pages=sysconf(_SC_PHYS_PAGES),size=sysconf(_SC_PAGESIZE);
- out->physical_memory_mib=pages_to_mib(pages,size);
+ long pages=sysconf(_SC_PHYS_PAGES),size=sysconf(_SC_PAGESIZE);if(pages>0&&size>0)out->physical_memory_mib=((uint64_t)pages*(uint64_t)size)/(1024u*1024u);
 # if defined(_SC_AVPHYS_PAGES)
- long avail=sysconf(_SC_AVPHYS_PAGES);
- out->available_memory_mib=pages_to_mib(avail,size);
- if(out->physical_memory_mib!=0u&&out->available_memory_mib>out->physical_memory_mib)
-  out->available_memory_mib=out->physical_memory_mib;
+ long avail=sysconf(_SC_AVPHYS_PAGES);if(avail>0&&size>0)out->available_memory_mib=((uint64_t)avail*(uint64_t)size)/(1024u*1024u);
 # endif
 #endif
-#if defined(__e2k__)
- snprintf(out->architecture,sizeof(out->architecture),"e2k");
- out->is_e2k_target=1u;
-# if defined(__LCC__)
- out->mcst_lcc=1u;
- out->lcc_major=(unsigned)__LCC__;
-# endif
-#elif defined(_M_X64)||defined(__x86_64__)
+#if defined(_M_X64)||defined(__x86_64__)
  snprintf(out->architecture,sizeof(out->architecture),"x86-64");
 #elif defined(_M_IX86)||defined(__i386__)
  snprintf(out->architecture,sizeof(out->architecture),"x86");

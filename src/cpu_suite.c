@@ -16,18 +16,18 @@ static const pl_cpu_suite_module g_modules[PL_CPU_SUITE_MODULE_COUNT] = {
     { 12u, "Telemetry & Crash Logger", PL_CPU_SUITE_HUB, "Event and crash-dump correlation analyzer" },
     { 13u, "Virtual Core Sandbox", PL_CPU_SUITE_HUB, "Thread-count and CPU-topology simulation planner" },
     { 14u, "Aero Pulse", PL_CPU_SUITE_HUB, "Low-overhead CPU telemetry visualization model" },
-    { 15u, "Core Topology Studio", PL_CPU_SUITE_ARCHITECTURE, "Physical-core, logical-thread and package topology explorer" },
-    { 16u, "Thread Dynamics", PL_CPU_SUITE_ARCHITECTURE, "Per-thread scheduling and utilization profiler" },
-    { 17u, "Instruction Lab", PL_CPU_SUITE_ARCHITECTURE, "Instruction-set capability and OS-state validator" },
-    { 18u, "Branch Prediction Lab", PL_CPU_SUITE_ARCHITECTURE, "Branch-heavy workload measurement planner" },
-    { 19u, "Cache Coherency Monitor", PL_CPU_SUITE_ARCHITECTURE, "Cache-sharing and false-sharing diagnostic analyzer" },
-    { 20u, "Memory Controller Studio", PL_CPU_SUITE_ARCHITECTURE, "Memory-channel and controller topology inspector" },
-    { 21u, "Power State Observatory", PL_CPU_SUITE_ARCHITECTURE, "Idle-state residency and wake-event analyzer" },
-    { 22u, "Thermal Prediction Engine", PL_CPU_SUITE_ARCHITECTURE, "Temperature trend estimator with uncertainty bounds" },
-    { 23u, "CPU Scheduler Intelligence", PL_CPU_SUITE_ARCHITECTURE, "Scheduler behavior and migration analyzer" },
-    { 24u, "Benchmark Composer", PL_CPU_SUITE_ARCHITECTURE, "Reproducible benchmark scenario builder" },
-    { 25u, "Silicon Degradation Watch", PL_CPU_SUITE_ARCHITECTURE, "Longitudinal clock, voltage telemetry and error trend auditor" },
-    { 26u, "Kernel Event Observatory", PL_CPU_SUITE_ARCHITECTURE, "Kernel processor-event timeline explorer" },
+    { 15u, "Core Topology Studio", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Physical-core, logical-thread and package topology explorer" },
+    { 16u, "Thread Dynamics", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Per-thread scheduling and utilization profiler" },
+    { 17u, "Instruction Lab", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Instruction-set capability and OS-state validator" },
+    { 18u, "Branch Prediction Lab", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Branch-heavy workload measurement planner" },
+    { 19u, "Cache Coherency Monitor", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Cache-sharing and false-sharing diagnostic analyzer" },
+    { 20u, "Memory Controller Studio", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Memory-channel and controller topology inspector" },
+    { 21u, "Power State Observatory", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Idle-state residency and wake-event analyzer" },
+    { 22u, "Thermal Prediction Engine", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Temperature trend estimator with uncertainty bounds" },
+    { 23u, "CPU Scheduler Intelligence", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Scheduler behavior and migration analyzer" },
+    { 24u, "Benchmark Composer", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Reproducible benchmark scenario builder" },
+    { 25u, "Silicon Degradation Watch", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Longitudinal clock, voltage telemetry and error trend auditor" },
+    { 26u, "Kernel Event Observatory", PL_CPU_SUITE_DIAGNOSTICS_SECURITY, "Kernel processor-event timeline explorer" },
     { 27u, "Frequency Response Mapper", PL_CPU_SUITE_THERMAL_POWER, "Observed frequency residency and throttling analyzer" },
     { 28u, "Voltage Telemetry Auditor", PL_CPU_SUITE_THERMAL_POWER, "Read-only voltage-sensor provenance and range auditor" },
     { 29u, "Package Power Profiler", PL_CPU_SUITE_THERMAL_POWER, "CPU package energy and power-limit trend analyzer" },
@@ -88,30 +88,15 @@ size_t pl_cpu_suite_catalog(const pl_cpu_suite_module **items) {
 }
 int pl_cpu_suite_get(size_t index, pl_cpu_suite_module *out) { if (!out || index >= PL_CPU_SUITE_MODULE_COUNT) return -1; *out = g_modules[index]; return 0; }
 int pl_cpu_suite_find_id(uint16_t id, pl_cpu_suite_module *out) {
-    if (out == NULL || id == 0u) return -1;
-
-    for (size_t i = 0u; i < PL_CPU_SUITE_MODULE_COUNT; ++i) {
-        if (g_modules[i].id == id) {
-            *out = g_modules[i];
-            return 0;
-        }
-    }
-    return -1;
+    size_t i; if (!out || id == 0u) return -1;
+    for (i=0u;i<PL_CPU_SUITE_MODULE_COUNT;++i) if(g_modules[i].id==id){*out=g_modules[i];return 0;} return -1;
 }
-
 int pl_cpu_suite_find_name(const char *name, pl_cpu_suite_module *out) {
-    if (name == NULL || name[0] == '\0' || out == NULL) return -1;
-
-    for (size_t i = 0u; i < PL_CPU_SUITE_MODULE_COUNT; ++i) {
-        if (strcmp(g_modules[i].name, name) == 0) {
-            *out = g_modules[i];
-            return 0;
-        }
-    }
-    return -1;
+    size_t i; if(!name||!name[0]||!out)return -1;
+    for(i=0u;i<PL_CPU_SUITE_MODULE_COUNT;++i)if(strcmp(g_modules[i].name,name)==0){*out=g_modules[i];return 0;}return -1;
 }
 const char *pl_cpu_suite_domain_name(pl_cpu_suite_domain domain) {
-    switch(domain){case PL_CPU_SUITE_HUB:return "Hub";case PL_CPU_SUITE_ARCHITECTURE:return "Architecture";case PL_CPU_SUITE_THERMAL_POWER:return "Thermal & Power";case PL_CPU_SUITE_MEMORY_CACHE:return "Memory & Cache";case PL_CPU_SUITE_SCHEDULER:return "Scheduler";case PL_CPU_SUITE_DIAGNOSTICS_SECURITY:return "Diagnostics & Security";case PL_CPU_SUITE_BENCHMARK_LAB:return "Benchmark Lab";default:return "Unknown";}
+    switch(domain){case PL_CPU_SUITE_HUB:return "Hub";case PL_CPU_SUITE_THERMAL_POWER:return "Thermal & Power";case PL_CPU_SUITE_MEMORY_CACHE:return "Memory & Cache";case PL_CPU_SUITE_SCHEDULER:return "Scheduler";case PL_CPU_SUITE_DIAGNOSTICS_SECURITY:return "Diagnostics & Security";case PL_CPU_SUITE_BENCHMARK_LAB:return "Benchmark Lab";default:return "Unknown";}
 }
 int pl_cpu_suite_plan_module(uint16_t id, pl_cpu_suite_plan *out) {
     pl_cpu_suite_module module; if(!out||pl_cpu_suite_find_id(id,&module)!=0)return -1;

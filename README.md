@@ -1,120 +1,97 @@
-# Pytyliki — processor systems workstation
+# Pytyliki
+### C11 processor-systems workstation
+
+<p align="center"><img src="assets/brand/hero.svg" alt="Pytyliki workstation" width="100%"></p>
+<p align="center"><strong>DISCOVER · ANALYZE · OPTIMIZE · VERIFY</strong><br><img src="https://img.shields.io/badge/C-ISO_C11-2563EB?style=for-the-badge" alt="C11"> <img src="https://img.shields.io/badge/Windows-Linux-DC2626?style=for-the-badge" alt="Platforms"> <img src="https://img.shields.io/badge/License-MIT-111827?style=for-the-badge" alt="MIT"></p>
+
+**Pytyliki is a modular C11 workstation for read-only processor discovery, bounded local benchmarks, source diagnostics, and PCM16 WAV/DSP utilities.** It provides a Windows/Linux CLI and a native Win32 GUI.
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
-> A bounded C11 workstation for read-only processor discovery, local measurements, memory/DSP utilities, static diagnostics and explicit native interoperability.
+> [!IMPORTANT]
+> Pytyliki does not reprogram processors, write firmware, change clocks or voltage, or guarantee performance gains.
 
-**Specification**
+## Capabilities
 
-| Field | Current record |
+| Area | Included |
 |---|---|
-| Repository | [Ivan-VHS/Pytyliki](https://github.com/Ivan-VHS/Pytyliki) |
-| Project status | Development; bounded native C11 core |
-| Product version | No single version declared in the project contract |
-| Core language | C11 / CMake 3.16+ |
-| Runtime platforms | Windows, Linux |
-| Desktop platform | Windows (Win32) |
-| Tooling | Python 3 tooling is auxiliary, not a core runtime |
-| License | [MIT](LICENSE) |
-| Code of Conduct | Not published (no root `CODE_OF_CONDUCT.md`) |
-| Last documentation review | 2026-11-26 |
+| Processor | Read-only CPU and ISA inventory |
+| Workloads | Bounded processor, memory and matrix tests |
+| Analysis | Read-only source scanner and JSON reports |
+| Audio / DSP | PCM16 WAV I/O, tone generation, processing and metering |
+| Interfaces | Cross-platform CLI and native Windows GUI |
+| Planning | 20-capability catalogue and evidence-gated planning |
+| HyperFusion | Six bounded analysis modules |
+| CI | CMake/CTest on Windows and Linux |
 
-<p align="center"><img src="assets/pytyliki-hero.svg" alt="Pytyliki processor systems workstation" width="100%"></p>
-<p align="center"><a href="assets/screenshots/pytyliki-workstation.png"><img src="assets/screenshots/pytyliki-workstation.png" alt="Pytyliki workstation screenshot" width="100%"></a></p>
+<p align="center"><img src="assets/brand/architecture.svg" alt="Pytyliki architecture" width="100%"></p>
 
-## Contents
-- [Purpose and scope](#purpose-and-scope)
-- [Architecture and data flow](#architecture-and-data-flow)
-- [Build and first checks](#build-and-first-checks)
-- [Interfaces and contracts](#interfaces-and-contracts)
-- [Limitations and safety](#limitations-and-safety)
-- [Documentation and history](#documentation-and-history)
+## Quick start
 
-## Purpose and scope
+Requirements: Git, CMake and a C11-capable compiler on Windows or Linux.
 
-Pytyliki is a local processor-systems workstation. Its C11 core provides read-only hardware discovery, bounded machine-dependent measurements, memory and DSP operations, static source diagnostics and a versioned C ABI. The Win32 interface is Windows-only; CLI/core support is declared for Windows and Linux.
-
-The application reports observations and bounded computations. It does not tune clocks or voltage, write firmware, install drivers, access physical MMIO registers or rewrite inspected source files.
-
-## Architecture and data flow
-
-~~~mermaid
-flowchart LR
-  U["CLI / Win32 interface"] --> V["Argument and input validation"]
-  V --> C["C11 core"]
-  C --> D["Read-only CPU / memory discovery"]
-  C --> B["Bounded local workloads"]
-  C --> S["Static source / QCS checks"]
-  C --> M["Memory, DSP and metric modules"]
-  D --> R["Structured report with provenance"]
-  B --> R
-  S --> R
-  M --> R
-  C --> A["Versioned C ABI v1"]
-~~~
-
-Each operation follows input validation, a bounded module, a structured result and optional explicit export. Hardware inventory and source review are read-only. Benchmark values depend on the host CPU, OS, build and thermal state.
-
-## Build and first checks
-
-Requirements: CMake 3.16+ and a C11 compiler (MSVC, GCC or Clang).
-
-~~~sh
+```bash
+git clone https://github.com/Ivan-VHS/Pytyliki.git
+cd Pytyliki
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
-~~~
+```
 
-First local checks:
+Windows builds also provide `pytyliki-gui.exe`.
 
-~~~sh
-./build/pytyliki --profile
-./build/pytyliki --suite
-./build/pytyliki --partition 10000 8 256
-./build/pytyliki-metrics --demo
-~~~
+```bash
+pytyliki --improvement-plan
+pytyliki --evolve --evolution-rounds 8
+pytyliki --syntax-pie
+pytyliki --mtte
+```
 
-The commands provide local, machine-dependent observations; they do not apply system tuning. On Windows, use the executable path generated by the selected CMake configuration (for example, the Release configuration directory for a multi-configuration generator).
+<p align="center"><img src="assets/brand/terminal-preview.svg" alt="Illustrative CLI workflow" width="100%"></p>
+<sub>Command-line presentation mockup; not a captured run or benchmark result.</sub>
 
-## Interfaces and contracts
+## Architecture
 
-| Surface | Contract | Boundary |
-|---|---|---|
-| CLI | `pytyliki`, metrics and QCS tools | Local execution; see command help |
-| Native FFI | `pytyliki.c-abi.v1` | Explicit trusted library path; caller-owned buffers |
-| Reports | Versioned JSON/text with provenance | Unknown or unavailable values remain explicit |
-| Embedded C | MCU/reference profiles and MMIO masks | Simulation/reference only |
-| OCTA-8 | Versioned peer topology contract | Repository federation, not a central runtime |
+| Module | Responsibility |
+|---|---|
+| `src/core.c/.h` | CPU profile, bounded benchmark, scanner, JSON report |
+| `src/processor.c/.h` | Processor and ISA inventory and tests |
+| `src/dsp.c/.h` | Bounded WAV and DSP operations |
+| `src/improvement.c/.h` | Improvement catalogue and lifecycle |
+| `src/hw_rules.c/.h` | Advisory hardware rules |
+| `src/evolution.c/.h` | HyperFusion analysis |
+| `src/pipeline.c/.h` | C11/C23 reference pipeline plan |
+| `src/policy.c/.h` | Local authorization policy |
+| `src/cli.c`, `src/win_gui.c` | CLI and Windows GUI |
 
-Optional integrations are explicit. Reaper and OPlague may call C ABI v1 through a caller-supplied trusted library path. VentuSample's direct C ABI path is planned; its current pack metadata exchange is separate. See [Federated Integration](docs/FEDERATED_INTEGRATION.md).
+### Capability status
 
-## Limitations and safety
+- **Syntax-pie:** deterministic 20-layer function/syntax catalogue and lookup layer; not a general-purpose parser.
+- **MTTE:** 20 semantic/function/mechanical layers and a logical tick counter; it models software scheduling and does not alter hardware timers, CPU frequency, registers, firmware or voltage.
+- **Improvement matrix:** 20 engineering, 20 optimization and 20 automation classifications.
+- **HyperFusion:** six bounded analysis modules and 36 directed pair interactions per round. Readiness/synergy values are heuristics, not measured speedups.
+- **APSIA 2.0:** C11 language-routing planner with target-availability and FFI-cost gates; it proposes routes but does not compile or execute selected modules.
+- **Hardware rules:** 12 advisory rules are implemented; other identifiers are reserved. The C11/C23 pipeline is a reference plan, not a production transpiler.
 
-> Measurements are host-dependent, and reference hardware models do not perform physical device operations.
+## CI and verified Auto-Merge
 
-Processor discovery is read-only. Benchmark workloads are bounded and do not guarantee comparable results across machines. Static source diagnostics do not compile, execute or rewrite inspected files. QCS performs syntax/structure validation, not general program execution.
+Pull requests targeting `main` use CMake/CTest validation on Ubuntu and Windows. The verified Auto-Merge workflow checks that the current PR head matches the validated commit and requires an independent approval tied to that head before requesting GitHub squash Auto-Merge.
 
-The Embedded C workbench provides reference MCU memory profiles and simulated MMIO masks; it is not a physical mapper, firmware flasher or live debugger. Native FFI runs trusted code in-process and must load only explicitly selected ABI-compatible libraries. No firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.
+Enable **Allow auto-merge**, protect `main`, require relevant checks and independent review, and scope write permissions to the merge job. An Auto-Merge request is not proof that a PR has merged.
 
-Inventory counts and language catalogues are not certification or performance claims. The project contract does not declare a single product version; do not infer one from a historical README or catalogue.
+## Compatibility and safety
 
-## Documentation and contribution
+- Validated CI targets: Windows and Linux. Implementation: ISO C11; C23 appears only in the reference pipeline plan.
+- Data formats: JSON reports and PCM16 WAV.
+- Processor discovery and source scanning are read-only.
+- Workloads have explicit limits; benchmark results depend on compiler, OS, hardware and workload.
+- No writes to firmware, BIOS/UEFI, microcode, voltage, clocks, power limits, kernels, drivers or device registers.
+- Advisory rules and planning scores are not hardware certification or performance guarantees.
 
-Start with [Documentation Index](docs/README.md) and [Information Architecture](docs/INFORMATION_ARCHITECTURE.md).
+## Documentation
 
-- [Feature matrix](docs/FEATURES.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Benchmark statistics](docs/BENCHMARK_STATISTICS.md)
-- [Memory arenas](docs/MEMORY_ARENA.md)
-- [Embedded C reference workbench](docs/EMBEDDED_C.md)
-- [QCS native validation](docs/QCS_NATIVE.md)
-- [Report envelope](docs/REPORT_ENVELOPE.md)
-- [Pytyliki/Reaper integration](docs/REAPER_INTEGRATION.md)
+See [architecture](docs/ARCHITECTURE.md), [APSIA 2.0](docs/APSIA_2.0.md), [platform validation policy](docs/PLATFORM_VALIDATION_POLICY.md) and [quality audit](docs/QUALITY_AUDIT_0.7.1.md). Workflow results are authoritative for an individual commit.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before changing C ABI, report formats or input bounds. Security reporting follows [SECURITY.md](SECURITY.md). The repository is distributed under [MIT](LICENSE); retain third-party notices.
+## License
 
-## Documentation and history
-
-The current contract defines capabilities and integration boundaries but does not declare a single product semantic version. The repository remains under development. Release claims, branch support and compatibility history must be tied to actual Git tags, release artifacts and migration documents; absent evidence is recorded as undeclared.
-
-Benchmark records belong in [Benchmark Statistics](docs/BENCHMARK_STATISTICS.md) with host, compiler, build flags, workload, sample count and statistical method. No universal latency, memory footprint or cross-machine score is promised.
+MIT — see [LICENSE](LICENSE).

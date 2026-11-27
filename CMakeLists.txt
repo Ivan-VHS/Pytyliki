@@ -1,158 +1,36 @@
 cmake_minimum_required(VERSION 3.16)
-project(PytylikiProcessorWorkstation VERSION 0.8.0 LANGUAGES C)
+project(PytylikiProcessorWorkstation VERSION 0.7.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-option(PYTYLIKI_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer (GCC/Clang)" OFF)
-
-if(MSVC)
-  add_compile_options(/W4 /sdl /experimental:c11atomics)
-else()
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-if(PYTYLIKI_ENABLE_SANITIZERS)
-  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
-    add_link_options(-fsanitize=address,undefined)
-  else()
-    message(FATAL_ERROR "PYTYLIKI_ENABLE_SANITIZERS requires GCC or Clang")
-  endif()
-endif()
-
-add_library(pytyliki_core src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c)
+add_library(pytyliki_core src/core.c src/processor.c src/dsp.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/berry_core.c src/syntax_pie.c src/ironclad_systems.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
+if(MSVC)
+  target_compile_options(pytyliki_core PRIVATE /W4)
+else()
+  target_compile_options(pytyliki_core PRIVATE -Wall -Wextra -Wpedantic)
+  target_link_libraries(pytyliki_core PUBLIC m)
 endif()
-
-# Stable C11 ABI for explicitly configured FFI consumers.
-set_target_properties(pytyliki_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
-add_library(pytyliki_ffi SHARED src/interop.c src/diagnostics_abi.c)
-target_link_libraries(pytyliki_ffi PRIVATE pytyliki_core)
-target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
-set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
-install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
 
 if(WIN32)
   add_executable(pytyliki-gui WIN32 src/win_gui.c)
-  target_link_libraries(pytyliki-gui PRIVATE pytyliki_core comdlg32 advapi32)
+  target_link_libraries(pytyliki-gui PRIVATE pytyliki_core comdlg32)
 endif()
 add_executable(pytyliki src/cli.c)
 target_link_libraries(pytyliki PRIVATE pytyliki_core)
-target_sources(pytyliki PRIVATE src/division_cli.c)
 add_executable(pytyliki-apsia src/apsia_cli.c)
 target_link_libraries(pytyliki-apsia PRIVATE pytyliki_core)
-add_executable(pytyliki-metrics src/metric_cli.c)
-target_link_libraries(pytyliki-metrics PRIVATE pytyliki_core)
-add_executable(pytyliki-benchstats src/benchstats_cli.c)
-target_link_libraries(pytyliki-benchstats PRIVATE pytyliki_core)
-add_executable(pytyliki-qcs src/qcs_cli.c)
-target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
-  find_package(Python3 QUIET COMPONENTS Interpreter)
-  if(Python3_Interpreter_FOUND)
-    add_test(NAME plugin-federation-contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/validate_plugin_federation.py)
-    add_test(NAME report-envelope-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_report_envelope.py)
-    add_test(NAME benchmark-archive-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_benchmark_archive.py)
-    add_test(NAME profile-import-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_profile_import.py)
-    add_test(NAME sensor-snapshot-tests COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_sensor_snapshot.py)
-  add_test(NAME processor-profile-json COMMAND pytyliki --profile --json)
-  set_tests_properties(processor-profile-json PROPERTIES
-    PASS_REGULAR_EXPRESSION "pytyliki.report.v1")
-  add_test(NAME processor-suite-repeat-json COMMAND pytyliki --suite --repeat 3 --json)
-  set_tests_properties(processor-suite-repeat-json PROPERTIES
-    PASS_REGULAR_EXPRESSION "\"measured_runs\":2")
-
-  endif()
-  add_executable(pytyliki-ui-ux-40026-tests tests/test_ui_ux_40026.c)
-  target_include_directories(pytyliki-ui-ux-40026-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-  if(UNIX)
-    target_link_libraries(pytyliki-ui-ux-40026-tests PRIVATE m)
-  endif()
-  add_test(NAME ui-ux-codex-40026 COMMAND pytyliki-ui-ux-40026-tests)
-
-  add_executable(pytyliki-interop-tests tests/test_interop.c)
-  target_link_libraries(pytyliki-interop-tests PRIVATE pytyliki_ffi)
-  add_test(NAME interop-abi-tests COMMAND pytyliki-interop-tests)
-
-  add_executable(pytyliki-diagnostics-abi-tests tests/test_diagnostics_abi.c)
-  target_link_libraries(pytyliki-diagnostics-abi-tests PRIVATE pytyliki_ffi)
-  add_test(NAME diagnostics-abi-v1-tests COMMAND pytyliki-diagnostics-abi-tests)
-
-  add_executable(pytyliki-self-product-tests tests/test_self_product.c)
-  target_link_libraries(pytyliki-self-product-tests PRIVATE pytyliki_core)
-  add_test(NAME self-product-matrix-tests COMMAND pytyliki-self-product-tests)
-
-  add_executable(pytyliki-architecture-atlas-tests tests/test_architecture_atlas.c)
-  target_link_libraries(pytyliki-architecture-atlas-tests PRIVATE pytyliki_core)
-  add_test(NAME architecture-atlas-tests COMMAND pytyliki-architecture-atlas-tests)
-  add_test(NAME architecture-atlas-cli-smoke COMMAND pytyliki --architectures)
-  set_tests_properties(architecture-atlas-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Architecture systems atlas")
-
-  add_executable(pytyliki-metric-tests tests/test_metric_geometry.c)
-  target_link_libraries(pytyliki-metric-tests PRIVATE pytyliki_core)
-  add_test(NAME metric-geometry-tests COMMAND pytyliki-metric-tests)
-
-  add_executable(pytyliki-budget-tests tests/test_budget.c)
-  target_link_libraries(pytyliki-budget-tests PRIVATE pytyliki_core)
-  add_test(NAME budget-planner-tests COMMAND pytyliki-budget-tests)
-  add_test(NAME budget-planner-cli-smoke COMMAND pytyliki --budget --budget-scenario coffee)
-  set_tests_properties(budget-planner-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "460 грн")
-
-  add_executable(pytyliki-atomic-quantum-tests tests/test_atomic_quantum.c)
-  target_link_libraries(pytyliki-atomic-quantum-tests PRIVATE pytyliki_core)
-  add_test(NAME atomic-quantum-133-tests COMMAND pytyliki-atomic-quantum-tests)
-
-  add_executable(pytyliki-compute-ops-tests tests/test_compute_ops.c)
-  target_link_libraries(pytyliki-compute-ops-tests PRIVATE pytyliki_core)
-  add_test(NAME compute-ops-tests COMMAND pytyliki-compute-ops-tests)
-  add_test(NAME metric-lab-cli-smoke COMMAND pytyliki-metrics --demo)
-  add_test(NAME metric-registry-list-smoke COMMAND pytyliki-metrics --list)
-  set_tests_properties(metric-registry-list-smoke PROPERTIES PASS_REGULAR_EXPRESSION "vector.dot")
-  add_test(NAME metric-registry-search-smoke COMMAND pytyliki-metrics --search variance)
-  set_tests_properties(metric-registry-search-smoke PROPERTIES PASS_REGULAR_EXPRESSION "statistics.mean_variance")
-
-  add_executable(pytyliki-snapshot-store-tests tests/test_snapshot_store.c)
-  target_link_libraries(pytyliki-snapshot-store-tests PRIVATE pytyliki_core)
-  add_test(NAME durable-snapshot-recovery COMMAND pytyliki-snapshot-store-tests)
-
-  add_executable(pytyliki-memory-tests tests/test_memory.c)
-  target_link_libraries(pytyliki-memory-tests PRIVATE pytyliki_core)
-  add_test(NAME memory-view-arena-pool-tests COMMAND pytyliki-memory-tests)
-
-  add_executable(pytyliki-division-tests tests/test_division.c)
-  target_link_libraries(pytyliki-division-tests PRIVATE pytyliki_core)
-  add_test(NAME division-engine-tests COMMAND pytyliki-division-tests)
-  add_test(NAME division-cli-smoke COMMAND pytyliki --divide -17 5)
-  set_tests_properties(division-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "quotient=-4")
-  add_test(NAME partition-cli-smoke COMMAND pytyliki --partition 10 3)
-  set_tests_properties(partition-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "recommended-workers=3")
-
-
-
-  add_executable(pytyliki-benchmark-stats-tests tests/test_benchmark_stats.c)
-  target_link_libraries(pytyliki-benchmark-stats-tests PRIVATE pytyliki_core)
-  add_test(NAME benchmark-statistics-tests COMMAND pytyliki-benchmark-stats-tests)
-  add_test(NAME benchmark-statistics-cli-smoke COMMAND pytyliki-benchstats 1,2,3,4,5,100)
-  set_tests_properties(benchmark-statistics-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.benchmark-statistics.v1")
-
   add_executable(pytyliki-tests tests/test_core.c)
   target_link_libraries(pytyliki-tests PRIVATE pytyliki_core)
   add_test(NAME core-tests COMMAND pytyliki-tests)
-
-  add_executable(pytyliki-concat-tests tests/test_concat.c)
-  target_link_libraries(pytyliki-concat-tests PRIVATE pytyliki_core)
-  add_test(NAME concat-buffer-tests COMMAND pytyliki-concat-tests)
 
   add_executable(pytyliki-improvement-tests tests/test_improvement.c)
   target_link_libraries(pytyliki-improvement-tests PRIVATE pytyliki_core)
@@ -162,10 +40,6 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-hw-rule-tests PRIVATE pytyliki_core)
   add_test(NAME hardware-rule-tests COMMAND pytyliki-hw-rule-tests)
 
-  add_executable(pytyliki-governance-tests tests/test_governance.c)
-  target_link_libraries(pytyliki-governance-tests PRIVATE pytyliki_core)
-  add_test(NAME consent-governance-tests COMMAND pytyliki-governance-tests)
-
   add_executable(pytyliki-foundation-tests tests/test_engineering_foundations.c)
   target_link_libraries(pytyliki-foundation-tests PRIVATE pytyliki_core)
   add_test(NAME engineering-foundation-tests COMMAND pytyliki-foundation-tests)
@@ -174,104 +48,11 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-evolution-tests PRIVATE pytyliki_core)
   add_test(NAME evolution-tests COMMAND pytyliki-evolution-tests)
 
-  add_executable(pytyliki-apsia-tests tests/test_apsia.c)
-  target_link_libraries(pytyliki-apsia-tests PRIVATE pytyliki_core)
-  add_test(NAME apsia-routing-tests COMMAND pytyliki-apsia-tests)
-
-  add_executable(pytyliki-syntax-pie-tests tests/test_syntax_pie.c)
-  target_link_libraries(pytyliki-syntax-pie-tests PRIVATE pytyliki_core)
-  add_test(NAME syntax-pie-tests COMMAND pytyliki-syntax-pie-tests)
-
-  add_executable(pytyliki-berry-core-tests tests/test_berry_core.c)
-  target_link_libraries(pytyliki-berry-core-tests PRIVATE pytyliki_core)
-  add_test(NAME berry-core-tests COMMAND pytyliki-berry-core-tests)
-
-  add_executable(pytyliki-mtte-tests tests/test_mtte.c)
-  target_link_libraries(pytyliki-mtte-tests PRIVATE pytyliki_core)
-  add_test(NAME mtte-tests COMMAND pytyliki-mtte-tests)
-
-
   add_executable(pytyliki-system-enhancement-tests tests/test_ironclad_systems.c)
   target_link_libraries(pytyliki-system-enhancement-tests PRIVATE pytyliki_core)
   add_test(NAME system-enhancement-registry-tests COMMAND pytyliki-system-enhancement-tests)
-  add_test(NAME system-enhancement-cli-smoke COMMAND pytyliki --systems)
-  set_tests_properties(system-enhancement-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "Twenty-system engineering contract catalogue")
 
-
-  add_executable(pytyliki-forge66-tests tests/test_forge66.c)
-  target_link_libraries(pytyliki-forge66-tests PRIVATE pytyliki_core)
-  add_test(NAME forge66-tests COMMAND pytyliki-forge66-tests)
-
-  add_executable(pytyliki-cpu-suite-tests tests/test_cpu_suite.c)
-  target_link_libraries(pytyliki-cpu-suite-tests PRIVATE pytyliki_core)
-  add_test(NAME cpu-suite-tests COMMAND pytyliki-cpu-suite-tests)
-  add_test(NAME e2k-profile-cli-smoke COMMAND pytyliki --e2k-profile)
-  set_tests_properties(e2k-profile-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "AETHER-ANAS native backend: not implemented")
-
-  add_executable(pytyliki-trimatrix-tests tests/test_trimatrix_autoforge.c)
-  target_link_libraries(pytyliki-trimatrix-tests PRIVATE pytyliki_core)
-  add_test(NAME trimatrix-autoforge-tests COMMAND pytyliki-trimatrix-tests)
-  add_test(NAME trimatrix-cli-smoke COMMAND pytyliki --trimatrix 1)
-
-  add_test(NAME apsia-cli-cpu COMMAND pytyliki-apsia cpu 2.0 0.1 0.2)
-  add_test(NAME apsia-cli-plugin COMMAND pytyliki-apsia plugin 1.0 0.0 0.0 --wasm)
-  add_test(NAME apsia-cli-gpu COMMAND pytyliki-apsia gpu 2.0 0.1 0.0 --gpu)
-  add_test(NAME apsia-cli-gpu-without-declared-backend COMMAND pytyliki-apsia gpu 2.0 0.05 0.10)
-  set_tests_properties(apsia-cli-gpu-without-declared-backend PROPERTIES PASS_REGULAR_EXPRESSION "Language: host")
-  add_test(NAME apsia-cli-gpu-capabilities-gpu-first COMMAND pytyliki-apsia gpu 2.0 0.05 0.10 --gpu --capabilities shared-memory)
-  set_tests_properties(apsia-cli-gpu-capabilities-gpu-first PROPERTIES PASS_REGULAR_EXPRESSION "Language: CUDA")
-  add_test(NAME apsia-cli-gpu-capabilities-list-first COMMAND pytyliki-apsia gpu 2.0 0.05 0.10 --capabilities shared-memory --gpu)
-  set_tests_properties(apsia-cli-gpu-capabilities-list-first PROPERTIES PASS_REGULAR_EXPRESSION "Language: CUDA")
-  add_test(NAME apsia-cli-plugin-without-wasm COMMAND pytyliki-apsia plugin 1.0 0.0 0.0)
-  set_tests_properties(apsia-cli-plugin-without-wasm PROPERTIES WILL_FAIL TRUE)
-  add_test(NAME apsia-cli-sandbox-without-wasm COMMAND pytyliki-apsia cpu 2.0 0.05 0.10 --sandbox)
-  set_tests_properties(apsia-cli-sandbox-without-wasm PROPERTIES WILL_FAIL TRUE)
-
-  add_executable(pytyliki-embedded-tests tests/test_embedded.c)
-  target_link_libraries(pytyliki-embedded-tests PRIVATE pytyliki_core)
-  add_test(NAME embedded-c-core-tests COMMAND pytyliki-embedded-tests)
-
-  add_executable(pytyliki-systems-accel-tests tests/test_systems_accel.c)
-  target_link_libraries(pytyliki-systems-accel-tests PRIVATE pytyliki_core)
-  add_test(NAME systems-accel-tests COMMAND pytyliki-systems-accel-tests)
-  add_test(NAME systems-lab-cli-smoke COMMAND pytyliki --systems-lab)
-  set_tests_properties(systems-lab-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "33-function blockchain and processor systems lab")
-
-  add_executable(pytyliki-trace-tests tests/test_trace.c)
-  target_link_libraries(pytyliki-trace-tests PRIVATE pytyliki_core)
-  add_test(NAME measurement-trace-tests COMMAND pytyliki-trace-tests)
-
-  add_executable(pytyliki-qcs-tests tests/test_qcs.c)
-  target_link_libraries(pytyliki-qcs-tests PRIVATE pytyliki_core)
-  add_test(NAME qcs-native-frontend-tests COMMAND pytyliki-qcs-tests)
-  add_test(NAME qcs-cli-smoke COMMAND pytyliki-qcs check ${CMAKE_CURRENT_SOURCE_DIR}/examples/qcs_irq.qcs)
-  set_tests_properties(qcs-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "QCS valid")
-
-endif()
-
-
-if(BUILD_TESTING)
-  add_executable(pytyliki-three-medium-tests tests/test_three_medium.c)
-  target_link_libraries(pytyliki-three-medium-tests PRIVATE pytyliki_core)
-  add_test(NAME three-medium-compute-contract-tests COMMAND pytyliki-three-medium-tests)
-endif()
-
-
-if(BUILD_TESTING)
-  add_executable(pytyliki-runtime-transaction-tests tests/test_runtime_transaction.c)
-  target_link_libraries(pytyliki-runtime-transaction-tests PRIVATE pytyliki_core)
-  add_test(NAME runtime-transaction-contract-tests COMMAND pytyliki-runtime-transaction-tests)
-endif()
-
-# Python gaming-session evidence tests.
-if(BUILD_TESTING)
-  find_package(Python3 QUIET COMPONENTS Interpreter)
-  if(Python3_Interpreter_FOUND)
-    add_test(
-      NAME gaming-performance-assessor
-      COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_gaming_performance_assessor -v
-    )
-    set_tests_properties(gaming-performance-assessor PROPERTIES
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  endif()
+  add_executable(pytyliki-apsia-tests tests/test_apsia.c)
+  target_link_libraries(pytyliki-apsia-tests PRIVATE pytyliki_core)
+  add_test(NAME apsia-routing-tests COMMAND pytyliki-apsia-tests)
 endif()
