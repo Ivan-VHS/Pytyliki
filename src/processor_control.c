@@ -12,7 +12,10 @@ static int digest_present(const uint8_t *digest) {
 
 static int text_present(const char *value, size_t maximum) {
     if (value == NULL || value[0] == '\0') return 0;
-    return strnlen(value, maximum + 1U) <= maximum;
+    for (size_t i = 0U; i <= maximum; ++i) {
+        if (value[i] == '\0') return i != 0U;
+    }
+    return 0;
 }
 
 pl_processor_control_status pl_processor_control_topology_validate(
