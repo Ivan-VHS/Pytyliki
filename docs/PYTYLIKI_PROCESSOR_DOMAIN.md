@@ -397,12 +397,12 @@ Pytyliki source
 
 | Возможность | Статус |
 |---|---|
-| 21 верхнеуровневая hardware-конструкция | Структурный синтаксис |
+| 21 верхнеуровневая hardware-конструкция | Структурный синтаксис; отдельный semantic subset реализован |
 | Processor/physical-domain source specimen | Проверка Iron Core framing |
 | Физические и ядерные типы | Спецификация/пример, не typechecker |
-| Размерностный анализ | Не реализован |
+| Размерностный анализ | Частично реализован в Semantic Hardware Compiler v1 для ограниченного numeric/quantity subset |
 | ISA semantic compiler | Не реализован этим изменением |
-| Hardware IR lowering to Reaper | Контракт и план |
+| Hardware IR lowering to Reaper | Экспорт typed-HIR interchange envelope реализован; Reaper consumer import/lowering требует отдельного адаптера |
 | Deterministic ISA emulator | Не реализован этим изменением |
 | RTL generation | Не реализован этим изменением |
 | Physical/nuclear simulator | Не реализован этим изменением |
@@ -411,3 +411,35 @@ Pytyliki source
 Приёмка последующих этапов требует исполняемых тестов, независимых эталонов и измеримых доказательств. Статус нельзя повышать с structural или planned на implemented только из-за наличия документации и примеров.
 
 **PYTYLIKI — FROM PROCESSOR INSTRUCTIONS TO PHYSICAL COMPUTING MODELS.**
+
+
+## 18. Semantic Hardware Compiler v1
+
+A bounded C11 semantic frontend now lives in `src/semantic_hardware.c`. It is a separate compiler slice rather than a claim that every body accepted by the 21-form structural parser is fully type-checked.
+
+Implemented v1 behavior:
+
+- source-aware lexer/parser with a 64 KiB source cap and bounded token, type, symbol and HIR tables;
+- numeric scalar types and fixed-width register descriptors;
+- physical quantities with an eight-component SI-style dimension vector, unit scale normalization and bounded exponents;
+- type inference for addition, subtraction, multiplication, division and unary negation;
+- rejection of mismatched dimensions, unknown/duplicate symbols, invalid register access and statically known zero divisors;
+- declared-effect allowlists and inferred-effect verification for MMIO read/write nodes;
+- topologically ordered typed HIR with source spans and a separate verifier;
+- versioned Pytyliki HIR and Reaper-facing `reaper.typed-hardware-ir.v1` JSON envelopes;
+- restricted C17 emission for pure host-target f64/quantity programs only.
+
+The v1 source form is intentionally compact:
+
+~~~pytyliki
+module kinematics;
+target host;
+input distance: cm = 120;
+input elapsed: s = 4;
+derive speed: m/s = distance / elapsed;
+derive travelled: m = speed * elapsed;
+~~~
+
+This example canonicalizes 120 cm to 1.2 m, infers speed as length/time and derives travelled distance as length. The MMIO example is compiled to a typed/effect-annotated HIR node only; it cannot access the host device. The Reaper JSON envelope is an interchange boundary, not by itself proof that Reaper has imported or executed this new hardware HIR schema. A Reaper-side consumer adapter is a separate integration gate.
+
+See [Semantic Hardware Compiler v1](SEMANTIC_HARDWARE_COMPILER.md) for the exact supported grammar, dimensional basis, effect classes, HIR invariants, backend limits and diagnostics.

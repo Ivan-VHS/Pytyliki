@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, static diagnostics, native interoperability, and structural hardware-language frontends including a physical-model domain.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, native interoperability, structural hardware syntax and a bounded semantic hardware compiler v1.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -146,7 +146,7 @@
     {
       "id": "syntax.hardware-constructs",
       "status": "partial",
-      "summary": "Native C11 structural parser and catalogue cover twenty hardware-oriented construct forms. Compound Hyper-Switch and Epoch 4M samples are DAG-envelope references only; nested profile syntax, semantic analysis, lowering, code generation, simulation, RTL synthesis and hardware execution are not implemented.",
+      "summary": "Native C11 structural parser and catalogue cover twenty-one hardware-oriented construct forms. A separate semantic compiler v1 adds typed numeric declarations, physical dimensions, effect checks and verified HIR for a bounded source subset; full nested-body semantics, general domain lowering, simulation, RTL synthesis and hardware execution remain incomplete.",
       "evidence": [
         "src/hardware_syntax.h",
         "src/hardware_syntax.c",
@@ -154,7 +154,11 @@
         "tests/test_hardware_syntax.c",
         "docs/PYTYLIKI_HARDWARE_SYNTAX.md",
         "examples/hardware-constructs/01_irq_dispatch.syntax",
-        "schemas/pytyliki.hardware-construct-ast.v1.schema.json"
+        "schemas/pytyliki.hardware-construct-ast.v1.schema.json",
+        "src/semantic_hardware.c",
+        "src/semantic_hardware.h",
+        "tests/test_semantic_hardware.c",
+        "docs/SEMANTIC_HARDWARE_COMPILER.md"
       ]
     },
     {
@@ -169,7 +173,34 @@
         "docs/SYSTEM_SIGIL_OPERATORS.md"
       ]
     },
-    "syntax.physical-model-construct"
+    {
+      "id": "syntax.physical-model-construct",
+      "status": "partial",
+      "summary": "The physical_model construct is recognized by the structural frontend. A separate semantic compiler provides dimension-aware checks for its supported numeric quantity subset; the full physical-model grammar and scientific executor remain unimplemented.",
+      "evidence": [
+        "src/hardware_syntax.h",
+        "src/hardware_syntax.c",
+        "tests/test_hardware_syntax.c",
+        "src/semantic_hardware.c",
+        "tests/test_semantic_hardware.c",
+        "docs/SEMANTIC_HARDWARE_COMPILER.md"
+      ]
+    },
+    {
+      "id": "compiler.semantic-hardware-v1",
+      "status": "partial",
+      "summary": "Bounded C11 semantic frontend for numeric values, physical dimensions, fixed-width register descriptors and MMIO read/write effect allowlists; verifies typed topological HIR with source spans, emits a Reaper-facing typed-HIR interchange envelope and lowers a pure f64/quantity subset to C17. General hardware-body semantics, Reaper consumer import, machine-code/RTL generation and physical hardware access are not included.",
+      "evidence": [
+        "src/semantic_hardware.h",
+        "src/semantic_hardware.c",
+        "src/semantic_hardware_cli.c",
+        "tests/test_semantic_hardware.c",
+        "schemas/pytyliki.hardware-ir.v1.schema.json",
+        "docs/SEMANTIC_HARDWARE_COMPILER.md",
+        "examples/semantic-hardware/kinematics.shw",
+        "examples/semantic-hardware/mmio_probe.shw"
+      ]
+    }
   ],
   "interfaces": [
     {

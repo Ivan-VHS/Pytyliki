@@ -1,0 +1,5 @@
+module radioactive_activity;
+target host;
+input activity: count/s = 1000;
+input elapsed: s = 2;
+derive expected_decays: count = activity * elapsed;
