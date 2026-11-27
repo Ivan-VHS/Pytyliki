@@ -415,10 +415,19 @@ static int safe_path_argument(const char *path) {
     return 1;
 }
 
+static int copy_bounded_text(char *destination, size_t capacity, const char *source) {
+    size_t length;
+    if (destination == NULL || source == NULL || capacity == 0u) return -1;
+    length = strlen(source);
+    if (length >= capacity) return -1;
+    memcpy(destination, source, length + 1u);
+    return 0;
+}
+
 static int add_argument(pl_language_build_plan *plan, const char *value) {
-    if (plan->argument_count >= PL_LANGUAGE_ARGUMENT_COUNT || value == NULL ||
-        strlen(value) >= PL_LANGUAGE_ARGUMENT_SIZE) return -1;
-    strcpy(plan->arguments[plan->argument_count], value);
+    if (plan == NULL || plan->argument_count >= PL_LANGUAGE_ARGUMENT_COUNT ||
+        copy_bounded_text(plan->arguments[plan->argument_count],
+                          PL_LANGUAGE_ARGUMENT_SIZE, value) != 0) return -1;
     ++plan->argument_count;
     return 0;
 }
@@ -462,8 +471,8 @@ int pl_language_build_plan_create(const char *id_or_name, const char *target,
     if (pl_language_check_target(id_or_name, target, &compatible) != 0) return -2;
     if (!compatible) return -3;
     if (profile->route == PL_LANGUAGE_ROUTE_NONE) return -4;
-    if (strlen(profile->toolchain) >= sizeof(out->executable)) return -1;
-    strcpy(out->executable, profile->toolchain);
+    if (copy_bounded_text(out->executable, sizeof(out->executable),
+                          profile->toolchain) != 0) return -1;
     out->plan_only = 1;
     out->external_toolchain_required = 1;
     triple = target_triple(target);
