@@ -41,6 +41,14 @@ def validate_data(data: dict[str, Any], root: Path = ROOT) -> list[str]:
         if not isinstance(path, str) or not (root / path).is_file():
             errors.append(f"workspace registry {key} path does not exist: {path}")
 
+    native_session = related.get("native_session_foundation", {})
+    for key in ("header", "source", "tests", "build"):
+        path = native_session.get(key)
+        if not isinstance(path, str) or not (root / path).is_file():
+            errors.append(f"native session {key} path does not exist: {path}")
+    if native_session.get("api") != "pl_ide_session_init":
+        errors.append("native session foundation must expose pl_ide_session_init")
+
     for key in ("iron_core", "low_level_contract"):
         path = related.get(key)
         if not isinstance(path, str) or not (root / path).is_file():
