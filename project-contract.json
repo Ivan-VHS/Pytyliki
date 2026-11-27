@@ -178,7 +178,8 @@
         "src/mos_switch.c",
         "src/mos_switch_cli.c",
         "tests/test_mos_switch.c",
-        "docs/PHYSICAL_SWITCH_MODEL_V1.md"
+        "docs/PHYSICAL_SWITCH_MODEL_V1.md",
+        "schemas/pytyliki.mos-switch-model.v1.schema.json"
       ]
     }
   ],
