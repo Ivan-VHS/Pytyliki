@@ -1,0 +1,115 @@
+#include "processor_fabric.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
+static void set_cpu(pl_topology_logical_cpu *cpu, uint32_t logical_id,
+                    uint32_t os_id, uint8_t online, uint32_t package_id,
+                    uint32_t die_id, uint32_t core_id, uint32_t numa_id,
+                    uint32_t group_id) {
+    memset(cpu, 0, sizeof(*cpu));
+    cpu->logical_id = logical_id;
+    cpu->os_id = os_id;
+    cpu->group_id = group_id;
+    cpu->package_id = package_id;
+    cpu->die_id = die_id;
+    cpu->core_id = core_id;
+    cpu->numa_node_id = numa_id;
+    cpu->online = online;
+    cpu->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+}
+
+int main(void) {
+    pl_processor_topology_snapshot topology;
+    pl_processor_fabric_node nodes[PL_PROCESSOR_FABRIC_MAX_NODES];
+    pl_processor_fabric_edge edges[PL_PROCESSOR_FABRIC_MAX_EDGES];
+    pl_processor_fabric_workspace workspace;
+    pl_processor_fabric_summary summary;
+    pl_processor_fabric_error error;
+    pl_processor_fabric_model model;
+    pl_processor_fabric_assignment assignments[1];
+    size_t node_count = 0u, edge_count = 0u, assignment_count = 0u;
+
+    memset(&topology, 0, sizeof(topology));
+    topology.generation = 42u;
+    topology.logical_cpu_count = 3u;
+    topology.online_logical_cpu_count = 2u;
+    topology.cache_count = 1u;
+    topology.numa_node_count = 1u;
+    topology.completeness = PL_TOPOLOGY_PARTIAL;
+    (void)snprintf(topology.architecture, sizeof(topology.architecture), "x86-64");
+    set_cpu(&topology.logical_cpus[0], 2u, 2u, 1u, 0u, 0u, 3u, 0u, 1u);
+    set_cpu(&topology.logical_cpus[1], 5u, 5u, 1u, 0u, 0u, 3u, 0u, 1u);
+    set_cpu(&topology.logical_cpus[2], 8u, 8u, 0u,
+            PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+            PL_TOPOLOGY_UNKNOWN, PL_TOPOLOGY_UNKNOWN,
+            PL_TOPOLOGY_UNKNOWN);
+    topology.caches[0].cache_id = 0u;
+    topology.caches[0].level = 3u;
+    topology.caches[0].kind = PL_TOPOLOGY_CACHE_UNIFIED;
+    topology.caches[0].size_bytes = UINT64_C(8) * 1024u * 1024u;
+    topology.caches[0].line_bytes = 64u;
+    topology.caches[0].sharing_mask[0] =
+        (UINT64_C(1) << 2u) | (UINT64_C(1) << 5u);
+    topology.caches[0].sharing_count = 2u;
+    topology.caches[0].evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+    topology.numa_nodes[0].node_id = 0u;
+    topology.numa_nodes[0].logical_mask[0] =
+        (UINT64_C(1) << 2u) | (UINT64_C(1) << 5u);
+    topology.numa_nodes[0].logical_count = 2u;
+    topology.numa_nodes[0].memory_total_bytes = UINT64_C(8) * 1024u * 1024u * 1024u;
+    topology.numa_nodes[0].memory_available_bytes = UINT64_C(4) * 1024u * 1024u * 1024u;
+    topology.numa_nodes[0].evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+    topology.isa[PL_TOPOLOGY_ISA_SSE2].hardware_present = 1;
+    topology.isa[PL_TOPOLOGY_ISA_SSE2].os_usable = 1;
+    topology.isa[PL_TOPOLOGY_ISA_SSE2].evidence = 1u;
+
+    assert(pl_processor_topology_validate(&topology) == PL_TOPOLOGY_OK);
+    assert(pl_processor_fabric_from_topology(
+        &topology, nodes, PL_PROCESSOR_FABRIC_MAX_NODES, &node_count,
+        edges, PL_PROCESSOR_FABRIC_MAX_EDGES, &edge_count, &error)
+        == PL_PROCESSOR_FABRIC_OK);
+    assert(node_count >= 8u);
+    assert(edge_count >= 6u);
+
+    memset(&model, 0, sizeof(model));
+    model.generation = topology.generation;
+    model.abi_major = PL_PROCESSOR_FABRIC_ABI_MAJOR;
+    model.node_count = node_count;
+    model.edge_count = edge_count;
+    model.nodes = nodes;
+    model.edges = edges;
+    assert(pl_processor_fabric_validate(&model, &workspace, &summary, &error)
+           == PL_PROCESSOR_FABRIC_OK);
+    assert(summary.worker_count == 3u);
+    assert(summary.available_worker_count == 2u);
+    assert(summary.node_kind_counts[PL_PROCESSOR_FABRIC_CACHE] == 1u);
+    assert(summary.node_kind_counts[PL_PROCESSOR_FABRIC_NUMA_NODE] == 1u);
+    assert(summary.resource_edge_count == edge_count);
+
+    {
+        int saw_sparse_cpu_2 = 0, saw_sparse_cpu_5 = 0, saw_offline_root = 0;
+        for (size_t i = 0u; i < node_count; ++i) {
+            if (nodes[i].kind != PL_PROCESSOR_FABRIC_LOGICAL_PROCESSOR) continue;
+            if (nodes[i].logical_id == 2u) {
+                saw_sparse_cpu_2 = 1;
+                assert(nodes[i].state == PL_PROCESSOR_FABRIC_AVAILABLE);
+                assert(nodes[i].feature_mask == (UINT64_C(1) << PL_TOPOLOGY_ISA_SSE2));
+            } else if (nodes[i].logical_id == 5u) {
+                saw_sparse_cpu_5 = 1;
+            } else if (nodes[i].logical_id == 8u) {
+                saw_offline_root = 1;
+                assert(nodes[i].state == PL_PROCESSOR_FABRIC_DISABLED);
+                assert(nodes[i].capacity_basis_points == 0u);
+                assert(nodes[i].parent_id == 0u);
+            }
+        }
+        assert(saw_sparse_cpu_2 && saw_sparse_cpu_5 && saw_offline_root);
+    }
+    assert(pl_processor_fabric_plan(&model, &workspace, assignments, 1u,
+        &assignment_count, &summary, &error) == PL_PROCESSOR_FABRIC_OK);
+    assert(assignment_count == 0u);
+    puts("processor fabric topology bridge tests passed");
+    return 0;
+}
