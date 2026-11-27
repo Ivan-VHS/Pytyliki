@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/schemas/pytyliki.iron-core-ast.v1.schema.json",
+  "title": "Pytyliki Iron Core AST v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "source_bytes",
+    "root_seen",
+    "version",
+    "version_declarations",
+    "policy_declarations",
+    "source_seal_asserted",
+    "verification_claim",
+    "verification_claims_are_ci_evidence",
+    "semantic_validation_performed",
+    "execution_performed",
+    "hardware_access_performed",
+    "blocks",
+    "marker_counts"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.iron-core-ast.v1"
+    },
+    "source_bytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "root_seen": {
+      "const": true
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 95,
+      "pattern": "^[A-Za-z0-9_.-]+$"
+    },
+    "version_declarations": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "policy_declarations": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source_seal_asserted": {
+      "const": true
+    },
+    "verification_claim": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 95,
+      "pattern": "^[A-Za-z0-9_.-]+$"
+    },
+    "verification_claims_are_ci_evidence": {
+      "const": false
+    },
+    "semantic_validation_performed": {
+      "const": false
+    },
+    "execution_performed": {
+      "const": false
+    },
+    "hardware_access_performed": {
+      "const": false
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "marker",
+          "semantic_id",
+          "start_offset",
+          "body_offset",
+          "body_length",
+          "end_offset",
+          "line",
+          "closed"
+        ],
+        "properties": {
+          "marker": {
+            "type": "string"
+          },
+          "semantic_id": {
+            "type": "string"
+          },
+          "start_offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "body_offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "body_length": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "closed": {
+            "const": true
+          }
+        }
+      }
+    },
+    "marker_counts": {
+      "type": "object",
+      "minProperties": 20,
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  }
+}
