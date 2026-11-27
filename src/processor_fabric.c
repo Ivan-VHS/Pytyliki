@@ -168,10 +168,8 @@ static pl_processor_fabric_status validate_dependencies(
 
     memset(workspace->indegree, 0, sizeof(workspace->indegree));
     for (index = 0u; index < model->node_count; ++index) {
-        if (model->nodes[index].kind == PL_PROCESSOR_FABRIC_PROCESS) {
+        if (model->nodes[index].kind == PL_PROCESSOR_FABRIC_PROCESS)
             ++process_count;
-            workspace->queue[tail++] = index;
-        }
     }
 
     for (index = 0u; index < model->edge_count; ++index) {
