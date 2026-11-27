@@ -7,6 +7,16 @@
 #include <stdio.h>
 #include <string.h>
 
+static FILE *open_temporary_stream(void) {
+#if defined(_MSC_VER)
+    FILE *stream = NULL;
+    if (tmpfile_s(&stream) != 0) return NULL;
+    return stream;
+#else
+    return tmpfile();
+#endif
+}
+
 static const char kinematics_source[] =
     "module kinematics;\n"
     "target host;\n"
@@ -67,7 +77,7 @@ static void test_effect_allowlist_and_register_access(void) {
     assert(pl_sh_compile(read_ok, "read.shw", &module, &error));
     assert(module.inferred_effects == PL_SH_EFFECT_MMIO_READ);
     assert(module.allowed_effects == PL_SH_EFFECT_MMIO_READ);
-    FILE *blocked = tmpfile();
+    FILE *blocked = open_temporary_stream();
     assert(blocked != NULL);
     assert(!pl_sh_write_c17(&module, blocked, &error));
     assert(strcmp(error.code, "RPR-SH-C001") == 0 || strcmp(error.code, "RPR-SH-C003") == 0);
@@ -81,13 +91,13 @@ static void test_effect_allowlist_and_register_access(void) {
 static void test_ir_and_reaper_envelopes(void) {
     pl_sh_module module; pl_sh_error error; FILE *stream; char buffer[16384]; size_t count;
     assert(pl_sh_compile(kinematics_source, "kinematics.shw", &module, &error));
-    stream = tmpfile(); assert(stream != NULL);
+    stream = open_temporary_stream(); assert(stream != NULL);
     assert(pl_sh_write_ir_json(&module, stream));
     rewind(stream); count=fread(buffer,1u,sizeof(buffer)-1u,stream); buffer[count]='\0';
     assert(strstr(buffer, PL_SH_SCHEMA) != NULL);
     assert(strstr(buffer, "\"dimensions\": [1, 0, -1") != NULL);
     fclose(stream);
-    stream = tmpfile(); assert(stream != NULL);
+    stream = open_temporary_stream(); assert(stream != NULL);
     assert(pl_sh_write_reaper_ir_json(&module, stream));
     rewind(stream); count=fread(buffer,1u,sizeof(buffer)-1u,stream); buffer[count]='\0';
     assert(strstr(buffer, PL_SH_REAPER_SCHEMA) != NULL);
@@ -98,7 +108,7 @@ static void test_ir_and_reaper_envelopes(void) {
 static void test_c17_emission_is_pure_and_compilable(void) {
     pl_sh_module module; pl_sh_error error; FILE *stream; char buffer[8192]; size_t count;
     assert(pl_sh_compile(kinematics_source, "kinematics.shw", &module, &error));
-    stream=tmpfile(); assert(stream != NULL);
+    stream=open_temporary_stream(); assert(stream != NULL);
     assert(pl_sh_write_c17(&module,stream,&error));
     rewind(stream); count=fread(buffer,1u,sizeof(buffer)-1u,stream); buffer[count]='\0';
     assert(strstr(buffer,"double pytyliki_model(void)")!=NULL);
