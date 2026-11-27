@@ -1,0 +1,142 @@
+# Pytyliki read-only Reaper neural capacity evidence contract v1.
+# It scores supplied evidence; it never changes processor configuration.
+
+make EVIDENCE_SCHEMA := "pytyliki.neural-capacity-evidence.v1"
+make PLAN_SCHEMA := "pytyliki.neural-capacity-plan.v1"
+make MAX_MEMORY_BYTES := 268435456
+make MAX_STEPS := 100000000
+make MAX_LATENCY_US := 10000000
+
+craft valid_integer(value, minimum, maximum) {
+    yield kind(value) == "number" and value % 1 == 0 and value >= minimum and value <= maximum
+}
+
+craft validate_evidence(record) {
+    when kind(record) != "list" or size(record) != 9 {
+        yield "PYT-NN-EVIDENCE-0001: evidence record must contain 9 fields"
+    }
+    when record[0] != EVIDENCE_SCHEMA {
+        yield "PYT-NN-EVIDENCE-0002: unsupported evidence schema"
+    }
+    when kind(record[1]) != "text" or size(record[1]) == 0 {
+        yield "PYT-NN-EVIDENCE-0003: evidence identity is required"
+    }
+    when not valid_integer(record[2], 0, 1000) {
+        yield "PYT-NN-EVIDENCE-0004: CPU load must be in 0..1000 permille"
+    }
+    when not valid_integer(record[3], 0, MAX_MEMORY_BYTES) {
+        yield "PYT-NN-EVIDENCE-0005: memory observation is outside the bounded range"
+    }
+    when not valid_integer(record[4], 0, MAX_LATENCY_US) {
+        yield "PYT-NN-EVIDENCE-0006: elapsed time is outside the bounded range"
+    }
+    when not valid_integer(record[5], 0, MAX_STEPS) {
+        yield "PYT-NN-EVIDENCE-0007: operation count is outside the bounded range"
+    }
+    when not valid_integer(record[6], 1, MAX_STEPS) {
+        yield "PYT-NN-EVIDENCE-0008: declared step budget is invalid"
+    }
+    when not valid_integer(record[7], 1, MAX_MEMORY_BYTES) {
+        yield "PYT-NN-EVIDENCE-0009: declared memory budget is invalid"
+    }
+    when not contains(["inference", "offline_batch"], record[8]) {
+        yield "PYT-NN-EVIDENCE-0010: unsupported workload mode"
+    }
+    yield ""
+}
+
+craft capacity_plan(record) {
+    make failure := validate_evidence(record)
+    when failure != "" {
+        yield ["REJECT", failure]
+    }
+    when record[2] > 850 {
+        yield ["DEFER", "CPU evidence exceeds the 850 permille review threshold"]
+    }
+    when record[3] > record[7] {
+        yield ["DEFER", "observed memory exceeds the caller-declared budget"]
+    }
+    when record[5] > record[6] {
+        yield ["DEFER", "observed work exceeds the caller-declared step budget"]
+    }
+    when record[4] > 5000000 {
+        yield ["DEFER", "elapsed time exceeds the five-second review threshold"]
+    }
+    yield ["ALLOW", "evidence fits the caller-declared local workload budget"]
+}
+
+craft make_report(record, plan) {
+    yield [
+        PLAN_SCHEMA,
+        record[1],
+        record[8],
+        plan[0],
+        record[2],
+        record[3],
+        record[4],
+        record[5],
+        "read_only_evidence",
+        "recommendation_only",
+        false
+    ]
+}
+
+make nominal := [
+    EVIDENCE_SCHEMA,
+    "processor-snapshot-001",
+    420,
+    67108864,
+    120000,
+    12000,
+    50000,
+    134217728,
+    "inference"
+]
+make saturated := [
+    EVIDENCE_SCHEMA,
+    "processor-snapshot-002",
+    910,
+    67108864,
+    120000,
+    12000,
+    50000,
+    134217728,
+    "inference"
+]
+make memory_pressure := [
+    EVIDENCE_SCHEMA,
+    "processor-snapshot-003",
+    520,
+    201326592,
+    120000,
+    12000,
+    50000,
+    134217728,
+    "offline_batch"
+]
+make malformed := [
+    EVIDENCE_SCHEMA,
+    "processor-snapshot-004",
+    1001,
+    67108864,
+    120000,
+    12000,
+    50000,
+    134217728,
+    "inference"
+]
+
+make nominal_plan := capacity_plan(nominal)
+make saturated_plan := capacity_plan(saturated)
+make memory_plan := capacity_plan(memory_pressure)
+make report := make_report(nominal, nominal_plan)
+
+assert(nominal_plan[0] == "ALLOW", "nominal evidence must fit declared capacity")
+assert(saturated_plan[0] == "DEFER", "high CPU load must defer admission")
+assert(memory_plan[0] == "DEFER", "memory pressure must defer the batch")
+assert(capacity_plan(malformed)[0] == "REJECT", "invalid telemetry must be rejected")
+assert(report[0] == PLAN_SCHEMA, "report schema must be stable")
+assert(report[8] == "read_only_evidence", "report provenance must remain read-only")
+assert(report[9] == "recommendation_only" and report[10] == false, "plan must not perform a hardware action")
+
+emit "PYTYLIKI_REAPER_NEURAL_METRICS:PASS"

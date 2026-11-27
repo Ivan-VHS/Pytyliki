@@ -18,6 +18,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and C ABI boundaries.
+- [Reaper neural capacity evidence v1](REAPER_NEURAL_CAPACITY_EVIDENCE_V1.md) — bounded read-only resource evidence and deterministic ALLOW/DEFER/REJECT recommendations.
 
 ## Browse by topic
 

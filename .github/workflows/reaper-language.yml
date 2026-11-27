@@ -41,6 +41,16 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
         run: python -m reaper --check automation/reaper/processor_metrics.rpr
+      - name: Check read-only Reaper neural capacity contract
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: python -m reaper --check automation/reaper/neural_metrics.rpr
+      - name: Execute read-only Reaper neural capacity fixture
+        env:
+          PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
+        run: |
+          python -m reaper automation/reaper/neural_metrics.rpr | tee neural-metrics.txt
+          grep -qx "PYTYLIKI_REAPER_NEURAL_METRICS:PASS" neural-metrics.txt
       - name: Execute Reaper program against the native Pytyliki ABI
         env:
           PYTHONPATH: ${{ github.workspace }}/_deps/Reaper
