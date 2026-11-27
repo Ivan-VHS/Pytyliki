@@ -26,6 +26,7 @@ Pytyliki 在本地采集并分析处理器系统信息。C11 核心与命令行�
 - **SystemArray 符号运算符注册表：**C11 元数据前端描述 13 个运算符、类型签名和效果约束；尚未实现重载解析、计划求值或硬件访问。
 - **MOS 开关级模型：**有界 N/P 型 MOS 理想开关网络，显式解析 high、low、floating、contended 和 indeterminate 状态。这是确定性的拓扑仿真，不是模拟/SPICE 仿真，也不访问物理设备。
 - **Processor Fabric v1：**有界 C11 图模型聚合 CPU 层级、寄存器/ISA/地址空间目录、进程池及资源依赖。它验证进程图并生成确定性的建议分配计划，但不会启动任务或控制操作系统调度器。
+- **Processor Fabric v2 运行层：** 通过 Windows processor groups 和 Linux sysfs 只读采集 package/die/core/thread、NUMA 与 cache-sharing 信息，并保留未知值。x86 ISA 证据区分硬件支持与操作系统可用性。建议式放置估算考虑 NUMA locality、cache pressure、SMT、带宽和负载。原生验证器检查设备身份、寄存器映射、地址范围和 DMA ownership，不映射或访问物理硬件。
 - **System-array 语法前端：**有界 C11 解析器将已记录的框定别名规范化为 `system(array)`；仅做语法验证，不执行源码，也不访问硬件。
 - **数值指标：** 通过稳定的原生 API 提供 C11 向量、距离、几何及二次型运算。
 - **内存工具：** 类型化视图、切片溢出检查、有界 arena、回退检查点和固定块池。
