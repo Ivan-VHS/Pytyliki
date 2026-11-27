@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define PL_RESOURCE_MAX_DEVICES 256u
 #define PL_RESOURCE_MAX_SPACES 128u
 #define PL_RESOURCE_MAX_REGIONS 512u
 #define PL_RESOURCE_MAX_BANKS 128u
@@ -38,6 +39,11 @@ typedef enum {
 
 typedef struct {
     uint32_t id;
+    uint32_t generation;
+} pl_resource_device;
+
+typedef struct {
+    uint32_t id;
     pl_resource_space_kind kind;
     uint8_t address_bits;
     pl_resource_owner owner;
@@ -53,7 +59,12 @@ typedef struct {
     uint32_t permissions;
     pl_resource_owner owner;
     uint32_t device_id;
-} pl_resource_memory_region;
+ } pl_resource_memory_region;
+
+#define PL_RESOURCE_PERMISSION_READ  (UINT32_C(1) << 0)
+#define PL_RESOURCE_PERMISSION_WRITE (UINT32_C(1) << 1)
+#define PL_RESOURCE_PERMISSION_EXEC  (UINT32_C(1) << 2)
+#define PL_RESOURCE_PERMISSION_ALL (PL_RESOURCE_PERMISSION_READ | PL_RESOURCE_PERMISSION_WRITE | PL_RESOURCE_PERMISSION_EXEC)
 
 typedef struct {
     uint32_t id;
@@ -89,7 +100,8 @@ typedef struct {
 
 typedef struct {
     uint32_t generation;
-    size_t space_count, region_count, bank_count, register_count, dma_count;
+    size_t device_count, space_count, region_count, bank_count, register_count, dma_count;
+    const pl_resource_device *devices;
     const pl_resource_address_space *spaces;
     const pl_resource_memory_region *regions;
     const pl_resource_register_bank *banks;
