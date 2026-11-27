@@ -656,5 +656,74 @@
     "no_hidden_network": true,
     "no_automatic_firmware_or_driver_install": true,
     "no_reality_mutation_api": true
+  },
+  "research_domains": [
+    {
+      "id": "quantum.bit",
+      "module": "pyty.quantum",
+      "meaning": "Qubit/state-vector/circuit modeling and named quantum-device integration; no forced measurement outcome."
+    },
+    {
+      "id": "neuro.point",
+      "module": "pyty.bci",
+      "meaning": "Neuromorphic neuron/network models and consented neural signal adapters; no unmediated brain access."
+    },
+    {
+      "id": "liquid.ram",
+      "module": "pyty.material",
+      "meaning": "Research models for fluidic, phase-change or other emerging memory concepts; no claim of an available liquid-RAM device."
+    },
+    {
+      "id": "bio.sync",
+      "module": "pyty.bci",
+      "meaning": "Timestamp and synchronize biosignal streams against declared sampling clocks and uncertainty."
+    },
+    {
+      "id": "holo.stack",
+      "module": "pyty.field",
+      "meaning": "Three-dimensional scene, spatial data and visualization pipeline; holographic output requires a named display device."
+    },
+    {
+      "id": "zero.lat",
+      "module": "pyty.time",
+      "meaning": "Latency-budget analysis and lower-bound measurement; never asserts literal zero latency."
+    },
+    {
+      "id": "energy.syn",
+      "module": "pyty.power",
+      "meaning": "Dimensioned energy/power models and measurements with a named provider; no hidden energy control."
+    },
+    {
+      "id": "mind.hive",
+      "module": "pyty.experiment",
+      "meaning": "Multi-agent or distributed simulation and search; not a shared human consciousness or telepathy mechanism."
+    },
+    {
+      "id": "dim.jump",
+      "module": "pyty.sim",
+      "meaning": "Change simulation resolution, model layer or coordinate representation; no physical dimension travel."
+    }
+  ],
+  "engineering_practices": {
+    "verification_gates": [
+      {
+        "id": "syntax_type_effect",
+        "name": "Syntax and effect validation",
+        "purpose": "Check parsing, types, source spans, target declaration, effect set and capability requirements."
+      },
+      {
+        "id": "model_invariants",
+        "name": "Model and logic validation",
+        "purpose": "Check units, conservation constraints, numerical stability, bounds, resource budgets and deterministic/probabilistic provenance."
+      },
+      {
+        "id": "physical_target_qualification",
+        "name": "Physical target qualification",
+        "purpose": "When a physical device is used, validate exact hardware identity/revision, calibration, safety procedure and observed measurements; simulation cannot satisfy this gate."
+      }
+    ],
+    "resource_control": "Every experiment must declare wall-clock, compute, memory, output and recursion/branch limits plus cancellation or watchdog behavior.",
+    "state_backup": "Snapshots apply only to logical application/model state and are versioned; no snapshot can back up or restore the physical universe.",
+    "forecast_policy": "Future previews are forecasts over assumptions and uncertainty distributions, not guaranteed knowledge of future events."
   }
 }
