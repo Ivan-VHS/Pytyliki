@@ -58,6 +58,7 @@ int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,
 #if defined(_MSC_VER)&&(defined(_M_X64)||defined(_M_IX86))
  int r[4]={0,0,0,0};
  __cpuid(r,0);
+ out->cpuid_available=1u;
  int max_leaf=r[0];
  if(max_leaf>=1){
   __cpuidex(r,1,0);
@@ -85,7 +86,9 @@ int pl_processor_scan(pl_processor_snapshot*out){if(!out)return -1;memset(out,0,
  }
 #elif(defined(__x86_64__)||defined(__i386__))&&(defined(__GNUC__)||defined(__clang__))
  unsigned a=0,b=0,c=0,d=0;
- if(__get_cpuid(1,&a,&b,&c,&d)){
+ unsigned int max_leaf=__get_cpuid_max(0, NULL);
+ if(max_leaf != 0u) out->cpuid_available=1u;
+ if(max_leaf >= 1u && __get_cpuid(1,&a,&b,&c,&d)){
   out->sse2=(unsigned)((d>>26)&1u);
   out->sse42=(unsigned)((c>>20)&1u);
   out->avx_hw=(unsigned)((c>>28)&1u);
