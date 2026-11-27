@@ -210,8 +210,10 @@ int pl_system_sigil_write_json(const pl_system_sigil_directive *directive,
 
     if (fprintf(output, "{\"schema\":\"%s\",\"canonical\":",
                 PL_SYSTEM_SIGIL_SCHEMA) < 0) return 0;
-    if (!write_json_string(output, pl_system_array_canonical_name())) return 0;
-    if (fputs(",\"alias\":", output) == EOF ||
+    if (!write_json_string(output, PL_SYSTEM_SIGIL_CANONICAL_SOURCE)) return 0;
+    if (fputs(",\"legacy_ast_name\":", output) == EOF ||
+        !write_json_string(output, pl_system_array_canonical_name()) ||
+        fputs(",\"alias\":", output) == EOF ||
         !write_json_string(output, pl_system_array_alias_name(directive->system_array.alias)) ||
         fputs(",\"spelling\":", output) == EOF ||
         !write_json_string(output, directive->system_array.spelling) ||
