@@ -110,6 +110,18 @@ static void test_build_plan_is_explicit_and_inert(void) {
     assert(strcmp(plan.executable, "llvm-mc") == 0);
     assert(strcmp(plan.arguments[0], "-triple=bpf") == 0);
 
+    assert(pl_language_build_plan_create("sys-d-betterc", "x86_64",
+        "src/module.d", "build/module.o", &plan) == 0);
+    assert(strcmp(plan.executable, "ldc2") == 0);
+    assert(strcmp(plan.arguments[0], "-betterC") == 0);
+
+    assert(pl_language_build_plan_create("ir-qbe", "x86_64",
+        "src/module.ssa", "build/module.o", &plan) == 0);
+    assert(strcmp(plan.arguments[0], "-t") == 0);
+    assert(strcmp(plan.arguments[1], "amd64_sysv") == 0);
+    assert(pl_language_check_target("ir-qbe", "aarch64", &compatible) == 0);
+    assert(compatible == 0);
+
     assert(pl_language_build_plan_create("asm-8051-asem", "8051",
         "src/start.a51", "build/start.obj", &plan) == -4);
     assert(pl_language_build_plan_create("sys-c", "x86_64",
