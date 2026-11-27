@@ -1,0 +1,11 @@
+hot_patch overlay_swap {
+    let replacement = prepare_overlay(new_overlay)?;
+
+    quiesce_event_source(old_overlay)?;
+    drain_inflight_events(timeout: 64_cycles)?;
+    atomically_publish(replacement)?;
+
+    confirm_active(replacement)?;
+    retire_after_grace_period(old_overlay);
+}
+
