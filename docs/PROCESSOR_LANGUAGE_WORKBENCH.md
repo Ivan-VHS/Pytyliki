@@ -113,7 +113,7 @@ The original brainstorming list also included aliases or items that are not dist
 
 ## Implemented build-plan routes
 
-The current argument planner contains route adapters for MASM, GNU as (x86), NASM x86-64, Clang, Clang++, Rustc, Zig, LDC, LLVM MC, WAT-to-Wasm, LLC, SPIR-V assembler, QBE and Icarus Verilog. Other profiles are reference-only until an exact toolchain, target tuple and output contract are implemented.
+The current argument planner contains route adapters for MASM, GNU as (32-bit x86), NASM ELF64, Clang, Clang++, Rustc, Zig, LDC BetterC (with an explicit target triple), LLVM MC, WAT-to-Wasm, LLC, SPIR-V assembler, QBE IL (x86-64 SysV only) and Icarus Verilog. Other profiles are reference-only until an exact toolchain, target tuple and output contract are implemented.
 
 A route being present does not mean the executable is installed or that a generated object has been verified. A future explicit execution adapter must add bounded process lifetime, captured stdout/stderr, exit-code handling, artifact type/size checks, timeout/cancellation and reproducible tool-version capture before the feature can be described as compilation.
 
