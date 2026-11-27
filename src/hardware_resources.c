@@ -21,6 +21,10 @@ static const pl_hw_register_bank *find_bank(const pl_hw_resource_model *m, uint3
     return NULL;
 }
 static int power_of_two(uint32_t value) { return value!=0u && (value&(value-1u))==0u; }
+static int address_width_supported(uint8_t bits) {
+    return bits==16u || bits==20u || bits==24u || bits==32u ||
+           bits==40u || bits==48u || bits==52u || bits==64u;
+}
 static int range_valid(uint64_t base,uint64_t length,uint8_t bits) {
     uint64_t end;
     if (length==0u || base>UINT64_MAX-(length-1u)) return 0;
@@ -53,7 +57,7 @@ pl_hw_resource_status pl_hw_resource_validate(const pl_hw_resource_model *m) {
     }
     for(size_t i=0u;i<m->space_count;++i) {
         const pl_hw_address_space *s=&m->spaces[i];
-        if(s->id==0u || s->address_bits==0u || s->address_bits>64u ||
+        if(s->id==0u || !address_width_supported(s->address_bits) ||
            (unsigned)s->kind>(unsigned)PL_HW_SPACE_DMA_IOVA ||
            (unsigned)s->owner>(unsigned)PL_HW_OWNER_UNOWNED)
             return PL_HW_RESOURCE_INVALID_ARGUMENT;
@@ -177,7 +181,10 @@ pl_hw_resource_status pl_hw_dma_transition(pl_hw_dma_buffer *b,
     pl_hw_dma_state next, pl_hw_actor actor, uint32_t expected_generation,
     int capability_granted, int submission_accepted, int completion_observed) {
     if(b==NULL || (unsigned)next>(unsigned)PL_HW_DMA_RELEASED ||
-       (unsigned)actor>(unsigned)PL_HW_ACTOR_ADAPTER)
+       (unsigned)actor>(unsigned)PL_HW_ACTOR_ADAPTER ||
+       (capability_granted!=0 && capability_granted!=1) ||
+       (submission_accepted!=0 && submission_accepted!=1) ||
+       (completion_observed!=0 && completion_observed!=1))
         return PL_HW_RESOURCE_INVALID_ARGUMENT;
     if(b->generation==0u || b->generation!=expected_generation)
         return PL_HW_RESOURCE_STALE_GENERATION;
