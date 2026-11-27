@@ -141,6 +141,10 @@ static void test_invalid_inputs(void)
     assert(pl_mos_switch_evaluate(&network, levels, 2u, states, 3u) ==
            PL_MOS_SWITCH_INVALID_ARGUMENT);
     assert(states[0] == PL_MOS_STATE_HIGH);
+    network.device_count = (uint16_t)(PL_MOS_SWITCH_MAX_DEVICES + 1u);
+    assert(pl_mos_switch_evaluate(&network, levels, 3u, states, 3u) ==
+           PL_MOS_SWITCH_INVALID_TOPOLOGY);
+    network.device_count = 0u;
     levels[2] = (pl_mos_logic)7;
     assert(pl_mos_switch_evaluate(&network, levels, 3u, states, 3u) ==
            PL_MOS_SWITCH_INVALID_ARGUMENT);
