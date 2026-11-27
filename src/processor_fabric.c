@@ -965,9 +965,16 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
         if (cpu->numa_node_id != PL_TOPOLOGY_UNKNOWN) {
             numa_id = find_topology_node(numa, numa_count, cpu->numa_node_id, 0u, 0u);
             if (numa_id == 0u) {
-                numa_id = add_topology_node(nodes, node_capacity, &used_nodes,
-                    &next_id, topology->generation, PL_PROCESSOR_FABRIC_NUMA_NODE,
-                    PL_PROCESSOR_FABRIC_VERIFIED, 0u, cpu->numa_node_id, 0u, 0u);
+                {
+                    pl_processor_fabric_node_state state = PL_PROCESSOR_FABRIC_DECLARED;
+                    for (size_t n = 0u; n < topology->numa_node_count; ++n)
+                        if (topology->numa_nodes[n].node_id == cpu->numa_node_id &&
+                            topology->numa_nodes[n].evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED)
+                            state = PL_PROCESSOR_FABRIC_VERIFIED;
+                    numa_id = add_topology_node(nodes, node_capacity, &used_nodes,
+                        &next_id, topology->generation, PL_PROCESSOR_FABRIC_NUMA_NODE,
+                        state, 0u, cpu->numa_node_id, 0u, 0u);
+                }
                 if (numa_id == 0u)
                     return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                                 cpu->logical_id, 0u, 0u, "node buffer exhausted at NUMA node");
@@ -995,14 +1002,17 @@ pl_processor_fabric_status pl_processor_fabric_from_topology(
         const pl_topology_cache *cache = &topology->caches[i];
         uint32_t cache_node = add_topology_node(nodes, node_capacity, &used_nodes,
             &next_id, topology->generation, PL_PROCESSOR_FABRIC_CACHE,
-            PL_PROCESSOR_FABRIC_VERIFIED, 0u, PL_TOPOLOGY_UNKNOWN, 0u, 0u);
+            cache->evidence == PL_TOPOLOGY_EVIDENCE_OBSERVED
+                ? PL_PROCESSOR_FABRIC_VERIFIED : PL_PROCESSOR_FABRIC_DECLARED,
+            0u, cache->cache_id, 0u, 0u);
         if (cache_node == 0u)
             return fail(error, PL_PROCESSOR_FABRIC_OUTPUT_TOO_SMALL,
                         cache->cache_id, 0u, 0u, "node buffer exhausted at cache");
         nodes[cache_node - 1u].resource_capacity_bytes = cache->size_bytes;
         nodes[cache_node - 1u].resource_level = cache->level;
         nodes[cache_node - 1u].resource_type = (uint32_t)cache->kind;
-        nodes[cache_node - 1u].resource_available_bytes = cache->line_bytes;
+        nodes[cache_node - 1u].resource_granularity_bytes = cache->line_bytes;
+        nodes[cache_node - 1u].resource_association_count = cache->sharing_count;
         for (uint32_t cpu = 0u; cpu < PL_TOPOLOGY_MAX_LOGICAL_CPUS; ++cpu) {
             if ((cache->sharing_mask[cpu / 64u] & (UINT64_C(1) << (cpu % 64u))) != 0u) {
                 for (size_t n = 0u; n < used_nodes; ++n) {
