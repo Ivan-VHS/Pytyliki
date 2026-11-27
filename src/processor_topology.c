@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdatomic.h>
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -18,7 +19,7 @@
 #include <sys/stat.h>
 #endif
 
-static uint32_t topology_generation = 1u;
+static atomic_uint_least32_t topology_generation = ATOMIC_VAR_INIT(1u);
 
 static void set_unknown_topology(pl_processor_topology_snapshot *snapshot) {
     uint32_t index;
@@ -26,6 +27,7 @@ static void set_unknown_topology(pl_processor_topology_snapshot *snapshot) {
     for (index = 0u; index < PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS; ++index) {
         snapshot->logical_processors[index].logical_id = index;
         snapshot->logical_processors[index].group_id = PL_TOPOLOGY_UNKNOWN_ID;
+        snapshot->logical_processors[index].thread_id = PL_TOPOLOGY_UNKNOWN_ID;
         snapshot->logical_processors[index].package_id = PL_TOPOLOGY_UNKNOWN_ID;
         snapshot->logical_processors[index].die_id = PL_TOPOLOGY_UNKNOWN_ID;
         snapshot->logical_processors[index].core_id = PL_TOPOLOGY_UNKNOWN_ID;
@@ -278,17 +280,23 @@ static void collect_linux_numa(pl_processor_topology_snapshot *out) {
         }
         (void)snprintf(path, sizeof(path),
                        "/sys/devices/system/node/node%u/meminfo", node_id);
-        if (read_line(path, line, sizeof(line))) {
-            char *total = strstr(line, "MemTotal:");
-            char *free_mem = strstr(line, "MemFree:");
-            unsigned long long kib;
-            if (total != NULL && sscanf(total, "MemTotal: %llu kB", &kib) == 1) {
-                node.memory_total_bytes = (uint64_t)kib * UINT64_C(1024);
-                node.has_memory_total = 1u;
-            }
-            if (free_mem != NULL && sscanf(free_mem, "MemFree: %llu kB", &kib) == 1) {
-                node.memory_available_bytes = (uint64_t)kib * UINT64_C(1024);
-                node.has_memory_available = 1u;
+        {
+            FILE *memory_info = fopen(path, "r");
+            if (memory_info != NULL) {
+                while (fgets(line, sizeof(line), memory_info) != NULL) {
+                    char *total = strstr(line, "MemTotal:");
+                    char *free_mem = strstr(line, "MemFree:");
+                    unsigned long long kib;
+                    if (total != NULL && sscanf(total, "MemTotal: %llu kB", &kib) == 1) {
+                        node.memory_total_bytes = (uint64_t)kib * UINT64_C(1024);
+                        node.has_memory_total = 1u;
+                    }
+                    if (free_mem != NULL && sscanf(free_mem, "MemFree: %llu kB", &kib) == 1) {
+                        node.memory_available_bytes = (uint64_t)kib * UINT64_C(1024);
+                        node.has_memory_available = 1u;
+                    }
+                }
+                fclose(memory_info);
             }
         }
         if (out->numa_node_count < PL_TOPOLOGY_MAX_NUMA_NODES)
@@ -298,29 +306,42 @@ static void collect_linux_numa(pl_processor_topology_snapshot *out) {
 
 static pl_topology_status collect_linux(pl_processor_topology_snapshot *out) {
     long configured = sysconf(_SC_NPROCESSORS_CONF);
-    uint32_t os_id, count = 0u, online = 0u, cache_id = 0u;
+    uint32_t os_ids[PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS];
+    size_t os_count = 0u, cpu_index;
+    uint32_t online = 0u, cache_id = 0u;
+    char present[4096];
     if (configured <= 0) return PL_TOPOLOGY_IO_ERROR;
-    if (configured > (long)PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS)
+    if (!read_line("/sys/devices/system/cpu/present", present, sizeof(present))) {
+        uint32_t fallback;
+        if (configured > (long)PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS)
+            return PL_TOPOLOGY_LIMIT_EXCEEDED;
+        for (fallback = 0u; fallback < (uint32_t)configured; ++fallback)
+            os_ids[os_count++] = fallback;
+    } else if (!parse_cpu_list(present, os_ids,
+                               PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS, &os_count)) {
         return PL_TOPOLOGY_LIMIT_EXCEEDED;
-    for (os_id = 0u; os_id < (uint32_t)configured; ++os_id) {
-        char path[256], line[128];
-        pl_topology_logical_processor *cpu;
+    }
+    for (cpu_index = 0u; cpu_index < os_count; ++cpu_index) {
+        const uint32_t os_id = os_ids[cpu_index];
+        char path[256], line[4096];
         uint32_t value;
+        pl_topology_logical_processor *cpu = &out->logical_processors[cpu_index];
         int is_online = 1;
-        if (os_id != 0u) {
-            (void)snprintf(path, sizeof(path),
-                           "/sys/devices/system/cpu/cpu%u/online", os_id);
-            if (read_line(path, line, sizeof(line))) is_online = (line[0] == '1');
-        }
+        cpu->logical_id = (uint32_t)cpu_index;
+        cpu->os_id = os_id;
+        (void)snprintf(path, sizeof(path),
+                       "/sys/devices/system/cpu/cpu%u/online", os_id);
+        if (read_line(path, line, sizeof(line)))
+            is_online = (line[0] == '1');
+        cpu->online = (uint8_t)(is_online != 0);
+        if (is_online) ++online;
         (void)snprintf(path, sizeof(path),
                        "/sys/devices/system/cpu/cpu%u/topology/physical_package_id", os_id);
-        if (access(path, F_OK) != 0) continue;
-        cpu = &out->logical_processors[count];
-        cpu->logical_id = count;
-        cpu->os_id = os_id;
-        cpu->online = (uint8_t)(is_online != 0);
+        if (access(path, F_OK) != 0) {
+            cpu->evidence = PL_TOPOLOGY_EVIDENCE_PARTIAL;
+            continue;
+        }
         cpu->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
-        if (is_online) ++online;
         if (read_unsigned_file(path, &value)) cpu->package_id = value;
         (void)snprintf(path, sizeof(path),
                        "/sys/devices/system/cpu/cpu%u/topology/die_id", os_id);
@@ -328,6 +349,20 @@ static pl_topology_status collect_linux(pl_processor_topology_snapshot *out) {
         (void)snprintf(path, sizeof(path),
                        "/sys/devices/system/cpu/cpu%u/topology/core_id", os_id);
         if (read_unsigned_file(path, &value)) cpu->core_id = value;
+        (void)snprintf(path, sizeof(path),
+                       "/sys/devices/system/cpu/cpu%u/topology/thread_siblings_list", os_id);
+        if (read_line(path, line, sizeof(line))) {
+            uint32_t siblings[PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS];
+            size_t sibling_count = 0u, sibling_index;
+            if (parse_cpu_list(line, siblings, PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS,
+                               &sibling_count)) {
+                for (sibling_index = 0u; sibling_index < sibling_count; ++sibling_index)
+                    if (siblings[sibling_index] == os_id) {
+                        cpu->thread_id = (uint32_t)sibling_index;
+                        break;
+                    }
+            }
+        }
         {
             uint32_t node_id;
             for (node_id = 0u; node_id < PL_TOPOLOGY_MAX_NUMA_NODES; ++node_id) {
@@ -339,19 +374,20 @@ static pl_topology_status collect_linux(pl_processor_topology_snapshot *out) {
                 }
             }
         }
-        ++count;
     }
-    out->logical_processor_count = count;
+    out->logical_processor_count = (uint32_t)os_count;
     out->online_logical_processor_count = online;
-    if (count == 0u) return PL_TOPOLOGY_IO_ERROR;
+    if (os_count == 0u) return PL_TOPOLOGY_IO_ERROR;
     collect_linux_numa(out);
     collect_linux_caches(out, &cache_id);
     (void)snprintf(out->collector, sizeof(out->collector), "linux-sysfs");
     out->complete = 1u;
-    for (os_id = 0u; os_id < count; ++os_id) {
-        const pl_topology_logical_processor *cpu = &out->logical_processors[os_id];
+    for (cpu_index = 0u; cpu_index < os_count; ++cpu_index) {
+        const pl_topology_logical_processor *cpu = &out->logical_processors[cpu_index];
         if (cpu->package_id == PL_TOPOLOGY_UNKNOWN_ID ||
-            cpu->core_id == PL_TOPOLOGY_UNKNOWN_ID) out->complete = 0u;
+            cpu->core_id == PL_TOPOLOGY_UNKNOWN_ID ||
+            cpu->thread_id == PL_TOPOLOGY_UNKNOWN_ID)
+            out->complete = 0u;
     }
     return PL_TOPOLOGY_OK;
 }
@@ -368,31 +404,11 @@ static int find_windows_cpu(pl_processor_topology_snapshot *out,
 }
 
 static pl_topology_status collect_windows(pl_processor_topology_snapshot *out) {
-    WORD group_count = GetActiveProcessorGroupCount();
     uint32_t dense = 0u, i;
     DWORD bytes = 0u;
     PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX records = NULL;
     BYTE *cursor;
-    uint32_t package_id = 0u, core_id = 0u, cache_id = 0u;
-    if (group_count == 0u) return PL_TOPOLOGY_IO_ERROR;
-    for (i = 0u; i < group_count; ++i) {
-        DWORD active = GetActiveProcessorCount((WORD)i);
-        DWORD bit;
-        for (bit = 0u; bit < active; ++bit) {
-            pl_topology_logical_processor *cpu;
-            if (dense >= PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS)
-                return PL_TOPOLOGY_LIMIT_EXCEEDED;
-            cpu = &out->logical_processors[dense];
-            cpu->logical_id = dense;
-            cpu->os_id = bit;
-            cpu->group_id = i;
-            cpu->online = 1u;
-            cpu->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
-            ++dense;
-        }
-    }
-    out->logical_processor_count = dense;
-    out->online_logical_processor_count = dense;
+    uint32_t package_id = 0u, die_id = 0u, core_id = 0u, cache_id = 0u;
     (void)GetLogicalProcessorInformationEx(RelationAll, NULL, &bytes);
     if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || bytes == 0u)
         return PL_TOPOLOGY_IO_ERROR;
@@ -406,14 +422,56 @@ static pl_topology_status collect_windows(pl_processor_topology_snapshot *out) {
     while (cursor < (BYTE *)records + bytes) {
         PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX item =
             (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)cursor;
+        if (item->Size == 0u || cursor + item->Size > (BYTE *)records + bytes) {
+            free(records);
+            return PL_TOPOLOGY_INTERNAL_ERROR;
+        }
+        if (item->Relationship == RelationGroup) {
+            WORD group_index;
+            for (group_index = 0u; group_index < item->Group.ActiveGroupCount; ++group_index) {
+                const PROCESSOR_GROUP_INFO *group = &item->Group.GroupInfo[group_index];
+                unsigned bit;
+                for (bit = 0u; bit < sizeof(KAFFINITY) * 8u; ++bit) {
+                    pl_topology_logical_processor *cpu;
+                    if ((group->ActiveProcessorMask & ((KAFFINITY)1u << bit)) == 0u)
+                        continue;
+                    if (dense >= PL_TOPOLOGY_MAX_LOGICAL_PROCESSORS) {
+                        free(records);
+                        return PL_TOPOLOGY_LIMIT_EXCEEDED;
+                    }
+                    cpu = &out->logical_processors[dense];
+                    cpu->logical_id = dense;
+                    cpu->os_id = bit;
+                    cpu->group_id = group_index;
+                    cpu->online = 1u;
+                    cpu->evidence = PL_TOPOLOGY_EVIDENCE_OBSERVED;
+                    ++dense;
+                }
+            }
+            break;
+        }
+        cursor += item->Size;
+    }
+    out->logical_processor_count = dense;
+    out->online_logical_processor_count = dense;
+    if (dense == 0u) {
+        free(records);
+        return PL_TOPOLOGY_IO_ERROR;
+    }
+    cursor = (BYTE *)records;
+    while (cursor < (BYTE *)records + bytes) {
+        PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX item =
+            (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)cursor;
         WORD group_index;
         if (item->Size == 0u || cursor + item->Size > (BYTE *)records + bytes) {
             free(records);
             return PL_TOPOLOGY_INTERNAL_ERROR;
         }
         if (item->Relationship == RelationProcessorPackage ||
+            item->Relationship == RelationProcessorDie ||
             item->Relationship == RelationProcessorCore) {
             WORD masks = item->Processor.GroupCount;
+            uint32_t thread_id = 0u;
             for (group_index = 0u; group_index < masks; ++group_index) {
                 const GROUP_AFFINITY *affinity = &item->Processor.GroupMask[group_index];
                 unsigned bit;
@@ -423,12 +481,18 @@ static pl_topology_status collect_windows(pl_processor_topology_snapshot *out) {
                         if (logical >= 0) {
                             if (item->Relationship == RelationProcessorPackage)
                                 out->logical_processors[logical].package_id = package_id;
-                            else out->logical_processors[logical].core_id = core_id;
+                            else if (item->Relationship == RelationProcessorDie)
+                                out->logical_processors[logical].die_id = die_id;
+                            else {
+                                out->logical_processors[logical].core_id = core_id;
+                                out->logical_processors[logical].thread_id = thread_id++;
+                            }
                         }
                     }
                 }
             }
             if (item->Relationship == RelationProcessorPackage) ++package_id;
+            else if (item->Relationship == RelationProcessorDie) ++die_id;
             else ++core_id;
         } else if (item->Relationship == RelationNumaNode) {
             WORD masks = item->NumaNode.GroupCount;
@@ -502,8 +566,11 @@ pl_topology_status pl_processor_topology_collect(
     if (cpu_profile == NULL) cpu_profile = &local_cpu;
     if (pl_processor_scan(cpu_profile) != 0) return PL_TOPOLOGY_IO_ERROR;
     copy_cpu_profile(out, cpu_profile);
-    out->generation = topology_generation++;
-    if (out->generation == 0u) out->generation = topology_generation++;
+    out->generation = atomic_fetch_add_explicit(
+        &topology_generation, 1u, memory_order_relaxed);
+    if (out->generation == 0u)
+        out->generation = atomic_fetch_add_explicit(
+            &topology_generation, 1u, memory_order_relaxed);
     set_timestamp(out->captured_at);
 #if defined(_WIN32)
     status = collect_windows(out);
@@ -605,6 +672,9 @@ pl_topology_status pl_processor_topology_write_json(
         fputs(",\"numa_node_id\":", output);
         if (cpu->numa_node_id == PL_TOPOLOGY_UNKNOWN_ID) fputs("null", output);
         else fprintf(output, "%u", cpu->numa_node_id);
+        fprintf(output, ",\"thread_id\":");
+        if (cpu->thread_id == PL_TOPOLOGY_UNKNOWN_ID) fputs("null", output);
+        else fprintf(output, "%u", cpu->thread_id);
         fprintf(output, ",\"group_id\":");
         if (cpu->group_id == PL_TOPOLOGY_UNKNOWN_ID) fputs("null", output);
         else fprintf(output, "%u", cpu->group_id);
