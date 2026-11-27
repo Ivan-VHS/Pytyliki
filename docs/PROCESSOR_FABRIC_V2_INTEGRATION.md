@@ -33,7 +33,7 @@ The v2 evidence envelope in schemas/pytyliki.processor-topology-evidence.v2.sche
 - every capture carries a monotonic generation, collector identity, timestamp, source and completeness state;
 - the collector is read-only; lack of permission or unsupported platform APIs results in partial/unknown evidence rather than inferred topology.
 
-The collector output is validated for duplicate IDs, online counts, NUMA/cache mask references and ISA tri-state consistency. pl_processor_fabric_from_topology() now maps observed evidence into PPF nodes plus explicit processor-group/NUMA/cache-sharing edges. A logical processor remains a root if its parent is not observed; no package/die/core parent is invented. PPF v1 still has a 64-bit worker-affinity mask, so the bridge rejects logical IDs >=64 even though the topology evidence format can retain up to 256 processors.
+The collector output is validated for duplicate IDs, online counts, NUMA/cache mask references and ISA tri-state consistency. pl_processor_fabric_from_topology() now maps observed evidence into PPF nodes plus explicit processor-group/NUMA/cache-sharing edges. A logical processor remains a root if its parent is not observed; no package/die/core parent is invented. Processor Fabric ABI v2 uses a four-word affinity mask for up to 256 logical processors. Sparse IDs and IDs above 63 are preserved in the graph and placement model. Interchange consumers must pin ABI major 2; v1 and v2 public node layouts are not binary-interchangeable.
 
 ISA legality uses two independent facts:
 
