@@ -30,7 +30,8 @@ int main(void) {
         char prefix[64]={0};
         assert(fread(prefix,1u,strlen("{\"schema\":\"pytyliki.processor-topology-evidence.v2\"}"),stream)>0u);
         assert(strstr(prefix,"pytyliki.processor-topology-evidence.v2")!=NULL);
-        fclose(stream);\n        remove("processor-topology-test-output.json");
+        fclose(stream);
+        remove("processor-topology-test-output.json");
     }
     puts("processor topology collector tests passed");
     return 0;
