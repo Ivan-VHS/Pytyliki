@@ -160,7 +160,7 @@ int pl_silicon_cycle_accumulator_sample(const pl_silicon_cycle_source *source,
                                         pl_silicon_cycle_accumulator *accumulator,
                                         uint64_t *out_delta);
 
-/* MMIO is only available through an explicitly mapped region and allowlist. */
+/* MMIO is bounded by a trusted, explicitly mapped region capability. */
 int pl_silicon_mmio_region_init(pl_silicon_mmio_region *region,
                                 uintptr_t bus_base,
                                 volatile void *mapped_base,
