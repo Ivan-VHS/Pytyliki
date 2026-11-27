@@ -8,8 +8,9 @@ int main(void) {
     pl_hw_memory_region region={2u,1u,0x1000u,0x1000u,0u,0x100u,3u,PL_HW_CACHE_DEVICE,PL_HW_OWNER_CPU,0u};
     pl_hw_register_bank bank={3u,2u};
     pl_hw_register reg={4u,3u,0x10u,32u,PL_HW_ACCESS_READ_WRITE,1u,4u,PL_HW_SIDE_EFFECT_NONE,PL_HW_OWNER_CPU};
+    pl_hw_device device={9u,7u};
     pl_hw_dma_buffer dma={5u,9u,1u,0x4000u,0x1000u,0x100u,PL_HW_DMA_TO_DEVICE,PL_HW_DMA_EXPLICIT_SYNC,PL_HW_OWNER_CPU,PL_HW_DMA_CPU_OWNED,7u};
-    pl_hw_resource_model model={7u,1u,1u,1u,1u,1u,&space,&region,&bank,&reg,&dma};
+    pl_hw_resource_model model={7u,1u,1u,1u,1u,1u,&space,&region,&bank,&reg,&dma,1u,&device};
     assert(pl_hw_resource_validate(&model)==PL_HW_RESOURCE_OK);
     assert(pl_hw_dma_transition(&dma,PL_HW_DMA_PREPARED_FOR_DEVICE,PL_HW_ACTOR_CPU,7u,0,0,0)==PL_HW_RESOURCE_OK);
     assert(pl_hw_dma_transition(&dma,PL_HW_DMA_DEVICE_OWNED,PL_HW_ACTOR_ADAPTER,7u,0,1,0)==PL_HW_RESOURCE_PERMISSION);
