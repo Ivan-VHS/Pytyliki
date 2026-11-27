@@ -55,15 +55,16 @@ static int parse_event_line(char *line, pl_tr_observation *event, uint32_t *task
 
     if (line == NULL || event == NULL || task_flags == NULL) return 0;
     cursor = line;
-    while (field_count < 6u) {
-        char *separator;
-        fields[field_count++] = cursor;
-        separator = strchr(cursor, ',');
-        if (separator == NULL) break;
+    while (field_count < 5u) {
+        char *separator = strchr(cursor, ',');
+        if (separator == NULL) return 0;
         *separator = '\\0';
+        fields[field_count++] = cursor;
         cursor = separator + 1;
     }
-    if (field_count != 6u || strchr(fields[5], ',') != NULL) return 0;
+    if (strchr(cursor, ',') != NULL) return 0;
+    fields[field_count++] = cursor;
+    if (field_count != 6u) return 0;
     for (size_t i = 0u; i < 6u; ++i) fields[i] = trim_field(fields[i]);
 
     if (!parse_u64_field(fields[0], UINT64_MAX, &values[0]) ||
