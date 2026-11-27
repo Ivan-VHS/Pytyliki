@@ -1,5 +1,5 @@
 {
-  "schema": "duckstory.config.v1",
+  "schema": "dakstory.config.v1",
   "project": "Pytyliki",
   "repository": "Ivan-VHS/Pytyliki",
   "profile": "native-c11-workstation",
