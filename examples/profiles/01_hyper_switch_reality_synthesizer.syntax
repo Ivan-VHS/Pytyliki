@@ -1,0 +1,100 @@
+/*
+ * Reference profile: HYPER-SWITCH REALITY SYNTHESIZER
+ * Aesthetic metadata: glitch hop / cinematic samples / London grime pressure
+ *
+ * This is a compound DAG envelope. The current frontend validates its outer
+ * structure only; the nested statements remain a proposed dialect.
+ */
+
+dag hyper_switch_reality_synthesizer {
+    // Symbolic labels, not a quantum simulator or a physical qubit backend.
+    node reality_model: contract reality_state {
+        enum reality_layer = [PHYSICAL, VIRTUAL, ACOUSTIC, PERCEPTUAL, ETHEREAL];
+        require coherence_level in 0.0..1.0;
+        require glitch_tolerance <= 15;
+        symbolic_state_zero = "|0>";
+        symbolic_state_one = "|1>";
+        superposition_alpha = 0.707;
+        entanglement_factor = 1.0;
+        bass_resonance = complex(0.0, 9.81);
+    };
+
+    node tournament: schedule hyper_tournament every 1_ms {
+        table tournament_bracket {
+            fields = [task_id, latency_cost, creative_weight, syncopation_index];
+            ranking = impact_descending;
+            tie_break = stable_task_id;
+        }
+        fn score_task(task) -> f32 {
+            let sync_bonus = if task.syncopation_index > 800
+                then task.creative_weight * 2.5 else 0.0;
+            let sample_bonus = if task.latency_cost < LOW_THRESHOLD
+                then task.creative_weight * 1.8 else 0.0;
+            return sync_bonus + sample_bonus - task.latency_cost * 0.1;
+        }
+        require winner_cache.capacity == 16;
+        // Promotion requires a separate scheduler capability and audit record.
+    };
+
+    node data_forge: stream raw_audio_forge from input.audio
+        |> bounded_compress(codec = "LZ77", output_capacity = 8192)
+        |> attach_metadata(source = "USER_INPUT", clock = monotonic)
+        |> align_storage(cache_line_bytes = target.cache_line_bytes)
+        |> authenticate_each_chunk(key_handle = secure_key_handle)
+        |> sink(storage.pending, overflow = reject);
+
+    node operation_gates: rule selective_operation priority 80 {
+        when condition == true then invoke(path_a, effect = "force");
+        when condition == false then invoke(path_b, effect = "grace");
+        transition_curve = [LINEAR, EXPONENTIAL, SHARP];
+        require callbacks_are_typed;
+        require pipeline_cleanup_on_error;
+    };
+
+    node parallel_engine: dag bounded_parallel_engine {
+        node split: fn split_work(data, max_chunks = 128);
+        node execute: schedule process_chunks {
+            worker_limit = min(128, target.available_workers);
+            require chunk_count <= worker_limit;
+            require every_chunk_has_bounded_output;
+        }
+        node merge: fn merge_results(order = source_order);
+        split -> execute -> merge;
+    };
+
+    node connectivity: device encrypted_remote_link {
+        require capability(network.connect);
+        require capability(crypto.authenticated_channel);
+        handshake = trusted_protocol("platform-approved");
+        reject_invalid_peer = true;
+        key_material = opaque_key_handle;
+    };
+
+    node audio_engine: stream sound_reality from sound.events
+        |> oscillator(sample_rate = target.audio_sample_rate)
+        |> envelope(attack = SHARP, decay = FAST)
+        |> optional_formant_filter(profile = "BANDURA")
+        |> optional_chorus(profile = "CHANSON")
+        |> spatialize(layout = target.audio_layout)
+        |> sink(audio.backend, overflow = drop_oldest);
+
+    node integrity: invariant system_integrity {
+        always code_signature_valid;
+        always memory_regions_within_declared_map;
+        eventually recovery_state == SAFE within target.recovery_bound;
+    };
+
+    node main_executor: fsm main_execution initial VERIFY {
+        state VERIFY:
+            on integrity_ok -> goto RUN;
+            on integrity_failed -> goto SAFE_STOP;
+        state RUN:
+            on task_ready -> dispatch_bounded_task();
+            on audio_result -> submit_to_audio_backend();
+            on idle -> goto IDLE;
+        state IDLE:
+            on task_ready -> goto RUN;
+        state SAFE_STOP:
+            entry { disable_untrusted_outputs(); emit_diagnostic("INTEGRITY_FAILURE"); }
+    };
+}

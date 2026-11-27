@@ -290,6 +290,8 @@ if(BUILD_TESTING)
     18_hardware_sanity
     19_cpu_window_layout
     20_step_debugger
+    21_hyper_switch_reality_synthesizer
+    22_epoch_4m_vacuum_lattice
   )
   foreach(example IN LISTS PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES)
     add_test(

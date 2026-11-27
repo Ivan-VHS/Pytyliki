@@ -15,7 +15,8 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
-- [Pytyliki hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty hardware construct families, structural parser and safety contracts.
+- [Pytyliki hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty structural construct families.
+- [Speculative hardware profiles](PYTYLIKI_SPECULATIVE_PROFILES.md) — compound Hyper-Switch and Epoch 4M reference examples with token mapping and implementation boundaries. — twenty hardware construct families, structural parser and safety contracts.
 - [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
 - [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and C ABI boundaries.
