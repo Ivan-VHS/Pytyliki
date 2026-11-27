@@ -600,7 +600,10 @@ static pl_topology_status scan_windows(pl_processor_topology_snapshot *out) {
             if (item->Cache.Type == CacheData) kind = PL_TOPOLOGY_CACHE_DATA;
             else if (item->Cache.Type == CacheInstruction) kind = PL_TOPOLOGY_CACHE_INSTRUCTION;
             else if (item->Cache.Type == CacheUnified) kind = PL_TOPOLOGY_CACHE_UNIFIED;
-            if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) continue;
+            if (out->cache_count >= PL_TOPOLOGY_MAX_CACHES) {
+                free(records);
+                return PL_TOPOLOGY_LIMIT_EXCEEDED;
+            }
             cache = &out->caches[out->cache_count];
             memset(cache, 0, sizeof(*cache));
             cache->cache_id = out->cache_count++;
