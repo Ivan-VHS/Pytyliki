@@ -851,11 +851,8 @@
       "requirement": "Record input, instruction position, target/model revision, register checkpoint and event ordering for replayable failures.",
       "acceptance": "Replay reproduces the same modeled state or identifies the first divergence; live-hardware nondeterminism is explicitly captured as evidence rather than claimed deterministic.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/trace.c",
-        "src/trace.h"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-032",
@@ -879,13 +876,8 @@
       "requirement": "Detect unreachable labels, unused registers, unreferenced symbols, dead flags and unreachable basic blocks where target semantics permit.",
       "acceptance": "Findings are source-mapped and architecture-aware; special-register side effects and inline assembly clobbers prevent unsafe false positives.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/system_array.c",
-        "src/system_array.h",
-        "tests/test_system_array.c",
-        "docs/SYSTEM_ARRAY_SYNTAX.md"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-034",
@@ -1086,11 +1078,8 @@
       "requirement": "Retire obsolete panels, rules and adapters through versioned migration notes while preserving old project readability.",
       "acceptance": "Deprecated features carry removal versions and migration paths; no accepted project is silently reinterpreted.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/ironclad_systems.c",
-        "src/ironclad_systems.h"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-050",
@@ -1174,11 +1163,8 @@
       "requirement": "Estimate thermal hotspots from a validated power map, package/cooling model and boundary conditions; compare with available sensors.",
       "acceptance": "Predictions include model, calibration, time horizon, uncertainty and safety margin; target writes remain capability-gated.",
       "interpretation_adjustment": "A prediction cannot guarantee warning before damage without validated sensors and conservative limits.",
-      "status": "partial",
-      "evidence": [
-        "src/low_level_contract.c",
-        "src/low_level_contract.h"
-      ]
+      "status": "research",
+      "evidence": []
     },
     {
       "id": "PIDE-057",
@@ -1221,11 +1207,8 @@
       "requirement": "Bind images and target operations to compatible silicon stepping, board revision, errata and feature sets.",
       "acceptance": "An incompatible revision is blocked; compatible revisions follow an explicit tested compatibility matrix.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/ironclad_systems.c",
-        "src/ironclad_systems.h"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-061",
@@ -1235,13 +1218,8 @@
       "requirement": "Capture glitches, malformed waveforms, transient model states and fault-injection cases as reproducible test artifacts.",
       "acceptance": "Artifacts include model/target, trigger, capture window, seed, expected/observed state and recovery outcome.",
       "interpretation_adjustment": "A glitch is a diagnostic/fault artifact, not accepted corrupted production state.",
-      "status": "partial",
-      "evidence": [
-        "src/trace.c",
-        "src/trace.h",
-        "tests/test_trace.c",
-        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-062",
@@ -1349,11 +1327,8 @@
       "requirement": "Describe atomicity, width, memory order, lock-free guarantees and bus/device scope per ISA and target.",
       "acceptance": "Litmus tests and target fixtures verify compare-exchange/RMW ordering; unavailable widths or semantics fail explicitly.",
       "interpretation_adjustment": "Do not require every RMW to take one cycle or globally lock a bus; hardware guarantees are architecture-specific.",
-      "status": "partial",
-      "evidence": [
-        "src/low_level_contract.c",
-        "src/low_level_contract.h"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-071",
@@ -1385,12 +1360,8 @@
       "requirement": "Use target-described cache-line size, burst length, sector size and memory transfer granularity for visualization and warnings.",
       "acceptance": "Alignment and efficiency warnings derive from target profile and measured data; byte-granular valid operations remain valid.",
       "interpretation_adjustment": "Never hard-code 64 bytes as a universal cache line or call every sub-line access inefficient.",
-      "status": "partial",
-      "evidence": [
-        "src/processor.c",
-        "src/processor.h",
-        "tests/test_core.c"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-074",
@@ -1550,11 +1521,8 @@
       "requirement": "Track device ownership, DMA direction, mapping, pinning, lifetime, IOMMU domain and cache synchronization.",
       "acceptance": "State-machine tests reject use-after-unmap, out-of-range descriptor and CPU/device concurrent ownership violations.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/trace.c",
-        "src/trace.h"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-087",
@@ -1575,11 +1543,8 @@
       "requirement": "Analyze speculative/transient execution and observable cache/timing channels with target-specific mitigations and test cases.",
       "acceptance": "Reports identify known attack surface and mitigation status; no blanket guarantee of eliminating all side channels is made.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/low_level_contract.c",
-        "src/low_level_contract.h"
-      ]
+      "status": "research",
+      "evidence": []
     },
     {
       "id": "PIDE-089",
@@ -1671,11 +1636,8 @@
       "requirement": "Expose hardware-assisted virtualization, mappings, exits, IOMMU and data-copy paths for supported hosts/targets.",
       "acceptance": "Metrics show actual copies, mappings and exits; overhead is benchmarked, not assumed zero.",
       "interpretation_adjustment": null,
-      "status": "partial",
-      "evidence": [
-        "src/low_level_contract.c",
-        "src/low_level_contract.h"
-      ]
+      "status": "planned",
+      "evidence": []
     },
     {
       "id": "PIDE-096",
