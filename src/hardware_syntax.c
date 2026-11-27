@@ -12,7 +12,7 @@ typedef struct {
 } keyword_entry;
 
 static const pl_hw_construct_info construct_catalog[PL_HW_SYNTAX_CONSTRUCT_COUNT] = {
-    {PL_HW_CONSTRUCT_IRQ_TABLE, "table", "declarative", "interrupt-dispatch table",
+    {PL_HW_CONSTRUCT_IRQ_TABLE, "table", "declarative", "typed table, including interrupt dispatch",
      "IRQ handlers must be bounded, reentrant where required, and explicitly declare interrupt-safe effects."},
     {PL_HW_CONSTRUCT_STREAM, "stream", "reactive", "typed dataflow pipeline",
      "Pipeline stages must declare effects, backpressure, capacity, loss policy and DMA ownership."},
