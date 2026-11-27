@@ -80,6 +80,7 @@ typedef struct {
     uint32_t isa_hardware_present;
     uint32_t isa_os_usable;
     uint32_t isa_known;
+    uint32_t isa_os_known;
     uint32_t generation;
     char architecture[32];
     char vendor[32];
