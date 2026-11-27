@@ -37,6 +37,27 @@ REQUIRED_FIELDS = (
     "target", "trigger", "current_controls", "guardrails", "acceptance",
 )
 
+TASK_STATUSES = {"active", "extend", "planned", "not_applicable"}
+MIN_NOT_APPLICABLE_REASON_LENGTH = 80
+
+
+def validate_task_status(task: dict) -> list[str]:
+    """Validate a workstream state without promoting plans to implementation."""
+    if not isinstance(task, dict):
+        return ["task must be an object"]
+    status = task.get("status")
+    if status not in TASK_STATUSES:
+        return ["status must be active, extend, planned or not_applicable"]
+    if status == "not_applicable":
+        reason = task.get("not_applicable_reason")
+        if not isinstance(reason, str) or len(reason.strip()) < MIN_NOT_APPLICABLE_REASON_LENGTH:
+            return [
+                "not_applicable status must explain why the workstream is outside "
+                f"the product scope (at least {MIN_NOT_APPLICABLE_REASON_LENGTH} characters)"
+            ]
+    return []
+
+
 def fail(message: str) -> None:
     print(f"ERROR: {message}", file=sys.stderr)
     raise SystemExit(1)
@@ -154,8 +175,9 @@ def main() -> int:
         missing = [field for field in REQUIRED_FIELDS if field not in task]
         if missing:
             fail(f"task {index:02d} is missing fields: {', '.join(missing)}")
-        if task["status"] not in {"active", "extend", "planned"}:
-            fail(f"task {task['id']} has an invalid status")
+        status_errors = validate_task_status(task)
+        if status_errors:
+            fail(f"task {task['id']}: {status_errors[0]}")
         if task["priority"] not in {"P0", "P1", "P2"}:
             fail(f"task {task['id']} has an invalid priority")
         for field in ("automation", "trigger", "current_controls", "guardrails"):
@@ -214,7 +236,8 @@ def main() -> int:
     print(
         f"Validated {len(tasks)} workstreams for {project['repository']}: "
         f"{states['active']} active, {states['extend']} to extend, "
-        f"{states['planned']} planned. Evidence and safety gates are present."
+        f"{states['planned']} planned, {states['not_applicable']} not applicable. "
+        "Evidence and safety gates are present."
     )
     return 0
 
