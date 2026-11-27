@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation for read-only discovery, bounded CPU and memory analysis, source diagnostics, numerical metrics, and versioned native interoperability.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and a syntax-only system-array frontend.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -51,6 +51,18 @@
         "src/core.c",
         "src/cli.c",
         "tests/test_core.c"
+      ]
+    },
+    {
+      "id": "syntax.system-array",
+      "status": "implemented",
+      "summary": "Bounded C11 syntax frontend accepts documented framed aliases and normalizes them to system(array); it does not execute source or access hardware.",
+      "evidence": [
+        "src/system_array.h",
+        "src/system_array.c",
+        "src/system_array_cli.c",
+        "tests/test_system_array.c",
+        "docs/SYSTEM_ARRAY_SYNTAX.md"
       ]
     },
     {
@@ -201,13 +213,15 @@
     "Processor and hardware inspection is read-only; no firmware, BIOS/UEFI, microcode, clock, voltage, driver or device-register writes are performed.",
     "Source review does not execute or rewrite scanned files; benchmarks are bounded and hardware-dependent.",
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
-    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable."
+    "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
+    "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
     "CMake library boundaries for adding independently tested C11 modules.",
     "Evidence-backed architecture, MCU and toolchain profile catalogues.",
     "Explicit adapter layer for trusted external native consumers.",
-    "Bounded saturating matrix self-product for repeated vertical architecture analysis."
+    "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
+    "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration."
   ]
 }
