@@ -93,10 +93,11 @@ static void test_ppf_constraints_cost_and_tie_break(void) {
     assert(report.has_selection == 1u);
     assert(report.selected_cpu_index == 2u);
     assert(report.topology_generation == 55u);
+    assert(report.candidates[0].rejection == PL_NI_ACCESS_DENIED);
     assert(report.candidates[1].rejection == PL_NI_ACCESS_DENIED);
-    assert(report.candidates[3].rejection == PL_NI_ACCESS_DENIED);
     telemetry[2].cache_pressure = 100u;
     telemetry[2].migration_cost = 1000u;
+    telemetry[0].cache_pressure = 300u;
     telemetry[1].migration_cost = 0u;
     memset(request.occupied_cpu_mask, 0, sizeof(request.occupied_cpu_mask));
     request.exclusive_core = 0u;
