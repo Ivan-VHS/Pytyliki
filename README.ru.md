@@ -2,6 +2,10 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+> **Psychoporter 666** — точность архитектора × энергия исследователя × прослеживаемые доказательства. [Общий стандарт документации](${styleUrl}).  
+> **Редакционная редакция · 2026-11-28:** обновлены подача и навигация; авторство, условия лицензий и сторонняя атрибуция сохранены.
+
+
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Сборка Windows](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 > Локальная рабочая станция на C11 для обнаружения характеристик процессора, ограниченных измерений, статической диагностики исходников и версионированного native-взаимодействия.
