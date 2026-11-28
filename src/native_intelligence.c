@@ -164,6 +164,8 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
         snapshot->provenance.schema_version != PL_NI_ABI_VERSION ||
         snapshot->provenance.topology_state < PL_NI_FACT_KNOWN ||
         snapshot->provenance.topology_state > PL_NI_FACT_CONFLICTING ||
+        snapshot->provenance.allowed_state < PL_NI_FACT_KNOWN ||
+        snapshot->provenance.allowed_state > PL_NI_FACT_CONFLICTING ||
         snapshot->provenance.isa_state < PL_NI_FACT_KNOWN ||
         snapshot->provenance.isa_state > PL_NI_FACT_CONFLICTING ||
         snapshot->provenance.memory_state < PL_NI_FACT_KNOWN ||
@@ -171,6 +173,8 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
         snapshot->provenance.isa_scope > PL_NI_ISA_SCOPE_PER_LOGICAL_CPU ||
         snapshot->provenance.platform[0] == '\0' ||
         snapshot->provenance.topology_source[0] == '\0' ||
+        (snapshot->provenance.allowed_state == PL_NI_FACT_KNOWN &&
+         snapshot->provenance.allowed_source[0] == '\0') ||
         snapshot->provenance.snapshot_fingerprint == 0u ||
         snapshot->provenance.generation != snapshot->provenance.snapshot_fingerprint ||
         snapshot->provenance.snapshot_fingerprint != pl_ni_snapshot_fingerprint(snapshot))
@@ -374,6 +378,7 @@ static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
     {
         WORD groups[64];
         USHORT actual = 64u;
+        int allowed_known = 0;
         if (GetProcessGroupAffinity(GetCurrentProcess(), &actual, groups) &&
             actual == 1u) {
             DWORD_PTR process_mask = 0u, system_mask = 0u;
@@ -381,14 +386,21 @@ static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
                 uint32_t i;
                 for (i = 0u; i < snapshot->cpu_count; ++i) {
                     pl_ni_cpu *cpu = &snapshot->cpus[i];
-                    if (cpu->group_id == groups[0] && cpu->os_cpu_id < sizeof(DWORD_PTR) * CHAR_BIT) {
-                        cpu->flags |= PL_NI_CPU_ALLOWED_KNOWN;
-                        if ((process_mask & ((DWORD_PTR)1u << cpu->os_cpu_id)) != 0u)
-                            cpu->flags |= PL_NI_CPU_ALLOWED;
-                    }
+                    cpu->flags |= PL_NI_CPU_ALLOWED_KNOWN;
+                    if (cpu->group_id == groups[0] &&
+                        cpu->os_cpu_id < sizeof(DWORD_PTR) * CHAR_BIT &&
+                        (process_mask & ((DWORD_PTR)1u << cpu->os_cpu_id)) != 0u)
+                        cpu->flags |= PL_NI_CPU_ALLOWED;
                 }
+                allowed_known = 1;
             }
         }
+        snapshot->provenance.allowed_state =
+            allowed_known ? PL_NI_FACT_KNOWN : PL_NI_FACT_UNAVAILABLE;
+        copy_text(snapshot->provenance.allowed_source,
+                  sizeof(snapshot->provenance.allowed_source),
+                  allowed_known ? "GetProcessGroupAffinity + GetProcessAffinityMask"
+                                : "unavailable for multi-group process");
     }
     for (group = 0u; group < snapshot->numa_count; ++group) {
         unsigned i;
@@ -663,6 +675,12 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
         CPU_ZERO(&allowed_set);
         allowed_set_known =
             sched_getaffinity(0, sizeof(allowed_set), &allowed_set) == 0;
+        snapshot->provenance.allowed_state =
+            allowed_set_known ? PL_NI_FACT_KNOWN : PL_NI_FACT_UNAVAILABLE;
+        copy_text(snapshot->provenance.allowed_source,
+                  sizeof(snapshot->provenance.allowed_source),
+                  allowed_set_known ? "sched_getaffinity current thread"
+                                    : "unavailable");
         for (uint32_t i = 0u; i < snapshot->cpu_count; ++i) {
         pl_ni_cpu *cpu = &snapshot->cpus[i];
         (void)snprintf(path, sizeof(path),
