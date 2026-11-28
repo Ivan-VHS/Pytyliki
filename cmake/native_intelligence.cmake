@@ -19,3 +19,23 @@ endif()
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/../src/native_intelligence.h
     DESTINATION include/pytyliki
 )
+
+# Release builds define NDEBUG globally; contract tests must still execute assertions.
+set(_pytyliki_assert_test_targets
+    pytyliki-native-intelligence-tests
+    pytyliki-interop-tests
+    pytyliki-low-level-contract-tests
+)
+if(MSVC)
+    foreach(_target IN LISTS _pytyliki_assert_test_targets)
+        if(TARGET ${_target})
+            target_compile_options(${_target} PRIVATE /UNDEBUG)
+        endif()
+    endforeach()
+else()
+    foreach(_target IN LISTS _pytyliki_assert_test_targets)
+        if(TARGET ${_target})
+            target_compile_options(${_target} PRIVATE -UNDEBUG)
+        endif()
+    endforeach()
+endif()
