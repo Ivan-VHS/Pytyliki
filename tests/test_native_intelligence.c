@@ -44,11 +44,13 @@ static void fixture(pl_ni_snapshot *snapshot) {
     snapshot->numa_distance[0][0] = 10u;
     snapshot->provenance.schema_version = PL_NI_ABI_VERSION;
     snapshot->provenance.topology_state = PL_NI_FACT_KNOWN;
+    snapshot->provenance.allowed_state = PL_NI_FACT_KNOWN;
     snapshot->provenance.isa_state = PL_NI_FACT_KNOWN;
     snapshot->provenance.isa_scope = PL_NI_ISA_SCOPE_PER_LOGICAL_CPU;
     snapshot->provenance.memory_state = PL_NI_FACT_KNOWN;
     (void)snprintf(snapshot->provenance.platform, sizeof(snapshot->provenance.platform), "fixture");
     (void)snprintf(snapshot->provenance.topology_source, sizeof(snapshot->provenance.topology_source), "fixture-topology");
+    (void)snprintf(snapshot->provenance.allowed_source, sizeof(snapshot->provenance.allowed_source), "fixture-allowed");
     (void)snprintf(snapshot->provenance.isa_source, sizeof(snapshot->provenance.isa_source), "fixture-isa");
     (void)snprintf(snapshot->provenance.memory_source, sizeof(snapshot->provenance.memory_source), "fixture-memory");
     snapshot->provenance.snapshot_fingerprint = pl_ni_snapshot_fingerprint(snapshot);
