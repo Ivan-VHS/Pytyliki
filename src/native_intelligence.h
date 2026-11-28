@@ -84,7 +84,7 @@ typedef struct {
 } pl_ni_snapshot;
 
 typedef struct {
-    uint16_t preferred_numa_node, current_cpu_index;
+    uint16_t preferred_numa_node, current_cpu_index; /* UINT16_MAX means unknown */
     uint64_t required_isa;
     uint64_t occupied_cpu_mask[PL_NI_CPU_WORDS];
     uint32_t require_online, require_allowed, require_known_allowed, exclusive_core;
@@ -118,7 +118,8 @@ typedef struct {
 enum {
     PL_PPF_EVIDENCE_TOPOLOGY = UINT32_C(1) << 0,
     PL_PPF_EVIDENCE_TELEMETRY = UINT32_C(1) << 1,
-    PL_PPF_EVIDENCE_ESTIMATED = UINT32_C(1) << 2
+    PL_PPF_EVIDENCE_ESTIMATED = UINT32_C(1) << 2,
+    PL_PPF_EVIDENCE_MISSING_TELEMETRY = UINT32_C(1) << 3
 };
 
 typedef enum {
