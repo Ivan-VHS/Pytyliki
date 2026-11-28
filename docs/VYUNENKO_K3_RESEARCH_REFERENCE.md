@@ -3,9 +3,9 @@
 > **Editorial update · 2026-11-28.** This page records a documentation-only relationship to Kaskad. It does not declare a product integration or implementation.
 
 The [Kaskad / Vyunenko Theory K3 v0.4.0 proposal](https://github.com/Ivan-VHS/Kaskad/pull/36) adds a formal treatment of the radix-1000 divisibility completion:
-- compatible CRT projectors and the orthogonal idempotents associated with the (2)-adic and (5)-adic components;
+- compatible CRT projectors and the orthogonal idempotents associated with the 2-adic and 5-adic components;
 - the topological-ring decomposition (widehat{mathbb Z}_{1000}congmathbb Z_2	imesmathbb Z_5);
-- a unique infinite positional expansion by coefficients (0,ldots,999);
+- a unique infinite positional expansion by coefficients `0..999`;
 - the distinction between finite K3 words and infinite completion elements.
 
 ## Relationship to Pytyliki
