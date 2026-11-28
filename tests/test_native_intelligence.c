@@ -42,9 +42,17 @@ static void fixture(pl_ni_snapshot *snapshot) {
     node->cpu_count = 4u;
     for (unsigned i = 0u; i < 4u; ++i) set_bit(node->cpu_mask, i);
     snapshot->numa_distance[0][0] = 10u;
+    snapshot->provenance.schema_version = PL_NI_ABI_VERSION;
+    snapshot->provenance.topology_state = PL_NI_FACT_KNOWN;
+    snapshot->provenance.isa_state = PL_NI_FACT_KNOWN;
     snapshot->provenance.isa_scope = PL_NI_ISA_SCOPE_PER_LOGICAL_CPU;
-    snapshot->provenance.generation = UINT64_C(55);
+    snapshot->provenance.memory_state = PL_NI_FACT_KNOWN;
+    (void)snprintf(snapshot->provenance.platform, sizeof(snapshot->provenance.platform), "fixture");
+    (void)snprintf(snapshot->provenance.topology_source, sizeof(snapshot->provenance.topology_source), "fixture-topology");
+    (void)snprintf(snapshot->provenance.isa_source, sizeof(snapshot->provenance.isa_source), "fixture-isa");
+    (void)snprintf(snapshot->provenance.memory_source, sizeof(snapshot->provenance.memory_source), "fixture-memory");
     snapshot->provenance.snapshot_fingerprint = pl_ni_snapshot_fingerprint(snapshot);
+    snapshot->provenance.generation = snapshot->provenance.snapshot_fingerprint;
 }
 
 static void test_collector_is_read_only_and_returns_provenance(void) {
@@ -93,7 +101,7 @@ static void test_ppf_constraints_cost_and_tie_break(void) {
     assert(report.candidate_count == 4u);
     assert(report.has_selection == 1u);
     assert(report.selected_cpu_index == 2u);
-    assert(report.topology_generation == 55u);
+    assert(report.topology_generation == snapshot.provenance.generation);
     assert(report.candidates[0].rejection == PL_NI_ACCESS_DENIED);
     assert(report.candidates[1].rejection == PL_NI_ACCESS_DENIED);
     telemetry[2].cache_pressure = 100u;
