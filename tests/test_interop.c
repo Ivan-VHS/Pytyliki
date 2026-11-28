@@ -24,6 +24,13 @@ int main(void) {
     pl_ppf_report placement_report;
     uint32_t native_contract_version = 0u;
     uint64_t native_structure_size = 0u;
+    pl_native_range native_range = {UINT64_C(0x1000), 64u, 32u, 16u};
+    pl_native_register native_register;
+    pl_dma_resource dma_resource = {
+        UINT64_C(9), UINT64_C(1), UINT64_C(0x2000),
+        UINT64_C(128), PL_DMA_CPU_OWNED, 1u
+    };
+    uint64_t native_address = 0u;
     assert(pytyliki_abi_version()==PYTYLIKI_ABI_VERSION);
     assert(pytyliki_v1_norm_f64(a,2u,&value)==0&&fabs(value-5.0)<1e-12);
     assert(pytyliki_v1_dot_f64(a,y,2u,&value)==0&&fabs(value-4.0)<1e-12);
@@ -52,6 +59,39 @@ int main(void) {
     assert(placement_report.topology_generation == native_snapshot.provenance.generation);
     assert(pytyliki_v1_native_snapshot_descriptor(NULL, &native_structure_size) ==
         PYTYLIKI_ABI_INVALID_ARGUMENT);
+    assert(pytyliki_v1_native_range_validate(&native_range) == PYTYLIKI_ABI_OK);
+    native_range.base = UINT64_MAX - 3u;
+    native_range.length = 8u;
+    assert(pytyliki_v1_native_range_validate(&native_range) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+    memset(&native_register, 0, sizeof(native_register));
+    native_register.base = UINT64_C(0x4000);
+    native_register.size = UINT64_C(0x100);
+    native_register.allowed_value_mask = UINT64_C(0xff);
+    native_register.generation = 3u;
+    native_register.address_bits = 32u;
+    native_register.width_bits = 32u;
+    native_register.alignment = 4u;
+    native_register.access = PL_NATIVE_ACCESS_READ | PL_NATIVE_ACCESS_WRITE;
+    native_register.address_space = PL_NATIVE_SPACE_MMIO;
+    assert(pytyliki_v1_native_register_validate(
+        &native_register, 4u, 1u, 0x5au, 3u, &native_address
+    ) == PYTYLIKI_ABI_OK);
+    assert(native_address == UINT64_C(0x4004));
+    assert(pytyliki_v1_native_register_validate(
+        &native_register, 4u, 1u, 0x100u, 3u, &native_address
+    ) == PYTYLIKI_ABI_ACCESS_DENIED);
+    assert(pytyliki_v1_native_dma_cpu_access_validate(&dma_resource, 1u) == PYTYLIKI_ABI_OK);
+    assert(pytyliki_v1_native_dma_transition(
+        &dma_resource, 1u, PL_DMA_DEVICE_OWNED
+    ) == PYTYLIKI_ABI_OK);
+    assert(pytyliki_v1_native_dma_cpu_access_validate(&dma_resource, 2u) == PYTYLIKI_ABI_ACCESS_DENIED);
+    assert(pytyliki_v1_native_dma_transition(
+        &dma_resource, 2u, PL_DMA_COMPLETED
+    ) == PYTYLIKI_ABI_OK);
+    assert(pytyliki_v1_native_dma_transition(
+        &dma_resource, 3u, PL_DMA_CPU_OWNED
+    ) == PYTYLIKI_ABI_OK);
+    assert(pytyliki_v1_native_dma_cpu_access_validate(&dma_resource, 4u) == PYTYLIKI_ABI_OK);
     assert(pytyliki_v1_orthogonal_f64((double[]){1.0,0.0},y,2u,1e-12,&orthogonal)==0&&orthogonal==1);
     assert(pytyliki_v1_embedded_profile_count(&embedded_count)==PYTYLIKI_ABI_OK);
     assert(embedded_count==3u);
