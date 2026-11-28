@@ -895,12 +895,25 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         candidate->accepted = 1u;
         candidate->rejection = PL_NI_OK;
         if (request->preferred_numa_node != PL_NI_UNKNOWN_ID) {
-            if (cpu->numa_node == request->preferred_numa_node)
+            uint32_t preferred_index = snapshot->numa_count;
+            uint32_t actual_index = snapshot->numa_count;
+            for (uint32_t ni = 0u; ni < snapshot->numa_count; ++ni) {
+                if (snapshot->numa[ni].id == request->preferred_numa_node)
+                    preferred_index = ni;
+                if (snapshot->numa[ni].id == cpu->numa_node)
+                    actual_index = ni;
+            }
+            if (cpu->numa_node == request->preferred_numa_node) {
                 candidate->numa_cost = 0u;
-            else if (cpu->numa_node == PL_NI_UNKNOWN_ID)
+            } else if (preferred_index == snapshot->numa_count ||
+                       actual_index == snapshot->numa_count) {
                 candidate->numa_cost = 500u;
-            else
-                candidate->numa_cost = 250u;
+            } else {
+                uint16_t distance =
+                    snapshot->numa_distance[preferred_index][actual_index];
+                candidate->numa_cost = distance == 0u
+                    ? 250u : clamp_cost((uint32_t)distance * 10u);
+            }
         }
         candidate->cache_cost = cpu_shared_cache_penalty(snapshot, i);
         candidate->smt_cost = cpu_core_has_occupied_sibling(snapshot, request, i)
