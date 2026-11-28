@@ -781,7 +781,8 @@ pl_ni_status pl_ni_collect(pl_ni_snapshot *out) {
 #endif
     for (uint32_t i = 0u; i < out->numa_count; ++i)
         for (uint32_t j = 0u; j < out->numa_count; ++j)
-            out->numa_distance[i][j] = i == j ? 10u : 0u;
+            if (i == j && out->numa_distance[i][j] == 0u)
+                out->numa_distance[i][j] = 10u;
     {
         uint64_t fingerprint = pl_ni_snapshot_fingerprint(out);
         out->provenance.snapshot_fingerprint = fingerprint;
@@ -1000,19 +1001,32 @@ pl_ni_status pl_native_register_validate(const pl_native_register *reg,
     if (reg == NULL || absolute_address == NULL ||
         reg->address_space < PL_NATIVE_SPACE_VIRTUAL ||
         reg->address_space > PL_NATIVE_SPACE_MMIO ||
-        reg->generation != expected_generation)
-        return reg != NULL && reg->generation != expected_generation
-            ? PL_NI_STALE_GENERATION : PL_NI_INVALID_ARGUMENT;
+        (is_write != 0u && is_write != 1u))
+        return PL_NI_INVALID_ARGUMENT;
+    if (reg->generation != expected_generation) return PL_NI_STALE_GENERATION;
     if (reg->width_bits != 8u && reg->width_bits != 16u &&
         reg->width_bits != 32u && reg->width_bits != 64u)
         return PL_NI_INVALID_ARGUMENT;
+    {
+        pl_native_range declared_range;
+        pl_ni_status range_status;
+        declared_range.base = reg->base;
+        declared_range.length = reg->size;
+        declared_range.address_bits = reg->address_bits;
+        declared_range.alignment = reg->alignment;
+        range_status = pl_native_range_validate(&declared_range);
+        if (range_status != PL_NI_OK) return range_status;
+    }
     width = reg->width_bits / 8u;
     if (!power_of_two(reg->alignment) || (reg->base % reg->alignment) != 0u ||
         offset > reg->size || width > reg->size - offset ||
         offset > UINT64_MAX - reg->base)
         return PL_NI_OUT_OF_RANGE;
     address = reg->base + offset;
-    if (address % width != 0u || address % reg->alignment != 0u)
+    if (address > UINT64_MAX - width ||
+        (reg->address_bits < 64u &&
+         address + width > (UINT64_C(1) << reg->address_bits)) ||
+        address % width != 0u || address % reg->alignment != 0u)
         return PL_NI_OUT_OF_RANGE;
     required = is_write ? (PL_NATIVE_ACCESS_WRITE | PL_NATIVE_ACCESS_W1C |
                            PL_NATIVE_ACCESS_W1S) : PL_NATIVE_ACCESS_READ;
@@ -1029,8 +1043,9 @@ pl_ni_status pl_dma_transition(pl_dma_resource *resource,
                                pl_dma_state next_state) {
     int valid = 0;
     if (resource == NULL || resource->resource_id == 0u ||
-        resource->length == 0u || resource->direction < 1u ||
-        resource->direction > 3u) return PL_NI_INVALID_ARGUMENT;
+        resource->length == 0u || resource->length > UINT64_MAX - resource->base ||
+        resource->direction < 1u || resource->direction > 3u)
+        return PL_NI_INVALID_ARGUMENT;
     if (resource->generation != expected_generation) return PL_NI_STALE_GENERATION;
     if (resource->state == PL_DMA_CPU_OWNED && next_state == PL_DMA_DEVICE_OWNED) valid = 1;
     else if (resource->state == PL_DMA_DEVICE_OWNED &&
@@ -1050,6 +1065,6 @@ pl_ni_status pl_dma_cpu_access_validate(const pl_dma_resource *resource,
     if (resource == NULL || resource->resource_id == 0u)
         return PL_NI_INVALID_ARGUMENT;
     if (resource->generation != expected_generation) return PL_NI_STALE_GENERATION;
-    return resource->state == PL_DMA_CPU_OWNED ||
-           resource->state == PL_DMA_COMPLETED ? PL_NI_OK : PL_NI_ACCESS_DENIED;
+    return resource->state == PL_DMA_CPU_OWNED
+        ? PL_NI_OK : PL_NI_ACCESS_DENIED;
 }
