@@ -1,5 +1,9 @@
 # Pytyliki documentation
 
+> **Editorial revision · 2026-11-28:** Documentation navigation and editorial presentation refreshed; existing authorship, licenses and upstream notices remain unchanged.
+> **Shared editorial profile:** [Psychoporter 666 Documentation Style v1.1](https://github.com/Ivan-VHS/DAK/blob/main/docs/PSYCHOPORTER_DOCUMENTATION_STYLE_V1.md) — presentation is shared; each repository's technical contracts and product identity remain distinct.
+
+
 > **Documentation review:** 2026-11-27 UTC · **CMake project:** 0.8.0 · **Core:** C11
 
 [English README](../README.md) · [Українська](../README.uk.md) · [Русский](../README.ru.md) · [简体中文](../README.zh-CN.md) · [Source](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues)
@@ -40,3 +44,7 @@ Start with a language-specific project README for scope, supported platforms, bu
 Describe behavior from source, build configuration, schemas, tests and CI evidence. Hardware discovery is read-only; benchmark numbers are local measurements. The embedded workbench is reference-only and does not imply physical MMIO mapping or firmware flashing. The native C ABI is opt-in and requires an explicitly trusted library.
 
 **The index is navigation, not proof of implementation.** Mark partial or planned capabilities accordingly.
+
+## Related mathematical research
+
+- [Vyunenko Theory K3 v0.4.0 — external research reference](VYUNENKO_K3_RESEARCH_REFERENCE.md) — CRT completion and infinite base-1000 expansions; documentation-only, no runtime dependency.

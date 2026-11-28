@@ -2,6 +2,10 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+> **Psychoporter 666** — 架构的精确 × 探索的能量 × 可追溯的证据。[共享文档规范](https://github.com/Ivan-VHS/DAK/blob/main/docs/PSYCHOPORTER_DOCUMENTATION_STYLE_V1.md)。  
+> **编辑修订 · 2026-11-28：** 更新了文档呈现与导航；保留原有作者身份、许可证条款及第三方归属信息。
+
+
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 > 基于 C11 的本地工作站，用于处理器信息发现、有界测量、源码静态诊断和版本化原生互操作。
@@ -82,3 +86,7 @@ GCC/Clang 构建可通过 `-DPYTYLIKI_ENABLE_SANITIZERS=ON` 启用 AddressSaniti
 
 ---
 <p align="center"><sub>Pytyliki · README 审核 2026-11-27 UTC</sub></p>
+
+## 相关数学研究
+
+[维尤年科 K3 理论 v0.4.0 提案](https://github.com/Ivan-VHS/Kaskad/pull/36)记录了基数 1000 完备化的 CRT 分解及唯一的无限位置系数序列。这只是外部数学参考；不会增加运行时/构建依赖，也不会改变本仓库的行为、API、格式或许可证。详见[本地研究说明](docs/VYUNENKO_K3_RESEARCH_REFERENCE.md)。

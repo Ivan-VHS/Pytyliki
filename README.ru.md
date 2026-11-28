@@ -2,6 +2,10 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+> **Psychoporter 666** — точность архитектора × энергия исследователя × прослеживаемые доказательства. [Общий стандарт документации](https://github.com/Ivan-VHS/DAK/blob/main/docs/PSYCHOPORTER_DOCUMENTATION_STYLE_V1.md).  
+> **Редакционная редакция · 2026-11-28:** обновлены подача и навигация; авторство, условия лицензий и сторонняя атрибуция сохранены.
+
+
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Сборка Windows](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 > Локальная рабочая станция на C11 для обнаружения характеристик процессора, ограниченных измерений, статической диагностики исходников и версионированного native-взаимодействия.
@@ -82,3 +86,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 ---
 <p align="center"><sub>Pytyliki · проверка README 2026-11-27 UTC</sub></p>
+
+## Связанное математическое исследование
+
+[Предложение Теории Вьюненко K3 v0.4.0](https://github.com/Ivan-VHS/Kaskad/pull/36) документирует CRT-разложение пополнения с основанием 1000 и единственные бесконечные позиционные последовательности коэффициентов. Это только внешняя математическая ссылка: она не добавляет программной зависимости и не меняет поведение, API, форматы или лицензию этого репозитория. Подробнее — [в локальной справке](docs/VYUNENKO_K3_RESEARCH_REFERENCE.md).

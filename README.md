@@ -2,6 +2,10 @@
 
 [English](README.md) · [Українська](README.uk.md) · [Русский](README.ru.md) · [简体中文](README.zh-CN.md)
 
+> **Psychoporter 666** — architectural precision × exploratory energy × traceable evidence. [Shared documentation style](https://github.com/Ivan-VHS/DAK/blob/main/docs/PSYCHOPORTER_DOCUMENTATION_STYLE_V1.md).  
+> **Editorial revision · 2026-11-28:** presentation and navigation updated; original authorship, license terms and third-party attribution are retained.
+
+
 [![C11 CI](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/ci.yml?branch=main&label=C11%20CI)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/ci.yml) [![Windows build](https://img.shields.io/github/actions/workflow/status/Ivan-VHS/Pytyliki/desktop-build.yml?branch=main&label=Windows%20build)](https://github.com/Ivan-VHS/Pytyliki/actions/workflows/desktop-build.yml) [![MIT](https://img.shields.io/github/license/Ivan-VHS/Pytyliki)](LICENSE)
 
 > A local C11 workstation for processor discovery, bounded measurements, source diagnostics and versioned native interoperability.
@@ -82,3 +86,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Report securit
 
 ---
 <p align="center"><sub>Pytyliki · README review 2026-11-27 UTC</sub></p>
+
+## Related mathematical research
+
+The [Vyunenko Theory K3 v0.4.0 proposal](https://github.com/Ivan-VHS/Kaskad/pull/36) documents CRT splitting of the radix-1000 completion and unique infinite positional coefficient sequences. This is an external mathematical reference only; it does not add a runtime/build dependency or change this repository's behavior, APIs, formats or license. See [the local research note](docs/VYUNENKO_K3_RESEARCH_REFERENCE.md).
