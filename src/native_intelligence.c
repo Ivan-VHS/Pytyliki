@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 #include "native_intelligence.h"
 #include "processor.h"
 
@@ -310,7 +310,7 @@ static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
     }
     {
         WORD groups[64];
-        USHORT actual = 0u;
+        USHORT actual = 64u;
         if (GetProcessGroupAffinity(GetCurrentProcess(), &actual, groups) &&
             actual == 1u) {
             DWORD_PTR process_mask = 0u, system_mask = 0u;
@@ -675,10 +675,33 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
     out->candidate_count = snapshot->cpu_count;
     out->topology_generation = snapshot->provenance.generation;
     out->topology_fingerprint = snapshot->provenance.snapshot_fingerprint;
-    for (i = 0u; i < sizeof(*request); ++i) {
-        const unsigned char *p = (const unsigned char *)request;
-        policy ^= p[i];
-        policy *= UINT64_C(1099511628211);
+    {
+        const uint64_t scalar_values[] = {
+            request->preferred_numa_node, request->current_cpu_index,
+            request->required_isa, request->require_online,
+            request->require_allowed, request->require_known_allowed,
+            request->exclusive_core, request->weights[0], request->weights[1],
+            request->weights[2], request->weights[3], request->weights[4]
+        };
+        size_t item;
+        for (item = 0u; item < sizeof(scalar_values) / sizeof(scalar_values[0]); ++item) {
+            uint64_t value = scalar_values[item];
+            unsigned byte;
+            for (byte = 0u; byte < 8u; ++byte) {
+                policy ^= (unsigned char)(value & UINT64_C(0xff));
+                policy *= UINT64_C(1099511628211);
+                value >>= 8u;
+            }
+        }
+        for (item = 0u; item < PL_NI_CPU_WORDS; ++item) {
+            uint64_t value = request->occupied_cpu_mask[item];
+            unsigned byte;
+            for (byte = 0u; byte < 8u; ++byte) {
+                policy ^= (unsigned char)(value & UINT64_C(0xff));
+                policy *= UINT64_C(1099511628211);
+                value >>= 8u;
+            }
+        }
     }
     out->policy_fingerprint = policy;
     for (i = 0u; i < snapshot->cpu_count; ++i) {
@@ -707,6 +730,10 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         if (request->exclusive_core &&
             cpu_core_has_occupied_sibling(snapshot, request, i)) {
             candidate->rejection = PL_NI_ACCESS_DENIED; continue;
+        }
+        if (bit_is_set(request->occupied_cpu_mask, i)) {
+            candidate->rejection = PL_NI_ACCESS_DENIED;
+            continue;
         }
         candidate->accepted = 1u;
         candidate->rejection = PL_NI_OK;
