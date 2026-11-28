@@ -124,6 +124,54 @@ static void test_ppf_constraints_cost_and_tie_break(void) {
             PL_PPF_EVIDENCE_MISSING_TELEMETRY) != 0u);
 }
 
+static void test_ppf_fails_closed_on_unknown_constraints(void) {
+    pl_ni_snapshot snapshot;
+    pl_ppf_request request;
+    pl_ppf_report report;
+    fixture(&snapshot);
+    memset(&request, 0, sizeof(request));
+    request.preferred_numa_node = UINT16_MAX;
+    request.current_cpu_index = UINT16_MAX;
+    request.require_online = 1u;
+    request.require_allowed = 1u;
+    request.exclusive_core = 1u;
+    request.weights[0] = 1u;
+    request.weights[1] = 1u;
+    request.weights[2] = 1u;
+    request.weights[3] = 1u;
+    request.weights[4] = 1u;
+    snapshot.cpus[0].flags &= ~(PL_NI_CPU_ALLOWED | PL_NI_CPU_ALLOWED_KNOWN);
+    snapshot.cpus[0].core_id = UINT16_MAX;
+    snapshot.cpus[0].die_id = UINT16_MAX;
+    snapshot.provenance.snapshot_fingerprint = 0u;
+    snapshot.provenance.generation = 0u;
+    snapshot.provenance.snapshot_fingerprint = pl_ni_snapshot_fingerprint(&snapshot);
+    snapshot.provenance.generation = snapshot.provenance.snapshot_fingerprint;
+    assert(pl_ni_snapshot_validate(&snapshot) == PL_NI_OK);
+    assert(pl_ppf_place(&snapshot, &request, NULL, 0u, &report) == PL_NI_OK);
+    assert(report.candidates[0].rejection == PL_NI_UNSUPPORTED);
+    assert(report.candidates[1].rejection == PL_NI_UNSUPPORTED);
+    request.require_allowed = 0u;
+    assert(pl_ppf_place(&snapshot, &request, NULL, 0u, &report) == PL_NI_OK);
+    assert(report.candidates[0].rejection == PL_NI_UNSUPPORTED);
+    assert(report.candidates[2].accepted == 1u);
+    assert((report.candidates[2].evidence_flags &
+            PL_PPF_EVIDENCE_MISSING_TOPOLOGY) != 0u);
+}
+
+static void test_snapshot_rejects_conflicting_numa_membership(void) {
+    pl_ni_snapshot snapshot;
+    fixture(&snapshot);
+    snapshot.numa[0].cpu_count = 3u;
+    memset(snapshot.numa[0].cpu_mask, 0, sizeof(snapshot.numa[0].cpu_mask));
+    for (unsigned i = 0u; i < 3u; ++i) set_bit(snapshot.numa[0].cpu_mask, i);
+    snapshot.provenance.snapshot_fingerprint = 0u;
+    snapshot.provenance.generation = 0u;
+    snapshot.provenance.snapshot_fingerprint = pl_ni_snapshot_fingerprint(&snapshot);
+    snapshot.provenance.generation = snapshot.provenance.snapshot_fingerprint;
+    assert(pl_ni_snapshot_validate(&snapshot) == PL_NI_INCONSISTENT);
+}
+
 static void test_typed_ranges_and_register_access(void) {
     pl_native_range range = {0x1000u, 0x100u, 32u, 16u};
     pl_native_register reg;
@@ -180,6 +228,8 @@ static void test_dma_ownership_and_generations(void) {
 int main(void) {
     test_collector_is_read_only_and_returns_provenance();
     test_ppf_constraints_cost_and_tie_break();
+    test_ppf_fails_closed_on_unknown_constraints();
+    test_snapshot_rejects_conflicting_numa_membership();
     test_typed_ranges_and_register_access();
     test_dma_ownership_and_generations();
     puts("native intelligence collector, placement and resource tests passed");
