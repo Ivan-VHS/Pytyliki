@@ -115,7 +115,10 @@ uint64_t pl_ni_snapshot_fingerprint(const pl_ni_snapshot *snapshot) {
     const unsigned char *bytes;
     size_t length, i;
     uint64_t hash = UINT64_C(14695981039346656037);
-    if (snapshot == NULL) return 0u;
+    if (snapshot == NULL || snapshot->cpu_count > PL_NI_MAX_CPUS ||
+        snapshot->cache_count > PL_NI_MAX_CACHES ||
+        snapshot->numa_count > PL_NI_MAX_NUMA_NODES)
+        return 0u;
     bytes = (const unsigned char *)&snapshot->abi_version;
     length = offsetof(pl_ni_snapshot, provenance) - offsetof(pl_ni_snapshot, abi_version);
     for (i = 0u; i < length; ++i) {
@@ -176,6 +179,8 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
         const pl_ni_cpu *cpu = &snapshot->cpus[i];
         if ((cpu->flags & ~(PL_NI_CPU_ONLINE | PL_NI_CPU_ALLOWED |
                             PL_NI_CPU_ALLOWED_KNOWN)) != 0u ||
+            ((cpu->flags & PL_NI_CPU_ALLOWED) != 0u &&
+             (cpu->flags & PL_NI_CPU_ALLOWED_KNOWN) == 0u) ||
             (cpu->isa_mask & ~PL_NI_KNOWN_ISA_MASK) != 0u)
             return PL_NI_INCONSISTENT;
         for (j = i + 1u; j < snapshot->cpu_count; ++j)
@@ -185,8 +190,12 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
     }
     for (i = 0u; i < snapshot->cache_count; ++i) {
         const pl_ni_cache *cache = &snapshot->caches[i];
+        uint32_t sharers = 0u;
         if (cache->level == 0u || cache->size_bytes == 0u ||
             cache->sharing_count == 0u) return PL_NI_INCONSISTENT;
+        for (j = 0u; j < snapshot->cpu_count; ++j)
+            if (bit_is_set(cache->sharing_mask, j)) ++sharers;
+        if (sharers != cache->sharing_count) return PL_NI_INCONSISTENT;
         for (j = snapshot->cpu_count; j < PL_NI_MAX_CPUS; ++j)
             if (bit_is_set(cache->sharing_mask, j)) return PL_NI_INCONSISTENT;
     }
@@ -1030,6 +1039,9 @@ pl_ni_status pl_native_register_validate(const pl_native_register *reg,
         return PL_NI_OUT_OF_RANGE;
     required = is_write ? (PL_NATIVE_ACCESS_WRITE | PL_NATIVE_ACCESS_W1C |
                            PL_NATIVE_ACCESS_W1S) : PL_NATIVE_ACCESS_READ;
+    if ((reg->access & ~(PL_NATIVE_ACCESS_READ | PL_NATIVE_ACCESS_WRITE |
+                         PL_NATIVE_ACCESS_W1C | PL_NATIVE_ACCESS_W1S)) != 0u)
+        return PL_NI_INVALID_ARGUMENT;
     if ((reg->access & required) == 0u)
         return PL_NI_ACCESS_DENIED;
     if (is_write && (value & ~reg->allowed_value_mask) != 0u)
@@ -1062,7 +1074,9 @@ pl_ni_status pl_dma_transition(pl_dma_resource *resource,
 
 pl_ni_status pl_dma_cpu_access_validate(const pl_dma_resource *resource,
                                         uint64_t expected_generation) {
-    if (resource == NULL || resource->resource_id == 0u)
+    if (resource == NULL || resource->resource_id == 0u ||
+        resource->length == 0u || resource->length > UINT64_MAX - resource->base ||
+        resource->direction < 1u || resource->direction > 3u)
         return PL_NI_INVALID_ARGUMENT;
     if (resource->generation != expected_generation) return PL_NI_STALE_GENERATION;
     return resource->state == PL_DMA_CPU_OWNED
