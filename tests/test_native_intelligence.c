@@ -199,6 +199,12 @@ static void test_typed_ranges_and_register_access(void) {
     reg.address_space = PL_NATIVE_SPACE_MMIO;
     assert(pl_native_register_validate(&reg, 4u, 1u, 0xA5u, 7u, &address) == PL_NI_OK);
     assert(address == 0x4004u);
+    reg.width_bits = 8u;
+    reg.allowed_value_mask = 0x1FFu;
+    assert(pl_native_register_validate(&reg, 0u, 1u, 0x7Fu, 7u, &address) == PL_NI_INVALID_ARGUMENT);
+    reg.allowed_value_mask = 0xFFu;
+    assert(pl_native_register_validate(&reg, 0u, 1u, 0x100u, 7u, &address) == PL_NI_ACCESS_DENIED);
+    reg.width_bits = 32u;
     assert(pl_native_register_validate(&reg, 4u, 1u, 0x100u, 7u, &address) == PL_NI_ACCESS_DENIED);
     assert(pl_native_register_validate(&reg, 4u, 1u, 1u, 6u, &address) == PL_NI_STALE_GENERATION);
     assert(pl_native_register_validate(&reg, 0xFFu, 0u, 0u, 7u, &address) == PL_NI_OUT_OF_RANGE);
