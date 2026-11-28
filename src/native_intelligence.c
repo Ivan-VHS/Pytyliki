@@ -627,8 +627,12 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
         if (strncmp(entry->d_name, "cpu", 3u) != 0 ||
             entry->d_name[3] < '0' || entry->d_name[3] > '9') continue;
         os_id = strtoul(entry->d_name + 3, &end, 10);
-        if (end == entry->d_name + 3 || *end != '\0' || os_id >= PL_NI_MAX_CPUS)
+        if (end == entry->d_name + 3 || *end != '\0')
             continue;
+        if (os_id >= PL_NI_MAX_CPUS) {
+            closedir(directory);
+            return PL_NI_CAPACITY_EXCEEDED;
+        }
         index = add_cpu(snapshot, 0u, (uint16_t)os_id);
         if (index < 0) { closedir(directory); return PL_NI_CAPACITY_EXCEEDED; }
         if (strcmp(entry->d_name, "cpu0") != 0) {
@@ -756,7 +760,8 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
                 if (!read_text(path, shared, sizeof(shared))) continue;
                 cache.level = (uint8_t)level;
                 cache.kind = strcmp(type, "Data") == 0 ? 1u :
-                             strcmp(type, "Instruction") == 0 ? 2u : 3u;
+                             strcmp(type, "Instruction") == 0 ? 2u :
+                             strcmp(type, "Unified") == 0 ? 3u : 4u;
                 cache.size_bytes = parse_size_bytes(size_text);
                 cache.line_bytes = line;
                 list_to_mask(snapshot, shared, cache.sharing_mask, &cache.sharing_count);
