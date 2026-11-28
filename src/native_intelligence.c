@@ -413,6 +413,79 @@ static void list_to_mask(const pl_ni_snapshot *snapshot, const char *list,
     }
 }
 
+static int line_has_flag(const char *flags, const char *wanted) {
+    size_t wanted_length = strlen(wanted);
+    const char *cursor = flags;
+    while (*cursor != '\0') {
+        const char *start;
+        size_t length;
+        while (*cursor == ' ' || *cursor == '\t') ++cursor;
+        start = cursor;
+        while (*cursor != '\0' && *cursor != ' ' && *cursor != '\t' &&
+               *cursor != '\r' && *cursor != '\n') ++cursor;
+        length = (size_t)(cursor - start);
+        if (length == wanted_length && memcmp(start, wanted, length) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+static uint64_t parse_linux_isa_flags(const char *line) {
+    const char *colon = strchr(line, ':');
+    const char *flags = colon != NULL ? colon + 1 : "";
+    uint64_t mask = 0u;
+    if (line_has_flag(flags, "sse2")) mask |= PL_NI_ISA_SSE2;
+    if (line_has_flag(flags, "sse4_2")) mask |= PL_NI_ISA_SSE42;
+    if (line_has_flag(flags, "aes")) mask |= PL_NI_ISA_AES;
+    if (line_has_flag(flags, "avx")) mask |= PL_NI_ISA_AVX;
+    if (line_has_flag(flags, "avx2")) mask |= PL_NI_ISA_AVX2;
+    if (line_has_flag(flags, "fma")) mask |= PL_NI_ISA_FMA;
+    if (line_has_flag(flags, "avx512f")) mask |= PL_NI_ISA_AVX512F;
+    return mask;
+}
+
+static int collect_linux_isa(pl_ni_snapshot *snapshot) {
+    FILE *file = fopen("/proc/cpuinfo", "rb");
+    char line[4096];
+    uint16_t current_cpu = PL_NI_UNKNOWN_ID;
+    uint32_t seen = 0u, online = 0u;
+    uint64_t intersection = PL_NI_KNOWN_ISA_MASK;
+    if (file == NULL) return 0;
+    for (uint32_t i = 0u; i < snapshot->cpu_count; ++i)
+        if ((snapshot->cpus[i].flags & PL_NI_CPU_ONLINE) != 0u) ++online;
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (strncmp(line, "processor", 9u) == 0) {
+            char *colon = strchr(line, ':');
+            if (colon != NULL) {
+                unsigned long id = strtoul(colon + 1, NULL, 10);
+                current_cpu = id < UINT16_MAX ? (uint16_t)id : PL_NI_UNKNOWN_ID;
+            }
+        } else if (strncmp(line, "flags", 5u) == 0 ||
+                   strncmp(line, "Features", 8u) == 0) {
+            int index = cpu_index_by_os_id(snapshot, 0u, current_cpu);
+            if (index >= 0) {
+                uint64_t mask = parse_linux_isa_flags(line);
+                snapshot->cpus[index].isa_mask = mask;
+                intersection &= mask;
+                ++seen;
+            }
+        }
+    }
+    fclose(file);
+    if (online != 0u && seen == online) {
+        snapshot->isa_mask = intersection;
+        snapshot->provenance.isa_scope = PL_NI_ISA_SCOPE_PER_LOGICAL_CPU;
+        copy_text(snapshot->provenance.isa_source,
+                  sizeof(snapshot->provenance.isa_source),
+                  "/proc/cpuinfo per-CPU kernel-enabled flags");
+        return 1;
+    }
+    for (uint32_t i = 0u; i < snapshot->cpu_count; ++i)
+        snapshot->cpus[i].isa_mask = 0u;
+    snapshot->provenance.isa_scope = PL_NI_ISA_SCOPE_EXECUTING_CPU;
+    return 0;
+}
+
 static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
     DIR *directory;
     struct dirent *entry;
@@ -603,16 +676,19 @@ pl_ni_status pl_ni_collect(pl_ni_snapshot *out) {
     if (pl_processor_scan(&processor) == 0) {
         out->isa_mask = isa_from_processor(&processor);
         out->provenance.isa_state = PL_NI_FACT_KNOWN;
+        out->provenance.isa_scope = PL_NI_ISA_SCOPE_EXECUTING_CPU;
         copy_text(out->provenance.isa_source,
                   sizeof(out->provenance.isa_source),
-                  "CPUID plus OS vector-state validation");
-        for (uint32_t i = 0u; i < out->cpu_count; ++i)
-            out->cpus[i].isa_mask = out->isa_mask;
+                  "CPUID plus OS vector-state validation on collector CPU");
     } else {
+        out->provenance.isa_scope = PL_NI_ISA_SCOPE_UNKNOWN;
         out->provenance.isa_state = PL_NI_FACT_UNAVAILABLE;
         copy_text(out->provenance.isa_source,
                   sizeof(out->provenance.isa_source), "unavailable");
     }
+#if !defined(_WIN32)
+    (void)collect_linux_isa(out);
+#endif
     for (uint32_t i = 0u; i < out->numa_count; ++i)
         for (uint32_t j = 0u; j < out->numa_count; ++j)
             out->numa_distance[i][j] = i == j ? 10u : 0u;
@@ -722,6 +798,11 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         }
         if (request->require_known_allowed &&
             (cpu->flags & PL_NI_CPU_ALLOWED_KNOWN) == 0u) {
+            candidate->rejection = PL_NI_UNSUPPORTED; continue;
+        }
+        if (request->required_isa != 0u &&
+            snapshot->provenance.isa_scope != PL_NI_ISA_SCOPE_PER_LOGICAL_CPU &&
+            snapshot->provenance.isa_scope != PL_NI_ISA_SCOPE_SYSTEM_COMMON) {
             candidate->rejection = PL_NI_UNSUPPORTED; continue;
         }
         if ((request->required_isa & ~cpu->isa_mask) != 0u) {
