@@ -1,5 +1,9 @@
 # Pytyliki documentation
 
+> **Editorial revision · 2026-11-28:** Documentation navigation and editorial presentation refreshed; existing authorship, licenses and upstream notices remain unchanged.
+> **Shared editorial profile:** [Psychoporter 666 Documentation Style v1.1](https://github.com/Ivan-VHS/DAK/blob/main/docs/PSYCHOPORTER_DOCUMENTATION_STYLE_V1.md) — presentation is shared; each repository's technical contracts and product identity remain distinct.
+
+
 > **Documentation review:** 2026-11-27 UTC · **CMake project:** 0.8.0 · **Core:** C11
 
 [English README](../README.md) · [Українська](../README.uk.md) · [Русский](../README.ru.md) · [简体中文](../README.zh-CN.md) · [Source](https://github.com/Ivan-VHS/Pytyliki) · [Issues](https://github.com/Ivan-VHS/Pytyliki/issues)
