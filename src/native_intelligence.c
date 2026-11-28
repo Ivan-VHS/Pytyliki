@@ -210,16 +210,16 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
 }
 
 #if defined(_WIN32)
-static void apply_group_mask(pl_ni_snapshot *snapshot, WORD group,
-                             KAFFINITY mask, uint16_t package,
-                             uint16_t die, uint16_t core, uint16_t numa,
-                             int relation_kind) {
+static int apply_group_mask(pl_ni_snapshot *snapshot, WORD group,
+                            KAFFINITY mask, uint16_t package,
+                            uint16_t die, uint16_t core, uint16_t numa,
+                            int relation_kind) {
     unsigned bit, ordinal = 0u;
     for (bit = 0u; bit < sizeof(KAFFINITY) * CHAR_BIT; ++bit) {
         int index;
         if ((mask & ((KAFFINITY)1u << bit)) == 0u) continue;
         index = add_cpu(snapshot, (uint16_t)group, (uint16_t)bit);
-        if (index < 0) continue;
+        if (index < 0) return 0;
         if (relation_kind == 1 && package != PL_NI_UNKNOWN_ID)
             snapshot->cpus[index].package_id = package;
         if (relation_kind == 2) {
@@ -230,6 +230,7 @@ static void apply_group_mask(pl_ni_snapshot *snapshot, WORD group,
         if (relation_kind == 4) snapshot->cpus[index].numa_node = numa;
         ++ordinal;
     }
+    return 1;
 }
 
 static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
@@ -259,42 +260,67 @@ static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
         }
         if (info->Relationship == RelationProcessorPackage) {
             PROCESSOR_RELATIONSHIP *p = &info->Processor;
+            size_t required_size;
+            if (p->GroupCount == 0u) { free(buffer); return PL_NI_INCONSISTENT; }
+            required_size = sizeof(PROCESSOR_RELATIONSHIP) +
+                ((size_t)p->GroupCount - 1u) * sizeof(GROUP_AFFINITY);
+            if (required_size > info->Size) { free(buffer); return PL_NI_INCONSISTENT; }
             for (group = 0u; group < p->GroupCount; ++group)
-                apply_group_mask(snapshot, p->GroupMask[group].Group,
+                if (!apply_group_mask(snapshot, p->GroupMask[group].Group,
                     p->GroupMask[group].Mask, package_id, 0u, 0u,
-                    PL_NI_UNKNOWN_ID, 1);
+                    PL_NI_UNKNOWN_ID, 1)) {
+                    free(buffer); return PL_NI_CAPACITY_EXCEEDED;
+                }
             ++package_id;
         } else if (info->Relationship == RelationProcessorCore) {
             PROCESSOR_RELATIONSHIP *p = &info->Processor;
+            size_t required_size;
+            if (p->GroupCount == 0u) { free(buffer); return PL_NI_INCONSISTENT; }
+            required_size = sizeof(PROCESSOR_RELATIONSHIP) +
+                ((size_t)p->GroupCount - 1u) * sizeof(GROUP_AFFINITY);
+            if (required_size > info->Size) { free(buffer); return PL_NI_INCONSISTENT; }
             for (group = 0u; group < p->GroupCount; ++group)
-                apply_group_mask(snapshot, p->GroupMask[group].Group,
+                if (!apply_group_mask(snapshot, p->GroupMask[group].Group,
                     p->GroupMask[group].Mask, 0u, 0u, core_id,
-                    PL_NI_UNKNOWN_ID, 2);
+                    PL_NI_UNKNOWN_ID, 2)) {
+                    free(buffer); return PL_NI_CAPACITY_EXCEEDED;
+                }
             ++core_id;
         } else if (info->Relationship == RelationProcessorDie) {
             PROCESSOR_RELATIONSHIP *p = &info->Processor;
+            size_t required_size;
+            if (p->GroupCount == 0u) { free(buffer); return PL_NI_INCONSISTENT; }
+            required_size = sizeof(PROCESSOR_RELATIONSHIP) +
+                ((size_t)p->GroupCount - 1u) * sizeof(GROUP_AFFINITY);
+            if (required_size > info->Size) { free(buffer); return PL_NI_INCONSISTENT; }
             for (group = 0u; group < p->GroupCount; ++group)
-                apply_group_mask(snapshot, p->GroupMask[group].Group,
+                if (!apply_group_mask(snapshot, p->GroupMask[group].Group,
                     p->GroupMask[group].Mask, 0u, die_id, 0u,
-                    PL_NI_UNKNOWN_ID, 3);
+                    PL_NI_UNKNOWN_ID, 3)) {
+                    free(buffer); return PL_NI_CAPACITY_EXCEEDED;
+                }
             ++die_id;
         } else if (info->Relationship == RelationNumaNode ||
                    info->Relationship == RelationNumaNodeEx) {
             NUMA_NODE_RELATIONSHIP *p = &info->NumaNode;
             WORD masks_count = p->GroupCount != 0u ? p->GroupCount : 1u;
             GROUP_AFFINITY *masks = p->GroupCount != 0u ? p->GroupMasks : &p->GroupMask;
+            size_t required_size = sizeof(NUMA_NODE_RELATIONSHIP);
+            if (p->GroupCount != 0u)
+                required_size += ((size_t)p->GroupCount - 1u) * sizeof(GROUP_AFFINITY);
+            if (required_size > info->Size) { free(buffer); return PL_NI_INCONSISTENT; }
             int node_index = add_numa(snapshot, (uint16_t)p->NodeNumber);
-            if (node_index >= 0) {
+            if (node_index < 0) { free(buffer); return PL_NI_CAPACITY_EXCEEDED; }
+            {
                 WORD mask_index;
                 for (mask_index = 0u; mask_index < masks_count; ++mask_index) {
                     unsigned bit;
                     for (bit = 0u; bit < sizeof(KAFFINITY) * CHAR_BIT; ++bit) {
                         if ((masks[mask_index].Mask & ((KAFFINITY)1u << bit)) != 0u) {
                             int cpu = add_cpu(snapshot, masks[mask_index].Group, (uint16_t)bit);
-                            if (cpu >= 0) {
-                                snapshot->cpus[cpu].numa_node = (uint16_t)p->NodeNumber;
-                                set_bit(snapshot->numa[node_index].cpu_mask, (size_t)cpu);
-                            }
+                            if (cpu < 0) { free(buffer); return PL_NI_CAPACITY_EXCEEDED; }
+                            snapshot->cpus[cpu].numa_node = (uint16_t)p->NodeNumber;
+                            set_bit(snapshot->numa[node_index].cpu_mask, (size_t)cpu);
                         }
                     }
                 }
@@ -302,28 +328,36 @@ static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
         } else if (info->Relationship == RelationCache) {
             CACHE_RELATIONSHIP *p = &info->Cache;
             pl_ni_cache cache;
-            unsigned bit;
+            WORD masks_count = p->GroupCount != 0u ? p->GroupCount : 1u;
+            GROUP_AFFINITY *masks = p->GroupCount != 0u ? p->GroupMasks : &p->GroupMask;
+            size_t required_size = sizeof(CACHE_RELATIONSHIP);
+            WORD mask_index;
             int cache_index;
             memset(&cache, 0, sizeof(cache));
+            if (p->GroupCount > 1u)
+                required_size += ((size_t)p->GroupCount - 1u) * sizeof(GROUP_AFFINITY);
+            if (required_size > info->Size) { free(buffer); return PL_NI_INCONSISTENT; }
             cache.level = p->Level;
             cache.kind = p->Type == CacheData ? 1u :
                          p->Type == CacheInstruction ? 2u :
                          p->Type == CacheUnified ? 3u : 4u;
-            cache.group_id = p->GroupMask.Group;
+            cache.group_id = masks_count == 1u ? masks[0].Group : PL_NI_UNKNOWN_ID;
             cache.size_bytes = p->CacheSize;
             cache.line_bytes = p->LineSize;
             cache.associativity = p->Associativity;
-            for (bit = 0u; bit < sizeof(KAFFINITY) * CHAR_BIT; ++bit) {
-                if ((p->GroupMask.Mask & ((KAFFINITY)1u << bit)) != 0u) {
-                    int cpu = add_cpu(snapshot, p->GroupMask.Group, (uint16_t)bit);
-                    if (cpu >= 0) {
+            for (mask_index = 0u; mask_index < masks_count; ++mask_index) {
+                unsigned bit;
+                for (bit = 0u; bit < sizeof(KAFFINITY) * CHAR_BIT; ++bit) {
+                    if ((masks[mask_index].Mask & ((KAFFINITY)1u << bit)) != 0u) {
+                        int cpu = add_cpu(snapshot, masks[mask_index].Group, (uint16_t)bit);
+                        if (cpu < 0) { free(buffer); return PL_NI_CAPACITY_EXCEEDED; }
                         set_bit(cache.sharing_mask, (size_t)cpu);
                         ++cache.sharing_count;
                     }
                 }
             }
             cache_index = add_cache(snapshot, &cache);
-            (void)cache_index;
+            if (cache_index < 0) { free(buffer); return PL_NI_CAPACITY_EXCEEDED; }
         }
         cursor += info->Size;
     }
