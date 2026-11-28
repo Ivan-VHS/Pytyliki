@@ -1194,6 +1194,12 @@ pl_ni_status pl_native_register_validate(const pl_native_register *reg,
         if (range_status != PL_NI_OK) return range_status;
     }
     width = reg->width_bits / 8u;
+    {
+        uint64_t width_mask = reg->width_bits == 64u
+            ? UINT64_MAX : (UINT64_C(1) << reg->width_bits) - 1u;
+        if ((reg->allowed_value_mask & ~width_mask) != 0u)
+            return PL_NI_INVALID_ARGUMENT;
+    }
     if (!power_of_two(reg->alignment) || (reg->base % reg->alignment) != 0u ||
         offset > reg->size || width > reg->size - offset ||
         offset > UINT64_MAX - reg->base)
@@ -1211,8 +1217,13 @@ pl_ni_status pl_native_register_validate(const pl_native_register *reg,
         return PL_NI_INVALID_ARGUMENT;
     if ((reg->access & required) == 0u)
         return PL_NI_ACCESS_DENIED;
-    if (is_write && (value & ~reg->allowed_value_mask) != 0u)
-        return PL_NI_ACCESS_DENIED;
+    if (is_write) {
+        uint64_t width_mask = reg->width_bits == 64u
+            ? UINT64_MAX : (UINT64_C(1) << reg->width_bits) - 1u;
+        if ((value & ~width_mask) != 0u ||
+            (value & ~reg->allowed_value_mask) != 0u)
+            return PL_NI_ACCESS_DENIED;
+    }
     *absolute_address = address;
     return PL_NI_OK;
 }
