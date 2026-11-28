@@ -667,27 +667,49 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
             cpu->thread_index = thread_index_from_list(buffer, cpu->os_cpu_id);
         cpu_set_t set;
         CPU_ZERO(&set);
+        cpu->flags &= ~(PL_NI_CPU_ALLOWED | PL_NI_CPU_ALLOWED_KNOWN);
         if (sched_getaffinity(0, sizeof(set), &set) == 0 &&
-            cpu->os_cpu_id < CPU_SETSIZE)
-            allowed = CPU_ISSET(cpu->os_cpu_id, &set) ? 1 : 0;
-        if (allowed) cpu->flags |= PL_NI_CPU_ALLOWED;
-        else cpu->flags &= ~PL_NI_CPU_ALLOWED;
-        cpu->flags |= PL_NI_CPU_ALLOWED_KNOWN;
-        for (node = 0u; node < PL_NI_MAX_NUMA_NODES; ++node) {
+            cpu->os_cpu_id < CPU_SETSIZE) {
+            cpu->flags |= PL_NI_CPU_ALLOWED_KNOWN;
+            if (CPU_ISSET(cpu->os_cpu_id, &set)) cpu->flags |= PL_NI_CPU_ALLOWED;
+        }
+    }
+    directory = opendir("/sys/devices/system/node");
+    if (directory != NULL) {
+        while ((entry = readdir(directory)) != NULL) {
+            char *end = NULL;
+            unsigned long node_id;
+            uint64_t mask[PL_NI_CPU_WORDS] = {0};
+            uint32_t listed = 0u;
+            int node_index;
+            if (strncmp(entry->d_name, "node", 4u) != 0 ||
+                entry->d_name[4] < '0' || entry->d_name[4] > '9') continue;
+            node_id = strtoul(entry->d_name + 4, &end, 10);
+            if (end == entry->d_name + 4 || *end != '\0' || node_id > UINT16_MAX)
+                continue;
             (void)snprintf(path, sizeof(path),
-                "/sys/devices/system/node/node%u/cpulist", node);
-            if (read_text(path, buffer, sizeof(buffer))) {
-                uint64_t mask[PL_NI_CPU_WORDS] = {0};
-                list_to_mask(snapshot, buffer, mask, NULL);
-                if (bit_is_set(mask, i)) {
-                    int ni = add_numa(snapshot, (uint16_t)node);
-                    if (ni >= 0) {
-                        cpu->numa_node = (uint16_t)node;
-                        set_bit(snapshot->numa[ni].cpu_mask, i);
-                    }
+                "/sys/devices/system/node/%s/cpulist", entry->d_name);
+            if (!read_text(path, buffer, sizeof(buffer))) continue;
+            list_to_mask(snapshot, buffer, mask, &listed);
+            if (listed == 0u) continue;
+            node_index = add_numa(snapshot, (uint16_t)node_id);
+            if (node_index < 0) { closedir(directory); return PL_NI_CAPACITY_EXCEEDED; }
+            snapshot->numa[node_index].cpu_mask[0] = mask[0];
+            snapshot->numa[node_index].cpu_mask[1] = mask[1];
+            snapshot->numa[node_index].cpu_mask[2] = mask[2];
+            snapshot->numa[node_index].cpu_mask[3] = mask[3];
+            snapshot->numa[node_index].cpu_count = listed;
+            for (uint32_t i = 0u; i < snapshot->cpu_count; ++i) {
+                if (!bit_is_set(mask, i)) continue;
+                if (snapshot->cpus[i].numa_node != PL_NI_UNKNOWN_ID &&
+                    snapshot->cpus[i].numa_node != (uint16_t)node_id) {
+                    closedir(directory);
+                    return PL_NI_INCONSISTENT;
                 }
+                snapshot->cpus[i].numa_node = (uint16_t)node_id;
             }
         }
+        closedir(directory);
     }
     for (uint32_t ni = 0u; ni < snapshot->numa_count; ++ni) {
         pl_ni_numa_node *node = &snapshot->numa[ni];
@@ -701,12 +723,12 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
                 if (kib <= UINT64_MAX / 1024u) node->memory_bytes = kib * 1024u;
             }
         }
-        for (uint32_t i = 0u; i < snapshot->cpu_count; ++i)
-            if (bit_is_set(node->cpu_mask, i)) ++node->cpu_count;
+
     }
     collect_linux_numa_distances(snapshot);
     directory = opendir("/sys/devices/system/cpu");
-    if (directory != NULL) {
+    if (directory == NULL) return PL_NI_IO_ERROR;
+    {
         while ((entry = readdir(directory)) != NULL) {
             unsigned long os_id;
             char *end = NULL;
@@ -739,7 +761,7 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
                 cache.line_bytes = line;
                 list_to_mask(snapshot, shared, cache.sharing_mask, &cache.sharing_count);
                 if (cache.size_bytes == 0u || cache.sharing_count == 0u) continue;
-                if (snapshot->cache_count < PL_NI_MAX_CACHES) {
+                {
                     int duplicate = 0;
                     for (uint32_t ci = 0u; ci < snapshot->cache_count; ++ci) {
                         if (snapshot->caches[ci].level == cache.level &&
@@ -748,7 +770,10 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
                             memcmp(snapshot->caches[ci].sharing_mask, cache.sharing_mask,
                                    sizeof(cache.sharing_mask)) == 0) duplicate = 1;
                     }
-                    if (!duplicate) (void)add_cache(snapshot, &cache);
+                    if (!duplicate && add_cache(snapshot, &cache) < 0) {
+                        closedir(directory);
+                        return PL_NI_CAPACITY_EXCEEDED;
+                    }
                 }
             }
         }
