@@ -136,6 +136,15 @@ PYTYLIKI_FFI_API int32_t pytyliki_v1_native_placement(
     const pl_ppf_telemetry *telemetry,
     uint64_t telemetry_count,
     pl_ppf_report *out);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_range_validate(
+    const pl_native_range *range);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_register_validate(
+    const pl_native_register *reg, uint64_t offset, uint32_t is_write,
+    uint64_t value, uint64_t expected_generation, uint64_t *absolute_address);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_dma_transition(
+    pl_dma_resource *resource, uint64_t expected_generation, pl_dma_state next_state);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_dma_cpu_access_validate(
+    const pl_dma_resource *resource, uint64_t expected_generation);
 
 /* Typed metric catalogue query. Strings are NUL-terminated fixed buffers;
  * limit is 1..4096 and result_capacity is caller-owned. No pointers are retained. */
