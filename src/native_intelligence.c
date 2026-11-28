@@ -631,10 +631,7 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
             continue;
         index = add_cpu(snapshot, 0u, (uint16_t)os_id);
         if (index < 0) { closedir(directory); return PL_NI_CAPACITY_EXCEEDED; }
-        snapshot->cpus[index].flags |= PL_NI_CPU_ALLOWED_KNOWN;
-        if (strcmp(entry->d_name, "cpu0") == 0) {
-            snapshot->cpus[index].flags |= PL_NI_CPU_ALLOWED;
-        } else {
+        if (strcmp(entry->d_name, "cpu0") != 0) {
             (void)snprintf(path, sizeof(path),
                 "/sys/devices/system/cpu/%s/online", entry->d_name);
             if (read_u32(path, &value) && value == 0u)
@@ -656,22 +653,25 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
             snapshot->cpus[index].core_id = (uint16_t)value;
     }
     closedir(directory);
-    for (uint32_t i = 0u; i < snapshot->cpu_count; ++i) {
+    {
+        cpu_set_t allowed_set;
+        int allowed_set_known;
+        CPU_ZERO(&allowed_set);
+        allowed_set_known =
+            sched_getaffinity(0, sizeof(allowed_set), &allowed_set) == 0;
+        for (uint32_t i = 0u; i < snapshot->cpu_count; ++i) {
         pl_ni_cpu *cpu = &snapshot->cpus[i];
-        uint32_t node;
-        int allowed = 0;
         (void)snprintf(path, sizeof(path),
             "/sys/devices/system/cpu/cpu%u/topology/thread_siblings_list",
             (unsigned)cpu->os_cpu_id);
         if (read_text(path, buffer, sizeof(buffer)))
             cpu->thread_index = thread_index_from_list(buffer, cpu->os_cpu_id);
-        cpu_set_t set;
-        CPU_ZERO(&set);
         cpu->flags &= ~(PL_NI_CPU_ALLOWED | PL_NI_CPU_ALLOWED_KNOWN);
-        if (sched_getaffinity(0, sizeof(set), &set) == 0 &&
-            cpu->os_cpu_id < CPU_SETSIZE) {
+        if (allowed_set_known && cpu->os_cpu_id < CPU_SETSIZE) {
             cpu->flags |= PL_NI_CPU_ALLOWED_KNOWN;
-            if (CPU_ISSET(cpu->os_cpu_id, &set)) cpu->flags |= PL_NI_CPU_ALLOWED;
+            if (CPU_ISSET(cpu->os_cpu_id, &allowed_set))
+                cpu->flags |= PL_NI_CPU_ALLOWED;
+        }
         }
     }
     directory = opendir("/sys/devices/system/node");
