@@ -141,8 +141,10 @@ static void test_ppf_fails_closed_on_unknown_constraints(void) {
     request.weights[3] = 1u;
     request.weights[4] = 1u;
     snapshot.cpus[0].flags &= ~(PL_NI_CPU_ALLOWED | PL_NI_CPU_ALLOWED_KNOWN);
-    snapshot.cpus[0].core_id = UINT16_MAX;
-    snapshot.cpus[0].die_id = UINT16_MAX;
+    for (unsigned i = 0u; i < snapshot.cpu_count; ++i) {
+        snapshot.cpus[i].core_id = UINT16_MAX;
+        snapshot.cpus[i].die_id = UINT16_MAX;
+    }
     snapshot.provenance.snapshot_fingerprint = 0u;
     snapshot.provenance.generation = 0u;
     snapshot.provenance.snapshot_fingerprint = pl_ni_snapshot_fingerprint(&snapshot);
@@ -152,6 +154,7 @@ static void test_ppf_fails_closed_on_unknown_constraints(void) {
     assert(report.candidates[0].rejection == PL_NI_UNSUPPORTED);
     assert(report.candidates[1].rejection == PL_NI_UNSUPPORTED);
     request.require_allowed = 0u;
+    request.exclusive_core = 0u;
     assert(pl_ppf_place(&snapshot, &request, NULL, 0u, &report) == PL_NI_OK);
     assert(report.candidates[0].rejection == PL_NI_UNSUPPORTED);
     assert(report.candidates[2].accepted == 1u);
