@@ -886,18 +886,20 @@ static uint32_t clamp_cost(uint32_t value) {
     return value > PL_NI_COST_MAX ? PL_NI_COST_MAX : value;
 }
 
-static int cpu_core_has_occupied_sibling(const pl_ni_snapshot *snapshot,
-                                         const pl_ppf_request *request,
-                                         uint32_t candidate) {
+static int cpu_core_occupancy(const pl_ni_snapshot *snapshot,
+                               const pl_ppf_request *request,
+                               uint32_t candidate) {
     const pl_ni_cpu *cpu = &snapshot->cpus[candidate];
     uint32_t i;
-    if (cpu->core_id == PL_NI_UNKNOWN_ID) return 0;
+    if (cpu->package_id == PL_NI_UNKNOWN_ID ||
+        cpu->core_id == PL_NI_UNKNOWN_ID)
+        return -1;
     for (i = 0u; i < snapshot->cpu_count; ++i) {
         const pl_ni_cpu *other = &snapshot->cpus[i];
-        if (i != candidate && other->group_id == cpu->group_id &&
-            other->package_id == cpu->package_id &&
-            other->die_id == cpu->die_id && other->core_id == cpu->core_id &&
-            bit_is_set(request->occupied_cpu_mask, i)) return 1;
+        if (i != candidate && other->package_id == cpu->package_id &&
+            other->die_id == cpu->die_id && other->core_id == cpu->core_id) {
+            if (bit_is_set(request->occupied_cpu_mask, i)) return 1;
+        }
     }
     return 0;
 }
@@ -905,15 +907,17 @@ static int cpu_core_has_occupied_sibling(const pl_ni_snapshot *snapshot,
 static uint32_t cpu_shared_cache_penalty(const pl_ni_snapshot *snapshot,
                                          uint32_t cpu_index) {
     uint32_t i, penalty = 0u;
+    int found = 0;
     for (i = 0u; i < snapshot->cache_count; ++i) {
         const pl_ni_cache *cache = &snapshot->caches[i];
         if (cache->level >= 3u && bit_is_set(cache->sharing_mask, cpu_index)) {
             uint32_t next = cache->sharing_count > 1u
                 ? (cache->sharing_count - 1u) * 20u : 0u;
             if (next > penalty) penalty = next;
+            found = 1;
         }
     }
-    return clamp_cost(penalty);
+    return found ? clamp_cost(penalty) : UINT32_MAX;
 }
 
 pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
@@ -962,6 +966,27 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         }
     }
     out->policy_fingerprint = policy;
+    for (i = 0u; i < 5u; ++i) out->weights[i] = request->weights[i];
+    if (telemetry != NULL) {
+        size_t ti, byte;
+        uint64_t telemetry_hash = UINT64_C(14695981039346656037);
+        for (ti = 0u; ti < telemetry_count; ++ti) {
+            const uint32_t fields[4] = {
+                telemetry[ti].cache_pressure,
+                telemetry[ti].bandwidth_pressure,
+                telemetry[ti].migration_cost,
+                telemetry[ti].valid_mask
+            };
+            for (byte = 0u; byte < 4u; ++byte) {
+                unsigned shift;
+                for (shift = 0u; shift < 4u; ++shift) {
+                    telemetry_hash ^= (unsigned char)(fields[byte] >> (shift * 8u));
+                    telemetry_hash *= UINT64_C(1099511628211);
+                }
+            }
+        }
+        out->telemetry_fingerprint = telemetry_hash;
+    }
     for (i = 0u; i < snapshot->cpu_count; ++i) {
         const pl_ni_cpu *cpu = &snapshot->cpus[i];
         pl_ppf_candidate *candidate = &out->candidates[i];
@@ -990,9 +1015,14 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         if ((request->required_isa & ~cpu->isa_mask) != 0u) {
             candidate->rejection = PL_NI_UNSUPPORTED; continue;
         }
-        if (request->exclusive_core &&
-            cpu_core_has_occupied_sibling(snapshot, request, i)) {
-            candidate->rejection = PL_NI_ACCESS_DENIED; continue;
+        {
+            int core_occupancy = cpu_core_occupancy(snapshot, request, i);
+            if (request->exclusive_core && core_occupancy < 0) {
+                candidate->rejection = PL_NI_UNSUPPORTED; continue;
+            }
+            if (request->exclusive_core && core_occupancy > 0) {
+                candidate->rejection = PL_NI_ACCESS_DENIED; continue;
+            }
         }
         if (bit_is_set(request->occupied_cpu_mask, i)) {
             candidate->rejection = PL_NI_ACCESS_DENIED;
@@ -1022,8 +1052,17 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
             }
         }
         candidate->cache_cost = cpu_shared_cache_penalty(snapshot, i);
-        candidate->smt_cost = cpu_core_has_occupied_sibling(snapshot, request, i)
-            ? 1000u : 0u;
+        if (candidate->cache_cost == UINT32_MAX) {
+            candidate->cache_cost = PL_NI_COST_MAX / 2u;
+            candidate->evidence_flags |= PL_PPF_EVIDENCE_MISSING_TOPOLOGY;
+        }
+        {
+            int core_occupancy = cpu_core_occupancy(snapshot, request, i);
+            if (core_occupancy < 0) {
+                candidate->smt_cost = PL_NI_COST_MAX / 2u;
+                candidate->evidence_flags |= PL_PPF_EVIDENCE_MISSING_TOPOLOGY;
+            } else candidate->smt_cost = core_occupancy > 0 ? 1000u : 0u;
+        }
         if (telemetry != NULL && (telemetry[i].valid_mask & PL_PPF_TELEMETRY_CACHE)) {
             candidate->cache_cost = clamp_cost(telemetry[i].cache_pressure);
             candidate->evidence_flags |= PL_PPF_EVIDENCE_TELEMETRY;
