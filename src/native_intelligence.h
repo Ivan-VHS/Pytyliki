@@ -41,8 +41,10 @@ enum {
 };
 
 typedef struct {
-    char platform[16], topology_source[48], isa_source[48], memory_source[48];
-    uint32_t schema_version, topology_state, isa_state, isa_scope, memory_state;
+    char platform[16], topology_source[48], allowed_source[48];
+    char isa_source[48], memory_source[48];
+    uint32_t schema_version, topology_state, allowed_state;
+    uint32_t isa_state, isa_scope, memory_state;
     uint64_t snapshot_fingerprint, generation;
 } pl_ni_provenance;
 
