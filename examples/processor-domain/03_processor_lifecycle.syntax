@@ -1,0 +1,7 @@
+fsm processor_lifecycle initial RESET {
+    state RESET: on reset_complete -> goto INITIALIZE;
+    state INITIALIZE: on memory_ready and clock_ready -> goto IDLE;
+    state IDLE: on work_available -> goto ACTIVE;
+    state ACTIVE: on fault -> goto DEGRADED;
+    state DEGRADED: on recovery_verified -> goto IDLE;
+}

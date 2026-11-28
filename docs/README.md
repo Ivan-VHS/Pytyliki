@@ -45,3 +45,5 @@ Start with a language-specific project README for scope, supported platforms, bu
 Describe behavior from source, build configuration, schemas, tests and CI evidence. Hardware discovery is read-only; benchmark numbers are local measurements. The embedded workbench is reference-only and does not imply physical MMIO mapping or firmware flashing. The native C ABI is opt-in and requires an explicitly trusted library.
 
 **The index is navigation, not proof of implementation.** Mark partial or planned capabilities accordingly.
+
+- [Processor domain and physical models](PYTYLIKI_PROCESSOR_DOMAIN.md) — processor lifecycle, DMA ownership, pipelines and unit-aware physical models.

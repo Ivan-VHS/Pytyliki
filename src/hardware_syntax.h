@@ -10,7 +10,7 @@ extern "C" {
 
 #define PL_HW_SYNTAX_MAX_SOURCE_BYTES (1024u * 1024u)
 #define PL_HW_SYNTAX_MAX_NAME 96u
-#define PL_HW_SYNTAX_CONSTRUCT_COUNT 20u
+#define PL_HW_SYNTAX_CONSTRUCT_COUNT 21u
 #define PL_HW_SYNTAX_SCHEMA "pytyliki.hardware-construct-ast.v1"
 
 typedef enum {
@@ -33,7 +33,8 @@ typedef enum {
     PL_HW_CONSTRUCT_DEVICE,
     PL_HW_CONSTRUCT_INVARIANT,
     PL_HW_CONSTRUCT_MEMORY_MAP,
-    PL_HW_CONSTRUCT_TRACE_SCRIPT
+    PL_HW_CONSTRUCT_TRACE_SCRIPT,
+    PL_HW_CONSTRUCT_PHYSICAL_MODEL
 } pl_hw_construct_kind;
 
 typedef enum {

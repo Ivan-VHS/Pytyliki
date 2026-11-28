@@ -1,0 +1,5 @@
+stream detector_samples from detector.events
+    |> validate_units()
+    |> calibrate(detector.calibration)
+    |> estimate_background()
+    |> sink(analysis.output, capacity: 1024, overflow: reject);

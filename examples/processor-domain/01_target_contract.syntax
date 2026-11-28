@@ -1,0 +1,6 @@
+contract target_contract for RiscvApplication {
+    require xlen == 64;
+    require abi == "lp64d";
+    require required_features_are_resolved;
+    on_violation { reject_target(); }
+}

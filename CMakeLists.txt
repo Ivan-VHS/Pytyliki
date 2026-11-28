@@ -58,6 +58,8 @@ add_executable(pytyliki-qcs src/qcs_cli.c)
 target_link_libraries(pytyliki-qcs PRIVATE pytyliki_core)
 add_executable(pytyliki-system-array src/system_array_cli.c)
 target_link_libraries(pytyliki-system-array PRIVATE pytyliki_core)
+add_executable(pytyliki-hw-syntax src/hardware_syntax_cli.c)
+target_link_libraries(pytyliki-hw-syntax PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -256,6 +258,26 @@ if(BUILD_TESTING)
   add_test(NAME qcs-native-frontend-tests COMMAND pytyliki-qcs-tests)
   add_test(NAME qcs-cli-smoke COMMAND pytyliki-qcs check ${CMAKE_CURRENT_SOURCE_DIR}/examples/qcs_irq.qcs)
   set_tests_properties(qcs-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "QCS valid")
+
+  add_executable(pytyliki-hardware-syntax-tests tests/test_hardware_syntax.c)
+  target_link_libraries(pytyliki-hardware-syntax-tests PRIVATE pytyliki_core)
+  add_test(NAME hardware-syntax-catalog-tests COMMAND pytyliki-hardware-syntax-tests)
+  add_test(NAME hardware-syntax-catalog-json COMMAND pytyliki-hw-syntax --catalog --json)
+  set_tests_properties(hardware-syntax-catalog-json PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.hardware-construct-ast.v1")
+  add_test(NAME hardware-syntax-physical-model-example COMMAND pytyliki-hw-syntax --check ${CMAKE_CURRENT_SOURCE_DIR}/examples/hardware-constructs/21_physical_model.syntax)
+  set(PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES
+    01_target_contract
+    02_processor_pipeline
+    03_processor_lifecycle
+    04_dma_ownership
+    05_physical_decay
+    06_detector_stream
+    07_decay_function
+  )
+  foreach(example IN LISTS PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES)
+    add_test(NAME processor-domain-example-${example}
+      COMMAND pytyliki-hw-syntax --check ${CMAKE_CURRENT_SOURCE_DIR}/examples/processor-domain/${example}.syntax)
+  endforeach()
 
   add_executable(pytyliki-system-array-tests tests/test_system_array.c)
   target_link_libraries(pytyliki-system-array-tests PRIVATE pytyliki_core)

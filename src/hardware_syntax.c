@@ -51,7 +51,9 @@ static const pl_hw_construct_info construct_catalog[PL_HW_SYNTAX_CONSTRUCT_COUNT
     {PL_HW_CONSTRUCT_MEMORY_MAP, "memory_map", "declarative", "target memory layout",
      "Mappings must be target-owned, non-overlapping, overflow-checked and permission-checked; declarations do not map memory."},
     {PL_HW_CONSTRUCT_TRACE_SCRIPT, "trace_script", "instrumentation", "debugger and trace script",
-     "Debug attachment and memory/register inspection require explicit target selection and access permissions."}
+     "Debug attachment and memory/register inspection require explicit target selection and access permissions."},
+    {PL_HW_CONSTRUCT_PHYSICAL_MODEL, "physical_model", "science", "typed physical and scientific model",
+     "Computational model only; dimensional checks, uncertainty and provenance are required, and no physical equipment is controlled."}
 };
 
 static const keyword_entry keywords[PL_HW_SYNTAX_CONSTRUCT_COUNT] = {
@@ -74,7 +76,8 @@ static const keyword_entry keywords[PL_HW_SYNTAX_CONSTRUCT_COUNT] = {
     {"device", PL_HW_CONSTRUCT_DEVICE},
     {"invariant", PL_HW_CONSTRUCT_INVARIANT},
     {"memory_map", PL_HW_CONSTRUCT_MEMORY_MAP},
-    {"trace_script", PL_HW_CONSTRUCT_TRACE_SCRIPT}
+    {"trace_script", PL_HW_CONSTRUCT_TRACE_SCRIPT},
+    {"physical_model", PL_HW_CONSTRUCT_PHYSICAL_MODEL}
 };
 
 typedef struct {
