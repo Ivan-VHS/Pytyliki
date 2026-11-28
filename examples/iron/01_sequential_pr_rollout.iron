@@ -1,0 +1,79 @@
+verison ///. * PYTYLIKI_REPO_PR_ROLLOUT_V1
+CC based rules ^^^ SEQUENTIAL_REVIEWED_PR_CHAIN
+begin iron )
+() core --
+    core_id = 0xPR00;
+    pipeline_stages = ["PR_DRAFT", "CONTRACT_CHECK", "DRY_MERGE", "MAIN_SEAL"];
+    merge_strategy = "SEQUENTIAL_VERIFIED_TO_MAIN";
+stop option ;
+[ system ]-
+    mode = "PR_VERIFICATION_AND_OVERLAY_SYNC";
+    main_branch_guard = "STRICT_LINEAR_CHECK";
+    network_mutation = false;
+stop option ;
+] level .
+    requested_privilege_ring = 0;
+    privilege_transition = "forbidden";
+stop option ;
+< start >?
+    startup_vector = "validation_only";
+    execution = false;
+stop option ;
+{ selective /
+    filter_mask = 0xFF;
+    match_policy = "PR_CHECK_PASS_MASK";
+    route_hit = "review_queue";
+    route_miss = "hold";
+stop option ;
+} operation P)-
+    op_code = "PR_SEQUENTIAL_MERGER";
+    operation_mode = "dry_run";
+    expected_head_sha_required = true;
+stop option ;
+?? massive <>
+    arena_limit_bytes = 2097152;
+    parallelism_limit = 4;
+    deterministic_order = true;
+stop option ;
+grown new-work >/
+    work_id = "ROLLOUT_STAGE_PR_BY_PR_TO_MAIN";
+    target_queue = "local_review_queue";
+    spawn_threads = false;
+stop option ;
+> concrete //*
+    concrete_id = "PR_MERGE_COMMIT_BRIDGE";
+    commit_method = "squash";
+    main_write_requires_green_ci = true;
+stop option ;
+## utility _
+    helper_name = "PR_DIFF_PARITY_AND_MAIN_CHECK";
+    helper_effect = "pure";
+stop option ;
+# unify TAB
+    tab_pitch = 4;
+    align_columns = true;
+    unify_headers = ["PR_NUM", "REPO", "GATE_STATUS", "MAIN_SHA", "SEAL"];
+stop option ;
+setup brachpass ^^
+    pass_name = "PR_SEQUENTIAL_BRANCHPASS";
+    predictor_write = false;
+    branch_observations = "offline_only";
+stop option ;
+!+ hyper tournament ^
+    bracket_id = "PR_READINESS_HYPER_TOURNAMENT";
+    contenders = ["CONTRACT", "CI", "REVIEW", "MERGEABILITY"];
+    deterministic_tie_break = "PR_SEQUENCE";
+stop option ;
+level jump to run *(
+    jump_target = "validated_run_loop";
+    save_return_state = true;
+    execution_mode = "plan_only";
+stop option ;
+TRUE connective *+
+    connective_mode = "ALL_REQUIRED_GATES";
+    predicate_a = "contract_valid";
+    predicate_b = "ci_green";
+    predicate_c = "review_approved";
+stop option ;
+verison ///. * PYTYLIKI_REPO_PR_ROLLOUT_V1_COMPLETE
+verificated /// !! SOURCE_AUTHORED_SEAL_CLAIM_ONLY

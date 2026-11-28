@@ -1,0 +1,13 @@
+atomic_tx reg_bank_swap(bank_a: RegSet, bank_b: RegSet) {
+    let checkpoint = save_checkpoint(R0..R7, SCRATCH_0)?;
+
+    stage_bank_swap(bank_a, bank_b)?;
+    verify_register_invariants(bank_b)?;
+
+    commit_state(checkpoint)?;
+    on_failure {
+        restore_checkpoint(checkpoint)?;
+        abort_transaction();
+    }
+}
+

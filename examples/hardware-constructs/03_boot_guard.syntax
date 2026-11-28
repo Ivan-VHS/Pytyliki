@@ -1,0 +1,11 @@
+stack_proc boot_guard(seed: u64) {
+    .stack capacity = 8;
+    .clobbers = [R0, R1];
+    PUSH_IMM 0xDEAD_BEEF_0000_0001
+    LOAD_REG R0
+    XOR_TOP
+    ROTL 13
+    STORE_REG regit
+    RET_TOP
+}
+

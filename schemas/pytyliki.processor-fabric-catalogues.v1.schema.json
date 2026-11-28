@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ivan-VHS/Pytyliki/blob/main/schemas/pytyliki.processor-fabric-catalogues.v1.schema.json",
+  "title": "Pytyliki Processor Fabric Catalogue Summary v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "cpu_suite_modules",
+    "processor_rules",
+    "hardware_constructs",
+    "system_sigil_operators",
+    "iron_core_markers",
+    "hardware_access_performed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.processor-fabric-catalogues.v1"
+    },
+    "cpu_suite_modules": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "processor_rules": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "hardware_constructs": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "system_sigil_operators": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "iron_core_markers": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "hardware_access_performed": { "const": false }
+  }
+}

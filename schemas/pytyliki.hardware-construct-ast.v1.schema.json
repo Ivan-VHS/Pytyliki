@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ivan-vhs:pytyliki:hardware-construct-ast:v1",
+  "title": "Pytyliki Hardware Construct AST v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "kind",
+    "name",
+    "family",
+    "body_kind",
+    "source_offset",
+    "source_length",
+    "body_offset",
+    "body_length",
+    "execution_model",
+    "safety_notes",
+    "source_execution_performed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.hardware-construct-ast.v1"
+    },
+    "kind": {
+      "enum": [
+        "table",
+        "stream",
+        "stack_proc",
+        "fsm",
+        "contract",
+        ".section",
+        "react",
+        "matrix",
+        "fn",
+        "schedule",
+        "rule",
+        "atomic_tx",
+        "dag",
+        "macro_def",
+        "hot_patch",
+        "probe",
+        "device",
+        "invariant",
+        "memory_map",
+        "trace_script"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 95
+    },
+    "family": {
+      "enum": [
+        "declarative",
+        "reactive",
+        "execution",
+        "machine",
+        "instrumentation"
+      ]
+    },
+    "body_kind": {
+      "enum": [
+        "block",
+        "pipeline",
+        "expression",
+        "assembly"
+      ]
+    },
+    "source_offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_length": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "body_offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "body_length": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "execution_model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "safety_notes": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_execution_performed": {
+      "const": false
+    }
+  }
+}

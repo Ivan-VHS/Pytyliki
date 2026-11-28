@@ -1,0 +1,16 @@
+.section .pytyliki.text, "ax"
+.global micro_scenario_step
+
+micro_scenario_step:
+    LD      R0, [R4 + 0]
+    LD      R1, [R4 + 8]
+    ANDI    R2, R0, 0x0F
+    JZ      .skip
+    ADD     R3, R0, R1
+    ST      [R5 + 0], R3
+    RET
+
+.skip:
+    MOV     regit, R1
+    RET
+

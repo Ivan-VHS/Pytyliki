@@ -14,6 +14,11 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
+- [Hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty structural construct families.
+- [MOS switch-level model](PHYSICAL_SWITCH_MODEL_V1.md) — bounded N/P topology resolver.
+- [Processor Fabric](PROCESSOR_FABRIC_V1.md) — processor graph and advisory planning.
+- [SystemArray sigil operators](SYSTEM_SIGIL_OPERATORS.md) — metadata-only typed operator registry.
+- [Iron Core](IRON_CORE.md) — structural grammar and hardware evidence gates.
 - [100 low-level rules](PYTYLIKI_LOW_LEVEL_100_RULES.md) — implementation mapping, target contracts, maturity and verification boundaries.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
 - [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.

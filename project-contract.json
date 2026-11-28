@@ -4,7 +4,7 @@
     "id": "pytyliki",
     "name": "Pytyliki",
     "repository": "Ivan-VHS/Pytyliki",
-    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, numerical metrics, versioned native interoperability, and target-described low-level hardware contracts.",
+    "summary": "C11 processor-systems workstation with read-only discovery, bounded measurements, source diagnostics, native interoperability, hardware-language frontends, switch-level modeling and Processor Fabric graph aggregation/planning.",
     "documentation": "docs/UNIFIED_PROJECT_CONTRACT.md"
   },
   "implementation": {
@@ -154,6 +154,59 @@
         "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md",
         "contracts/pytyliki-low-level-rules.v1.json"
       ]
+    },
+    {
+      "id": "syntax.hardware-constructs",
+      "status": "partial",
+      "summary": "Native C11 structural parser and catalogue cover twenty hardware-oriented construct forms. Compound Hyper-Switch and Epoch 4M samples are DAG-envelope references only; nested profile syntax, semantic analysis, lowering, code generation, simulation, RTL synthesis and hardware execution are not implemented.",
+      "evidence": [
+        "src/hardware_syntax.h",
+        "src/hardware_syntax.c",
+        "src/hardware_syntax_cli.c",
+        "tests/test_hardware_syntax.c",
+        "docs/PYTYLIKI_HARDWARE_SYNTAX.md",
+        "examples/hardware-constructs/01_irq_dispatch.syntax",
+        "schemas/pytyliki.hardware-construct-ast.v1.schema.json"
+      ]
+    },
+    {
+      "id": "syntax.system-sigil-operators",
+      "status": "partial",
+      "summary": "C11 metadata registry maps the thirteen SystemArray suffix tokens to stable semantic IDs, type/array-plan signatures, effect classes and safety contracts; parsing and JSON metadata are implemented, while expression parsing, type-directed overload resolution, capability/effect checking, plan evaluation, IR lowering and hardware access are not implemented.",
+      "evidence": [
+        "src/system_sigil.h",
+        "src/system_sigil.c",
+        "src/system_sigil_cli.c",
+        "tests/test_system_sigil.c",
+        "docs/SYSTEM_SIGIL_OPERATORS.md"
+      ]
+    },
+    {
+      "id": "processor.mos-switch-model",
+      "status": "implemented",
+      "summary": "Bounded deterministic N/P MOS ideal-switch topology evaluation with VDD/VSS reachability and explicit high, low, floating, contended and indeterminate node states; not analog or SPICE simulation.",
+      "evidence": [
+        "src/mos_switch.h",
+        "src/mos_switch.c",
+        "src/mos_switch_cli.c",
+        "tests/test_mos_switch.c",
+        "docs/PHYSICAL_SWITCH_MODEL_V1.md",
+        "schemas/pytyliki.mos-switch-model.v1.schema.json"
+      ]
+    },
+    {
+      "id": "processor.process-fabric",
+      "status": "partial",
+      "summary": "Bounded C11 processor-system graph validates hierarchy and typed relations, detects dependency cycles, aggregates five existing processor/hardware catalogues, and builds deterministic advisory worker plans constrained by execution domains, feature masks, affinity masks and capacity. No tasks are launched and no host or hardware state is changed.",
+      "evidence": [
+        "src/processor_fabric.h",
+        "src/processor_fabric.c",
+        "tests/test_processor_fabric.c",
+        "docs/PROCESSOR_FABRIC_V1.md",
+        "schemas/pytyliki.processor-fabric-report.v1.schema.json",
+        "schemas/pytyliki.processor-fabric-catalogues.v1.schema.json",
+        "src/processor_fabric_cli.c"
+      ]
     }
   ],
   "interfaces": [
@@ -187,6 +240,17 @@
         "src/low_level_contract.h",
         "src/low_level_contract.c",
         "tests/test_low_level_contract.c"
+      ]
+    },
+    {
+      "id": "pytyliki.mos-switch-model.v1",
+      "format": "Native C11 caller-owned MOS switch topology and state-resolution API",
+      "direction": "provides",
+      "status": "implemented",
+      "evidence": [
+        "src/mos_switch.h",
+        "src/mos_switch.c",
+        "tests/test_mos_switch.c"
       ]
     }
   ],
@@ -240,7 +304,11 @@
     "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
     "The low-level hardware contract has no default physical backend; device access requires explicit capabilities, a declared region and trusted target callbacks.",
     "MMIO reads/writes require device-region permissions and backend fences; a post-write fence failure means completion may be uncertain.",
-    "Clock and power-state operations are bounded platform requests, not raw voltage or pin writes; physical target adapters need board-specific qualification."
+    "Clock and power-state operations are bounded platform requests, not raw voltage or pin writes; physical target adapters need board-specific qualification.",
+    "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware.",
+    "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities.",
+    "The MOS switch-level model is a deterministic ideal-switch simulation only; it does not model analog current/voltage dynamics or access physical hardware.",
+    "Processor Fabric plans are advisory only: they do not spawn processes, modify host scheduling or affinity, write registers, map MMIO/DMA, change firmware, clocks or device state."
   ],
   "extension_points": [
     "Versioned public C ABI and caller-owned buffer interfaces.",
@@ -250,6 +318,11 @@
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
     "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
     "Versioned target and memory-region descriptors plus capability-gated bus/IRQ adapter contracts for future x86-64, ARM, RISC-V and MCU backends.",
-    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements."
+    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements.",
+    "Twenty versioned hardware construct families with structural AST nodes, ready for future grammar, type/effect checking, Hardware IR and Reaper adapter work.",
+    "Reference-only compound Hyper-Switch audio/system and Epoch 4M vacuum-lattice profile specimens; future token grammar, type/effect checks and target contracts remain unimplemented.",
+    "Versioned metadata registry for reserved SystemArray sigils; future semantic resolution must preserve source spans and lower to Reaper canonical typed IR.",
+    "Versioned MOS switch-level topology model with bounded reachability, ready for separately validated logic, sequential, timing and electrical-model layers.",
+    "Versioned Processor Fabric graph for CPU hierarchy, register/ISA/address-space resources, process pools, typed dependencies and deterministic advisory worker plans."
   ]
 }

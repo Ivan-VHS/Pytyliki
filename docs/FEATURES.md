@@ -8,6 +8,10 @@
 | Memory | typed views, checked slices, arenas, pools | fixed limits |
 | Metrics/TRACE | norms, distances, provenance, variance | context-checked |
 | Embedded C | MCU profiles, FLASH/SRAM, masked MMIO | simulation |
+| Hardware syntax | C11 structural parser for twenty hardware construct families | syntax-only; no hardware access |
+| SystemArray sigils | metadata-only operator registry | no operator execution |
+| MOS model | N/P MOS switch topology and bounded state resolution | ideal switch model, not an analog solver |
+| Processor Fabric | typed processor graph, catalogue aggregation and advisory plans | deterministic; no processes spawned or hardware state changed |
 | Low-level hardware contract | target descriptor, bounded memory map, capability-gated RAM/MMIO backend, IRQ registry | fake backend only; no physical backend shipped |
 | QCS | lexer, parser, AST | syntax-only |
 | ABI | versioned C ABI v1 | explicit load |

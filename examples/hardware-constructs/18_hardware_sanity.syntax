@@ -1,0 +1,6 @@
+invariant hardware_sanity {
+    always temperature_c < 95.0;
+    always register_state.valid;
+    eventually dma_busy == false within 512_cycles;
+}
+
