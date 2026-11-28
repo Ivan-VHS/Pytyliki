@@ -421,6 +421,68 @@ static void list_to_mask(const pl_ni_snapshot *snapshot, const char *list,
     }
 }
 
+static uint16_t thread_index_from_list(const char *list, uint16_t target) {
+    const char *cursor = list;
+    uint32_t ordinal = 0u;
+    while (*cursor != '\0') {
+        char *end = NULL;
+        unsigned long first = strtoul(cursor, &end, 10);
+        unsigned long last = first;
+        unsigned long id;
+        if (end == cursor) break;
+        cursor = end;
+        if (*cursor == '-') {
+            ++cursor;
+            last = strtoul(cursor, &end, 10);
+            if (end == cursor) break;
+            cursor = end;
+        }
+        if (last >= first && last - first < PL_NI_MAX_CPUS) {
+            for (id = first; id <= last; ++id) {
+                if (id == target && ordinal <= UINT16_MAX)
+                    return (uint16_t)ordinal;
+                ++ordinal;
+            }
+        }
+        if (*cursor == ',') ++cursor;
+        else if (*cursor != '\0') break;
+    }
+    return PL_NI_UNKNOWN_ID;
+}
+
+static void collect_linux_numa_distances(pl_ni_snapshot *snapshot) {
+    uint32_t i;
+    for (i = 0u; i < snapshot->numa_count; ++i) {
+        char path[160], buffer[1024];
+        const char *cursor;
+        uint16_t target_id = 0u;
+        (void)snprintf(path, sizeof(path),
+            "/sys/devices/system/node/node%u/distance",
+            (unsigned)snapshot->numa[i].id);
+        if (!read_text(path, buffer, sizeof(buffer))) continue;
+        cursor = buffer;
+        while (*cursor != '\0') {
+            char *end = NULL;
+            unsigned long distance;
+            while (*cursor == ' ' || *cursor == '\t') ++cursor;
+            if (*cursor == '\0') break;
+            distance = strtoul(cursor, &end, 10);
+            if (end == cursor) break;
+            cursor = end;
+            if (distance <= UINT16_MAX) {
+                uint32_t j;
+                for (j = 0u; j < snapshot->numa_count; ++j) {
+                    if (snapshot->numa[j].id == target_id) {
+                        snapshot->numa_distance[i][j] = (uint16_t)distance;
+                        break;
+                    }
+                }
+            }
+            if (target_id != UINT16_MAX) ++target_id;
+        }
+    }
+}
+
 static int line_has_flag(const char *flags, const char *wanted) {
     size_t wanted_length = strlen(wanted);
     const char *cursor = flags;
@@ -541,6 +603,11 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
         pl_ni_cpu *cpu = &snapshot->cpus[i];
         uint32_t node;
         int allowed = 0;
+        (void)snprintf(path, sizeof(path),
+            "/sys/devices/system/cpu/cpu%u/topology/thread_siblings_list",
+            (unsigned)cpu->os_cpu_id);
+        if (read_text(path, buffer, sizeof(buffer)))
+            cpu->thread_index = thread_index_from_list(buffer, cpu->os_cpu_id);
         cpu_set_t set;
         CPU_ZERO(&set);
         if (sched_getaffinity(0, sizeof(set), &set) == 0 &&
@@ -580,6 +647,7 @@ static pl_ni_status collect_linux(pl_ni_snapshot *snapshot) {
         for (uint32_t i = 0u; i < snapshot->cpu_count; ++i)
             if (bit_is_set(node->cpu_mask, i)) ++node->cpu_count;
     }
+    collect_linux_numa_distances(snapshot);
     directory = opendir("/sys/devices/system/cpu");
     if (directory != NULL) {
         while ((entry = readdir(directory)) != NULL) {
