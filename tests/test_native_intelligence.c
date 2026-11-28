@@ -113,6 +113,13 @@ static void test_ppf_constraints_cost_and_tie_break(void) {
     assert(pl_ppf_place(&snapshot, &request, telemetry, 4u, &report) == PL_NI_OK);
     assert(report.has_selection == 1u);
     assert(report.selected_cpu_index == 1u);
+    request.current_cpu_index = UINT16_MAX;
+    assert(pl_ppf_place(&snapshot, &request, NULL, 0u, &report) == PL_NI_OK);
+    assert(report.has_selection == 1u);
+    assert(report.candidates[report.selected_cpu_index].bandwidth_cost == 500u);
+    assert(report.candidates[report.selected_cpu_index].migration_cost == 500u);
+    assert((report.candidates[report.selected_cpu_index].evidence_flags &
+            PL_PPF_EVIDENCE_MISSING_TELEMETRY) != 0u);
 }
 
 static void test_typed_ranges_and_register_access(void) {
@@ -144,6 +151,10 @@ static void test_typed_ranges_and_register_access(void) {
     assert(pl_native_register_validate(&reg, 0xFFu, 0u, 0u, 7u, &address) == PL_NI_OUT_OF_RANGE);
     reg.access = PL_NATIVE_ACCESS_READ;
     assert(pl_native_register_validate(&reg, 0u, 1u, 0u, 7u, &address) == PL_NI_ACCESS_DENIED);
+    reg.base = UINT64_MAX - 3u;
+    reg.size = 4u;
+    reg.alignment = 4u;
+    assert(pl_native_register_validate(&reg, 0u, 0u, 0u, 7u, &address) == PL_NI_INVALID_ARGUMENT);
 }
 
 static void test_dma_ownership_and_generations(void) {
@@ -157,6 +168,7 @@ static void test_dma_ownership_and_generations(void) {
     assert(pl_dma_cpu_access_validate(&resource, 10u) == PL_NI_ACCESS_DENIED);
     assert(pl_dma_transition(&resource, 9u, PL_DMA_COMPLETED) == PL_NI_STALE_GENERATION);
     assert(pl_dma_transition(&resource, 10u, PL_DMA_COMPLETED) == PL_NI_OK);
+    assert(pl_dma_cpu_access_validate(&resource, 11u) == PL_NI_ACCESS_DENIED);
     assert(pl_dma_transition(&resource, 11u, PL_DMA_CPU_OWNED) == PL_NI_OK);
     assert(pl_dma_cpu_access_validate(&resource, 12u) == PL_NI_OK);
     assert(pl_dma_transition(&resource, 12u, PL_DMA_UNMAPPED) == PL_NI_OK);
