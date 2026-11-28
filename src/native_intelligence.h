@@ -10,7 +10,7 @@ extern "C" {
 
 #define PL_NI_ABI_VERSION UINT32_C(0x00010000)
 #define PL_NI_MAX_CPUS 256u
-#define PL_NI_MAX_CACHES 64u
+#define PL_NI_MAX_CACHES 1024u
 #define PL_NI_MAX_NUMA_NODES 16u
 #define PL_NI_CPU_WORDS (PL_NI_MAX_CPUS / 64u)
 
@@ -114,6 +114,8 @@ typedef struct {
 typedef struct {
     uint32_t schema_version, candidate_count, selected_cpu_index, has_selection;
     uint64_t topology_generation, topology_fingerprint, policy_fingerprint;
+    uint64_t telemetry_fingerprint;
+    uint32_t weights[5];
     pl_ppf_candidate candidates[PL_NI_MAX_CPUS];
 } pl_ppf_report;
 
@@ -121,7 +123,8 @@ enum {
     PL_PPF_EVIDENCE_TOPOLOGY = UINT32_C(1) << 0,
     PL_PPF_EVIDENCE_TELEMETRY = UINT32_C(1) << 1,
     PL_PPF_EVIDENCE_ESTIMATED = UINT32_C(1) << 2,
-    PL_PPF_EVIDENCE_MISSING_TELEMETRY = UINT32_C(1) << 3
+    PL_PPF_EVIDENCE_MISSING_TELEMETRY = UINT32_C(1) << 3,
+    PL_PPF_EVIDENCE_MISSING_TOPOLOGY = UINT32_C(1) << 4
 };
 
 typedef enum {
