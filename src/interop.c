@@ -61,6 +61,94 @@ static int count_to_size(uint64_t count, size_t *out) {
     if (out == NULL || count > (uint64_t)SIZE_MAX) return PYTYLIKI_ABI_INVALID_ARGUMENT;
     *out = (size_t)count; return PYTYLIKI_ABI_OK;
 }
+
+int32_t pytyliki_v1_native_snapshot_descriptor(
+    uint32_t *out_contract_version, uint64_t *out_structure_size
+) {
+    if (out_contract_version == NULL || out_structure_size == NULL)
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    *out_contract_version = PL_NI_ABI_VERSION;
+    *out_structure_size = (uint64_t)sizeof(pl_ni_snapshot);
+    return PYTYLIKI_ABI_OK;
+}
+
+int32_t pytyliki_v1_native_snapshot_collect(
+    pl_ni_snapshot *out, uint64_t out_capacity
+) {
+    if (out == NULL || out_capacity != (uint64_t)sizeof(*out))
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    switch (pl_ni_collect(out)) {
+    case PL_NI_OK: return PYTYLIKI_ABI_OK;
+    case PL_NI_UNSUPPORTED: return PYTYLIKI_ABI_UNSUPPORTED_ABI;
+    case PL_NI_INVALID_ARGUMENT: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    default: return PYTYLIKI_ABI_NATIVE_ERROR;
+    }
+}
+
+int32_t pytyliki_v1_native_placement(
+    const pl_ni_snapshot *snapshot,
+    const pl_ppf_request *request,
+    const pl_ppf_telemetry *telemetry,
+    uint64_t telemetry_count,
+    pl_ppf_report *out
+) {
+    size_t count = 0u;
+    if (out == NULL || count_to_size(telemetry_count, &count) != PYTYLIKI_ABI_OK)
+        return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    switch (pl_ppf_place(snapshot, request, telemetry, count, out)) {
+    case PL_NI_OK: return PYTYLIKI_ABI_OK;
+    case PL_NI_UNSUPPORTED: return PYTYLIKI_ABI_UNSUPPORTED_ABI;
+    case PL_NI_INVALID_ARGUMENT: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    default: return PYTYLIKI_ABI_NATIVE_ERROR;
+    }
+}
+
+int32_t pytyliki_v1_native_range_validate(const pl_native_range *range) {
+    switch (pl_native_range_validate(range)) {
+    case PL_NI_OK: return PYTYLIKI_ABI_OK;
+    case PL_NI_INVALID_ARGUMENT: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    default: return PYTYLIKI_ABI_NATIVE_ERROR;
+    }
+}
+
+int32_t pytyliki_v1_native_register_validate(
+    const pl_native_register *reg, uint64_t offset, uint32_t is_write,
+    uint64_t value, uint64_t expected_generation, uint64_t *absolute_address
+) {
+    switch (pl_native_register_validate(reg, offset, is_write, value,
+                                         expected_generation, absolute_address)) {
+    case PL_NI_OK: return PYTYLIKI_ABI_OK;
+    case PL_NI_INVALID_ARGUMENT: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    case PL_NI_STALE_GENERATION: return PYTYLIKI_ABI_STALE_GENERATION;
+    case PL_NI_OUT_OF_RANGE: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    case PL_NI_ACCESS_DENIED: return PYTYLIKI_ABI_ACCESS_DENIED;
+    default: return PYTYLIKI_ABI_NATIVE_ERROR;
+    }
+}
+
+int32_t pytyliki_v1_native_dma_transition(
+    pl_dma_resource *resource, uint64_t expected_generation, pl_dma_state next_state
+) {
+    switch (pl_dma_transition(resource, expected_generation, next_state)) {
+    case PL_NI_OK: return PYTYLIKI_ABI_OK;
+    case PL_NI_INVALID_ARGUMENT: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    case PL_NI_STALE_GENERATION: return PYTYLIKI_ABI_STALE_GENERATION;
+    case PL_NI_INVALID_STATE: return PYTYLIKI_ABI_INVALID_STATE;
+    default: return PYTYLIKI_ABI_NATIVE_ERROR;
+    }
+}
+
+int32_t pytyliki_v1_native_dma_cpu_access_validate(
+    const pl_dma_resource *resource, uint64_t expected_generation
+) {
+    switch (pl_dma_cpu_access_validate(resource, expected_generation)) {
+    case PL_NI_OK: return PYTYLIKI_ABI_OK;
+    case PL_NI_INVALID_ARGUMENT: return PYTYLIKI_ABI_INVALID_ARGUMENT;
+    case PL_NI_STALE_GENERATION: return PYTYLIKI_ABI_STALE_GENERATION;
+    case PL_NI_ACCESS_DENIED: return PYTYLIKI_ABI_ACCESS_DENIED;
+    default: return PYTYLIKI_ABI_NATIVE_ERROR;
+    }
+}
 int32_t pytyliki_v1_dot_f64(const double *a,const double *b,uint64_t n,double *out) {
     size_t count=0u;
     if(out==NULL||count_to_size(n,&count)!=PYTYLIKI_ABI_OK)return PYTYLIKI_ABI_INVALID_ARGUMENT;
