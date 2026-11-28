@@ -86,3 +86,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Report securit
 
 ---
 <p align="center"><sub>Pytyliki · README review 2026-11-27 UTC</sub></p>
+
+## Related mathematical research
+
+The [Vyunenko Theory K3 v0.4.0 proposal](https://github.com/Ivan-VHS/Kaskad/pull/36) documents CRT splitting of the radix-1000 completion and unique infinite positional coefficient sequences. This is an external mathematical reference only; it does not add a runtime/build dependency or change this repository's behavior, APIs, formats or license. See [the local research note](docs/VYUNENKO_K3_RESEARCH_REFERENCE.md).
