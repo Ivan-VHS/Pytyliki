@@ -8,6 +8,7 @@
 | Memory | typed views, checked slices, arenas, pools | fixed limits |
 | Metrics/TRACE | norms, distances, provenance, variance | context-checked |
 | Embedded C | MCU profiles, FLASH/SRAM, masked MMIO | simulation |
+| MOS model | N/P MOS switch connectivity and rail-state resolution | ideal switch-level model; no analog solver or hardware access |
 | QCS | lexer, parser, AST | syntax-only |
 | ABI | versioned C ABI v1 | explicit load |
 
