@@ -154,6 +154,7 @@ static void test_ppf_fails_closed_on_unknown_constraints(void) {
     assert(report.candidates[0].rejection == PL_NI_UNSUPPORTED);
     assert(report.candidates[1].rejection == PL_NI_UNSUPPORTED);
     request.require_allowed = 0u;
+    request.require_known_allowed = 1u;
     request.exclusive_core = 0u;
     assert(pl_ppf_place(&snapshot, &request, NULL, 0u, &report) == PL_NI_OK);
     assert(report.candidates[0].rejection == PL_NI_UNSUPPORTED);
