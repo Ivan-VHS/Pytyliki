@@ -206,9 +206,36 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
     for (i = 0u; i < snapshot->numa_count; ++i) {
         const pl_ni_numa_node *node = &snapshot->numa[i];
         uint32_t count = 0u;
-        for (j = 0u; j < snapshot->cpu_count; ++j)
-            if (bit_is_set(node->cpu_mask, j)) ++count;
+        for (j = 0u; j < snapshot->cpu_count; ++j) {
+            if (bit_is_set(node->cpu_mask, j)) {
+                ++count;
+                if (snapshot->cpus[j].numa_node != node->id)
+                    return PL_NI_INCONSISTENT;
+            }
+        }
         if (count != node->cpu_count) return PL_NI_INCONSISTENT;
+        for (j = i + 1u; j < snapshot->numa_count; ++j) {
+            if (node->id == snapshot->numa[j].id)
+                return PL_NI_INCONSISTENT;
+            for (uint32_t cpu = 0u; cpu < snapshot->cpu_count; ++cpu)
+                if (bit_is_set(node->cpu_mask, cpu) &&
+                    bit_is_set(snapshot->numa[j].cpu_mask, cpu))
+                    return PL_NI_INCONSISTENT;
+        }
+    }
+    for (i = 0u; i < snapshot->cpu_count; ++i) {
+        if (snapshot->cpus[i].numa_node == PL_NI_UNKNOWN_ID) continue;
+        {
+            int found = 0;
+            for (j = 0u; j < snapshot->numa_count; ++j) {
+                if (snapshot->numa[j].id == snapshot->cpus[i].numa_node &&
+                    bit_is_set(snapshot->numa[j].cpu_mask, i)) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) return PL_NI_INCONSISTENT;
+        }
     }
     return PL_NI_OK;
 }
@@ -1000,13 +1027,13 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         if (request->require_online && (cpu->flags & PL_NI_CPU_ONLINE) == 0u) {
             candidate->rejection = PL_NI_ACCESS_DENIED; continue;
         }
+        if ((request->require_known_allowed || request->require_allowed) &&
+            (cpu->flags & PL_NI_CPU_ALLOWED_KNOWN) == 0u) {
+            candidate->rejection = PL_NI_UNSUPPORTED; continue;
+        }
         if (request->require_allowed &&
             (cpu->flags & PL_NI_CPU_ALLOWED) == 0u) {
             candidate->rejection = PL_NI_ACCESS_DENIED; continue;
-        }
-        if (request->require_known_allowed &&
-            (cpu->flags & PL_NI_CPU_ALLOWED_KNOWN) == 0u) {
-            candidate->rejection = PL_NI_UNSUPPORTED; continue;
         }
         if (request->required_isa != 0u &&
             snapshot->provenance.isa_scope != PL_NI_ISA_SCOPE_PER_LOGICAL_CPU &&
