@@ -1,6 +1,12 @@
 target_sources(pytyliki_core PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/../src/native_intelligence.c
 )
+if(WIN32)
+    set_source_files_properties(
+        ${CMAKE_CURRENT_LIST_DIR}/../src/native_intelligence.c
+        PROPERTIES COMPILE_DEFINITIONS "_WIN32_WINNT=0x0A00;WINVER=0x0A00"
+    )
+endif()
 if(BUILD_TESTING)
     add_executable(pytyliki-native-intelligence-tests
         ${CMAKE_CURRENT_LIST_DIR}/../tests/test_native_intelligence.c
