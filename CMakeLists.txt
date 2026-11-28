@@ -22,7 +22,7 @@ if(PYTYLIKI_ENABLE_SANITIZERS)
   endif()
 endif()
 
-add_library(pytyliki_core src/embedded_kernel.c src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c src/system_array.c src/system_sigil.c src/hardware_syntax.c src/mos_switch.c src/processor_fabric.c)
+add_library(pytyliki_core src/embedded_kernel.c src/low_level_contract.c src/benchmark_stats.c src/concat.c src/core.c src/processor.c src/improvement.c src/hw_rules.c src/pipeline.c src/policy.c src/processor_catalog.c src/evolution.c src/apsia.c src/syntax_pie.c src/berry_core.c src/mtte.c src/ironclad_systems.c src/forge66.c src/cpu_suite.c src/trimatrix_autoforge.c src/metric_geometry.c src/compute_ops.c src/memory.c src/metric_registry.c src/architecture_atlas.c src/self_product.c src/embedded.c src/systems_accel.c src/qcs.c src/trace.c src/three_medium.c src/division.c src/atomic_quantum.c src/budget.c src/runtime_transaction.c src/snapshot_store.c src/system_array.c src/system_sigil.c src/hardware_syntax.c src/mos_switch.c src/processor_fabric.c)
 target_include_directories(pytyliki_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pytyliki_core PRIVATE -Werror=multichar)
@@ -36,7 +36,7 @@ target_include_directories(pytyliki_ffi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(pytyliki_ffi PRIVATE PYTYLIKI_FFI_BUILD)
 set_target_properties(pytyliki_ffi PROPERTIES VERSION 1.0.0 SOVERSION 1)
 install(TARGETS pytyliki_ffi RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/system_array.h src/system_sigil.h src/hardware_syntax.h src/mos_switch.h src/processor_fabric.h DESTINATION include/pytyliki)
+install(FILES src/interop.h src/division.h src/qcs.h src/self_product.h src/trace.h src/three_medium.h src/atomic_quantum.h src/budget.h src/runtime_transaction.h src/snapshot_store.h src/system_array.h src/low_level_contract.h src/system_sigil.h src/hardware_syntax.h src/mos_switch.h src/processor_fabric.h DESTINATION include/pytyliki)
 if(UNIX)
   target_link_libraries(pytyliki_core PUBLIC m)
 endif()
@@ -60,12 +60,6 @@ add_executable(pytyliki-system-array src/system_array_cli.c)
 target_link_libraries(pytyliki-system-array PRIVATE pytyliki_core)
 add_executable(pytyliki-hw-syntax src/hardware_syntax_cli.c)
 target_link_libraries(pytyliki-hw-syntax PRIVATE pytyliki_core)
-add_executable(pytyliki-system-sigil src/system_sigil_cli.c)
-target_link_libraries(pytyliki-system-sigil PRIVATE pytyliki_core)
-add_executable(pytyliki-fabric src/processor_fabric_cli.c)
-target_link_libraries(pytyliki-fabric PRIVATE pytyliki_core)
-add_executable(pytyliki-mos src/mos_switch_cli.c)
-target_link_libraries(pytyliki-mos PRIVATE pytyliki_core)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -245,6 +239,10 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-embedded-kernel-tests PRIVATE pytyliki_core)
   add_test(NAME embedded-kernel-control-model-tests COMMAND pytyliki-embedded-kernel-tests)
 
+  add_executable(pytyliki-low-level-contract-tests tests/test_low_level_contract.c)
+  target_link_libraries(pytyliki-low-level-contract-tests PRIVATE pytyliki_core)
+  add_test(NAME low-level-hardware-contract-tests COMMAND pytyliki-low-level-contract-tests)
+
   add_executable(pytyliki-systems-accel-tests tests/test_systems_accel.c)
   target_link_libraries(pytyliki-systems-accel-tests PRIVATE pytyliki_core)
   add_test(NAME systems-accel-tests COMMAND pytyliki-systems-accel-tests)
@@ -261,6 +259,26 @@ if(BUILD_TESTING)
   add_test(NAME qcs-cli-smoke COMMAND pytyliki-qcs check ${CMAKE_CURRENT_SOURCE_DIR}/examples/qcs_irq.qcs)
   set_tests_properties(qcs-cli-smoke PROPERTIES PASS_REGULAR_EXPRESSION "QCS valid")
 
+  add_executable(pytyliki-hardware-syntax-tests tests/test_hardware_syntax.c)
+  target_link_libraries(pytyliki-hardware-syntax-tests PRIVATE pytyliki_core)
+  add_test(NAME hardware-syntax-catalog-tests COMMAND pytyliki-hardware-syntax-tests)
+  add_test(NAME hardware-syntax-catalog-json COMMAND pytyliki-hw-syntax --catalog --json)
+  set_tests_properties(hardware-syntax-catalog-json PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.hardware-construct-ast.v1")
+  add_test(NAME hardware-syntax-physical-model-example COMMAND pytyliki-hw-syntax --check ${CMAKE_CURRENT_SOURCE_DIR}/examples/hardware-constructs/21_physical_model.syntax)
+  set(PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES
+    01_target_contract
+    02_processor_pipeline
+    03_processor_lifecycle
+    04_dma_ownership
+    05_physical_decay
+    06_detector_stream
+    07_decay_function
+  )
+  foreach(example IN LISTS PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES)
+    add_test(NAME processor-domain-example-${example}
+      COMMAND pytyliki-hw-syntax --check ${CMAKE_CURRENT_SOURCE_DIR}/examples/processor-domain/${example}.syntax)
+  endforeach()
+
   add_executable(pytyliki-system-array-tests tests/test_system_array.c)
   target_link_libraries(pytyliki-system-array-tests PRIVATE pytyliki_core)
   add_test(NAME system-array-syntax-tests COMMAND pytyliki-system-array-tests)
@@ -268,68 +286,6 @@ if(BUILD_TESTING)
   set_tests_properties(system-array-cli-normalize PROPERTIES PASS_REGULAR_EXPRESSION "system")
   add_test(NAME system-array-cli-json COMMAND pytyliki-system-array --json "{]+/* systemArray >^")
   set_tests_properties(system-array-cli-json PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.system-array-ast.v1")
-
-  add_executable(pytyliki-processor-fabric-tests tests/test_processor_fabric.c)
-  target_link_libraries(pytyliki-processor-fabric-tests PRIVATE pytyliki_core)
-  add_test(NAME processor-fabric-inventory-and-planner COMMAND pytyliki-processor-fabric-tests)
-  add_test(NAME processor-fabric-catalogue-cli COMMAND pytyliki-fabric --catalogues-json)
-  set_tests_properties(processor-fabric-catalogue-cli PROPERTIES PASS_REGULAR_EXPRESSION "processor-fabric-catalogues.v1.*hardware_access_performed.*false")
-
-  add_executable(pytyliki-system-sigil-tests tests/test_system_sigil.c)
-  target_link_libraries(pytyliki-system-sigil-tests PRIVATE pytyliki_core)
-  add_test(NAME system-sigil-registry-tests COMMAND pytyliki-system-sigil-tests)
-  add_test(NAME system-sigil-catalog COMMAND pytyliki-system-sigil --catalog-json)
-  set_tests_properties(system-sigil-catalog PROPERTIES PASS_REGULAR_EXPRESSION "logic.equal_with_validity.*operator_execution_performed.*false")
-  add_test(NAME system-sigil-cli-ast COMMAND pytyliki-system-sigil --ast-json "systemArray ^>==!")
-  set_tests_properties(system-sigil-cli-ast PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.system-sigil-ast.v1.*hardware_access_performed.*false")
-
-  add_executable(pytyliki-hardware-syntax-tests tests/test_hardware_syntax.c)
-  target_link_libraries(pytyliki-hardware-syntax-tests PRIVATE pytyliki_core)
-  add_test(NAME hardware-construct-syntax-tests COMMAND pytyliki-hardware-syntax-tests)
-  add_test(NAME hardware-construct-catalog COMMAND pytyliki-hw-syntax --catalog)
-  set_tests_properties(hardware-construct-catalog PROPERTIES PASS_REGULAR_EXPRESSION "trace_script")
-
-  set(PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES
-    01_irq_dispatch
-    02_cpu_pulse
-    03_boot_guard
-    04_core_power_state
-    05_bus_alignment_rule
-    06_microcode_section
-    07_cache_react
-    08_trace_mode_matrix
-    09_fold_address_tree
-    10_quantum_wheel
-    11_apocrypha_noise_gate
-    12_register_transaction
-    13_pipeline_graph
-    14_vector_lane_shift
-    15_overlay_swap
-    16_ipc_watch
-    17_dma_ring_worker
-    18_hardware_sanity
-    19_cpu_window_layout
-    20_step_debugger
-    21_physical_model
-  )
-  foreach(example IN LISTS PYTYLIKI_HARDWARE_SYNTAX_EXAMPLES)
-    add_test(
-      NAME hardware-syntax-example-${example}
-      COMMAND pytyliki-hw-syntax --check
-        ${CMAKE_CURRENT_SOURCE_DIR}/examples/hardware-constructs/${example}.syntax
-    )
-  endforeach()
-
-  add_test(
-    NAME hardware-syntax-profile-hyper-switch
-    COMMAND pytyliki-hw-syntax --check
-      ${CMAKE_CURRENT_SOURCE_DIR}/examples/profiles/01_hyper_switch_reality_synthesizer.syntax
-  )
-  add_test(
-    NAME hardware-syntax-profile-epoch-4m
-    COMMAND pytyliki-hw-syntax --check
-      ${CMAKE_CURRENT_SOURCE_DIR}/examples/profiles/02_epoch_4m_vacuum_lattice.syntax
-  )
 
 endif()
 
@@ -345,53 +301,4 @@ if(BUILD_TESTING)
   add_executable(pytyliki-runtime-transaction-tests tests/test_runtime_transaction.c)
   target_link_libraries(pytyliki-runtime-transaction-tests PRIVATE pytyliki_core)
   add_test(NAME runtime-transaction-contract-tests COMMAND pytyliki-runtime-transaction-tests)
-endif()
-
-# Iron Core v1: bounded structural grammar and source AST.
-add_library(pytyliki_iron_core src/iron_core.c)
-target_include_directories(pytyliki_iron_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-add_executable(pytyliki-iron src/iron_core_cli.c)
-target_link_libraries(pytyliki-iron PRIVATE pytyliki_iron_core)
-if(BUILD_TESTING)
-  add_executable(pytyliki-iron-core-tests tests/test_iron_core.c)
-  target_link_libraries(pytyliki-iron-core-tests PRIVATE pytyliki_iron_core)
-  add_test(NAME iron-core-marker-tests COMMAND pytyliki-iron-core-tests)
-  add_test(NAME iron-core-pr-rollout-example COMMAND pytyliki-iron --check ${CMAKE_CURRENT_SOURCE_DIR}/examples/iron/01_sequential_pr_rollout.iron)
-  add_test(NAME iron-core-catalog-smoke COMMAND pytyliki-iron --catalog --json)
-  set_tests_properties(iron-core-catalog-smoke PROPERTIES PASS_REGULAR_EXPRESSION "pytyliki.iron-core-catalog.v1")
-
-  add_test(
-    NAME processor-domain-iron-source
-    COMMAND pytyliki-iron --check
-      ${CMAKE_CURRENT_SOURCE_DIR}/examples/processor-domain/processor-domain.iron
-  )
-  set(PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES
-    01_target_contract
-    02_processor_pipeline
-    03_processor_lifecycle
-    04_dma_ownership
-    05_physical_decay
-    06_detector_stream
-    07_decay_function
-  )
-  foreach(example IN LISTS PYTYLIKI_PROCESSOR_DOMAIN_EXAMPLES)
-    add_test(
-      NAME processor-domain-example-${example}
-      COMMAND pytyliki-hw-syntax --check
-        ${CMAKE_CURRENT_SOURCE_DIR}/examples/processor-domain/${example}.syntax
-    )
-  endforeach()
-endif()
-
-
-if(BUILD_TESTING)
-  add_executable(pytyliki-mos-switch-tests tests/test_mos_switch.c)
-  target_link_libraries(pytyliki-mos-switch-tests PRIVATE pytyliki_core)
-  add_test(NAME mos-switch-level-tests COMMAND pytyliki-mos-switch-tests)
-  add_test(NAME mos-inverter-low-smoke COMMAND pytyliki-mos --inverter low)
-  set_tests_properties(mos-inverter-low-smoke PROPERTIES PASS_REGULAR_EXPRESSION "output=high")
-  add_test(NAME mos-inverter-high-smoke COMMAND pytyliki-mos --inverter high)
-  set_tests_properties(mos-inverter-high-smoke PROPERTIES PASS_REGULAR_EXPRESSION "output=low")
-  add_test(NAME mos-inverter-unknown-smoke COMMAND pytyliki-mos --inverter unknown)
-  set_tests_properties(mos-inverter-unknown-smoke PROPERTIES PASS_REGULAR_EXPRESSION "output=indeterminate")
 endif()

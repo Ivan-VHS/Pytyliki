@@ -30,7 +30,8 @@ Hardware discovery does not change CPU scheduling, affinity, voltage, frequency,
 - **Numerical metrics:** C11 vector, distance, geometry and quadratic-form operations through a stable native API.
 - **Memory utilities:** typed views, overflow-checked slices, bounded arenas, rewind checkpoints and fixed-block pools.
 - **Native interoperability:** versioned C ABI v1 with caller-owned buffers; consumers must explicitly select a trusted library.
-- **Embedded references:** MCU profiles, memory estimates, starter generation and simulated MMIO masks. These are reference tools, not physical memory mapping, device access or firmware flashing.
+- **Embedded references:** MCU profiles, memory estimates, starter generation and simulated MMIO masks. These are reference tools, not physical memory mapping or firmware flashing.
+- **Low-level hardware contract:** versioned target descriptors, bounded memory regions, capability-gated RAM/MMIO backends, fenced device access, clock/power requests and fixed-capacity IRQ dispatch. Tests use a fake backend; no physical backend is shipped.
 - **Toolchain inventory:** read-only discovery of available tools; discovered programs are not installed or launched.
 
 PCM16 WAV/DSP processing is not part of the current delivered Pytyliki core. See the project contract and feature documentation before depending on partial or planned capabilities.
@@ -75,7 +76,7 @@ Integrations do not grant hardware privileges or broaden the workstation's read-
 
 - [Feature overview](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md)
 - [Benchmark statistics](docs/BENCHMARK_STATISTICS.md) · [Embedded C reference workbench](docs/EMBEDDED_C.md)
-- [QCS native inspection](docs/QCS_NATIVE.md) · [Documentation index](docs/README.md)
+- [QCS native inspection](docs/QCS_NATIVE.md) · [100 low-level rules](docs/PYTYLIKI_LOW_LEVEL_100_RULES.md) · [Documentation index](docs/README.md)
 - [Release process](docs/RELEASE.md) · [Report envelope](docs/REPORT_ENVELOPE.md)
 - [Reaper integration](docs/REAPER_INTEGRATION.md) · [Shared ecosystem standards](https://github.com/Ivan-VHS/DAK/blob/main/docs/UNIFIED_DOCUMENTATION_STANDARD.md)
 

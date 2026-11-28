@@ -144,9 +144,21 @@
       ]
     },
     {
+      "id": "hardware.low-level-contract.v1",
+      "status": "partial",
+      "summary": "Versioned C11 target descriptor, bounded non-overlapping memory map, capability-gated RAM/MMIO backend, clock/power requests and fixed-capacity IRQ dispatch; fake-backend tested, no physical target backend shipped.",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c",
+        "docs/PYTYLIKI_LOW_LEVEL_100_RULES.md",
+        "contracts/pytyliki-low-level-rules.v1.json"
+      ]
+    },
+    {
       "id": "syntax.hardware-constructs",
       "status": "partial",
-      "summary": "Native C11 structural parser and catalogue cover twenty hardware-oriented construct forms. Compound Hyper-Switch and Epoch 4M samples are DAG-envelope references only; nested profile syntax, semantic analysis, lowering, code generation, simulation, RTL synthesis and hardware execution are not implemented.",
+      "summary": "Native C11 structural parser and catalogue cover twenty-one hardware-oriented construct forms, including typed physical models. Semantic analysis, lowering, code generation, simulation, RTL synthesis and hardware execution are not implemented.",
       "evidence": [
         "src/hardware_syntax.h",
         "src/hardware_syntax.c",
@@ -154,7 +166,9 @@
         "tests/test_hardware_syntax.c",
         "docs/PYTYLIKI_HARDWARE_SYNTAX.md",
         "examples/hardware-constructs/01_irq_dispatch.syntax",
-        "schemas/pytyliki.hardware-construct-ast.v1.schema.json"
+        "schemas/pytyliki.hardware-construct-ast.v1.schema.json",
+        "examples/hardware-constructs/21_physical_model.syntax",
+        "docs/PYTYLIKI_PROCESSOR_DOMAIN.md"
       ]
     },
     {
@@ -195,6 +209,18 @@
         "schemas/pytyliki.processor-fabric-catalogues.v1.schema.json",
         "src/processor_fabric_cli.c"
       ]
+    },
+    {
+      "id": "processor.physical-model-domain",
+      "status": "partial",
+      "summary": "Typed processor lifecycle, pipeline, DMA ownership, physical decay and detector-stream examples are structurally parsed; no physical equipment is controlled.",
+      "evidence": [
+        "docs/PYTYLIKI_PROCESSOR_DOMAIN.md",
+        "examples/processor-domain/01_target_contract.syntax",
+        "examples/processor-domain/04_dma_ownership.syntax",
+        "examples/processor-domain/05_physical_decay.syntax",
+        "examples/processor-domain/06_detector_stream.syntax"
+      ]
     }
   ],
   "interfaces": [
@@ -217,6 +243,17 @@
       "evidence": [
         "federation/octa-pyramid.v1.json",
         "docs/OCTA_PYRAMID_FEDERATION.md"
+      ]
+    },
+    {
+      "id": "pytyliki.low-level-hardware-contract.v1",
+      "format": "Versioned C11 target, memory-map, bus-backend and IRQ contract",
+      "direction": "provides",
+      "status": "partial",
+      "evidence": [
+        "src/low_level_contract.h",
+        "src/low_level_contract.c",
+        "tests/test_low_level_contract.c"
       ]
     },
     {
@@ -279,6 +316,9 @@
     "The Embedded C MMIO surface is simulated/reference-only and does not access physical device registers.",
     "Native FFI consumers must explicitly select a trusted ABI-compatible library; ABI presence does not imply that every module is interoperable.",
     "The system-array frontend validates one directive only; framing markers are metadata and never grant permissions or trigger hardware operations.",
+    "The low-level hardware contract has no default physical backend; device access requires explicit capabilities, a declared region and trusted target callbacks.",
+    "MMIO reads/writes require device-region permissions and backend fences; a post-write fence failure means completion may be uncertain.",
+    "Clock and power-state operations are bounded platform requests, not raw voltage or pin writes; physical target adapters need board-specific qualification.",
     "The hardware construct frontend performs structural syntax checks only; it does not compile or execute declarations, access processor registers, map memory, control clocks/voltage, submit DMA, patch code or synthesize hardware.",
     "SystemArray sigil registry is metadata-only; no sigil executes, reads/writes memory, accesses a device, changes registers or grants capabilities.",
     "The MOS switch-level model is a deterministic ideal-switch simulation only; it does not model analog current/voltage dynamics or access physical hardware.",
@@ -291,6 +331,8 @@
     "Explicit adapter layer for trusted external native consumers.",
     "Bounded saturating matrix self-product for repeated vertical architecture analysis.",
     "Versioned system-array syntax AST for future typed array declarations and Reaper hardware-dialect integration.",
+    "Versioned target and memory-region descriptors plus capability-gated bus/IRQ adapter contracts for future x86-64, ARM, RISC-V and MCU backends.",
+    "Machine-readable mapping of 100 low-level principles to implemented, partial, target-specific, not-physical and planned engineering requirements.",
     "Twenty versioned hardware construct families with structural AST nodes, ready for future grammar, type/effect checking, Hardware IR and Reaper adapter work.",
     "Reference-only compound Hyper-Switch audio/system and Epoch 4M vacuum-lattice profile specimens; future token grammar, type/effect checks and target contracts remain unimplemented.",
     "Versioned metadata registry for reserved SystemArray sigils; future semantic resolution must preserve source spans and lower to Reaper canonical typed IR.",

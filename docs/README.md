@@ -14,18 +14,18 @@ Start with a language-specific project README for scope, supported platforms, bu
 - [Benchmark statistics](BENCHMARK_STATISTICS.md) — measurement method and provenance.
 - [Memory arena](MEMORY_ARENA.md) — bounded allocation primitives.
 - [Embedded C](EMBEDDED_C.md) — reference MCU profiles and simulated hardware descriptions.
+- [Hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty structural construct families.
+- [MOS switch-level model](PHYSICAL_SWITCH_MODEL_V1.md) — bounded N/P topology resolver.
+- [Processor Fabric](PROCESSOR_FABRIC_V1.md) — processor graph and advisory planning.
+- [SystemArray sigil operators](SYSTEM_SIGIL_OPERATORS.md) — metadata-only typed operator registry.
+- [Iron Core](IRON_CORE.md) — structural grammar and hardware evidence gates.
+- [100 low-level rules](PYTYLIKI_LOW_LEVEL_100_RULES.md) — implementation mapping, target contracts, maturity and verification boundaries.
 - [QCS native inspection](QCS_NATIVE.md) — static syntax checks.
-- [Pytyliki hardware syntax](PYTYLIKI_HARDWARE_SYNTAX.md) — twenty hardware construct families, structural parser and safety contracts.
-- [MOS switch-level model v1](PHYSICAL_SWITCH_MODEL_V1.md) — bounded N/P MOS topology evaluation and five-state node resolution; not an analog solver.
-- [Processor Fabric v1](PROCESSOR_FABRIC_V1.md) — bounded processor hierarchy, catalogue aggregation, dependency graph validation and deterministic advisory process-pool planning.
-- [Processor Fabric catalogue schema](../schemas/pytyliki.processor-fabric-catalogues.v1.schema.json) — versioned summary of the CPU Suite, processor rules, hardware constructs, SystemArray sigils and Iron Core markers.
-- [Pytyliki Hardware Language Extension 0.4](PYTYLIKI_HARDWARE_LANGUAGE_SPEC_0.4.md) — target profiles, memory/capability model, ISA, microarchitecture, RTL, simulation and Reaper IR boundary.
-- [SystemArray sigil operators](SYSTEM_SIGIL_OPERATORS.md) — thirteen reserved operators, type signatures, effects and metadata-only frontend.
-- [2026 processor systems programming trends](SYSTEM_PROGRAMMING_TRENDS_2026.md) — design rationale and external standards/tooling references.
-- [Speculative hardware profiles](PYTYLIKI_SPECULATIVE_PROFILES.md) — compound Hyper-Switch and Epoch 4M reference examples with token mapping and implementation boundaries.
 - [System-array syntax](SYSTEM_ARRAY_SYNTAX.md) — normalized `system(array)` aliases and framed syntax; syntax-only, no hardware access.
 - [Report envelope](REPORT_ENVELOPE.md) — versioned output and evidence metadata.
-- [Reaper integration](REAPER_INTEGRATION.md) — opt-in policy and C ABI boundaries.
+- [Reaper integration](REAPER_INTEGRATION.md)
+- [IRON CORE v1](IRON_CORE.md) — 100 hardware-engineering rules and evidence gates.
+- [Omega-Null](OMEGA_NULL.md) — experimental physics-inspired profile and physical capability boundaries. — opt-in policy and C ABI boundaries.
 - [Reaper neural capacity evidence v1](REAPER_NEURAL_CAPACITY_EVIDENCE_V1.md) — bounded read-only resource evidence and deterministic ALLOW/DEFER/REJECT recommendations.
 
 ## Browse by topic
