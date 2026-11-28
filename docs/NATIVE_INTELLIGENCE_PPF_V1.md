@@ -10,10 +10,10 @@ pl_ni_status pl_ni_collect(pl_ni_snapshot *out);
 
 The normalized snapshot contains processor-group and group-relative CPU identities, package/die/core/thread relations, NUMA membership, cache-sharing CPU masks, memory totals, ISA masks and per-field provenance states.
 
-- Windows uses GetLogicalProcessorInformationEx(RelationAll), including variable-size NUMA group affinity, active processor groups and GetProcessGroupAffinity/GetProcessAffinityMask where the process is confined to one group.
-- Linux reads /sys/devices/system/cpu, /sys/devices/system/node and the kernel cache topology attributes; sched_getaffinity reports the calling process' allowed CPU set.
+- Windows uses GetLogicalProcessorInformationEx(RelationAll), including variable-size processor/core/package/die, NUMA and cache group masks, active processor groups and GetProcessGroupAffinity/GetProcessAffinityMask where the process is confined to one group. Variable-sized records are size-checked before their group arrays are read.
+- Linux reads /sys/devices/system/cpu, /sys/devices/system/node (including sparse node IDs, per-node memory and distance rows) and the kernel cache topology attributes; sched_getaffinity reports the calling thread's effective CPU set. Its exact source and availability are recorded separately in provenance.
 - /proc/cpuinfo is used for per-logical-CPU kernel-enabled ISA flags on Linux. A CPUID/XGETBV observation on the executing collector CPU is never promoted to a per-core guarantee.
-- Missing values remain unknown. If a Windows process spans several processor groups and an exact per-CPU allowed mask cannot be established through the current read-only provider, the affected allowed fact stays unknown and PPF may reject it under require_known_allowed.
+- Missing values remain unknown. If a Windows process spans several processor groups and an exact per-CPU allowed mask cannot be established through the current read-only provider, all affected allowed facts stay unknown and PPF may reject them under require_known_allowed. The provenance record also identifies whether the allowed-set observation is known or unavailable and names its API source.
 
 pl_ni_snapshot_fingerprint is a deterministic, non-cryptographic FNV-1a fingerprint of normalized topology and resource data. It is a replay/cache identity, not an authenticity signature or security digest. The generation field is currently derived from that fingerprint.
 
