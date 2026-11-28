@@ -86,3 +86,7 @@ GCC/Clang 构建可通过 `-DPYTYLIKI_ENABLE_SANITIZERS=ON` 启用 AddressSaniti
 
 ---
 <p align="center"><sub>Pytyliki · README 审核 2026-11-27 UTC</sub></p>
+
+## 相关数学研究
+
+[维尤年科 K3 理论 v0.4.0 提案](https://github.com/Ivan-VHS/Kaskad/pull/36)记录了基数 1000 完备化的 CRT 分解及唯一的无限位置系数序列。这只是外部数学参考；不会增加运行时/构建依赖，也不会改变本仓库的行为、API、格式或许可证。详见[本地研究说明](docs/VYUNENKO_K3_RESEARCH_REFERENCE.md)。
