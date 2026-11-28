@@ -280,3 +280,5 @@ if(BUILD_TESTING)
   target_link_libraries(pytyliki-runtime-transaction-tests PRIVATE pytyliki_core)
   add_test(NAME runtime-transaction-contract-tests COMMAND pytyliki-runtime-transaction-tests)
 endif()
+
+include(cmake/native_intelligence.cmake)
