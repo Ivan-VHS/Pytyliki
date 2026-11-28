@@ -1,6 +1,7 @@
 #ifndef PYTYLIKI_INTEROP_H
 #define PYTYLIKI_INTEROP_H
 #include <stdint.h>
+#include "native_intelligence.h"
 #if defined(_WIN32)
 #  if defined(PYTYLIKI_FFI_BUILD)
 #    define PYTYLIKI_FFI_API __declspec(dllexport)
@@ -14,7 +15,7 @@
 extern "C" {
 #endif
 #define PYTYLIKI_ABI_VERSION 1u
-enum { PYTYLIKI_ABI_OK = 0, PYTYLIKI_ABI_INVALID_ARGUMENT = -1, PYTYLIKI_ABI_UNSUPPORTED_ABI = -2 };
+enum { PYTYLIKI_ABI_OK = 0, PYTYLIKI_ABI_INVALID_ARGUMENT = -1, PYTYLIKI_ABI_UNSUPPORTED_ABI = -2, PYTYLIKI_ABI_NATIVE_ERROR = -3 };
 
 #define PYTYLIKI_EMBEDDED_PROFILE_ID_CAP 40u
 #define PYTYLIKI_EMBEDDED_ARCH_CAP 24u
@@ -121,6 +122,21 @@ PYTYLIKI_FFI_API int32_t pytyliki_v1_embedded_budget_evaluate(
 PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_count(uint64_t *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_at(uint64_t, pytyliki_plugin_descriptor_v1 *);
 PYTYLIKI_FFI_API int32_t pytyliki_v1_plugin_find(const char *, pytyliki_plugin_descriptor_v1 *);
+
+/* Optional read-only hardware intelligence snapshot and pure placement API.
+ * The caller owns the complete fixed-size snapshot and report structures.
+ * This is a same-process C ABI contract, not a portable serialized wire format. */
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_snapshot_descriptor(
+    uint32_t *out_contract_version, uint64_t *out_structure_size);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_snapshot_collect(
+    pl_ni_snapshot *out, uint64_t out_capacity);
+PYTYLIKI_FFI_API int32_t pytyliki_v1_native_placement(
+    const pl_ni_snapshot *snapshot,
+    const pl_ppf_request *request,
+    const pl_ppf_telemetry *telemetry,
+    uint64_t telemetry_count,
+    pl_ppf_report *out);
+
 /* Typed metric catalogue query. Strings are NUL-terminated fixed buffers;
  * limit is 1..4096 and result_capacity is caller-owned. No pointers are retained. */
 PYTYLIKI_FFI_API int32_t pytyliki_v1_metric_registry_search(
