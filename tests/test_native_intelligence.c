@@ -42,6 +42,7 @@ static void fixture(pl_ni_snapshot *snapshot) {
     node->cpu_count = 4u;
     for (unsigned i = 0u; i < 4u; ++i) set_bit(node->cpu_mask, i);
     snapshot->numa_distance[0][0] = 10u;
+    snapshot->provenance.isa_scope = PL_NI_ISA_SCOPE_PER_LOGICAL_CPU;
     snapshot->provenance.generation = UINT64_C(55);
     snapshot->provenance.snapshot_fingerprint = pl_ni_snapshot_fingerprint(snapshot);
 }
