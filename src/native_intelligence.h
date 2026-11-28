@@ -30,7 +30,15 @@ typedef enum {
     PL_NI_ISA_SSE2 = UINT64_C(1) << 0, PL_NI_ISA_SSE42 = UINT64_C(1) << 1,
     PL_NI_ISA_AES = UINT64_C(1) << 2, PL_NI_ISA_AVX = UINT64_C(1) << 3,
     PL_NI_ISA_AVX2 = UINT64_C(1) << 4, PL_NI_ISA_FMA = UINT64_C(1) << 5,
-    PL_NI_ISA_AVX512F = UINT64_C(1) << 6
+    PL_NI_ISA_AVX512F = UINT64_C(1) << 6,
+    PL_NI_ISA_NEON = UINT64_C(1) << 7,
+    PL_NI_ISA_SVE = UINT64_C(1) << 8,
+    PL_NI_ISA_SVE2 = UINT64_C(1) << 9,
+    PL_NI_ISA_ARM_AES = UINT64_C(1) << 10,
+    PL_NI_ISA_ARM_SHA1 = UINT64_C(1) << 11,
+    PL_NI_ISA_ARM_SHA2 = UINT64_C(1) << 12,
+    PL_NI_ISA_ARM_CRC32 = UINT64_C(1) << 13,
+    PL_NI_ISA_ARM_ATOMICS = UINT64_C(1) << 14
 } pl_ni_isa;
 
 enum {
