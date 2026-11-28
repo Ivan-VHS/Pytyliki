@@ -255,17 +255,23 @@ static pl_ni_status collect_windows(pl_ni_snapshot *snapshot) {
                     p->GroupMask[group].Mask, 0u, die_id, 0u,
                     PL_NI_UNKNOWN_ID, 3);
             ++die_id;
-        } else if (info->Relationship == RelationNumaNode) {
+        } else if (info->Relationship == RelationNumaNode ||
+                   info->Relationship == RelationNumaNodeEx) {
             NUMA_NODE_RELATIONSHIP *p = &info->NumaNode;
+            WORD masks_count = p->GroupCount != 0u ? p->GroupCount : 1u;
+            GROUP_AFFINITY *masks = p->GroupCount != 0u ? p->GroupMasks : &p->GroupMask;
             int node_index = add_numa(snapshot, (uint16_t)p->NodeNumber);
             if (node_index >= 0) {
-                unsigned bit;
-                for (bit = 0u; bit < sizeof(KAFFINITY) * CHAR_BIT; ++bit) {
-                    if ((p->GroupMask.Mask & ((KAFFINITY)1u << bit)) != 0u) {
-                        int cpu = add_cpu(snapshot, p->GroupMask.Group, (uint16_t)bit);
-                        if (cpu >= 0) {
-                            snapshot->cpus[cpu].numa_node = (uint16_t)p->NodeNumber;
-                            set_bit(snapshot->numa[node_index].cpu_mask, (size_t)cpu);
+                WORD mask_index;
+                for (mask_index = 0u; mask_index < masks_count; ++mask_index) {
+                    unsigned bit;
+                    for (bit = 0u; bit < sizeof(KAFFINITY) * CHAR_BIT; ++bit) {
+                        if ((masks[mask_index].Mask & ((KAFFINITY)1u << bit)) != 0u) {
+                            int cpu = add_cpu(snapshot, masks[mask_index].Group, (uint16_t)bit);
+                            if (cpu >= 0) {
+                                snapshot->cpus[cpu].numa_node = (uint16_t)p->NodeNumber;
+                                set_bit(snapshot->numa[node_index].cpu_mask, (size_t)cpu);
+                            }
                         }
                     }
                 }
