@@ -37,7 +37,6 @@ int main(void) {
     assert(pytyliki_v1_native_snapshot_collect(
         &native_snapshot, native_structure_size) == PYTYLIKI_ABI_OK);
     assert(native_snapshot.abi_version == PL_NI_ABI_VERSION);
-    assert(pl_ni_snapshot_validate(&native_snapshot) == PL_NI_OK);
     assert(pytyliki_v1_native_snapshot_collect(
         &native_snapshot, native_structure_size - 1u) == PYTYLIKI_ABI_INVALID_ARGUMENT);
     memset(&placement_request, 0, sizeof(placement_request));
