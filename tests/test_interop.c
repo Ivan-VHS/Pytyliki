@@ -19,10 +19,40 @@ int main(void) {
     pytyliki_metric_query_v1 metric_query;
     pytyliki_metric_operation_v1 metric_results[2];
     pytyliki_metric_search_result_v1 metric_result;
+    pl_ni_snapshot native_snapshot;
+    pl_ppf_request placement_request;
+    pl_ppf_report placement_report;
+    uint32_t native_contract_version = 0u;
+    uint64_t native_structure_size = 0u;
     assert(pytyliki_abi_version()==PYTYLIKI_ABI_VERSION);
     assert(pytyliki_v1_norm_f64(a,2u,&value)==0&&fabs(value-5.0)<1e-12);
     assert(pytyliki_v1_dot_f64(a,y,2u,&value)==0&&fabs(value-4.0)<1e-12);
     assert(pytyliki_v1_distance_f64(a,b,2u,&value)==0&&fabs(value-5.0)<1e-12);
+
+    /* The native hardware FFI is read-only and caller-owned. Placement is a pure proposal. */
+    assert(pytyliki_v1_native_snapshot_descriptor(
+        &native_contract_version, &native_structure_size) == PYTYLIKI_ABI_OK);
+    assert(native_contract_version == PL_NI_ABI_VERSION);
+    assert(native_structure_size == (uint64_t)sizeof(native_snapshot));
+    assert(pytyliki_v1_native_snapshot_collect(
+        &native_snapshot, native_structure_size) == PYTYLIKI_ABI_OK);
+    assert(native_snapshot.abi_version == PL_NI_ABI_VERSION);
+    assert(pl_ni_snapshot_validate(&native_snapshot) == PL_NI_OK);
+    assert(pytyliki_v1_native_snapshot_collect(
+        &native_snapshot, native_structure_size - 1u) == PYTYLIKI_ABI_INVALID_ARGUMENT);
+    memset(&placement_request, 0, sizeof(placement_request));
+    placement_request.preferred_numa_node = UINT16_MAX;
+    placement_request.current_cpu_index = UINT16_MAX;
+    placement_request.require_online = 1u;
+    for (size_t wi = 0u; wi < 5u; ++wi) placement_request.weights[wi] = 1u;
+    assert(pytyliki_v1_native_placement(
+        &native_snapshot, &placement_request, NULL, 0u, &placement_report
+    ) == PYTYLIKI_ABI_OK);
+    assert(placement_report.candidate_count == native_snapshot.cpu_count);
+    assert(placement_report.has_selection == 1u);
+    assert(placement_report.topology_generation == native_snapshot.provenance.generation);
+    assert(pytyliki_v1_native_snapshot_descriptor(NULL, &native_structure_size) ==
+        PYTYLIKI_ABI_INVALID_ARGUMENT);
     assert(pytyliki_v1_orthogonal_f64((double[]){1.0,0.0},y,2u,1e-12,&orthogonal)==0&&orthogonal==1);
     assert(pytyliki_v1_embedded_profile_count(&embedded_count)==PYTYLIKI_ABI_OK);
     assert(embedded_count==3u);
