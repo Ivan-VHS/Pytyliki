@@ -157,7 +157,20 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
         snapshot->cache_count > PL_NI_MAX_CACHES ||
         snapshot->numa_count > PL_NI_MAX_NUMA_NODES ||
         snapshot->available_memory_bytes > snapshot->total_memory_bytes ||
-        (snapshot->isa_mask & ~PL_NI_KNOWN_ISA_MASK) != 0u)
+        (snapshot->isa_mask & ~PL_NI_KNOWN_ISA_MASK) != 0u ||
+        snapshot->provenance.schema_version != PL_NI_ABI_VERSION ||
+        snapshot->provenance.topology_state < PL_NI_FACT_KNOWN ||
+        snapshot->provenance.topology_state > PL_NI_FACT_CONFLICTING ||
+        snapshot->provenance.isa_state < PL_NI_FACT_KNOWN ||
+        snapshot->provenance.isa_state > PL_NI_FACT_CONFLICTING ||
+        snapshot->provenance.memory_state < PL_NI_FACT_KNOWN ||
+        snapshot->provenance.memory_state > PL_NI_FACT_CONFLICTING ||
+        snapshot->provenance.isa_scope > PL_NI_ISA_SCOPE_PER_LOGICAL_CPU ||
+        snapshot->provenance.platform[0] == '\0' ||
+        snapshot->provenance.topology_source[0] == '\0' ||
+        snapshot->provenance.snapshot_fingerprint == 0u ||
+        snapshot->provenance.generation != snapshot->provenance.snapshot_fingerprint ||
+        snapshot->provenance.snapshot_fingerprint != pl_ni_snapshot_fingerprint(snapshot))
         return PL_NI_INVALID_ARGUMENT;
     for (i = 0u; i < snapshot->cpu_count; ++i) {
         const pl_ni_cpu *cpu = &snapshot->cpus[i];
@@ -544,6 +557,7 @@ static int collect_linux_isa(pl_ni_snapshot *snapshot) {
     fclose(file);
     if (online != 0u && seen == online) {
         snapshot->isa_mask = intersection;
+        snapshot->provenance.isa_state = PL_NI_FACT_KNOWN;
         snapshot->provenance.isa_scope = PL_NI_ISA_SCOPE_PER_LOGICAL_CPU;
         copy_text(snapshot->provenance.isa_source,
                   sizeof(snapshot->provenance.isa_source),
