@@ -56,6 +56,7 @@ static int add_cpu(pl_ni_snapshot *snapshot, uint16_t group, uint16_t os_id) {
     snapshot->cpus[i].die_id = PL_NI_UNKNOWN_ID;
     snapshot->cpus[i].core_id = PL_NI_UNKNOWN_ID;
     snapshot->cpus[i].numa_node = PL_NI_UNKNOWN_ID;
+    snapshot->cpus[i].thread_index = PL_NI_UNKNOWN_ID;
     snapshot->cpus[i].flags = PL_NI_CPU_ONLINE;
     return (int)i;
 }
@@ -139,6 +140,13 @@ uint64_t pl_ni_snapshot_fingerprint(const pl_ni_snapshot *snapshot) {
         hash ^= bytes[i];
         hash *= UINT64_C(1099511628211);
     }
+    bytes = (const unsigned char *)snapshot->numa_distance;
+    length = (size_t)snapshot->numa_count * PL_NI_MAX_NUMA_NODES *
+             sizeof(snapshot->numa_distance[0][0]);
+    for (i = 0u; i < length; ++i) {
+        hash ^= bytes[i];
+        hash *= UINT64_C(1099511628211);
+    }
     return hash;
 }
 
@@ -180,13 +188,6 @@ pl_ni_status pl_ni_snapshot_validate(const pl_ni_snapshot *snapshot) {
 }
 
 #if defined(_WIN32)
-static unsigned first_set_bit(KAFFINITY mask) {
-    unsigned bit = 0u;
-    while (bit < sizeof(KAFFINITY) * CHAR_BIT &&
-           (mask & ((KAFFINITY)1u << bit)) == 0u) ++bit;
-    return bit;
-}
-
 static void apply_group_mask(pl_ni_snapshot *snapshot, WORD group,
                              KAFFINITY mask, uint16_t package,
                              uint16_t die, uint16_t core, uint16_t numa,
@@ -404,7 +405,8 @@ static void list_to_mask(const pl_ni_snapshot *snapshot, const char *list,
             if (end == cursor) break;
             cursor = end;
         }
-        if (last >= first && last - first < PL_NI_MAX_CPUS) {
+        if (first < PL_NI_MAX_CPUS && last < PL_NI_MAX_CPUS &&
+            last >= first && last - first < PL_NI_MAX_CPUS) {
             unsigned long id;
             for (id = first; id <= last; ++id) {
                 int index = cpu_index_by_os_id(snapshot, 0u, (uint16_t)id);
@@ -842,10 +844,16 @@ pl_ni_status pl_ppf_place(const pl_ni_snapshot *snapshot,
         if (telemetry != NULL && (telemetry[i].valid_mask & PL_PPF_TELEMETRY_BANDWIDTH)) {
             candidate->bandwidth_cost = clamp_cost(telemetry[i].bandwidth_pressure);
             candidate->evidence_flags |= PL_PPF_EVIDENCE_TELEMETRY;
-        } else candidate->bandwidth_cost = 0u;
+        } else {
+            candidate->bandwidth_cost = PL_NI_COST_MAX / 2u;
+            candidate->evidence_flags |= PL_PPF_EVIDENCE_MISSING_TELEMETRY;
+        }
         if (telemetry != NULL && (telemetry[i].valid_mask & PL_PPF_TELEMETRY_MIGRATION)) {
             candidate->migration_cost = clamp_cost(telemetry[i].migration_cost);
             candidate->evidence_flags |= PL_PPF_EVIDENCE_TELEMETRY;
+        } else if (request->current_cpu_index == UINT16_MAX) {
+            candidate->migration_cost = PL_NI_COST_MAX / 2u;
+            candidate->evidence_flags |= PL_PPF_EVIDENCE_MISSING_TELEMETRY;
         } else candidate->migration_cost =
             request->current_cpu_index == i ? 0u : 50u;
         candidate->total_cost =
