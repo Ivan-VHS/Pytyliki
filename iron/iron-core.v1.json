@@ -1,0 +1,1872 @@
+{
+  "schema": "pytyliki.iron-core.v1",
+  "project": {
+    "id": "pytyliki",
+    "name": "Pytyliki IRON CORE",
+    "repository": "Ivan-VHS/Pytyliki",
+    "version": "1.0.0",
+    "created": "2026-11-27",
+    "purpose": "A processor and hardware-engineering platform covering bit-level representation, ISA and CPU models, memory and device control, timing, digital/analog simulation, compilation integration and evidence-based verification."
+  },
+  "baseline": {
+    "branch": "main",
+    "commit": "43dd56fa39b960de129aa98bcca87aec53f7e1cb",
+    "reviewed_at": "2026-11-27",
+    "current_product_boundary": "The inspected main branch is a C11 processor-systems workstation with read-only host discovery, bounded local measurements, source diagnostics, memory utilities, numerical metrics and reference/simulated embedded models. It is not yet a complete general-purpose hardware programming language or a physical hardware-control environment.",
+    "rule_count": 100,
+    "default_status": "planned"
+  },
+  "ownership": {
+    "pytyliki": "Owns processor/device profiles, hardware-domain APIs, native adapters, simulator orchestration, target evidence, diagnostics and qualification workflows.",
+    "reaper": "Owns canonical language syntax, type/effect semantics, Span/SourceMap, typed IR, compiler passes and shared ABI/compiler contracts. Pytyliki must integrate these rather than fork them.",
+    "duck_os": "Owns privileged process/device services, driver lifecycle, protected memory mapping, interrupt routing and OS-mediated hardware permissions.",
+    "board_backend": "Owns exact SoC/board memory maps, startup/linker configuration, vendor HAL, electrical/process libraries and physical-design sign-off.",
+    "joint": "Requires versioned contracts between Pytyliki, Reaper, Duck OS and/or a board-specific backend."
+  },
+  "access_model": {
+    "default_mode": "inspect",
+    "modes": [
+      {
+        "id": "inspect",
+        "effect": "Read-only discovery and evidence collection.",
+        "requires_capability": false
+      },
+      {
+        "id": "plan",
+        "effect": "Produce an inert, bounded operation plan; perform no host or device mutation.",
+        "requires_capability": false
+      },
+      {
+        "id": "simulate",
+        "effect": "Execute only against an explicitly selected deterministic model.",
+        "requires_capability": false
+      },
+      {
+        "id": "verify",
+        "effect": "Run static, formal, differential or conformance checks against supplied artifacts/models.",
+        "requires_capability": false
+      },
+      {
+        "id": "target",
+        "effect": "Use a named, explicitly configured target adapter with bounded non-privileged operations.",
+        "requires_capability": true
+      },
+      {
+        "id": "privileged",
+        "effect": "Perform narrowly scoped OS/driver/board operations only with explicit capabilities and trusted platform mediation.",
+        "requires_capability": true
+      },
+      {
+        "id": "physical_design",
+        "effect": "Run external EDA flows against declared process/library data; physical sign-off requires external evidence.",
+        "requires_capability": true
+      }
+    ],
+    "deny_by_default": true,
+    "physical_writes_default_allowed": false,
+    "hidden_network_allowed": false,
+    "automatic_driver_or_firmware_install": false
+  },
+  "maturity_levels": [
+    {
+      "id": "IRON-0",
+      "name": "Language and contract foundation",
+      "scope": "Canonical Reaper syntax/IR contract, target descriptors, capability vocabulary and deterministic diagnostics.",
+      "acceptance_gate": "Grammar, type/effect and target-profile conformance checks pass."
+    },
+    {
+      "id": "IRON-1",
+      "name": "Bit and machine representation",
+      "scope": "Bit vectors, exact layout, register model, ASM effects and ISA encoding/decoding.",
+      "acceptance_gate": "Golden bit-layout, register and instruction vectors pass."
+    },
+    {
+      "id": "IRON-2",
+      "name": "Processor and microarchitecture",
+      "scope": "CPU topology plus configurable architectural and microarchitectural models.",
+      "acceptance_gate": "Reference CPU model passes architectural fixtures and deterministic traces."
+    },
+    {
+      "id": "IRON-3",
+      "name": "Memory engineering",
+      "scope": "Address spaces, MMU, page tables, TLB, cache, atomics, DMA ownership.",
+      "acceptance_gate": "Translation, memory-ordering and ownership model tests pass."
+    },
+    {
+      "id": "IRON-4",
+      "name": "Device and I/O engineering",
+      "scope": "Typed MMIO, bus/device models, IRQ and driver lifecycle adapters.",
+      "acceptance_gate": "Simulator and target-specific device-contract tests pass."
+    },
+    {
+      "id": "IRON-5",
+      "name": "Execution and timing engineering",
+      "scope": "Execution contexts, scheduling models, clocks, cycle and latency evidence.",
+      "acceptance_gate": "Replayable timing reports and context-safety checks pass."
+    },
+    {
+      "id": "IRON-6",
+      "name": "Digital and analog engineering",
+      "scope": "Logic, sequential circuits, clock domains, netlists, transistor/electrical models.",
+      "acceptance_gate": "Reference circuit and timing analyses pass for declared libraries/models."
+    },
+    {
+      "id": "IRON-7",
+      "name": "Compiler and artifact engineering",
+      "scope": "Reaper lowering, ABI, assembler, object writer, linker, loader and no-runtime profiles.",
+      "acceptance_gate": "Golden IR/object/relocation fixtures and reproducible-build checks pass."
+    },
+    {
+      "id": "IRON-8",
+      "name": "Verification and evidence engineering",
+      "scope": "Static/formal analysis, simulators, fault injection, hardware-in-loop and provenance.",
+      "acceptance_gate": "Every capability status is tied to reproducible evidence and explicit test mode."
+    },
+    {
+      "id": "IRON-9",
+      "name": "Physical hardware engineering",
+      "scope": "Vendor/process libraries, physical design, DRC/LVS, PVT, fabricated-target qualification.",
+      "acceptance_gate": "Named physical implementation passes external EDA sign-off and board/silicon qualification."
+    }
+  ],
+  "modules": [
+    {
+      "id": "pyty.bit",
+      "responsibility": "Bit vectors, data representation, arithmetic edge semantics.",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.isa",
+      "responsibility": "ISA descriptors, instruction forms, feature gates and machine-code formats.",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.reg",
+      "responsibility": "Typed architectural register model and access policies.",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.asm",
+      "responsibility": "Assembly parser/adapter contracts, clobbers and machine-code inspection.",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.cpu",
+      "responsibility": "Host CPU inventory, topology evidence and target CPU models.",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/processor.c",
+        "docs/PROCESSOR_TAXONOMY.md"
+      ],
+      "tracking_prs": [
+        282
+      ]
+    },
+    {
+      "id": "pyty.micro",
+      "responsibility": "Microarchitecture models: pipelines, queues, predictors, caches and execution ports.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.mem",
+      "responsibility": "Bounded memory utilities, address-space types and memory-system analysis.",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/memory.c",
+        "docs/MEMORY_ARENA.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.mmu",
+      "responsibility": "Page-table formats, translation and TLB model/adapters.",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.cache",
+      "responsibility": "Cache hierarchy, maintenance and coherence contracts.",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285
+      ]
+    },
+    {
+      "id": "pyty.atomic",
+      "responsibility": "Atomics, fences and memory-ordering litmus tests.",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285
+      ]
+    },
+    {
+      "id": "pyty.mmio",
+      "responsibility": "Typed MMIO maps and capability-bounded device register access.",
+      "owner": "duck-os",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285,
+        287
+      ]
+    },
+    {
+      "id": "pyty.bus",
+      "responsibility": "Bus inventory, protocol adapters and transaction models.",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.irq",
+      "responsibility": "Interrupt routing, vector and execution-context contracts.",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.timer",
+      "responsibility": "Clock sources, cycle counters, watchdog and timer adapters.",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285,
+        287
+      ]
+    },
+    {
+      "id": "pyty.device",
+      "responsibility": "Device discovery, lifecycle, binding and failure management.",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.dma",
+      "responsibility": "DMA descriptor and IOMMU ownership/synchronization model.",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.exec",
+      "responsibility": "Execution contexts, scheduling models, affinity and recovery policies.",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        280,
+        282,
+        290
+      ]
+    },
+    {
+      "id": "pyty.time",
+      "responsibility": "Clock calibration, latency, jitter and cycle-model interfaces.",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "docs/BENCHMARK_STATISTICS.md",
+        "src/embedded_kernel.c"
+      ],
+      "tracking_prs": [
+        285
+      ]
+    },
+    {
+      "id": "pyty.power",
+      "responsibility": "Power/thermal observation and vendor-specific control adapters.",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.logic",
+      "responsibility": "Gate-level and sequential logic simulation.",
+      "owner": "board-backend",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.rtl",
+      "responsibility": "RTL import/export, synthesis adapters and constraints.",
+      "owner": "board-backend",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.transistor",
+      "responsibility": "Transistor and electrical device models.",
+      "owner": "board-backend",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.eda",
+      "responsibility": "Netlist, timing, physical-design and sign-off toolchain integration.",
+      "owner": "board-backend",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.sim",
+      "responsibility": "Instruction, CPU, device and circuit simulation orchestration.",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.verify",
+      "responsibility": "Static checks, formal obligations, conformance and differential verification.",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "src/qcs.c",
+        "tests/test_core.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.trace",
+      "responsibility": "Bounded measurement trace and evidence provenance.",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.compiler-bridge",
+      "responsibility": "Reaper frontend/IR/effect integration and ABI boundary.",
+      "owner": "reaper",
+      "status": "partial",
+      "evidence": [
+        "docs/REAPER_INTEGRATION.md",
+        "src/interop.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.toolchain",
+      "responsibility": "Target-specific assembler, object, linker and loader adapters.",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.security",
+      "responsibility": "Capability policy, unsafe contracts, privilege and artifact trust.",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "src/hw_rules.c",
+        "docs/HARDWARE_RULE_ENGINE.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.evidence",
+      "responsibility": "Versioned reports, test provenance and qualification matrix.",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "docs/REPORT_ENVELOPE.md"
+      ],
+      "tracking_prs": [
+        294
+      ]
+    },
+    {
+      "id": "pyty.omega",
+      "responsibility": "Omega-Null marker profile, semantic normalization and Reaper IR effect mapping; experimental DSL surface, not an independent compiler.",
+      "owner": "joint",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.quantum",
+      "responsibility": "Quantum circuit/state simulation, state preparation, noise models, measurement statistics and future hardware adapters.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.field",
+      "responsibility": "Numerical field and spacetime-model simulation with declared equations, units, boundary conditions and discretization.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.experiment",
+      "responsibility": "Reproducible candidate evaluation, parameter sweeps, branch-and-bound and resource-bounded tournaments.",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.sandbox",
+      "responsibility": "Process/model isolation, resource quotas, deterministic test domains and safe failure containment.",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.chrono",
+      "responsibility": "Logical checkpoints, deterministic trace/replay and simulation-time branching; no physical time reversal.",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.material",
+      "responsibility": "Atomic/molecular/material models, structure validation and material-property simulation.",
+      "owner": "pytyliki",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.fabrication",
+      "responsibility": "CAD/RTL/manufacturing job planning and external tool adapters with declared feedstock, process and machine constraints.",
+      "owner": "board-backend",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "pyty.bci",
+      "responsibility": "Consent-based brain-computer-interface device adapters, signal processing and privacy-preserving intent input.",
+      "owner": "duck-os",
+      "status": "research",
+      "evidence": [],
+      "tracking_prs": []
+    }
+  ],
+  "rules": [
+    {
+      "id": "IRON-001",
+      "domain": "FOUNDATION",
+      "title": "Exact representation",
+      "requirement": "Every scalar and aggregate has a defined size, alignment, bit representation, endianness and valid value range.",
+      "acceptance": "Compile-time layout reports and golden byte vectors agree with the declared target ABI.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-002",
+      "domain": "FOUNDATION",
+      "title": "Parameterized bit vectors",
+      "requirement": "Provide bounded compile-time bit vectors of widths not limited to 8, 16, 32 or 64 bits.",
+      "acceptance": "Widths, slicing, concatenation, shifts and overflow behavior pass exhaustive tests for small widths and property tests for larger widths.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-003",
+      "domain": "FOUNDATION",
+      "title": "Defined integer arithmetic",
+      "requirement": "Signedness, overflow, carry, borrow, saturation, division-by-zero and shift edge cases have explicit semantics.",
+      "acceptance": "Boundary tests match the language specification on every supported backend; no host-language undefined behavior leaks through.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-004",
+      "domain": "FOUNDATION",
+      "title": "Floating-point representation",
+      "requirement": "Expose floating-point format, rounding mode, exceptional values and bit-level reinterpretation explicitly.",
+      "acceptance": "Tests cover NaN payloads, infinities, signed zero, subnormals and target-specific format constraints.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-005",
+      "domain": "FOUNDATION",
+      "title": "Aggregate and bit-field layout",
+      "requirement": "Specify field ordering, packing, padding, alignment and ABI layout without implicit compiler guesses.",
+      "acceptance": "A layout inspector emits offsets and byte images that match ABI conformance fixtures.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-006",
+      "domain": "FOUNDATION",
+      "title": "Aliasing and object lifetime",
+      "requirement": "Define when storage may be viewed through multiple types and how object lifetime begins and ends.",
+      "acceptance": "Static analysis rejects invalid aliasing/lifetime transitions or requires an explicit unsafe contract.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-007",
+      "domain": "FOUNDATION",
+      "title": "Endianness as a type property",
+      "requirement": "Make byte order explicit at serialization, MMIO and cross-target boundaries.",
+      "acceptance": "Big- and little-endian golden vectors round-trip without host-endian assumptions.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-008",
+      "domain": "FOUNDATION",
+      "title": "Observable effects",
+      "requirement": "Represent memory, register, I/O, timing, synchronization and privilege effects in the type/effect model.",
+      "acceptance": "Effect reports identify all externally observable operations for each function and reject undeclared effects.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-009",
+      "domain": "FOUNDATION",
+      "title": "Operation cost evidence",
+      "requirement": "Associate target-specific instruction, memory and latency estimates with operations without presenting estimates as guarantees.",
+      "acceptance": "Compiler reports separate static estimates from measured samples and carry target/provenance metadata.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "partial",
+      "evidence": [
+        "docs/BENCHMARK_STATISTICS.md",
+        "src/cpu_suite.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-010",
+      "domain": "FOUNDATION",
+      "title": "Formal semantics for constructs",
+      "requirement": "Specify grammar, type rules, evaluation order, effects, traps and observable behavior for every accepted construct.",
+      "acceptance": "Every language construct has normative semantics plus positive, negative and regression conformance tests.",
+      "module": "pyty.bit",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-011",
+      "domain": "BIT_AND_ISA",
+      "title": "Bit-addressable operations",
+      "requirement": "Expose individual-bit read, write, test, set, clear, toggle, mask and field extraction primitives.",
+      "acceptance": "Property tests verify exact results for all bit positions and reject out-of-range indexes.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-012",
+      "domain": "BIT_AND_ISA",
+      "title": "Condition-code model",
+      "requirement": "Represent target condition flags and their producer/consumer semantics explicitly.",
+      "acceptance": "ISA fixtures verify flag writes, preservation and condition evaluation per instruction.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-013",
+      "domain": "BIT_AND_ISA",
+      "title": "Typed CPU registers",
+      "requirement": "Model general, vector, floating-point, control, debug and status registers as target-specific typed entities.",
+      "acceptance": "Register descriptors validate width, access class, architectural availability and privilege before a read or write plan.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-014",
+      "domain": "BIT_AND_ISA",
+      "title": "Privileged register access",
+      "requirement": "Separate user-accessible, privileged, debug-only and unavailable registers; never infer permission from register existence.",
+      "acceptance": "An unprivileged target rejects privileged operations before backend dispatch; tests assert no side effects.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-015",
+      "domain": "BIT_AND_ISA",
+      "title": "Inline assembly contract",
+      "requirement": "Support assembly blocks with declared inputs, outputs, clobbers, memory effects, control-flow effects and target constraints.",
+      "acceptance": "Compiler rejects incomplete clobber/effect declarations and preserves declared register constraints.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-016",
+      "domain": "BIT_AND_ISA",
+      "title": "Instruction decoding",
+      "requirement": "Decode supported machine encodings into typed instruction records with operands, length and feature requirements.",
+      "acceptance": "Round-trip and malformed-byte fixtures cover each supported encoding family; unknown encodings remain unknown.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-017",
+      "domain": "BIT_AND_ISA",
+      "title": "Instruction encoding",
+      "requirement": "Encode typed instructions while validating operand forms, feature gates and target-specific constraints.",
+      "acceptance": "Encoded bytes match published architectural fixtures and invalid operands are rejected.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-018",
+      "domain": "BIT_AND_ISA",
+      "title": "Feature versus OS-state gating",
+      "requirement": "Distinguish hardware-present ISA features from features enabled and usable under the current OS/runtime state.",
+      "acceptance": "Dispatch tests reject AVX/other stateful extensions when required OS-managed register state is unavailable.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "src/processor.c",
+        "docs/PROCESSOR_TAXONOMY.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-019",
+      "domain": "BIT_AND_ISA",
+      "title": "Instruction semantic metadata",
+      "requirement": "Maintain machine-readable instruction semantics including registers read/written, flags, memory, exceptions and serialization.",
+      "acceptance": "Each supported instruction descriptor has complete metadata checked against conformance fixtures.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-020",
+      "domain": "BIT_AND_ISA",
+      "title": "Machine-code image model",
+      "requirement": "Represent sections, symbols, relocations, entry points, permissions and architecture identity without executing the image.",
+      "acceptance": "Image validation rejects invalid bounds, overlaps, unsupported relocations and mismatched architecture tags.",
+      "module": "pyty.isa",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-021",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "CPU topology model",
+      "requirement": "Represent packages, dies, clusters, cores, SMT threads, cache sharing and NUMA relations with provenance.",
+      "acceptance": "Topology validation rejects duplicate IDs and impossible parent relations; live inventory is distinguished from fixtures.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/processor.c",
+        "docs/PROCESSOR_TAXONOMY.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-022",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Execution-unit models",
+      "requirement": "Model scalar integer, floating-point, vector, cryptographic and specialized execution resources.",
+      "acceptance": "A reference CPU model routes supported operations to declared units and reports unsupported operations explicitly.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-023",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Pipeline stages",
+      "requirement": "Describe fetch, decode, rename, schedule, execute, memory and retirement stages with configurable latencies.",
+      "acceptance": "Cycle simulation produces deterministic stage traces for a documented microarchitecture fixture.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-024",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Dependency and hazard analysis",
+      "requirement": "Track RAW, WAR and WAW dependencies, memory alias uncertainty and structural hazards.",
+      "acceptance": "Hazard tests demonstrate stalls, forwarding or rejection according to the selected model.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-025",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Superscalar issue model",
+      "requirement": "Model issue width, queues, port pressure, reorder capacity and retirement limits.",
+      "acceptance": "Instruction traces obey configured throughput and resource constraints without claiming to reproduce undocumented silicon.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-026",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Branch prediction model",
+      "requirement": "Support configurable predictors, history, target buffers, miss penalties and speculation boundaries.",
+      "acceptance": "Deterministic branch traces report prediction outcomes and modeled penalties.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-027",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Speculation and side-channel model",
+      "requirement": "Represent speculative execution, transient state and observable timing channels for security analysis.",
+      "acceptance": "Security fixtures detect declared leakage patterns; simulation results are labeled model evidence, not proof of silicon behavior.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-028",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Cache hierarchy and protocol model",
+      "requirement": "Describe cache levels, line size, associativity, replacement policy, inclusion and coherence protocol.",
+      "acceptance": "Cache-model tests validate hits, misses, evictions and protocol transitions against deterministic traces.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-029",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Performance counter integration",
+      "requirement": "Read supported OS/performance-counter sources only through explicit provider adapters with units and permissions.",
+      "acceptance": "Counter records identify provider, event, scope, unit, multiplexing and uncertainty; unsupported events remain unavailable.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285
+      ]
+    },
+    {
+      "id": "IRON-030",
+      "domain": "CPU_MICROARCHITECTURE",
+      "title": "Custom CPU and ISA descriptions",
+      "requirement": "Allow versioned processor models with register files, instructions, execution resources, memory model and exceptions.",
+      "acceptance": "A custom model passes model-schema validation and executes the shared architecture conformance suite.",
+      "module": "pyty.cpu",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-031",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Typed address spaces",
+      "requirement": "Keep virtual, physical, bus, I/O-port and device addresses as distinct non-interchangeable types.",
+      "acceptance": "The type checker rejects implicit casts between address spaces; explicit checked conversions require a platform capability.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-032",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Page-table representation",
+      "requirement": "Model page-table formats, levels, entries, permissions, page sizes and reserved bits per architecture.",
+      "acceptance": "Fixtures decode valid and invalid page tables and reject reserved-bit or alignment violations.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-033",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "MMU translation model",
+      "requirement": "Translate virtual addresses through a declared page-table root and architecture profile.",
+      "acceptance": "Translation tests cover permissions, page faults, large pages and address-width boundaries.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-034",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "TLB model and invalidation",
+      "requirement": "Represent TLB entries, address-space tags, invalidation scope and required ordering.",
+      "acceptance": "Tests distinguish local/global invalidation and reject unsupported invalidation semantics.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-035",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Cache-maintenance correctness",
+      "requirement": "Describe cache clean, invalidate and clean-invalidate operations by architecture and memory region.",
+      "acceptance": "A backend must declare exact operation semantics; unsupported operations return unsupported, never a silent no-op.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285
+      ]
+    },
+    {
+      "id": "IRON-036",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Coherence and ownership",
+      "requirement": "Model cache-line ownership, sharing, visibility and device/CPU coherency boundaries.",
+      "acceptance": "Concurrent CPU/device traces detect stale-data scenarios and require the correct synchronization sequence.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-037",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Memory ordering model",
+      "requirement": "Provide explicit atomic orders and target mappings, including fences and device-ordering distinctions.",
+      "acceptance": "Litmus tests pass for declared guarantees on each backend; unsupported mappings are rejected.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-038",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Placement and section control",
+      "requirement": "Place code/data/stack/heap/NOINIT sections into named memory regions with alignment and capacity constraints.",
+      "acceptance": "Linker-map checks prove every section fits its declared region and report slack/overflow.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/memory.c",
+        "src/embedded.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-039",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "DMA buffers and IOMMU mappings",
+      "requirement": "Represent buffer direction, ownership, lifetime, pinning, mapping and IOMMU permissions explicitly.",
+      "acceptance": "State-machine tests reject use-after-unmap, CPU/device concurrent ownership and out-of-range descriptors.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-040",
+      "domain": "MEMORY_AND_ADDRESSING",
+      "title": "Memory-system diagnostics",
+      "requirement": "Inspect allocator bounds, fragmentation, locality, bandwidth, faults and address-translation evidence.",
+      "acceptance": "Reports identify sample source, method, target and uncertainty; simulated and live evidence are never mixed.",
+      "module": "pyty.mem",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/memory.c",
+        "tests/test_memory.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-041",
+      "domain": "DEVICE_AND_IO",
+      "title": "Typed MMIO registers",
+      "requirement": "Represent device registers with width, access class, reset value, writable mask, endian and ordering requirements.",
+      "acceptance": "Register access validates mapping bounds, alignment, width, permission and reserved bits before touching the backend.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285,
+        287
+      ]
+    },
+    {
+      "id": "IRON-042",
+      "domain": "DEVICE_AND_IO",
+      "title": "Machine-readable register maps",
+      "requirement": "Import documented CMSIS-SVD, device-tree bindings or vendor register descriptions as versioned input.",
+      "acceptance": "Import is deterministic, records source/version and rejects overlapping or malformed register definitions.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-043",
+      "domain": "DEVICE_AND_IO",
+      "title": "Bus protocol models",
+      "requirement": "Provide explicit models/adapters for PCIe, USB, I2C, SPI, UART and platform-specific interconnects.",
+      "acceptance": "Each adapter declares supported transactions, limits, timeouts and whether it is simulated or backed by a live OS service.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-044",
+      "domain": "DEVICE_AND_IO",
+      "title": "Interrupt-controller integration",
+      "requirement": "Model vector tables, interrupt routing, masking, priorities, nesting and architecture-specific entry constraints.",
+      "acceptance": "Target tests validate vector bounds and priority rules; privileged registration is available only via a trusted OS/board backend.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-045",
+      "domain": "DEVICE_AND_IO",
+      "title": "Clock and watchdog controls",
+      "requirement": "Inspect and, where explicitly supported, configure timers, clock sources and watchdogs through a board-specific HAL.",
+      "acceptance": "Every write requires an exact board/revision profile, capability, safe-state plan and simulator/target conformance test.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285,
+        287
+      ]
+    },
+    {
+      "id": "IRON-046",
+      "domain": "DEVICE_AND_IO",
+      "title": "Device discovery and identity",
+      "requirement": "Enumerate device IDs, topology, functions, resources and driver ownership from trusted platform interfaces.",
+      "acceptance": "Reports preserve provider provenance and distinguish absent, inaccessible and unsupported devices.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-047",
+      "domain": "DEVICE_AND_IO",
+      "title": "Driver lifecycle contracts",
+      "requirement": "Specify probe, bind, start, quiesce, suspend, resume, unbind and failure states for device drivers.",
+      "acceptance": "State-machine tests ensure resources are acquired/released once and failed starts roll back safely.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-048",
+      "domain": "DEVICE_AND_IO",
+      "title": "DMA engine descriptors",
+      "requirement": "Build and validate device-specific DMA descriptor rings and queue ownership through target adapters.",
+      "acceptance": "Descriptor validation checks alignment, bounds, chain termination, permissions and memory synchronization.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-049",
+      "domain": "DEVICE_AND_IO",
+      "title": "Port-mapped I/O",
+      "requirement": "Support architecture-specific I/O port operations only when the target and privilege model expose them.",
+      "acceptance": "Compilation and execution are gated by architecture, OS permission and a dedicated backend; unsupported targets fail closed.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-050",
+      "domain": "DEVICE_AND_IO",
+      "title": "Device failure and recovery",
+      "requirement": "Model bus faults, timeouts, device reset, link retraining and recovery checkpoints.",
+      "acceptance": "Fault-injection tests prove bounded retries, idempotency and a documented safe-stop path.",
+      "module": "pyty.mmio",
+      "owner": "duck-os",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-051",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Execution context model",
+      "requirement": "Represent process, thread, interrupt, exception, task and bare-metal contexts with allowed operations.",
+      "acceptance": "Context checking rejects blocking, allocation or unsafe calls in restricted ISR/exception contexts.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-052",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "CPU affinity constraints",
+      "requirement": "Represent allowed CPU sets, core preferences and reversible thread-placement leases.",
+      "acceptance": "Planning is inert by default; live placement is limited to the calling process/thread and OS-granted CPU set.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        290
+      ]
+    },
+    {
+      "id": "IRON-053",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Scheduler semantics",
+      "requirement": "Separate modeled scheduling policy from real OS scheduling and privileged scheduler control.",
+      "acceptance": "Simulation is deterministic; live adapters identify the OS policy and do not claim kernel control without a driver/API.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        280,
+        282
+      ]
+    },
+    {
+      "id": "IRON-054",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Interrupt-context restrictions",
+      "requirement": "Define interrupt-safe APIs, stack budgets, reentrancy, lock-free requirements and deferred-work handoff.",
+      "acceptance": "Static checks and target tests reject blocking/allocating calls in ISR-restricted functions.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-055",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Typed clock sources",
+      "requirement": "Represent monotonic clocks, architectural counters and device timers with frequency, width, scope and unit.",
+      "acceptance": "Conversions require calibrated frequency and uncertainty; TSC ticks are never silently called core cycles.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        285,
+        287
+      ]
+    },
+    {
+      "id": "IRON-056",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Cycle-accurate execution",
+      "requirement": "Provide a discrete-event CPU model that advances architectural and microarchitectural state per modeled cycle.",
+      "acceptance": "Reference traces reproduce instruction, memory and exception timelines for published model fixtures.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-057",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Latency and jitter measurement",
+      "requirement": "Measure latency distributions with warm-up, sample count, clock source, workload, affinity and environmental metadata.",
+      "acceptance": "Reports include percentile, dispersion, outlier policy and evidence mode; they do not imply hard real-time guarantees.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "docs/BENCHMARK_STATISTICS.md",
+        "src/embedded_kernel.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-058",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Concurrent interleaving model",
+      "requirement": "Explore multicore interleavings, synchronization order, cache visibility and data-race scenarios.",
+      "acceptance": "Bounded model-checking fixtures reproduce known races and verify declared synchronization eliminates them.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-059",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Deterministic record and replay",
+      "requirement": "Record nondeterministic inputs, event order, clock mapping, device observations and execution checkpoints.",
+      "acceptance": "Replay either reproduces the recorded modeled execution or reports the first divergence with provenance.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        280
+      ]
+    },
+    {
+      "id": "IRON-060",
+      "domain": "EXECUTION_AND_TIMING",
+      "title": "Power and thermal control",
+      "requirement": "Inspect energy, frequency, thermal and power states; expose writes only through vendor/OS-approved adapters.",
+      "acceptance": "Read-only mode is default; any control is board/model-specific, consented, reversible where possible and temperature-guarded.",
+      "module": "pyty.exec",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-061",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Transistor device models",
+      "requirement": "Represent MOSFET and other supported devices through explicit model parameters and validity domains.",
+      "acceptance": "The model exports a simulator-compatible netlist and passes reference operating-point fixtures.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-062",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Electrical units and quantities",
+      "requirement": "Use dimensioned voltage, current, resistance, capacitance, charge and power values with explicit units.",
+      "acceptance": "The type system rejects dimensionally invalid formulas and conversions without unit scaling.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-063",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Logic gate simulation",
+      "requirement": "Model primitive gates, propagation delay, drive constraints and unknown/high-impedance states where required.",
+      "acceptance": "Truth-table and timing fixtures match declared gate semantics, including X/Z behavior where supported.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-064",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Combinational circuit synthesis",
+      "requirement": "Describe adders, muxes, decoders, comparators and arbitrary combinational networks.",
+      "acceptance": "Equivalence tests compare synthesized network outputs with a reference function across exhaustive or randomized inputs.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-065",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Sequential circuit models",
+      "requirement": "Describe flip-flops, latches, counters, registers, finite-state machines and reset behavior.",
+      "acceptance": "Clocked simulation checks edge semantics, reset priority, setup/hold assumptions and state transitions.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-066",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Clock-domain crossing",
+      "requirement": "Model asynchronous clock domains, synchronizers, metastability risk and CDC constraints.",
+      "acceptance": "CDC analysis flags unsynchronized crossings and records modeled probability/assumptions without claiming physical certainty.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-067",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Static timing analysis",
+      "requirement": "Analyze path delay, setup/hold slack, clock uncertainty and timing exceptions for a declared library/model.",
+      "acceptance": "Timing reports include constraints, library identity and worst paths; unknown delay data prevents pass certification.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-068",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Netlist graph representation",
+      "requirement": "Represent cells, pins, nets, drivers, loads, hierarchy and connectivity as a typed graph.",
+      "acceptance": "Graph validation rejects dangling pins, multiple illegal drivers and combinational loops where prohibited.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-069",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "RTL and synthesis flow",
+      "requirement": "Integrate synthesizable hardware-description subsets and external synthesis tools through explicit adapters.",
+      "acceptance": "A reproducible flow compiles RTL, records tool versions and checks synthesized structure against constraints.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-070",
+      "domain": "DIGITAL_AND_PHYSICAL_MODELS",
+      "title": "Physical design and sign-off",
+      "requirement": "Integrate floorplanning, placement, routing, parasitic extraction, DRC, LVS and PVT-corner analysis as external EDA stages.",
+      "acceptance": "A physical sign-off claim requires target process/library data and successful external tool reports; a software model alone is insufficient.",
+      "module": "pyty.logic",
+      "owner": "board-backend",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-071",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Canonical Reaper frontend",
+      "requirement": "Keep accepted hardware-language syntax and normative grammar under Reaper ownership; Pytyliki supplies domain modules and target profiles.",
+      "acceptance": "A pinned Reaper toolchain parses the canonical source and emits versioned diagnostics; Pytyliki does not fork the grammar.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "partial",
+      "evidence": [
+        "docs/REAPER_INTEGRATION.md",
+        "src/interop.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-072",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Canonical typed IR and source mapping",
+      "requirement": "Use Reaper typed IR, Span and SourceMap as the source of truth for every hardware operation.",
+      "acceptance": "Every lowered instruction/effect maps to source Span and passes IR schema plus round-trip fixtures.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-073",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Effect and capability IR",
+      "requirement": "Carry memory, MMIO, DMA, interrupt, timing, privilege and nondeterminism effects through the IR.",
+      "acceptance": "A denied capability or missing effect declaration is rejected before backend code generation.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-074",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "HIR/MIR/LIR lowering",
+      "requirement": "Lower high-level hardware descriptions through stable, inspectable intermediate representations.",
+      "acceptance": "Each pass has pre/postconditions, deterministic output and golden IR regression tests.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-075",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "ABI and calling-convention control",
+      "requirement": "Model DABI64 and target ABIs, register assignments, stack layout, aggregate passing and unwind boundaries.",
+      "acceptance": "Cross-language fixtures validate parameter/result layout and reject incompatible ABI revisions.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "partial",
+      "evidence": [
+        "src/interop.h",
+        "src/interop.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-076",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Assembler and object writer",
+      "requirement": "Provide assembler, object sections, symbols, relocations and architecture-specific encoding backends.",
+      "acceptance": "Object fixtures are accepted by independent inspection tools and match golden bytes/relocations.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-077",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Linker and loader path",
+      "requirement": "Develop deterministic linking, relocation application, image layout and a constrained loader interface.",
+      "acceptance": "Relocation fixtures resolve correctly; loader validates permissions, address ranges and target ABI before mapping.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-078",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "No-runtime and bare-metal profiles",
+      "requirement": "Support no_std/no_alloc, caller-owned storage, deterministic startup and explicit entry points.",
+      "acceptance": "Minimal artifacts link without an implicit runtime or allocator and pass target-specific startup tests.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "partial",
+      "evidence": [
+        "src/embedded_kernel.c",
+        "docs/EMBEDDED_C.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-079",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Cross-target code generation",
+      "requirement": "Select backend by ISA, ABI, feature set and execution environment without pretending all targets are equivalent.",
+      "acceptance": "A target matrix compiles shared conformance programs or emits a precise unsupported-feature diagnostic.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-080",
+      "domain": "COMPILER_AND_ARTIFACT",
+      "title": "Artifact inspection and reproducibility",
+      "requirement": "Inspect generated code, relocations, memory maps, dependency versions and deterministic build inputs.",
+      "acceptance": "Repeated builds from pinned inputs produce byte-identical outputs or explain nondeterministic sections.",
+      "module": "pyty.compiler-bridge",
+      "owner": "reaper",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        294
+      ]
+    },
+    {
+      "id": "IRON-081",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Static safety analysis",
+      "requirement": "Analyze types, bounds, lifetimes, register constraints, effects, privileges and concurrency before execution.",
+      "acceptance": "Negative fixtures are rejected with stable diagnostics and source spans.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/qcs.c",
+        "docs/QCS_NATIVE.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-082",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Proof-carrying compiler passes",
+      "requirement": "Attach machine-checkable proof obligations or validated invariants to semantics-preserving compiler transformations.",
+      "acceptance": "Proof checks run in CI for supported passes; unproved experimental passes remain explicitly marked.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-083",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Reference and differential simulator",
+      "requirement": "Compare independent CPU/device models and supported reference implementations using identical input traces.",
+      "acceptance": "Differential mismatches are minimized and reported with model versions and deterministic seeds.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-084",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Instruction-level simulator",
+      "requirement": "Interpret supported ISA instructions with architectural state, exceptions and memory effects.",
+      "acceptance": "Architecture conformance suites pass for every claimed instruction; missing instructions fail explicitly.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-085",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Cycle-accurate simulator",
+      "requirement": "Simulate pipeline, caches, buses and timing per cycle for a declared model.",
+      "acceptance": "Cycle traces match golden model fixtures and never claim cycle fidelity for undocumented physical CPUs.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-086",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Fault injection and trace verification",
+      "requirement": "Inject bounded faults in simulators and validate trace, recovery and safe-stop behavior.",
+      "acceptance": "Tests prove bounded execution and recovery decisions; live hardware fault injection requires separate lab authorization.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-087",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Hardware-in-the-loop qualification",
+      "requirement": "Run target tests on named board, silicon revision, toolchain, firmware and test fixture.",
+      "acceptance": "Every qualification report records exact hardware identity and operator-approved procedure; host-only results cannot pass this gate.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-088",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Golden conformance corpus",
+      "requirement": "Maintain golden source, IR, assembly, object, memory-map, trace and simulator outputs.",
+      "acceptance": "CI detects drift and requires reviewed fixture changes with provenance.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "CMakeLists.txt",
+        "tests/test_core.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-089",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Evidence provenance and trust",
+      "requirement": "Distinguish live measurement, OS-reported inventory, static analysis, fixture, simulation and physical sign-off evidence.",
+      "acceptance": "Every report includes evidence_mode, provider, target, timestamp/build identity and confidence limitations.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "partial",
+      "evidence": [
+        "src/trace.c",
+        "docs/TRACE_MEASUREMENT_PROVENANCE.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-090",
+      "domain": "VERIFICATION_AND_EVIDENCE",
+      "title": "Reproducible experiments",
+      "requirement": "Pin source revisions, tools, parameters, seeds, fixtures and result formats for experiments.",
+      "acceptance": "A clean environment can reproduce the declared output or reports the precise missing dependency.",
+      "module": "pyty.verify",
+      "owner": "pytyliki",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-091",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Capability-secured hardware access",
+      "requirement": "Require narrow, revocable capabilities for each privileged register, memory mapping, DMA queue and device operation.",
+      "acceptance": "Denied-by-default tests prove missing, expired or wrong-target capabilities cannot reach a hardware backend.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "src/hw_rules.c",
+        "docs/HARDWARE_RULE_ENGINE.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-092",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Explicit unsafe contracts",
+      "requirement": "Mark unsafe regions and state preconditions, invariants, clobbers, lifetime and failure behavior.",
+      "acceptance": "Every unsafe API has reviewed safety documentation and positive/negative compile-time or runtime tests.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-093",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "OS and privilege boundary",
+      "requirement": "Keep process-level tools separate from kernel drivers, hypervisors, firmware and board startup code.",
+      "acceptance": "Unprivileged builds cannot silently elevate; privileged adapters are separate, signed/reviewed and target-specific.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-094",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Local-first deterministic behavior",
+      "requirement": "Keep discovery and analysis local, bounded and read-only by default; network access is explicit and optional.",
+      "acceptance": "Offline tests pass; no hidden telemetry, downloads, tool installation or device modification occurs.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "README.md",
+        "SECURITY.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-095",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Versioned architecture adapters",
+      "requirement": "Add ISA, OS, device and board adapters through stable versioned contracts and explicit capability declarations.",
+      "acceptance": "A new adapter passes contract tests and cannot broaden another platform's permissions.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "src/processor.c",
+        "docs/PROCESSOR_TAXONOMY.md"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-096",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Language bridge registry",
+      "requirement": "Maintain the planned 66-language/toolchain registry with separate statuses for profile, parser, FFI, ABI, compiler and verification support.",
+      "acceptance": "Every registry entry has a unique identity and honest support level; a profile is never counted as a working compiler.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "open_pr",
+      "evidence": [],
+      "tracking_prs": [
+        298
+      ]
+    },
+    {
+      "id": "IRON-097",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Complete specifications and migration policy",
+      "requirement": "Document syntax, semantics, APIs, ABI compatibility, diagnostics, examples and deprecation rules.",
+      "acceptance": "Every public contract version has schema, changelog, examples and compatibility tests.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "README.md",
+        "docs/README.md",
+        "src/interop.h"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-098",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Supply-chain and toolchain integrity",
+      "requirement": "Pin compiler/tool versions and hashes; validate imported packages, generated artifacts and signed release evidence.",
+      "acceptance": "CI verifies pins/digests and records provenance; untrusted binaries are never auto-executed.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-099",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Per-target conformance matrix",
+      "requirement": "Maintain independent compile, simulation and hardware qualification status per ISA/OS/board combination.",
+      "acceptance": "Support claims are generated from test evidence and identify unsupported or unqualified combinations.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "partial",
+      "evidence": [
+        "CMakeLists.txt",
+        "tests/test_core.c"
+      ],
+      "tracking_prs": []
+    },
+    {
+      "id": "IRON-100",
+      "domain": "SECURITY_AND_ECOSYSTEM",
+      "title": "Evidence-based lowest-level claim",
+      "requirement": "Publish a level-by-level comparison of direct control, modeling, verification, backend coverage and physical qualification.",
+      "acceptance": "No superlative claim is made unless all cited capabilities have reproducible evidence and scope limitations.",
+      "module": "pyty.security",
+      "owner": "joint",
+      "status": "planned",
+      "evidence": [],
+      "tracking_prs": []
+    }
+  ],
+  "open_work": [
+    {
+      "pr": 280,
+      "title": "Deterministic Reaper processor control plane",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/280",
+      "branch": "feat/processor-state-kernel",
+      "base": "main",
+      "state": "open",
+      "scope": "Reaper-owned processor state model, logical scheduling, replay order and report contracts."
+    },
+    {
+      "pr": 282,
+      "title": "Processor policy and native C11 engine",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/282",
+      "branch": "feat/processor-control-plane-v1",
+      "base": "main",
+      "state": "open",
+      "scope": "Read-only topology/evidence, worker selection, partitioning and deny-by-default operation admission."
+    },
+    {
+      "pr": 285,
+      "title": "Explicit silicon runtime primitives",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/285",
+      "branch": "feat/processor-silicon-runtime-2026-11-27",
+      "base": "main",
+      "state": "open",
+      "scope": "Architecture barriers, cycle sources, bounded MMIO region capability, image-layout validation and trace ring."
+    },
+    {
+      "pr": 286,
+      "title": "Bounded thread fault recovery",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/286",
+      "branch": "feat/processor-thread-fault-recovery-v1",
+      "base": "main",
+      "state": "open",
+      "scope": "Bounded worker-fault correlation and recovery planning; all actions remain plans."
+    },
+    {
+      "pr": 287,
+      "title": "Embedded silicon runtime",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/287",
+      "branch": "feat/embedded-silicon-runtime-v1",
+      "base": "main",
+      "state": "open",
+      "scope": "Versioned board HAL callbacks, cycle sources, MMIO allowlists and deterministic embedded runtime model."
+    },
+    {
+      "pr": 290,
+      "title": "Processor platform evidence adapters",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/290",
+      "branch": "feat/processor-platform-adapters-v1",
+      "base": "feat/processor-thread-fault-recovery-v1",
+      "state": "open",
+      "scope": "Read-only WHEA/EDAC evidence, evidence chain and reversible calling-thread affinity lease; stacked on PR 286."
+    },
+    {
+      "pr": 294,
+      "title": "Processor engineering report v1",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/294",
+      "branch": "feat/processor-engineering-report-v1",
+      "base": "main",
+      "state": "open",
+      "scope": "Versioned JSON Schema and semantic validation for processor profile/benchmark evidence."
+    },
+    {
+      "pr": 297,
+      "title": "PTFR polyglot platform adapters",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/297",
+      "branch": "feat/ptfr-platform-adapters-polyglot-v1",
+      "base": "feat/processor-thread-fault-recovery-v1",
+      "state": "open-draft",
+      "scope": "Stacked Rust/Swift/TypeScript adapters for fault-evidence contracts; draft and not part of main."
+    },
+    {
+      "pr": 298,
+      "title": "Processor language workbench with 66 profiles",
+      "url": "https://github.com/Ivan-VHS/Pytyliki/pull/298",
+      "branch": "feat/processor-language-workbench-66",
+      "base": "main",
+      "state": "open-draft",
+      "scope": "66-profile registry, structural inspection, target validation and inert build planning; not 66 bundled compilers."
+    }
+  ],
+  "evidence_modes": [
+    "live_os_observation",
+    "bounded_host_measurement",
+    "static_analysis",
+    "reference_fixture",
+    "deterministic_simulation",
+    "hardware_in_loop",
+    "physical_signoff"
+  ],
+  "safety_invariants": [
+    "Host discovery and inspection are read-only by default.",
+    "A model, fixture, plan or simulation must never be labeled as live hardware evidence.",
+    "Physical, virtual, bus and MMIO addresses are distinct types and cannot be mixed implicitly.",
+    "Privileged writes require an exact target profile, narrow capability, explicit operation request and platform-approved backend.",
+    "Unsupported hardware semantics return an explicit unsupported result; they are never silently approximated.",
+    "DMA ownership, memory ordering, cache coherency and interrupt context are explicit contracts.",
+    "TSC ticks, device ticks and CPU core cycles are distinct units unless a calibrated conversion is supplied.",
+    "No CPU, OS, firmware, driver, voltage, clock or device state is modified by ordinary workstation inspection.",
+    "No hardware access is inferred from the presence of syntax, profile catalogue entries or simulator models.",
+    "Claims of lowest-level coverage are generated from rule statuses and evidence, not from marketing text."
+  ]
+}

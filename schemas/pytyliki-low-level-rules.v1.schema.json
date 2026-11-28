@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ivan-vhs:pytyliki:low-level-rules:v1",
+  "title": "Pytyliki Low-Level Rules v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "title",
+    "rule_count",
+    "status_legend",
+    "rules"
+  ],
+  "properties": {
+    "schema": {
+      "const": "pytyliki.low-level-rules.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rule_count": {
+      "const": 100
+    },
+    "status_legend": {
+      "type": "object"
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 100,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "number",
+          "group",
+          "source_concept",
+          "engineering_rule",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^PLL-[0-9]{3}$"
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "group": {
+            "enum": [
+              "foundation-and-physics",
+              "memory-and-resources",
+              "logic-and-execution",
+              "security-and-integrity",
+              "aesthetics-and-performance"
+            ]
+          },
+          "source_concept": {
+            "type": "string",
+            "minLength": 1
+          },
+          "engineering_rule": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "implemented",
+              "partial",
+              "target-specific",
+              "not-physical",
+              "planned"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
