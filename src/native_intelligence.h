@@ -33,9 +33,16 @@ typedef enum {
     PL_NI_ISA_AVX512F = UINT64_C(1) << 6
 } pl_ni_isa;
 
+enum {
+    PL_NI_ISA_SCOPE_UNKNOWN = 0,
+    PL_NI_ISA_SCOPE_EXECUTING_CPU = 1,
+    PL_NI_ISA_SCOPE_SYSTEM_COMMON = 2,
+    PL_NI_ISA_SCOPE_PER_LOGICAL_CPU = 3
+};
+
 typedef struct {
     char platform[16], topology_source[48], isa_source[48], memory_source[48];
-    uint32_t schema_version, topology_state, isa_state, memory_state;
+    uint32_t schema_version, topology_state, isa_state, isa_scope, memory_state;
     uint64_t snapshot_fingerprint, generation;
 } pl_ni_provenance;
 
