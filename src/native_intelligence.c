@@ -25,7 +25,11 @@
 #define PL_NI_COST_MAX UINT32_C(1000)
 #define PL_NI_KNOWN_ISA_MASK (PL_NI_ISA_SSE2 | PL_NI_ISA_SSE42 | PL_NI_ISA_AES | \
                               PL_NI_ISA_AVX | PL_NI_ISA_AVX2 | PL_NI_ISA_FMA | \
-                              PL_NI_ISA_AVX512F)
+                              PL_NI_ISA_AVX512F | PL_NI_ISA_NEON | \
+                              PL_NI_ISA_SVE | PL_NI_ISA_SVE2 | \
+                              PL_NI_ISA_ARM_AES | PL_NI_ISA_ARM_SHA1 | \
+                              PL_NI_ISA_ARM_SHA2 | PL_NI_ISA_ARM_CRC32 | \
+                              PL_NI_ISA_ARM_ATOMICS)
 
 static void copy_text(char *dst, size_t capacity, const char *text) {
     if (capacity != 0u) (void)snprintf(dst, capacity, "%s", text != NULL ? text : "");
@@ -606,6 +610,16 @@ static uint64_t parse_linux_isa_flags(const char *line) {
     if (line_has_flag(flags, "avx2")) mask |= PL_NI_ISA_AVX2;
     if (line_has_flag(flags, "fma")) mask |= PL_NI_ISA_FMA;
     if (line_has_flag(flags, "avx512f")) mask |= PL_NI_ISA_AVX512F;
+    if (strncmp(line, "Features", 8u) == 0) {
+        if (line_has_flag(flags, "asimd")) mask |= PL_NI_ISA_NEON;
+        if (line_has_flag(flags, "sve")) mask |= PL_NI_ISA_SVE;
+        if (line_has_flag(flags, "sve2")) mask |= PL_NI_ISA_SVE2;
+        if (line_has_flag(flags, "aes")) mask |= PL_NI_ISA_ARM_AES;
+        if (line_has_flag(flags, "sha1")) mask |= PL_NI_ISA_ARM_SHA1;
+        if (line_has_flag(flags, "sha2")) mask |= PL_NI_ISA_ARM_SHA2;
+        if (line_has_flag(flags, "crc32")) mask |= PL_NI_ISA_ARM_CRC32;
+        if (line_has_flag(flags, "atomics")) mask |= PL_NI_ISA_ARM_ATOMICS;
+    }
     return mask;
 }
 
@@ -881,7 +895,9 @@ pl_ni_status pl_ni_collect(pl_ni_snapshot *out) {
 #endif
     if (status != PL_NI_OK) return status;
     out->provenance.topology_state = PL_NI_FACT_KNOWN;
-    if (pl_processor_scan(&processor) == 0) {
+    if (pl_processor_scan(&processor) == 0 &&
+        (strcmp(processor.architecture, "x86-64") == 0 ||
+         strcmp(processor.architecture, "x86") == 0)) {
         out->isa_mask = isa_from_processor(&processor);
         out->provenance.isa_state = PL_NI_FACT_KNOWN;
         out->provenance.isa_scope = PL_NI_ISA_SCOPE_EXECUTING_CPU;
@@ -889,10 +905,12 @@ pl_ni_status pl_ni_collect(pl_ni_snapshot *out) {
                   sizeof(out->provenance.isa_source),
                   "CPUID plus OS vector-state validation on collector CPU");
     } else {
+        out->isa_mask = 0u;
         out->provenance.isa_scope = PL_NI_ISA_SCOPE_UNKNOWN;
         out->provenance.isa_state = PL_NI_FACT_UNAVAILABLE;
         copy_text(out->provenance.isa_source,
-                  sizeof(out->provenance.isa_source), "unavailable");
+                  sizeof(out->provenance.isa_source),
+                  "no architecture-specific ISA provider available");
     }
 #if !defined(_WIN32)
     (void)collect_linux_isa(out);
