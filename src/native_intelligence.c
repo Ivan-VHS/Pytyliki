@@ -892,6 +892,7 @@ static int cpu_core_occupancy(const pl_ni_snapshot *snapshot,
     const pl_ni_cpu *cpu = &snapshot->cpus[candidate];
     uint32_t i;
     if (cpu->package_id == PL_NI_UNKNOWN_ID ||
+        cpu->die_id == PL_NI_UNKNOWN_ID ||
         cpu->core_id == PL_NI_UNKNOWN_ID)
         return -1;
     for (i = 0u; i < snapshot->cpu_count; ++i) {
